@@ -191,14 +191,15 @@ sub package_count {
 
 sub packages {
     my ($self) = @_;
-    return $self->packages_by_name()->values();
+    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+    return $self->packages_by_name()->values()->sort($sorter);
 }
 
 #------------------------------------------------------------------------------
 
 sub files {
     my ($self) = @_;
-    return $self->packages_by_file()->keys();
+    return $self->packages_by_file()->keys()->sort();
 }
 
 #------------------------------------------------------------------------------

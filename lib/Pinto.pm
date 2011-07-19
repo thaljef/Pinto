@@ -104,17 +104,31 @@ sub add {
     $file = file($file) if not eval { $file->isa('Path::Class') };
 
     my @packages = $self->extract_packages(file => $file, author => $author);
-    printf "Adding %s version %s\n", $_->name(), $_->version() for @packages;
+    printf "Adding %s %s\n", $_->name(), $_->version() for @packages;
     $self->local_index->add(@packages);
     $self->local_index()->write();
 
     my $authordir = dir($local, 'authors', 'id', _author_directory($author));
-    copy($file, $authordir);
+    $authordir->mkpath();  #TODO: log & error check
+    copy($file, $authordir); #TODO: log & error check
 
     $self->remote_index->merge( @{ $self->local_index()->packages() } );
     my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
     $self->remote_index()->write(file => $merged_index_file);
 
+}
+
+#------------------------------------------------------------------------------
+
+sub list {
+    my ($self) = @_;
+
+    $self->remote_index()->merge( @{ $self->local_index()->packages() } );
+    for my $package ( @{ $self->remote_index()->packages() } ) {
+        print $package->to_string(), "\n";
+    }
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

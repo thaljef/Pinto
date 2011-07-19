@@ -9,18 +9,21 @@ use Pinto::Config;
 exit run(@ARGV) if not caller;
 
 sub run {
-    my ($action, @distros) = @_;
+    my ($action, @files) = @_;
     my $cfg = Pinto::Config->new();
-    my $pinto = Pinto>new(config => $cfg);
+    my $pinto = Pinto->new(config => $cfg);
 
-    if ($action eq 'update') {
-        $pinto->update_mirror();
+    if ($action eq 'upgrade') {
+        $pinto->upgrade();
     }
-    elsif ($action eq 'inject') {
-        $pinto->inject(distro => $_) for @distros;
+    elsif ($action eq 'add') {
+        $pinto->add(file => $_) for @files;
+    }
+    elsif ($action eq 'list') {
+        $pinto->list();
     }
     else {
-        die "Actions are: update|inject";
+        die "Actions are: add|list|upgrade";
     }
 }
 
@@ -28,28 +31,7 @@ __END__
 
 =pod
 
-Update workflow:
-  fetch remote 02packages
-  read remote 02packages
-  mirror files in remote 02packages
-  read local 02packages
-  merge with local & remote 02packages
-  clean files
-  write main 02packages
 
-Inject workflow:
-  read local 02packages
-  inject packages in local 02packages
-  place tar.gz
-  read main 02packages
-  merge local with main 02packages
-  clean files
-  write main 02packages
-
-CM/CMI Hacks:
-
-do not remove local repos
-do not 
 =cut
 
 
