@@ -1,6 +1,7 @@
 package Pinto::Package;
 
 use Moose;
+use MooseX::Types::Path::Class;
 
 #------------------------------------------------------------------------------
 
@@ -18,8 +19,9 @@ has 'version' => (
 
 has 'file'    => (
     is        => 'ro',
-    isa       => 'Str',
+    isa       => 'Path::Class::File',
     required  => 1,
+    coerce    => 1,
 );
 
 #------------------------------------------------------------------------------

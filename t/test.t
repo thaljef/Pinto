@@ -16,4 +16,4 @@ $cfg->{_}->{remote} = 'file://' . dir(shift)->absolute();
 my $pinto  = Pinto->new(config => $cfg);
 $pinto->upgrade();
 
-print Dumper $pinto;
+$pinto->add(file => shift);

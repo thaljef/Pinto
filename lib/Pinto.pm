@@ -2,10 +2,12 @@ package Pinto;
 
 use Moose;
 
+use Pinto::Util::Svn qw(:all);
 use Pinto::UserAgent;
 use Pinto::Index;
 
-use Pinto::Util::Svn qw(:all);
+use File::Copy;
+use Dist::MetaData;
 use Path::Class;
 use URI;
 
@@ -69,9 +71,7 @@ sub upgrade {
     my $remote = $args{remote} || $self->config()->{_}->{remote};
 
     my $remote_index_uri = URI->new("$remote/modules/02packages.details.txt.gz");
-    my $remote_index_file = file($local, 'modules', "02packages.details.remote.txt.gz");
-    $self->mirror(url => $remote_index_uri, to => $remote_index_file);
-
+    $self->mirror(url => $remote_index_uri, to => $self->remote_index()->source());
 
     $self->remote_index()->reload();
     $self->remote_index()->remove(@{ $self->local_index()->packages() });
@@ -80,14 +80,14 @@ sub upgrade {
     for my $file ( @{ $self->remote_index()->files() } ) {
         print "Mirroring $file\n";
         my $remote_uri = URI->new( "$remote/authors/id/$file" );
-        my $local_destination = file($local, 'authors', 'id', $file);
-        $changes += $self->mirror(url => $remote_uri, to => $local_destination);
+        my $destination = file($local, 'authors', 'id', $file);
+        $changes += $self->mirror(url => $remote_uri, to => $destination);
     }
 
 
     $self->remote_index()->merge(@{ $self->local_index()->packages() });
     my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
-    $self->remote_index()->write_to_file($merged_index_file);
+    $self->remote_index()->write(file => $merged_index_file);
 
     return $self;
 }
@@ -97,21 +97,53 @@ sub upgrade {
 
 sub add {
     my ($self, %args) = @_;
-    my $local = $args{local};
-    my $file  = $args{file};
+    my $file   = $args{file};
+    my $local  = $args{local}  || $self->config()->{_}->{local};
+    my $author = $args{author} || $self->config()->{_}->{author};
 
-    my @packages = $self->extract_packages($file);
+    $file = file($file) if not eval { $file->isa('Path::Class') };
+
+    my @packages = $self->extract_packages(file => $file, author => $author);
+    printf "Adding %s version %s\n", $_->name(), $_->version() for @packages;
     $self->local_index->add(@packages);
-    #$self->local_index()->write_to_file($local_index_file);
+    $self->local_index()->write();
+
+    my $authordir = dir($local, 'authors', 'id', _author_directory($author));
+    copy($file, $authordir);
 
     $self->remote_index->merge( @{ $self->local_index()->packages() } );
     my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
-    $self->remote_index()->write_to_file($merged_index_file);
+    $self->remote_index()->write(file => $merged_index_file);
 
 }
 
+#------------------------------------------------------------------------------
+
+sub _author_directory {
+    my ($author) = @_;
+    $author = uc $author;
+    return dir(substr($author, 0, 1), substr($author, 0, 2), $author);
+}
+
+#------------------------------------------------------------------------------
+
 sub extract_packages {
-    my ($self, $file) = @_;
+    my ($self, %args) = @_;
+    my $file = $args{file};
+    my $author = $args{author};
+
+    my $author_dir = _author_directory($author);
+    my $local_file = file($author_dir, $file->basename());
+
+    my $distmeta = Dist::Metadata->new(file => $file);
+    my $provides = $distmeta->package_versions();
+
+    my @packages = ();
+    while( my ($pkg, $ver) = each %{ $provides } ){
+        push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => $local_file);
+    }
+
+    return @packages;
 }
 
 #------------------------------------------------------------------------------

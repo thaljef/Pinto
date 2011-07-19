@@ -4,6 +4,7 @@ use Moose;
 use Moose::Autobox;
 use MooseX::Types::Path::Class;
 
+use Carp;
 use Compress::Zlib;
 use Path::Class;
 
@@ -36,7 +37,7 @@ has 'source' => (
 sub BUILD {
     my ($self) = @_;
     if (my $source = $self->source()){
-        $self->add_from_file($source);
+        $self->read(file => $source);
     }
     return $self;
 }
@@ -44,8 +45,10 @@ sub BUILD {
 #------------------------------------------------------------------------------
 
 
-sub add_from_file  {
-    my ($self, $file) = @_;
+sub read  {
+    my ($self, %args) = @_;
+    my $file = $args{file} || $self->source()
+        or croak "This index has no source, so you must specify a file";
 
     return if not -e $file;
 
@@ -71,8 +74,10 @@ sub add_from_file  {
 
 #------------------------------------------------------------------------------
 
-sub write_to_file {
-    my ($self, $file) = @_;
+sub write {
+    my ($self, %args) = @_;
+    my $file = $args{file} || $self->source()
+        or croak "This index has no source, so you must specify a file";
 
     $file = file($file) if not {eval $file->isa('Path::Class')};
 
@@ -91,12 +96,12 @@ sub _gz_write_header {
     my ($self, $gz) = @_;
 
     $gz->gzwrite( <<END_PACKAGE_HEADER );
-File:         02packages.details.txt
-URL:          http://cpan.perl.org/modules/02packages.details.txt.gz
+File:         @{[ $self->source()->basename() ]}
+URL:          file://@{[ $self->source() ]}
 Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
-Written-By:   Pinto::Index $Pinto::Index::VERSION
+Written-By:   Pinto::Index 0.01
 Line-Count:   @{[ $self->package_count() ]}
 Last-Updated: @{[ scalar localtime() ]}
 
@@ -148,7 +153,11 @@ sub add {
 #------------------------------------------------------------------------------
 
 sub reload {
-    return 1;  # TODO!
+    my ($self) = @_;
+    # HACK: to circumvent read-only access
+    $self->{packages_by_file} = {};
+    $self->{packages_by_name}= {};
+    return $self->read();
 }
 
 #------------------------------------------------------------------------------
