@@ -29,14 +29,15 @@ has 'source' => (
     is       => 'ro',
     isa      => 'Path::Class::File',
     coerce   => 1,
-    required => 1,
 );
 
 #------------------------------------------------------------------------------
 
 sub BUILD {
     my ($self) = @_;
-    $self->add_from_file($self->source());
+    if (my $source = $self->source()){
+        $self->add_from_file($source);
+    }
     return $self;
 }
 
@@ -142,6 +143,12 @@ sub add {
     }
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub reload {
+    return 1;  # TODO!
 }
 
 #------------------------------------------------------------------------------
