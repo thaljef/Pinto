@@ -210,6 +210,8 @@ sub list {
     return $self;
 }
 
+#------------------------------------------------------------------------------
+
 sub verify {
     my ($self) = @_;
     my $local = $self->config()->{_}->{local};
@@ -219,6 +221,8 @@ sub verify {
         my $native_file = file($local, qw(authors id), @parts);
         print "$native_file is missing\n" if not -e $native_file;
     }
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
