@@ -10,6 +10,8 @@ use Path::Class;
 
 use Pinto::Package;
 
+use overload ('+' => '__plus', '-' => '__minus');
+
 #------------------------------------------------------------------------------
 
 has 'packages_by_name' => (
@@ -65,7 +67,7 @@ sub read  {
         chomp;
         my ($n, $v, $f) = split;
         my $package = Pinto::Package->new(name => $n, version => $v, file => $f);
-        $self->add($package);
+        $self->put($package);
     }
 
     return $self;
@@ -74,14 +76,11 @@ sub read  {
 #------------------------------------------------------------------------------
 
 sub write {
-    my ($self, %args) = @_;
-    my $file = $args{file} || $self->source()
-        or croak "This index has no source, so you must specify a file";
+    my ($self) = @_;
 
-    $file = file($file) if not {eval $file->isa('Path::Class')};
-
-    $file->dir()->mkpath(); # TODO: log & error check
-    my $gz = Compress::Zlib::gzopen( $file->openw(), 'wb' );
+    my $source = $self->source();
+    $source->dir()->mkpath(); # TODO: log & error check
+    my $gz = Compress::Zlib::gzopen( $source->openw(), 'wb' );
     $self->_gz_write_header($gz);
     $self->_gz_write_packages($gz);
     $gz->gzclose();
@@ -128,11 +127,11 @@ sub merge {
 
     # Maybe instead...
     # $self->remove($_) for @packages;
-    # $self->add($_)    for @packages;
+    # $self->put($_)    for @packages;
 
     for my $package (@packages) {
         $self->remove($package);
-        $self->add($package);
+        $self->put($package);
     }
 
     return $self;
@@ -145,7 +144,6 @@ sub add {
 
     for my $package (@packages) {
         my $name = $package->name();
-        my $file = $package->file();
         my $author = $package->author();
 
         if ( my $incumbent = $self->packages_by_name()->at($name) ) {
@@ -154,8 +152,7 @@ sub add {
                 if $incumbent_author ne $author;
         }
 
-        $self->packages_by_name()->put($name, $package);
-        ($self->packages_by_file()->{$file} ||= [])->push($package);
+        $self->put($package);
     }
 
     return $self;
@@ -165,10 +162,33 @@ sub add {
 
 sub reload {
     my ($self) = @_;
-    # HACK: to circumvent read-only access
+    return $self->clear()->read();
+}
+
+#------------------------------------------------------------------------------
+
+sub clear {
+    my ($self) = @_;
+
     $self->{packages_by_file} = {};
     $self->{packages_by_name}= {};
-    return $self->read();
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub put {
+    my ($self, @packages) = @_;
+
+    for my $package (@packages) {
+        my $name = $package->name();
+        my $file = $package->file();
+
+        $self->packages_by_name()->put($name, $package);
+        ($self->packages_by_file()->{$file} ||= [])->push($package);
+    }
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -215,33 +235,6 @@ sub files {
 
 #------------------------------------------------------------------------------
 
-# sub add_distro {
-#     my ($self, %args) = @_;
-#     my $file   = $args{file};
-#     my $author = $args{author};
-
-#     my $destination = _author_directory($author)->file($file->basename());
-
-#     $authordir->mkpath();  #TODO: log & error check
-#     copy($file, $authordir); #TODO: log & error check
-
-#     my $distmeta = Dist::Metadata->new(file => $file);
-#     my $provides = $distmeta->package_versions();
-
-#     my @packages = ();
-#     while( my ($pkg, $ver) = each %{ $provides } ){
-#         print "Adding $pkg $ver\n";
-#         $self->add(Pinto::Package->new(name => $pkg, version => $ver, file => $local_file));
-#     }
-# }
-
-
-#------------------------------------------------------------------------------
-
-
-
-#------------------------------------------------------------------------------
-
 sub validate {
     my ($self) = @_;
 
@@ -252,6 +245,32 @@ sub validate {
     for my $package ( $self->packages_by_name()->values()->flatten() ) {
       $self->packages_by_file->exists($package->file()) or die 'Shit!';
     }
+}
+
+#------------------------------------------------------------------------------
+
+sub __plus {
+    $DB::single = 1;
+    my ($self, $other, $swap) = @_;
+    ($self, $other) = ($other, $self) if $swap;
+    my $class = ref $self;
+    my $result = $class->new();
+    $result->add( @{$self->packages()} );
+    $result->merge( @{$other->packages()} );
+    return $result;
+}
+
+#------------------------------------------------------------------------------
+
+sub __minus {
+    $DB::single = 1;
+    my ($self, $other, $swap) = @_;
+    ($self, $other) = ($other, $self) if $swap;
+    my $class = ref $self;
+    my $result = $class->new();
+    $result->add( @{$self->packages()} );
+    $result->remove( @{$other->packages()} );
+    return $result;
 }
 
 #------------------------------------------------------------------------------

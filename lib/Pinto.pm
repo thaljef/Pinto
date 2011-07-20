@@ -45,22 +45,52 @@ has 'local_index'   => (
     lazy            => 1,
 );
 
+has 'master_index'  => (
+    is              => 'ro',
+    isa             => 'Pinto::Index',
+    builder         => '_build_master_index',
+    init_arg        => undef,
+    lazy            => 1,
+);
+
 #------------------------------------------------------------------------------
 
 sub _build_remote_index {
     my ($self) = @_;
-    my ($local) = $self->config->{_}->{local};
-    my $remote_index_file = file($local, 'modules', "02packages.details.remote.txt.gz");
-    return Pinto::Index->new(source => $remote_index_file);
+    return $self->__build_index(file => '02packages.details.remote.txt.gz');
 }
 
 #------------------------------------------------------------------------------
 
 sub _build_local_index {
     my ($self) = @_;
-    my $local = $self->config->{_}->{local};
-    my $local_index_file = file($local, 'modules', "02packages.details.local.txt.gz");
-    return Pinto::Index->new(source => "$local_index_file");
+    return $self->__build_index(file => '02packages.details.local.txt.gz');
+}
+
+#------------------------------------------------------------------------------
+
+sub _build_master_index {
+    my ($self) = @_;
+    return $self->__build_index(file => '02packages.details.txt.gz');
+}
+
+#------------------------------------------------------------------------------
+
+sub __build_index {
+    my ($self, %args) = @_;
+    my $local = $self->config()->{_}->{local};
+    my $index_file = file($local, 'modules', $args{file});
+    return Pinto::Index->new(source => $index_file);
+}
+
+#------------------------------------------------------------------------------
+
+sub rebuild_master_index {
+    my ($self) = @_;
+    $self->master_index()->clear();
+    $self->master_index()->add( @{$self->remote_index()->packages()} );
+    $self->master_index()->merge( @{$self->local_index()->packages()} );
+    return $self->master_index();
 }
 
 #------------------------------------------------------------------------------
@@ -73,23 +103,19 @@ sub upgrade {
 
     my $remote_index_uri = URI->new("$remote/modules/02packages.details.txt.gz");
     $self->mirror(url => $remote_index_uri, to => $self->remote_index()->source());
-
     $self->remote_index()->reload();
-    $self->remote_index()->remove(@{ $self->local_index()->packages() });
 
     my $changes = 0;
-    for my $file ( @{ $self->remote_index()->files() } ) {
+    my $mirrorable_index = $self->remote_index() - $self->local_index();
+
+    for my $file ( @{ $mirrorable_index->files() } ) {
         print "Mirroring $file\n";
         my $remote_uri = URI->new( "$remote/authors/id/$file" );
         my $destination = file($local, 'authors', 'id', $file);
         $changes += $self->mirror(url => $remote_uri, to => $destination);
     }
 
-
-    $self->remote_index()->merge(@{ $self->local_index()->packages() });
-    my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
-    $self->remote_index()->write(file => $merged_index_file);
-
+    $self->rebuild_master_index()->write();
     return $self;
 }
 
@@ -131,10 +157,8 @@ sub remove {
     my $local  = $args{local}  || $self->config()->{_}->{local};
 
     $self->local_index()->remove($package)->write();
-    $self->remote_index->merge( @{ $self->local_index()->packages() } );
-    my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
-    $self->remote_index()->write(file => $merged_index_file);
-
+    $self->master_index()->remove($package)->write();
+    # TODO: clean, if directed
     return $self;
 }
 
@@ -155,7 +179,7 @@ sub add {
     my $file_in_index = file($author_dir, $file->basename());
 
     if (my $existing_file = $self->local_index()->packages_by_file->{$file_in_index}) {
-        croak "File '$file_in_index' already exists in the index";
+        croak "File '$file_in_index' already exists in the local index";
     }
 
     my @packages = ();
@@ -171,10 +195,7 @@ sub add {
     $destination_dir->mkpath();  #TODO: log & error check
     copy($file, $destination_dir); #TODO: log & error check
 
-    $self->remote_index->merge( @{ $self->local_index()->packages() } );
-    my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
-    $self->remote_index()->write(file => $merged_index_file);
-
+    $self->rebuild_master_index()->write();
     return $self;
 }
 
@@ -183,8 +204,7 @@ sub add {
 sub list {
     my ($self) = @_;
 
-    $self->remote_index()->merge( @{ $self->local_index()->packages() } );
-    for my $package ( @{ $self->remote_index()->packages() } ) {
+    for my $package ( @{ $self->master_index()->packages() } ) {
         print $package->to_string(), "\n";
     }
 

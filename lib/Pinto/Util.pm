@@ -31,3 +31,10 @@ sub is_source_control_file {
     my ($file) = @_;
     return exists $SCM_FILES{$file};
 }
+
+#--------------------------------------------------------------------------------
+
+1;
+
+__END__
+
