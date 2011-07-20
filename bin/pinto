@@ -25,9 +25,11 @@ sub run {
     elsif ($action eq 'remove') {
         $pinto->remove(package => $_) for @args;
     }
-
+    elsif ($action eq 'clean') {
+        $pinto->clean();
+    }
     else {
-        die "Actions are: add|list|remove|upgrade";
+        die "Actions are: add|clean|list|remove|upgrade";
     }
 
     return 0;

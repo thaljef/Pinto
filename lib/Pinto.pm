@@ -2,13 +2,13 @@ package Pinto;
 
 use Moose;
 
-use Pinto::Util qw(directory_for_author);
-use Pinto::Util::Svn qw(:all);
+use Pinto::Util qw(directory_for_author is_source_control_file);
 use Pinto::UserAgent;
 use Pinto::Index;
 
 use Carp;
 use File::Copy;
+use File::Find;
 use Dist::MetaData;
 use Path::Class;
 use URI;
@@ -65,7 +65,6 @@ sub _build_local_index {
 
 #------------------------------------------------------------------------------
 
-
 sub upgrade {
     my ($self, %args) = @_;
 
@@ -94,6 +93,35 @@ sub upgrade {
     return $self;
 }
 
+#------------------------------------------------------------------------------
+
+sub clean {
+    my ($self, %args) = @_;
+    my $local = $args{local} || $self->config()->{_}->{local};
+    my $base_dir = dir($local, qw(authors id));
+
+    $self->remote_index()->merge(@{ $self->local_index()->packages() });
+
+    my $wanted = sub {
+        $DB::single = 1;
+        my $physical_file = file($File::Find::name);
+        my $logical_file  = $physical_file->relative($base_dir)->as_foreign('Unix');
+
+        if (is_source_control_file( $physical_file->basename() )) {
+            $File::Find::prune = 1;
+            return;
+        }
+
+        return if not -f $physical_file;
+        return if exists $self->remote_index()->packages_by_file()->{$logical_file};
+        print "Cleaning $logical_file\n"; # TODO: report as physical file instead?
+        unlink $physical_file; # TODO: Error check!
+    };
+
+    File::Find::find($wanted, $base_dir);
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
@@ -109,6 +137,8 @@ sub remove {
 
     return $self;
 }
+
+#------------------------------------------------------------------------------
 
 sub add {
     my ($self, %args) = @_;
@@ -159,12 +189,6 @@ sub list {
     }
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub extract_packages {
-
 }
 
 #------------------------------------------------------------------------------
