@@ -65,8 +65,7 @@ sub read  {
         chomp;
         my ($n, $v, $f) = split;
         my $package = Pinto::Package->new(name => $n, version => $v, file => $f);
-        ($self->packages_by_file()->{$f} ||= [])->push($package);
-        $self->packages_by_name()->put($n, $package);
+        $self->add($package);
     }
 
     return $self;
@@ -81,7 +80,7 @@ sub write {
 
     $file = file($file) if not {eval $file->isa('Path::Class')};
 
-    $file->dir()->mkpath();
+    $file->dir()->mkpath(); # TODO: log & error check
     my $gz = Compress::Zlib::gzopen( $file->openw(), 'wb' );
     $self->_gz_write_header($gz);
     $self->_gz_write_packages($gz);
@@ -127,6 +126,10 @@ sub _gz_write_packages {
 sub merge {
     my ($self, @packages) = @_;
 
+    # Maybe instead...
+    # $self->remove($_) for @packages;
+    # $self->add($_)    for @packages;
+
     for my $package (@packages) {
         $self->remove($package);
         $self->add($package);
@@ -143,6 +146,14 @@ sub add {
     for my $package (@packages) {
         my $name = $package->name();
         my $file = $package->file();
+        my $author = $package->author();
+
+        if ( my $incumbent = $self->packages_by_name()->at($name) ) {
+            my $incumbent_author = $incumbent->author();
+            croak "Package '$name' is already owned by '$incumbent_author'"
+                if $incumbent_author ne $author;
+        }
+
         $self->packages_by_name()->put($name, $package);
         ($self->packages_by_file()->{$file} ||= [])->push($package);
     }
@@ -167,13 +178,13 @@ sub remove {
 
     for my $package (@packages) {
 
-      my $name = $package->name();
+      my $name = eval { $package->name() } || $package;
 
       if (my $encumbent = $self->packages_by_name()->at($name)) {
           # Remove the file that contains the incumbent package and
           # then remove all packages that were contained in that file
           my $kin = $self->packages_by_file()->delete($encumbent->file());
-          $self->packages_by_name()->delete($_) for map {$_->name} @{$kin};
+          $self->packages_by_name()->delete($_) for map {$_->name()} @{$kin};
       }
 
     }
@@ -201,6 +212,33 @@ sub files {
     my ($self) = @_;
     return $self->packages_by_file()->keys()->sort();
 }
+
+#------------------------------------------------------------------------------
+
+# sub add_distro {
+#     my ($self, %args) = @_;
+#     my $file   = $args{file};
+#     my $author = $args{author};
+
+#     my $destination = _author_directory($author)->file($file->basename());
+
+#     $authordir->mkpath();  #TODO: log & error check
+#     copy($file, $authordir); #TODO: log & error check
+
+#     my $distmeta = Dist::Metadata->new(file => $file);
+#     my $provides = $distmeta->package_versions();
+
+#     my @packages = ();
+#     while( my ($pkg, $ver) = each %{ $provides } ){
+#         print "Adding $pkg $ver\n";
+#         $self->add(Pinto::Package->new(name => $pkg, version => $ver, file => $local_file));
+#     }
+# }
+
+
+#------------------------------------------------------------------------------
+
+
 
 #------------------------------------------------------------------------------
 

@@ -2,10 +2,12 @@ package Pinto;
 
 use Moose;
 
+use Pinto::Util qw(directory_for_author);
 use Pinto::Util::Svn qw(:all);
 use Pinto::UserAgent;
 use Pinto::Index;
 
+use Carp;
 use File::Copy;
 use Dist::MetaData;
 use Path::Class;
@@ -95,6 +97,19 @@ sub upgrade {
 
 #------------------------------------------------------------------------------
 
+sub remove {
+    my ($self, %args) = @_;
+    my $package = $args{package};
+    my $local  = $args{local}  || $self->config()->{_}->{local};
+
+    $self->local_index()->remove($package)->write();
+    $self->remote_index->merge( @{ $self->local_index()->packages() } );
+    my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
+    $self->remote_index()->write(file => $merged_index_file);
+
+    return $self;
+}
+
 sub add {
     my ($self, %args) = @_;
     my $file   = $args{file};
@@ -103,19 +118,34 @@ sub add {
 
     $file = file($file) if not eval { $file->isa('Path::Class') };
 
-    my @packages = $self->extract_packages(file => $file, author => $author);
-    printf "Adding %s %s\n", $_->name(), $_->version() for @packages;
+    my $distmeta = Dist::Metadata->new(file => $file);
+    my $provides = $distmeta->package_versions();
+
+    my $author_dir    = directory_for_author($author);
+    my $file_in_index = file($author_dir, $file->basename());
+
+    if (my $existing_file = $self->local_index()->packages_by_file->{$file_in_index}) {
+        croak "File '$file_in_index' already exists in the index";
+    }
+
+    my @packages = ();
+    while( my ($pkg, $ver) = each %{ $provides } ){
+        printf "Adding $pkg $ver\n";
+        push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => $file_in_index);
+    }
+
     $self->local_index->add(@packages);
     $self->local_index()->write();
 
-    my $authordir = dir($local, 'authors', 'id', _author_directory($author));
-    $authordir->mkpath();  #TODO: log & error check
-    copy($file, $authordir); #TODO: log & error check
+    my $destination_dir = directory_for_author($author, $local, qw(authors id));
+    $destination_dir->mkpath();  #TODO: log & error check
+    copy($file, $destination_dir); #TODO: log & error check
 
     $self->remote_index->merge( @{ $self->local_index()->packages() } );
     my $merged_index_file = file($local, 'modules', "02packages.details.txt.gz");
     $self->remote_index()->write(file => $merged_index_file);
 
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -133,31 +163,8 @@ sub list {
 
 #------------------------------------------------------------------------------
 
-sub _author_directory {
-    my ($author) = @_;
-    $author = uc $author;
-    return dir(substr($author, 0, 1), substr($author, 0, 2), $author);
-}
-
-#------------------------------------------------------------------------------
-
 sub extract_packages {
-    my ($self, %args) = @_;
-    my $file = $args{file};
-    my $author = $args{author};
 
-    my $author_dir = _author_directory($author);
-    my $local_file = file($author_dir, $file->basename());
-
-    my $distmeta = Dist::Metadata->new(file => $file);
-    my $provides = $distmeta->package_versions();
-
-    my @packages = ();
-    while( my ($pkg, $ver) = each %{ $provides } ){
-        push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => $local_file);
-    }
-
-    return @packages;
 }
 
 #------------------------------------------------------------------------------

@@ -9,7 +9,7 @@ use Pinto::Config;
 exit run(@ARGV) if not caller;
 
 sub run {
-    my ($action, @files) = @_;
+    my ($action, @args) = @_;
     my $cfg = Pinto::Config->new();
     my $pinto = Pinto->new(config => $cfg);
 
@@ -17,14 +17,20 @@ sub run {
         $pinto->upgrade();
     }
     elsif ($action eq 'add') {
-        $pinto->add(file => $_) for @files;
+        $pinto->add(file => $_) for @args;
     }
     elsif ($action eq 'list') {
         $pinto->list();
     }
-    else {
-        die "Actions are: add|list|upgrade";
+    elsif ($action eq 'remove') {
+        $pinto->remove(package => $_) for @args;
     }
+
+    else {
+        die "Actions are: add|list|remove|upgrade";
+    }
+
+    return 0;
 }
 
 __END__
