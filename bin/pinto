@@ -28,8 +28,11 @@ sub run {
     elsif ($action eq 'clean') {
         $pinto->clean();
     }
+    elsif ($action eq 'verify') {
+        $pinto->verify();
+    }
     else {
-        die "Actions are: add|clean|list|remove|upgrade";
+        die "Actions are: add|clean|list|remove|upgrade|verify";
     }
 
     return 0;

@@ -126,8 +126,6 @@ sub clean {
     my $local = $args{local} || $self->config()->{_}->{local};
     my $base_dir = dir($local, qw(authors id));
 
-    $self->remote_index()->merge(@{ $self->local_index()->packages() });
-
     my $wanted = sub {
         $DB::single = 1;
         my $physical_file = file($File::Find::name);
@@ -139,11 +137,12 @@ sub clean {
         }
 
         return if not -f $physical_file;
-        return if exists $self->remote_index()->packages_by_file()->{$logical_file};
+        return if exists $self->master_index()->packages_by_file()->{$logical_file};
         print "Cleaning $logical_file\n"; # TODO: report as physical file instead?
-        unlink $physical_file; # TODO: Error check!
+        $physical_file->remove(); # TODO: Error check!
     };
 
+    # TODO: Consider using Path::Class::Dir->recurse() instead;
     File::Find::find($wanted, $base_dir);
 
     return $self;
@@ -176,7 +175,7 @@ sub add {
     my $provides = $distmeta->package_versions();
 
     my $author_dir    = directory_for_author($author);
-    my $file_in_index = file($author_dir, $file->basename());
+    my $file_in_index = file($author_dir, $file->basename())->as_foreign('Unix');
 
     if (my $existing_file = $self->local_index()->packages_by_file->{$file_in_index}) {
         croak "File '$file_in_index' already exists in the local index";
@@ -185,7 +184,7 @@ sub add {
     my @packages = ();
     while( my ($pkg, $ver) = each %{ $provides } ){
         printf "Adding $pkg $ver\n";
-        push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => $file_in_index);
+        push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => "$file_in_index");
     }
 
     $self->local_index->add(@packages);
@@ -209,6 +208,17 @@ sub list {
     }
 
     return $self;
+}
+
+sub verify {
+    my ($self) = @_;
+    my $local = $self->config()->{_}->{local};
+
+    for my $file ( @{ $self->master_index()->files() } ) {
+        my @parts = split m|/|, $file;
+        my $native_file = file($local, qw(authors id), @parts);
+        print "$native_file is missing\n" if not -e $native_file;
+    }
 }
 
 #------------------------------------------------------------------------------

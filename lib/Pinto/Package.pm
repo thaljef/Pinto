@@ -1,9 +1,7 @@
 package Pinto::Package;
 
 use Moose;
-use MooseX::Types::Path::Class;
-
-use Carp;
+use Path::Class::File;
 
 #------------------------------------------------------------------------------
 
@@ -21,20 +19,30 @@ has 'version' => (
 
 has 'file'    => (
     is        => 'ro',
-    isa       => 'Path::Class::File',
+    isa       => 'Str',
     required  => 1,
-    coerce    => 1,
+);
+
+has 'author'  => (
+    is        => 'ro',
+    isa       => 'Str',
+    lazy      => 1,
+    init_arg  => undef,
+    default   => sub { $_[0]->native_file()->dir()->dir_list(2, 1) },
+);
+
+has 'native_file' => (
+    is            => 'ro',
+    isa           => 'Path::Class::File',
+    lazy          => 1,
+    init_arg      => undef,
+    default       => sub { Path::Class::File->new( $_[0]->file() ) },
 );
 
 #------------------------------------------------------------------------------
 
-sub author {
-    my ($self) = @_;
-    my $file = $self->file();
-    my $author = eval { $file->dir()->dir_list(2, 1) };
-    croak "Unable to determine author from $file: $@" if $@;
-    return $author;
-}
+# TODO: Declare subtype for the 'file' attribute and coerce it from a
+# Path::Class::File to a string that always looks like a Unix path.
 
 #------------------------------------------------------------------------------
 

@@ -76,9 +76,11 @@ sub read  {
 #------------------------------------------------------------------------------
 
 sub write {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    my $source = $self->source();
+    my $source = $args{file} || $self->source()
+        or croak 'This index has no source, so you must specify a file argument';
+
     $source->dir()->mkpath(); # TODO: log & error check
     my $gz = Compress::Zlib::gzopen( $source->openw(), 'wb' );
     $self->_gz_write_header($gz);
@@ -93,9 +95,15 @@ sub write {
 sub _gz_write_header {
     my ($self, $gz) = @_;
 
+    my $file = my $url = 'UNKNOWN';
+    if (my $source = $self->source() ) {
+        $file = $source->basename();
+        $url  = 'file://' . $source->absolute();
+    }
+
     $gz->gzwrite( <<END_PACKAGE_HEADER );
-File:         @{[ $self->source()->basename() ]}
-URL:          file://@{[ $self->source() ]}
+File:         $file
+URL:          $url
 Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
