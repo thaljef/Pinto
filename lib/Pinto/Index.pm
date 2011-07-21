@@ -14,6 +14,10 @@ use overload ('+' => '__plus', '-' => '__minus');
 
 #------------------------------------------------------------------------------
 
+with 'Pinto::Role::Log';
+
+#------------------------------------------------------------------------------
+
 has 'packages_by_name' => (
     is         => 'ro',
     isa        => 'HashRef',
@@ -52,7 +56,7 @@ sub read  {
     my ($self, %args) = @_;
 
     my $file = $args{file} || $self->file()
-        or croak "This index has no file attribute, so you must specify one";
+        or $self->log()->logcroak("This index has no file attribute, so you must specify one");
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
@@ -82,8 +86,10 @@ sub read  {
 sub write {
     my ($self, %args) = @_;
 
+    # TODO: Accept a file handle argument
+
     my $file = $args{file} || $self->file()
-        or croak 'This index has no file attribute, so you must specify one';
+        or $self->log()->logcroak('This index has no file attribute, so you must specify one');
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
@@ -101,11 +107,9 @@ sub write {
 sub _gz_write_header {
     my ($self, $gz) = @_;
 
-    my $file = my $url = 'UNKNOWN';
-    if ($self->file()) {
-        $file = $self->file()->basename();
-        $url  = 'file://' . $self->file()->absolute()->as_foreign('Unix');
-    }
+    my ($file, $url) = $self->file()
+        ? ($self->file()->basename(), 'file://' . $self->file()->as_foreign('Unix') )
+        : ('UNKNOWN', 'UNKNOWN');
 
     $gz->gzwrite( <<END_PACKAGE_HEADER );
 File:         $file
@@ -162,7 +166,7 @@ sub add {
 
         if ( my $incumbent = $self->packages_by_name()->at($name) ) {
             my $incumbent_author = $incumbent->author();
-            croak "Package '$name' is already owned by '$incumbent_author'"
+            $self->log()->logcroak("Package $name is already owned by $incumbent_author")
                 if $incumbent_author ne $author;
         }
 
@@ -263,12 +267,18 @@ sub validate {
     my ($self) = @_;
 
     for my $package ( $self->packages_by_file()->values()->map( sub {@{$_[0]}} )->flatten() ) {
-      $self->packages_by_name->exists($package->name()) or die "Shit!";
+        my $name = $package->name();
+        $self->packages_by_name->exists($name)
+            or $self->log->logcroak("Validation of package $name failed");
     }
 
     for my $package ( $self->packages_by_name()->values()->flatten() ) {
-      $self->packages_by_file->exists($package->file()) or die 'Shit!';
+        my $file = $package->file();
+        $self->packages_by_file->exists($file)
+            or $self->log->logcroak("Validation of file $file failed");
     }
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

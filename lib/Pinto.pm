@@ -55,6 +55,10 @@ has 'master_index'  => (
 
 #------------------------------------------------------------------------------
 
+with 'Pinto::Role::Log';
+
+#------------------------------------------------------------------------------
+
 sub _build_remote_index {
     my ($self) = @_;
 
@@ -116,7 +120,7 @@ sub upgrade {
     my $mirrorable_index = $self->remote_index() - $self->local_index();
 
     for my $file ( @{ $mirrorable_index->files() } ) {
-        print "Mirroring $file\n";
+        $self->log()->info("Mirroring $file");
         my $remote_uri = URI->new( "$remote/authors/id/$file" );
         my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
         $changes += $self->mirror(url => $remote_uri, to => $destination);
@@ -148,7 +152,7 @@ sub clean {
 
         return if not -f $physical_file;
         return if exists $self->master_index()->packages_by_file()->{$logical_file};
-        print "Cleaning $logical_file\n"; # TODO: report as physical file instead?
+        $self->log()->info("Cleaning $logical_file"); # TODO: report as physical file instead?
         $physical_file->remove(); # TODO: Error check!
     };
 
@@ -167,11 +171,11 @@ sub remove {
     my $local   = $args{local}  || $self->config()->{_}->{local};
 
     my @local_removed = $self->local_index()->remove($package);
-    print "Removed $_ from local index\n" for @local_removed;
+    $self->log->info("Removed $_ from local index") for @local_removed;
     $self->local_index()->write();
 
     my @master_removed = $self->master_index()->remove($package);
-    print "Removed $_ from master index\n" for @master_removed;
+    $self->log->info("Removed $_ from master index") for @master_removed;
     $self->master_index()->write();
 
     # Do not rebuild master index after removing packages,
@@ -204,7 +208,7 @@ sub add {
 
     my @packages = ();
     while( my ($pkg, $ver) = each %{ $provides } ){
-        printf "Adding $pkg $ver\n";
+        $self->log->info("Adding $pkg $ver");
         push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => "$file_in_index");
     }
 
