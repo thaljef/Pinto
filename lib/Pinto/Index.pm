@@ -6,7 +6,7 @@ use MooseX::Types::Path::Class;
 
 use Carp;
 use Compress::Zlib;
-use Path::Class;
+use Path::Class qw();
 
 use Pinto::Package;
 
@@ -19,6 +19,7 @@ has 'packages_by_name' => (
     isa        => 'HashRef',
     default    => sub { {} },
     init_arg   => undef,
+    writer     => '_set_packages_by_name',
 );
 
 has 'packages_by_file' => (
@@ -26,9 +27,10 @@ has 'packages_by_file' => (
     isa        => 'HashRef',
     default    => sub { {} },
     init_arg   => undef,
+    writer     => '_set_packages_by_file',
 );
 
-has 'source' => (
+has 'file' => (
     is       => 'ro',
     isa      => 'Path::Class::File',
     coerce   => 1,
@@ -38,19 +40,21 @@ has 'source' => (
 
 sub BUILD {
     my ($self) = @_;
-    if (my $source = $self->source()){
-        $self->read(file => $source);
+    if (my $file = $self->file()){
+        $self->read(file => $file);
     }
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
-
 sub read  {
     my ($self, %args) = @_;
-    my $file = $args{file} || $self->source()
-        or croak "This index has no source, so you must specify a file";
+
+    my $file = $args{file} || $self->file()
+        or croak "This index has no file attribute, so you must specify one";
+
+    $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
     return if not -e $file;
 
@@ -78,11 +82,13 @@ sub read  {
 sub write {
     my ($self, %args) = @_;
 
-    my $source = $args{file} || $self->source()
-        or croak 'This index has no source, so you must specify a file argument';
+    my $file = $args{file} || $self->file()
+        or croak 'This index has no file attribute, so you must specify one';
 
-    $source->dir()->mkpath(); # TODO: log & error check
-    my $gz = Compress::Zlib::gzopen( $source->openw(), 'wb' );
+    $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
+
+    $file->dir()->mkpath(); # TODO: log & error check
+    my $gz = Compress::Zlib::gzopen( $file->openw(), 'wb' );
     $self->_gz_write_header($gz);
     $self->_gz_write_packages($gz);
     $gz->gzclose();
@@ -96,9 +102,9 @@ sub _gz_write_header {
     my ($self, $gz) = @_;
 
     my $file = my $url = 'UNKNOWN';
-    if (my $source = $self->source() ) {
-        $file = $source->basename();
-        $url  = 'file://' . $source->absolute();
+    if ($self->file()) {
+        $file = $self->file()->basename();
+        $url  = 'file://' . $self->file()->absolute()->as_foreign('Unix');
     }
 
     $gz->gzwrite( <<END_PACKAGE_HEADER );
@@ -170,6 +176,7 @@ sub add {
 
 sub reload {
     my ($self) = @_;
+
     return $self->clear()->read();
 }
 
@@ -178,24 +185,23 @@ sub reload {
 sub clear {
     my ($self) = @_;
 
-    $self->{packages_by_file} = {};
-    $self->{packages_by_name}= {};
+    $self->_set_packages_by_name( {} );
+    $self->_set_packages_by_file( {} );
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
+
 sub put {
     my ($self, @packages) = @_;
 
     for my $package (@packages) {
-        my $name = $package->name();
-        my $file = $package->file();
-
-        $self->packages_by_name()->put($name, $package);
-        ($self->packages_by_file()->{$file} ||= [])->push($package);
+        $self->packages_by_name()->put($package->name(), $package);
+        ($self->packages_by_file()->{$package->file()} ||= [])->push($package);
     }
+
     return $self;
 }
 
@@ -204,6 +210,7 @@ sub put {
 sub remove {
     my ($self, @packages) = @_;
 
+    my @removed = ();
     for my $package (@packages) {
 
       my $name = eval { $package->name() } || $package;
@@ -213,10 +220,11 @@ sub remove {
           # then remove all packages that were contained in that file
           my $kin = $self->packages_by_file()->delete($encumbent->file());
           $self->packages_by_name()->delete($_) for map {$_->name()} @{$kin};
+          push @removed, $encumbent->file();
       }
 
     }
-    return $self;
+    return @removed;
 }
 
 #------------------------------------------------------------------------------
@@ -239,6 +247,14 @@ sub packages {
 sub files {
     my ($self) = @_;
     return $self->packages_by_file()->keys()->sort();
+}
+
+#------------------------------------------------------------------------------
+
+sub files_native {
+    my ($self, @base) = @_;
+    my $mapper = sub { return Pinto::Util::native_file(@base, $_[0]) };
+    return $self->files()->map($mapper);
 }
 
 #------------------------------------------------------------------------------

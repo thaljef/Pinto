@@ -32,7 +32,7 @@ sub run {
         $pinto->verify();
     }
     else {
-        die "Actions are: add|clean|list|remove|upgrade|verify";
+        die "USAGE: pinto add|clean|list|remove|upgrade|verify\n";
     }
 
     return 0;

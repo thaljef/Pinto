@@ -2,9 +2,9 @@ package Pinto;
 
 use Moose;
 
-use Pinto::Util qw(directory_for_author is_source_control_file);
-use Pinto::UserAgent;
+use Pinto::Util;
 use Pinto::Index;
+use Pinto::UserAgent;
 
 use Carp;
 use File::Copy;
@@ -57,6 +57,7 @@ has 'master_index'  => (
 
 sub _build_remote_index {
     my ($self) = @_;
+
     return $self->__build_index(file => '02packages.details.remote.txt.gz');
 }
 
@@ -64,6 +65,7 @@ sub _build_remote_index {
 
 sub _build_local_index {
     my ($self) = @_;
+
     return $self->__build_index(file => '02packages.details.local.txt.gz');
 }
 
@@ -71,6 +73,7 @@ sub _build_local_index {
 
 sub _build_master_index {
     my ($self) = @_;
+
     return $self->__build_index(file => '02packages.details.txt.gz');
 }
 
@@ -78,18 +81,22 @@ sub _build_master_index {
 
 sub __build_index {
     my ($self, %args) = @_;
+
     my $local = $self->config()->{_}->{local};
     my $index_file = file($local, 'modules', $args{file});
-    return Pinto::Index->new(source => $index_file);
+
+    return Pinto::Index->new(file => $index_file);
 }
 
 #------------------------------------------------------------------------------
 
 sub rebuild_master_index {
     my ($self) = @_;
+
     $self->master_index()->clear();
     $self->master_index()->add( @{$self->remote_index()->packages()} );
     $self->master_index()->merge( @{$self->local_index()->packages()} );
+
     return $self->master_index();
 }
 
@@ -102,7 +109,7 @@ sub upgrade {
     my $remote = $args{remote} || $self->config()->{_}->{remote};
 
     my $remote_index_uri = URI->new("$remote/modules/02packages.details.txt.gz");
-    $self->mirror(url => $remote_index_uri, to => $self->remote_index()->source());
+    $self->mirror(url => $remote_index_uri, to => $self->remote_index()->file());
     $self->remote_index()->reload();
 
     my $changes = 0;
@@ -111,11 +118,13 @@ sub upgrade {
     for my $file ( @{ $mirrorable_index->files() } ) {
         print "Mirroring $file\n";
         my $remote_uri = URI->new( "$remote/authors/id/$file" );
-        my $destination = file($local, 'authors', 'id', $file);
+        my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
         $changes += $self->mirror(url => $remote_uri, to => $destination);
     }
 
     $self->rebuild_master_index()->write();
+
+    # TODO: Clean if directed
     return $self;
 }
 
@@ -131,7 +140,8 @@ sub clean {
         my $physical_file = file($File::Find::name);
         my $logical_file  = $physical_file->relative($base_dir)->as_foreign('Unix');
 
-        if (is_source_control_file( $physical_file->basename() )) {
+        # TODO: Can we just use $_ instead of calling basename() ?
+        if (Pinto::Util::is_source_control_file( $physical_file->basename() )) {
             $File::Find::prune = 1;
             return;
         }
@@ -152,11 +162,21 @@ sub clean {
 
 sub remove {
     my ($self, %args) = @_;
-    my $package = $args{package};
-    my $local  = $args{local}  || $self->config()->{_}->{local};
 
-    $self->local_index()->remove($package)->write();
-    $self->master_index()->remove($package)->write();
+    my $package = $args{package};
+    my $local   = $args{local}  || $self->config()->{_}->{local};
+
+    my @local_removed = $self->local_index()->remove($package);
+    print "Removed $_ from local index\n" for @local_removed;
+    $self->local_index()->write();
+
+    my @master_removed = $self->master_index()->remove($package);
+    print "Removed $_ from master index\n" for @master_removed;
+    $self->master_index()->write();
+
+    # Do not rebuild master index after removing packages,
+    # or else the packages from the remote index will appear.
+
     # TODO: clean, if directed
     return $self;
 }
@@ -165,16 +185,17 @@ sub remove {
 
 sub add {
     my ($self, %args) = @_;
+
     my $file   = $args{file};
     my $local  = $args{local}  || $self->config()->{_}->{local};
     my $author = $args{author} || $self->config()->{_}->{author};
 
-    $file = file($file) if not eval { $file->isa('Path::Class') };
+    $file = file($file) if not eval { $file->isa('Path::Class::File') };
 
     my $distmeta = Dist::Metadata->new(file => $file);
     my $provides = $distmeta->package_versions();
 
-    my $author_dir    = directory_for_author($author);
+    my $author_dir    = Pinto::Util::directory_for_author($author);
     my $file_in_index = file($author_dir, $file->basename())->as_foreign('Unix');
 
     if (my $existing_file = $self->local_index()->packages_by_file->{$file_in_index}) {
@@ -190,11 +211,13 @@ sub add {
     $self->local_index->add(@packages);
     $self->local_index()->write();
 
-    my $destination_dir = directory_for_author($author, $local, qw(authors id));
+    my $destination_dir = directory_for_author($local, qw(authors id), $author);
     $destination_dir->mkpath();  #TODO: log & error check
     copy($file, $destination_dir); #TODO: log & error check
 
     $self->rebuild_master_index()->write();
+
+    # TODO: Clean if directed
     return $self;
 }
 
@@ -204,6 +227,7 @@ sub list {
     my ($self) = @_;
 
     for my $package ( @{ $self->master_index()->packages() } ) {
+        # TODO: Report native paths instead?
         print $package->to_string(), "\n";
     }
 
@@ -216,10 +240,10 @@ sub verify {
     my ($self) = @_;
     my $local = $self->config()->{_}->{local};
 
-    for my $file ( @{ $self->master_index()->files() } ) {
-        my @parts = split m|/|, $file;
-        my $native_file = file($local, qw(authors id), @parts);
-        print "$native_file is missing\n" if not -e $native_file;
+    my @base = ($local, 'authors', 'id');
+    for my $file ( @{ $self->master_index()->files_native(@base) } ) {
+        # TODO: Report full or relative path?
+        print "$file is missing\n" if not -e $file;
     }
 
     return $self;
