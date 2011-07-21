@@ -9,27 +9,28 @@ use Path::Class;
 
 sub new {
     my ($class, %args) = @_;
-    my $config_file = _config_file(%args);
-    my $self = Config::Tiny->read($config_file);
+    my $profile = _find_profile(%args);
+    my $self = $profile ? Config::Tiny->read($profile) : {};
     return bless $self, $class;
 }
 
 #----------------------------------------------------------------------------------------------
 
-sub _config_file {
+sub _find_profile {
+    my %args = @_;
 
-    my %options = @_;
-    my $config_file = do {
-        if (defined $options{config_file} ) {
-            $options{config_file};
+    $DB::single = 1;
+    my $profile = do {
+        if (defined $args{profile} ) {
+            $args{profile};
         } elsif (defined $ENV{PINTO}) {
             $ENV{PINTO};
         }
     };
 
-    return if not defined $config_file;
-    croak "$config_file does not exist" if not -e $config_file;
-    return file($config_file);
+    return if not defined $profile;
+    croak "$profile does not exist" if not -e $profile;
+    return file($profile);
 }
 
 1;

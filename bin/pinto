@@ -12,6 +12,7 @@ sub run {
     my ($action, @args) = @_;
     my $cfg = Pinto::Config->new();
     my $pinto = Pinto->new(config => $cfg);
+    $action ||= '';
 
     if ($action eq 'upgrade') {
         $pinto->upgrade();

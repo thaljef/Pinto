@@ -1,9 +1,10 @@
-package Pinto;
+package App::Pinto;
 
 use Moose;
 
 use Pinto::Util;
 use Pinto::Index;
+use Pinto::Config;
 use Pinto::UserAgent;
 
 use Carp;
@@ -14,11 +15,31 @@ use Path::Class;
 use URI;
 
 #------------------------------------------------------------------------------
+# App::Cmd
+
+use App::Cmd::Setup -app;
+
+sub global_opt_spec {
+  return (
+    [ "verbose"   => "Log additional output" ],
+    [ "local=s"   => "Path to local repository directory"],
+    [ "profile=s" => "Path to your pinto profile" ],
+  );
+}
+
+#------------------------------------------------------------------------------
+# Moose attributes
+
+has 'profile' => (
+    is           => 'ro',
+    isa          => 'Str',
+);
 
 has 'config' => (
     is       => 'ro',
     isa      => 'Pinto::Config',
-    required => 1,
+    builder  => '_build_config',
+    lazy     => 1,
 );
 
 has '_ua'      => (
@@ -54,8 +75,17 @@ has 'master_index'  => (
 );
 
 #------------------------------------------------------------------------------
+# Roles
 
 with 'Pinto::Role::Log';
+
+#------------------------------------------------------------------------------
+# Builders
+
+sub _build_config {
+    my ($self) = @_;
+    return Pinto::Config->new(profile => $self->profile());
+}
 
 #------------------------------------------------------------------------------
 
@@ -93,8 +123,9 @@ sub __build_index {
 }
 
 #------------------------------------------------------------------------------
+# Private methods
 
-sub rebuild_master_index {
+sub _rebuild_master_index {
     my ($self) = @_;
 
     $self->master_index()->clear();
@@ -105,6 +136,7 @@ sub rebuild_master_index {
 }
 
 #------------------------------------------------------------------------------
+# Public actions
 
 sub upgrade {
     my ($self, %args) = @_;
@@ -126,7 +158,7 @@ sub upgrade {
         $changes += $self->mirror(url => $remote_uri, to => $destination);
     }
 
-    $self->rebuild_master_index()->write();
+    $self->_rebuild_master_index()->write();
 
     # TODO: Clean if directed
     return $self;
@@ -219,7 +251,7 @@ sub add {
     $destination_dir->mkpath();  #TODO: log & error check
     copy($file, $destination_dir); #TODO: log & error check
 
-    $self->rebuild_master_index()->write();
+    $self->_rebuild_master_index()->write();
 
     # TODO: Clean if directed
     return $self;
@@ -263,9 +295,4 @@ sub verify {
 
 Pinto - The personal Perl archive manager
 
-# George's request:
-Find out drop-dead date on contract.
-
 =cut
-
-
