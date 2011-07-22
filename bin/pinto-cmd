@@ -1,5 +1,0 @@
-use strict;
-use warnings;
-
-use App::Pinto;
-App::Pinto->run();

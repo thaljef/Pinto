@@ -1,49 +1,5 @@
-#!/usr/bin/env perl
-
 use strict;
 use warnings;
 
-use Pinto;
-use Pinto::Config;
-
-exit run(@ARGV) if not caller;
-
-sub run {
-    my ($action, @args) = @_;
-    my $cfg = Pinto::Config->new();
-    my $pinto = Pinto->new(config => $cfg);
-    $action ||= '';
-
-    if ($action eq 'upgrade') {
-        $pinto->upgrade();
-    }
-    elsif ($action eq 'add') {
-        $pinto->add(file => $_) for @args;
-    }
-    elsif ($action eq 'list') {
-        $pinto->list();
-    }
-    elsif ($action eq 'remove') {
-        $pinto->remove(package => $_) for @args;
-    }
-    elsif ($action eq 'clean') {
-        $pinto->clean();
-    }
-    elsif ($action eq 'verify') {
-        $pinto->verify();
-    }
-    else {
-        die "USAGE: pinto add|clean|list|remove|upgrade|verify\n";
-    }
-
-    return 0;
-}
-
-__END__
-
-=pod
-
-
-=cut
-
-
+use App::Pinto;
+App::Pinto->run();

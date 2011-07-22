@@ -19,7 +19,8 @@ sub opt_spec {
 
 sub validate_args {
     my ($self, $opt, $args) = @_;
-    $self->usage_error("Must specify one or more file arguments") unless @{ $args };
+    $self->usage_error("Must specify one or more file arguments")
+      if not @{ $args };
 }
 
 #------------------------------------------------------------------------------
@@ -31,6 +32,8 @@ sub execute {
     $self->pinto()->clean() unless $self->config()->{_}->{noclean};
     return 0;
 }
+
+#------------------------------------------------------------------------------
 
 1;
 

@@ -19,6 +19,9 @@ sub opt_spec {
 
 sub validate_args {
     my ($self, $opt, $args) = @_;
+
+    $self->usage_error('Arguments are not allowed') if @{ $args };
+
     my $requested_type = $opt->{type} || 'MASTER';
     my %valid_types = map { $_ => 1 } qw(MASTER LOCAL REMOTE);
     $self->usage_error('--index is one of ' . join '|', sort keys %valid_types)
