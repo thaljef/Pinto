@@ -1,7 +1,13 @@
 package Pinto::Package;
 
+# ABSTRACT: Represents a single record in the 02packages.details.txt file
+
 use Moose;
 use Path::Class::File;
+
+#------------------------------------------------------------------------------
+
+# VERSION
 
 #------------------------------------------------------------------------------
 

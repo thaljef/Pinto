@@ -1,5 +1,7 @@
 package Pinto::Util::Svn;
 
+# ABSTRACT: Utility functions for working with Subversion
+
 use strict;
 use warnings;
 
@@ -10,11 +12,26 @@ use File::Basename qw(dirname);
 use File::Glob qw(bsd_glob);
 use List::MoreUtils qw(all);
 
-#--------------------------------------------------------------------------
 
 use base 'Exporter';
 
-our @EXPORT_OK = qw(svn_mkdir svn_ls svn_add svn_delete svn_commit svn_tag svn_schedule svn_checkout);
+#--------------------------------------------------------------------------
+
+# VERSION
+
+#--------------------------------------------------------------------------
+
+our @EXPORT_OK = qw(
+    svn_mkdir
+    svn_ls
+    svn_add
+    svn_delete
+    svn_commit
+    svn_tag
+    svn_schedule
+    svn_checkout
+);
+
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 #--------------------------------------------------------------------------
@@ -204,3 +221,7 @@ sub _svn {
 }
 
 #--------------------------------------------------------------------------
+
+1;
+
+__END__

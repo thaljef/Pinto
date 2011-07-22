@@ -9,6 +9,10 @@ use parent 'Pinto';
 use App::Cmd::Setup -app;
 
 #------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
 #
 # TODO: Consider moose-ifying this class
 #
@@ -29,10 +33,6 @@ sub global_opt_spec {
 __END__
 
 =pod
-
-=head1 SYNOPSIS
-
-  pinto [global-options] COMMAND [command-options] [ARGS]
 
 =head1 DESCRIPTION
 

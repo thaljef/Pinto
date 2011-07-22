@@ -1,10 +1,16 @@
 package Pinto::UserAgent;
 
+# ABSTRACT: Thin wrapper around LWP::UserAgent
+
 use Moose;
 
 use Carp;
 use Path::Class;
 use LWP::UserAgent;
+
+#------------------------------------------------------------------------------
+
+# VERSION
 
 #------------------------------------------------------------------------------
 

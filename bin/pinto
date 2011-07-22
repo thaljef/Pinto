@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 # ABSTRACT: Command-line utility for Pinto
+# PODNAME: pinto
 
 use strict;
 use warnings;

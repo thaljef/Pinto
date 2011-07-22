@@ -1,5 +1,7 @@
 package Pinto::Index;
 
+# ABSTRACT: Represents an 02packages.details.txt file
+
 use Moose;
 use Moose::Autobox;
 use MooseX::Types::Path::Class;
@@ -11,6 +13,10 @@ use Path::Class qw();
 use Pinto::Package;
 
 use overload ('+' => '__plus', '-' => '__minus');
+
+#------------------------------------------------------------------------------
+
+# VERSION
 
 #------------------------------------------------------------------------------
 
@@ -309,5 +315,6 @@ sub __minus {
 
 #------------------------------------------------------------------------------
 
-
 1;
+
+__END__
