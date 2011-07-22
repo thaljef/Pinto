@@ -18,7 +18,10 @@ use Path::Class;
 sub new {
     my ($class, %args) = @_;
     my $profile = _find_profile(%args);
-    my $self = $profile ? Config::Tiny->read($profile) : {};
+
+    croak "$profile does not exist" if defined $profile and not -e $profile;
+
+    my $self = $profile ? Config::Tiny->read( file($profile) ) : {};
     return bless $self, $class;
 }
 
@@ -26,19 +29,9 @@ sub new {
 
 sub _find_profile {
     my %args = @_;
-
-    $DB::single = 1;
-    my $profile = do {
-        if (defined $args{profile} ) {
-            $args{profile};
-        } elsif (defined $ENV{PINTO}) {
-            $ENV{PINTO};
-        }
-    };
-
-    return if not defined $profile;
-    croak "$profile does not exist" if not -e $profile;
-    return file($profile);
+    return $args{profile} if defined $args{profile};
+    return $ENV{PINTO} if defined $ENV{PINTO};
+    return undef;
 }
 
 #-------------------------------------------------------------------------------
