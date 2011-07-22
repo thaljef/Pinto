@@ -1,5 +1,7 @@
 package App::Pinto::Command::add;
 
+# ABSTRACT: Add your own Perl archive to the repository
+
 use strict;
 use warnings;
 
@@ -8,6 +10,10 @@ use warnings;
 use base 'App::Pinto::Command';
 
 #------------------------------------------------------------------------------
+
+# VERSION
+
+#-----------------------------------------------------------------------------
 
 sub opt_spec {
     return (

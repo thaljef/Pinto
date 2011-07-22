@@ -1,9 +1,12 @@
-package Pinto;
+package App::Pinto;
+
+# ABSTRACT: Perl archive repository manager
 
 use Moose;
 
 use Pinto::Util;
 use Pinto::Index;
+use Pinto::Config;
 use Pinto::UserAgent;
 
 use Carp;
@@ -15,10 +18,21 @@ use URI;
 
 #------------------------------------------------------------------------------
 
+# VERSION
+
+#------------------------------------------------------------------------------
+# Moose attributes
+
+has 'profile' => (
+    is           => 'ro',
+    isa          => 'Str',
+);
+
 has 'config' => (
     is       => 'ro',
     isa      => 'Pinto::Config',
-    required => 1,
+    builder  => '_build_config',
+    lazy     => 1,
 );
 
 has '_ua'      => (
@@ -54,8 +68,17 @@ has 'master_index'  => (
 );
 
 #------------------------------------------------------------------------------
+# Roles
 
 with 'Pinto::Role::Log';
+
+#------------------------------------------------------------------------------
+# Builders
+
+sub _build_config {
+    my ($self) = @_;
+    return Pinto::Config->new(profile => $self->profile());
+}
 
 #------------------------------------------------------------------------------
 
@@ -93,8 +116,9 @@ sub __build_index {
 }
 
 #------------------------------------------------------------------------------
+# Private methods
 
-sub rebuild_master_index {
+sub _rebuild_master_index {
     my ($self) = @_;
 
     $self->master_index()->clear();
@@ -105,8 +129,9 @@ sub rebuild_master_index {
 }
 
 #------------------------------------------------------------------------------
+# Public actions
 
-sub upgrade {
+sub update {
     my ($self, %args) = @_;
 
     my $local  = $args{local}  || $self->config()->{_}->{local};
@@ -126,7 +151,7 @@ sub upgrade {
         $changes += $self->mirror(url => $remote_uri, to => $destination);
     }
 
-    $self->rebuild_master_index()->write();
+    $self->_rebuild_master_index()->write();
 
     # TODO: Clean if directed
     return $self;
@@ -219,7 +244,7 @@ sub add {
     $destination_dir->mkpath();  #TODO: log & error check
     copy($file, $destination_dir); #TODO: log & error check
 
-    $self->rebuild_master_index()->write();
+    $self->_rebuild_master_index()->write();
 
     # TODO: Clean if directed
     return $self;
@@ -257,15 +282,4 @@ sub verify {
 
 1;
 
-=pod
-
-=head1 NAME
-
-Pinto - The personal Perl archive manager
-
-# George's request:
-Find out drop-dead date on contract.
-
-=cut
-
-
+__END__

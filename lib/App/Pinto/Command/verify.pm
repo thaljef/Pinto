@@ -1,5 +1,7 @@
 package App::Pinto::Command::verify;
 
+# ABSTRACT: Verify that all the indexed archives are present
+
 use strict;
 use warnings;
 
@@ -8,6 +10,11 @@ use warnings;
 use base 'App::Pinto::Command';
 
 #------------------------------------------------------------------------------
+
+# VERSION
+
+#-----------------------------------------------------------------------------
+
 
 sub validate_args {
     my ($self, $opt, $args) = @_;

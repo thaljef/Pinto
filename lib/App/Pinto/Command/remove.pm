@@ -1,11 +1,17 @@
 package App::Pinto::Command::remove;
 
+# ABSTRACT: Remove your own packages from the repository
+
 use strict;
 use warnings;
 
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Command';
+
+#------------------------------------------------------------------------------
+
+# VERSION
 
 #------------------------------------------------------------------------------
 

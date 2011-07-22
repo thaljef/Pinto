@@ -1,4 +1,6 @@
-package App::Pinto::Command::upgrade;
+package App::Pinto::Command::update;
+
+# ABSTRACT: Fill your repository with the latest archives from a CPAN mirror
 
 use strict;
 use warnings;
@@ -6,6 +8,10 @@ use warnings;
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Command';
+
+#------------------------------------------------------------------------------
+
+# VERSION
 
 #------------------------------------------------------------------------------
 
@@ -27,7 +33,7 @@ sub validate_args {
 sub execute {
     $DB::single = 1;
     my ($self, $opts, $args) = @_;
-    $self->pinto()->upgrade(remote => $opts->{remote});
+    $self->pinto()->update(remote => $opts->{remote});
     $self->pinto()->clean() unless $self->config()->{_}->{noclean};
     return 0;
 }
