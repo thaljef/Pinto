@@ -30,7 +30,7 @@ sub new {
 sub _find_profile {
     my %args = @_;
     return $args{profile} if defined $args{profile};
-    return $ENV{PINTO} if defined $ENV{PINTO};
+    return $ENV{PINTO}    if defined $ENV{PINTO};
     return undef;
 }
 
