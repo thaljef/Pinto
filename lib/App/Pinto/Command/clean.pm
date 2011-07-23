@@ -1,6 +1,6 @@
 package App::Pinto::Command::clean;
 
-# ABSTRACT: Clean files that are no longer in the index
+# ABSTRACT: delete archives that are not in the index
 
 use strict;
 use warnings;

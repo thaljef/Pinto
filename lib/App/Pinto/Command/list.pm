@@ -1,6 +1,6 @@
 package App::Pinto::Command::list;
 
-# ABSTRACT: List the contents of the repository
+# ABSTRACT: list the contents of the repository
 
 use strict;
 use warnings;

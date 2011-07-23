@@ -1,6 +1,6 @@
 package App::Pinto::Command::update;
 
-# ABSTRACT: Get the latest archives from a CPAN mirror
+# ABSTRACT: get the latest archives from a CPAN mirror
 
 use strict;
 use warnings;
