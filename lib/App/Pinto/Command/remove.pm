@@ -23,6 +23,14 @@ sub opt_spec {
 
 #------------------------------------------------------------------------------
 
+sub usage_desc {
+    my ($self) = @_;
+    my ($command) = $self->command_names();
+    return "%c [global options] $command [command options] PACKAGE [PACKAGE...]";
+}
+
+#------------------------------------------------------------------------------
+
 sub validate_args {
     my ($self, $opt, $args) = @_;
     $self->usage_error("Must specify one or more package arguments") unless @{ $args };

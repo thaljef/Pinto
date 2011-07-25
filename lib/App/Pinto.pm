@@ -23,6 +23,12 @@ sub global_opt_spec {
 
 #------------------------------------------------------------------------------
 
+sub usage_desc {
+    return '%c [global options] <command>';
+}
+
+#------------------------------------------------------------------------------
+
 sub pinto {
     my ($self) = @_;
 
@@ -30,7 +36,7 @@ sub pinto {
     require Pinto::Config;
 
     return $self->{pinto} ||= do {
-        my %global_options = $self->global_options();
+        my %global_options = %{ $self->global_options() };
         my $config = Pinto::Config->new(%global_options);
         my $pinto = Pinto->new(config => $config);
     };
