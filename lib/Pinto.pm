@@ -185,7 +185,7 @@ Creates a new empty repoistory
 sub create {
     my ($self, %args) = @_;
 
-    $self->local_index()->write();
+    $self->_rebuild_master_index();
 
     return $self;
 }

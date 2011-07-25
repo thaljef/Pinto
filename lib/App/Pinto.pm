@@ -5,17 +5,12 @@ package App::Pinto;
 use strict;
 use warnings;
 
-use parent 'Pinto';
 use App::Cmd::Setup -app;
 
 #------------------------------------------------------------------------------
 
 # VERSION
 
-#------------------------------------------------------------------------------
-#
-# TODO: Consider moose-ifying this class
-#
 #------------------------------------------------------------------------------
 
 sub global_opt_spec {
@@ -24,6 +19,21 @@ sub global_opt_spec {
     [ "local=s"   => "Path to local repository directory"],
     [ "profile=s" => "Path to your pinto profile" ],
   );
+}
+
+#------------------------------------------------------------------------------
+
+sub pinto {
+    my ($self) = @_;
+
+    require Pinto;
+    require Pinto::Config;
+
+    return $self->{pinto} ||= do {
+        my %global_options = $self->global_options();
+        my $config = Pinto::Config->new(%global_options);
+        my $pinto = Pinto->new(config => $config);
+    };
 }
 
 #------------------------------------------------------------------------------
