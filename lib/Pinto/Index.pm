@@ -20,10 +20,6 @@ use overload ('+' => '__plus', '-' => '__minus');
 
 #------------------------------------------------------------------------------
 
-with 'Pinto::Role::Log';
-
-#------------------------------------------------------------------------------
-
 has 'packages_by_name' => (
     is         => 'ro',
     isa        => 'HashRef',
@@ -62,7 +58,7 @@ sub read  {
     my ($self, %args) = @_;
 
     my $file = $args{file} || $self->file()
-        or $self->log()->logcroak("This index has no file attribute, so you must specify one");
+        or croak "This index has no file attribute, so you must specify one";
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
@@ -95,7 +91,7 @@ sub write {
     # TODO: Accept a file handle argument
 
     my $file = $args{file} || $self->file()
-        or $self->log()->logcroak('This index has no file attribute, so you must specify one');
+        or croak 'This index has no file attribute, so you must specify one';
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
@@ -268,13 +264,13 @@ sub validate {
     for my $package ( $self->packages_by_file()->values()->map( sub {@{$_[0]}} )->flatten() ) {
         my $name = $package->name();
         $self->packages_by_name->exists($name)
-            or $self->log->logcroak("Validation of package $name failed");
+            or croak "Validation of package $name failed";
     }
 
     for my $package ( $self->packages_by_name()->values()->flatten() ) {
         my $file = $package->file();
         $self->packages_by_file->exists($file)
-            or $self->log->logcroak("Validation of file $file failed");
+            or croak("Validation of file $file failed";
     }
 
     return $self;
