@@ -40,10 +40,9 @@ sub validate_args {
 #------------------------------------------------------------------------------
 
 sub execute {
-    $DB::single = 1;
     my ($self, $opts, $args) = @_;
     $self->pinto()->add(author => $opts->{author}, file => $_) for @{ $args };
-    $self->pinto()->clean() unless $self->config()->{_}->{noclean};
+    $self->pinto()->clean() unless $self->pinto()->config()->get('nocleanup');
     return 0;
 }
 

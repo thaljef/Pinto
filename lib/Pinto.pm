@@ -23,33 +23,17 @@ use URI;
 #------------------------------------------------------------------------------
 # Moose attributes
 
-=attr profile
-
-Returns the path to your L<Pinto> configuration file.  If you do not
-specify one through the constructor, then we look at C<$ENV{PINTO}>,
-then F<~/.pinto/config.ini>.  If the config file does not exist in any
-of those locations, then you'll get an empty config.
-
-=cut
-
-has 'profile' => (
-    is           => 'ro',
-    isa          => 'Str',
-);
-
 =attr config
 
-Returns the L<Pinto::Config> object for this Pinto.  You may provide
-one through the constructor.  Otherwise one will be created from the
-file specified by the C<profile> attribute.
+Returns the L<Pinto::Config> object for this Pinto.  You must provide
+one through the constructor.
 
 =cut
 
 has 'config' => (
     is       => 'ro',
     isa      => 'Pinto::Config',
-    builder  => '_build_config',
-    lazy     => 1,
+    required => 1,
 );
 
 has '_ua'      => (
@@ -64,15 +48,15 @@ has '_ua'      => (
 
 Returns the L<Pinto::Index> that represents our copy of the
 F<02packages> file from a CPAN mirror (or possibly another Pinto
-repository).  This index will include all the packages on the mirror,
-except those that you've chosen to deliberately filter out.
+repository).  This index will include the latest versions of all the
+packages on the mirror.
 
 =cut
 
 has 'remote_index' => (
     is             => 'ro',
     isa            => 'Pinto::Index',
-    builder        => '_build_remote_index',
+    builder        => '__build_remote_index',
     init_arg       => undef,
     lazy           => 1,
 );
@@ -88,7 +72,7 @@ you've locally added to the repository.
 has 'local_index'   => (
     is              => 'ro',
     isa             => 'Pinto::Index',
-    builder         => '_build_local_index',
+    builder         => '__build_local_index',
     init_arg        => undef,
     lazy            => 1,
 );
@@ -104,7 +88,7 @@ section below for information on how the indexes are combined.
 has 'master_index'  => (
     is              => 'ro',
     isa             => 'Pinto::Index',
-    builder         => '_build_master_index',
+    builder         => '__build_master_index',
     init_arg        => undef,
     lazy            => 1,
 );
@@ -117,14 +101,7 @@ with 'Pinto::Role::Log';
 #------------------------------------------------------------------------------
 # Builders
 
-sub _build_config {
-    my ($self) = @_;
-    return Pinto::Config->new(profile => $self->profile());
-}
-
-#------------------------------------------------------------------------------
-
-sub _build_remote_index {
+sub __build_remote_index {
     my ($self) = @_;
 
     return $self->__build_index(file => '02packages.details.remote.txt.gz');
@@ -132,7 +109,7 @@ sub _build_remote_index {
 
 #------------------------------------------------------------------------------
 
-sub _build_local_index {
+sub __build_local_index {
     my ($self) = @_;
 
     return $self->__build_index(file => '02packages.details.local.txt.gz');
@@ -140,7 +117,7 @@ sub _build_local_index {
 
 #------------------------------------------------------------------------------
 
-sub _build_master_index {
+sub __build_master_index {
     my ($self) = @_;
 
     return $self->__build_index(file => '02packages.details.txt.gz');
@@ -151,7 +128,7 @@ sub _build_master_index {
 sub __build_index {
     my ($self, %args) = @_;
 
-    my $local = $self->config()->{_}->{local};
+    my $local = $self->config()->get_required('local');
     my $index_file = file($local, 'modules', $args{file});
 
     return Pinto::Index->new(file => $index_file);
@@ -163,9 +140,13 @@ sub __build_index {
 sub _rebuild_master_index {
     my ($self) = @_;
 
-    $self->log()->debug("Rebuilding master index");
 
+    # Do this first, to kick lazy builders which also causes
+    # validation on the configuration.  Then we can log...
     $self->master_index()->clear();
+
+    $self->log()->debug("Building master index");
+
     $self->master_index()->add( @{$self->remote_index()->packages()} );
     $self->master_index()->merge( @{$self->local_index()->packages()} );
 
@@ -175,15 +156,16 @@ sub _rebuild_master_index {
 }
 
 #------------------------------------------------------------------------------
+# Public methods
 
-=method create(local => 'path/to/local/repository')
+=method create()
 
-Creates a new empty repoistory
+Creates a new empty repoistory.
 
 =cut
 
 sub create {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
     $self->_rebuild_master_index();
 
@@ -192,22 +174,25 @@ sub create {
 
 #------------------------------------------------------------------------------
 
-=method update(local => 'path/to/local/repository', remote => 'http://cpan-mirror')
+=method update(remote => 'http://cpan-mirror')
 
-Loads your repository with the latest version of all packages found on
-the CPAN mirror.
+Populates your repository with the latest version of all packages
+found on the CPAN mirror.  Your locally added packages will always
+override those on the mirror.
 
 =cut
 
 sub update {
     my ($self, %args) = @_;
 
-    my $local  = $args{local}  || $self->config()->{_}->{local};
-    my $remote = $args{remote} || $self->config()->{_}->{remote};
+    my $local  = $args{local}  || $self->config()->get_required('local');
+    my $remote = $args{remote} || $self->config()->get_required('remote');
 
     my $remote_index_uri = URI->new("$remote/modules/02packages.details.txt.gz");
     $self->mirror(url => $remote_index_uri, to => $self->remote_index()->file());
     $self->remote_index()->reload();
+
+    # TODO: Stop now if index has not changed, unless -force option is given.
 
     my $changes = 0;
     my $mirrorable_index = $self->remote_index() - $self->local_index();
@@ -218,6 +203,7 @@ sub update {
         my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
         my $changed = $self->mirror(url => $remote_uri, to => $destination);
         $self->log->info("Updated $file") if $changed;
+        $changes += $changed;
     }
 
     $self->_rebuild_master_index();
@@ -227,7 +213,7 @@ sub update {
 
 #------------------------------------------------------------------------------
 
-=method add(local => 'path/to/local/repository', author => 'YOUR_ID', file => 'YourDist.tar.gz')
+=method add(author => 'YOUR_ID', file => 'YourDist.tar.gz')
 
 Adds your own Perl archive to the repository.  This could be a
 proprietary or personal archive, or it could be a patched version of
@@ -240,26 +226,44 @@ CPAN mirror.
 sub add {
     my ($self, %args) = @_;
 
-    my $local  = $args{local}  || $self->config()->{_}->{local};
-    my $author = $args{author} || $self->config()->{_}->{author};
-    my $file   = $args{file};
+    my $local  = $args{local}  || $self->config->get_required('local');
+    my $author = $args{author} || $self->config->get_required('author');
+    my $file   = $args{file}   or croak 'Must specify a file argument';
 
     $file = file($file) if not eval { $file->isa('Path::Class::File') };
 
-    my $distmeta = Dist::Metadata->new(file => $file);
-    my $provides = $distmeta->package_versions();
-
+    $DB::single = 1;
     my $author_dir    = Pinto::Util::directory_for_author($author);
     my $file_in_index = file($author_dir, $file->basename())->as_foreign('Unix');
 
     if (my $existing_file = $self->local_index()->packages_by_file->{$file_in_index}) {
-        croak "File '$file_in_index' already exists in the local index";
+        croak "File $file_in_index already exists in the local index";
     }
 
+    # Dist::Metadata will croak for us if $file is whack!
+    my $distmeta = Dist::Metadata->new(file => $file);
+    my $provides = $distmeta->package_versions();
+    return if not %{ $provides };
+
+
+
+    my @conflicts = ();
+    for my $package_name (keys %{ $provides }) {
+        if ( my $incumbent_package = $self->local_index()->packages_by_name()->{$package_name} ) {
+            my $incumbent_author = $incumbent_package->author();
+            push @conflicts, "Package $package_name is already owned by $incumbent_author\n"
+                if $incumbent_author ne $author;
+        }
+    }
+    die @conflicts if @conflicts;
+
+
     my @packages = ();
-    while( my ($pkg, $ver) = each %{ $provides } ){
-        $self->log->info("Adding $pkg $ver");
-        push @packages, Pinto::Package->new(name => $pkg, version => $ver, file => "$file_in_index");
+    while( my ($package_name, $version) = each %{ $provides } ) {
+        $self->log->info("Adding $package_name $version");
+        push @packages, Pinto::Package->new(name => $package_name,
+                                            version => $version,
+                                            file => "$file_in_index");
     }
 
     $self->local_index->add(@packages);
@@ -276,7 +280,7 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method remove(local => 'path/to/local/repository', author => 'YOUR_ID', package => 'Some::Package')
+=method remove(author => 'YOUR_ID', package => 'Some::Package')
 
 Removes packages from the local index.  When a package is removed, all
 other packages that were contained in the same archive are also
@@ -288,16 +292,28 @@ package.
 sub remove {
     my ($self, %args) = @_;
 
-    my $local   = $args{local}  || $self->config()->{_}->{local};
-    my $package = $args{package};
+    my $local  = $args{local}  || $self->config()->get_required('local');
+    my $author = $args{author} || $self->config()->get_required('author');
+    my $package_name = $args{package} or croak 'Must specify a package argument';
 
-    # TODO: Only allow authors to remove their own packages
+    my $incumbent_package = $self->local_index()->packages_by_name->{$package_name};
 
-    my @local_removed = $self->local_index()->remove($package);
+    if ($incumbent_package) {
+        my $incumbent_author = $incumbent_package->author();
+        die "Only author $incumbent_author can remove package $package_name.\n"
+            if $incumbent_author ne $author;
+    }
+    else {
+        $self->log()->info("$package_name is not in the local index");
+    }
+
+    # TODO: Log only after writing the index, in case of error.
+
+    my @local_removed = $self->local_index()->remove($package_name);
     $self->log->info("Removed $_ from local index") for @local_removed;
     $self->local_index()->write();
 
-    my @master_removed = $self->master_index()->remove($package);
+    my @master_removed = $self->master_index()->remove($package_name);
     $self->log->info("Removed $_ from master index") for @master_removed;
     $self->master_index()->write();
 
@@ -309,23 +325,26 @@ sub remove {
 
 #------------------------------------------------------------------------------
 
-=method clean(local => 'path/to/local/repository')
+=method clean()
 
 Deletes any archives in the repository that are not currently
-represented in the master index.  You'll usually want to run this
+represented in the master index.  You will usually want to run this
 after performing an C<"update">, C<"add">, or C<"remove"> operation.
 
 =cut
 
 sub clean {
     my ($self, %args) = @_;
-    my $local = $args{local} || $self->config()->{_}->{local};
+
+    my $local = $args{local} || $self->config()->get_required('local');
+
     my $base_dir = dir($local, qw(authors id));
+    return if not -e $base_dir;
 
     my $wanted = sub {
         $DB::single = 1;
         my $physical_file = file($File::Find::name);
-        my $logical_file  = $physical_file->relative($base_dir)->as_foreign('Unix');
+        my $index_file  = $physical_file->relative($base_dir)->as_foreign('Unix');
 
         # TODO: Can we just use $_ instead of calling basename() ?
         if (Pinto::Util::is_source_control_file( $physical_file->basename() )) {
@@ -334,8 +353,8 @@ sub clean {
         }
 
         return if not -f $physical_file;
-        return if exists $self->master_index()->packages_by_file()->{$logical_file};
-        $self->log()->info("Cleaning $logical_file"); # TODO: report as physical file instead?
+        return if exists $self->master_index()->packages_by_file()->{$index_file};
+        $self->log()->info("Cleaning $index_file"); # TODO: report as physical file instead?
         $physical_file->remove(); # TODO: Error check!
     };
 
@@ -347,7 +366,7 @@ sub clean {
 
 #------------------------------------------------------------------------------
 
-=method list(local => 'path/to/local/repository')
+=method list()
 
 Prints a listing of all the packages and archives in the master index.
 This is basically what the F<02packages> file looks like.
@@ -367,7 +386,7 @@ sub list {
 
 #------------------------------------------------------------------------------
 
-=method verify(local => 'path/to/local/repository')
+=method verify()
 
 Prints a listing of all the archives that are in the master index, but
 are not present in the repository.  This is usually a sign that things
@@ -376,12 +395,13 @@ have gone wrong.
 =cut
 
 sub verify {
-    my ($self) = @_;
-    my $local = $self->config()->{_}->{local};
+    my ($self, %args) = @_;
+
+    my $local = $args{local} || $self->config()->get_required('local');
 
     my @base = ($local, 'authors', 'id');
     for my $file ( @{ $self->master_index()->files_native(@base) } ) {
-        # TODO: Report full or relative path?
+        # TODO: Report absolute or relative path?
         print "$file is missing\n" if not -e $file;
     }
 

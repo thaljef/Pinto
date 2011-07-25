@@ -15,9 +15,11 @@ use App::Cmd::Setup -app;
 
 sub global_opt_spec {
   return (
-    [ "verbose"   => "Log additional output" ],
-    [ "local=s"   => "Path to local repository directory"],
-    [ "profile=s" => "Path to your pinto profile" ],
+    [ "local=s"     => "Path to local repository directory"],
+    [ "loglevel=s"  => "Set the amount of noise (debug|info|warn)" ],
+    [ "nocleanup"   => "Do not clean repository after each action" ],
+    [ "profile=s"   => "Path to your pinto profile" ],
+
   );
 }
 
@@ -28,6 +30,7 @@ sub usage_desc {
 }
 
 #------------------------------------------------------------------------------
+
 
 sub pinto {
     my ($self) = @_;

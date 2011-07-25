@@ -42,7 +42,7 @@ sub execute {
     $DB::single = 1;
     my ($self, $opts, $args) = @_;
     $self->pinto()->remove(author => $opts->{author}, package => $_) for @{ $args };
-    $self->pinto()->clean() unless $self->config()->{_}->{noclean};
+    $self->pinto()->clean() unless $self->pinto()->config()->get('nocleanup');
     return 0;
 }
 

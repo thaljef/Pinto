@@ -169,13 +169,6 @@ sub add {
     for my $package (@packages) {
         my $name = $package->name();
         my $author = $package->author();
-
-        if ( my $incumbent = $self->packages_by_name()->at($name) ) {
-            my $incumbent_author = $incumbent->author();
-            $self->log()->logcroak("Package $name is already owned by $incumbent_author")
-                if $incumbent_author ne $author;
-        }
-
         $self->put($package);
     }
 

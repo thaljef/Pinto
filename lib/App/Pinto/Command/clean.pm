@@ -25,7 +25,7 @@ sub validate_args {
 sub execute {
     $DB::single = 1;
     my ($self, $opts, $args) = @_;
-    $self->pinto()->list();
+    $self->pinto()->clean();
     return 0;
 }
 
