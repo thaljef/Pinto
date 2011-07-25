@@ -7,11 +7,8 @@ use warnings;
 
 use Carp qw(croak);
 use IPC::Cmd 0.72 qw(run can_run);
-use File::Spec::Functions qw(catdir catfile no_upwards);
-use File::Basename qw(dirname);
-use File::Glob qw(bsd_glob);
-use List::MoreUtils qw(all);
-
+use List::MoreUtils qw(any);
+use Path::Class;
 
 use base 'Exporter';
 
@@ -130,14 +127,15 @@ sub svn_add {
 
 sub svn_delete {
     my %args  = @_;
-    my $path  = $args{path};
+    my $path  = file($args{path});
     my $prune = $args{prune};
 
     _svn( command => ['rm', $path] );
 
     if($prune) {
-        my $dir = dirname($path);
+        my $dir = $path->dir();
         if ( _all_scheduled_for_deletion( directory => $dir) ) {
+
             svn_delete(path => $dir, prune => 1);
         }
     }
@@ -186,19 +184,22 @@ sub _is_svn_working_copy {
     my %args = @_;
     my $directory = $args{directory};
 
-    return -e catdir($directory, '.svn');
+    return -e dir($directory, '.svn');
 }
 
 #--------------------------------------------------------------------------
 
 sub _all_scheduled_for_deletion {
     my %args      = @_;
-    my $directory = $args{directory};
+    my $directory = dir($args{directory});
 
-    my $buffer = '';
-    _svn(command => ['status', $directory], buffer => \$buffer);
+    for my $child ($directory->children()) {
+        next if $child->basename() eq '.svn';
+        _svn(command => ['status', $child], buffer => \my $buffer);
+        return 0 if !$buffer or $buffer =~ m/^[^D]/m;
+    }
 
-    return all { /^D/ } split /\n/, $buffer;
+    return 1;
 }
 
 #--------------------------------------------------------------------------

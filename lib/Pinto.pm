@@ -14,6 +14,7 @@ use File::Copy;
 use File::Find;
 use Dist::MetaData;
 use Path::Class;
+use Class::Load;
 use URI;
 
 #------------------------------------------------------------------------------
@@ -34,6 +35,14 @@ has 'config' => (
     is       => 'ro',
     isa      => 'Pinto::Config',
     required => 1,
+);
+
+has '_store' => (
+    is       => 'ro',
+    isa      => 'Pinto::Store',
+    builder  => '__build_store',
+    init_arg => undef,
+    lazy     => 1,
 );
 
 has '_ua'      => (
@@ -130,8 +139,20 @@ sub __build_index {
 
     my $local = $self->config()->get_required('local');
     my $index_file = file($local, 'modules', $args{file});
+    $self->log->debug("Reading index $index_file");
 
     return Pinto::Index->new(file => $index_file);
+}
+
+#------------------------------------------------------------------------------
+
+sub __build_store {
+   my ($self) = @_;
+
+   my $store_class = $self->config()->get('store_class') || 'Pinto::Store';
+   Class::Load::load_class($store_class);
+
+   return $store_class->new( config => $self->config() );
 }
 
 #------------------------------------------------------------------------------
@@ -167,7 +188,11 @@ Creates a new empty repoistory.
 sub create {
     my ($self) = @_;
 
+    $self->_store()->initialize();
+
     $self->_rebuild_master_index();
+
+    $self->_store()->finalize(message => 'Created new Pinto');
 
     return $self;
 }
@@ -226,13 +251,14 @@ CPAN mirror.
 sub add {
     my ($self, %args) = @_;
 
+    $self->_store()->initialize();
+
     my $local  = $args{local}  || $self->config->get_required('local');
     my $author = $args{author} || $self->config->get_required('author');
     my $file   = $args{file}   or croak 'Must specify a file argument';
 
     $file = file($file) if not eval { $file->isa('Path::Class::File') };
 
-    $DB::single = 1;
     my $author_dir    = Pinto::Util::directory_for_author($author);
     my $file_in_index = file($author_dir, $file->basename())->as_foreign('Unix');
 
@@ -275,6 +301,8 @@ sub add {
 
     $self->_rebuild_master_index();
 
+    $self->_store->finalize(message => 'Added stuff');
+
     return $self;
 }
 
@@ -291,6 +319,8 @@ package.
 
 sub remove {
     my ($self, %args) = @_;
+
+    $self->_store()->initialize();
 
     my $local  = $args{local}  || $self->config()->get_required('local');
     my $author = $args{author} || $self->config()->get_required('author');
@@ -320,6 +350,8 @@ sub remove {
     # Do not rebuild master index after removing packages,
     # or else the packages from the remote index will appear.
 
+    $self->_store()->finalize(message => 'Removed stuff');
+
     return $self;
 }
 
@@ -336,13 +368,15 @@ after performing an C<"update">, C<"add">, or C<"remove"> operation.
 sub clean {
     my ($self, %args) = @_;
 
+    $self->_store()->initialize();
+
     my $local = $args{local} || $self->config()->get_required('local');
 
     my $base_dir = dir($local, qw(authors id));
     return if not -e $base_dir;
 
     my $wanted = sub {
-        $DB::single = 1;
+
         my $physical_file = file($File::Find::name);
         my $index_file  = $physical_file->relative($base_dir)->as_foreign('Unix');
 
@@ -360,6 +394,9 @@ sub clean {
 
     # TODO: Consider using Path::Class::Dir->recurse() instead;
     File::Find::find($wanted, $base_dir);
+
+    $DB::single=1;
+    $self->_store()->finalize(message => 'Cleaned stuff');
 
     return $self;
 }

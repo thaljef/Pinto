@@ -270,7 +270,7 @@ sub validate {
     for my $package ( $self->packages_by_name()->values()->flatten() ) {
         my $file = $package->file();
         $self->packages_by_file->exists($file)
-            or croak("Validation of file $file failed";
+            or croak "Validation of file $file failed";
     }
 
     return $self;
