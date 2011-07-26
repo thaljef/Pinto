@@ -15,17 +15,20 @@ use App::Cmd::Setup -command;
 
 #-----------------------------------------------------------------------------
 
+=method pinto()
+
+Returns the Pinto object for this command.  Basically an alias for
+
+  $self->app();
+
+=cut
+
 sub pinto {
   return $_[0]->app()->pinto();
 }
 
 #-----------------------------------------------------------------------------
 
-sub config {
-    return $_[0]->app()->config();
-}
-
-#-----------------------------------------------------------------------------
 
 1;
 
