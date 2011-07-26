@@ -479,12 +479,15 @@ the API documentation is purely for my own reference.  But this
 document does explain what Pinto does and why it exists, so feel free
 to read on anyway.
 
+This is a work in progress.  Comments, criticisms, and suggestions
+are always welcome.  Feel free to contact C<thaljef@cpan.org>.
+
 =head1 TERMINOLOGY
 
 Some of the terms around CPAN are frequently misused.  So for the
-purpose of this document, I'm going to define some terms.  I'm not
+purpose of this document, I am going to define some terms.  I am not
 saying that these are necessarily the "correct" definitions, but
-I think they are pretty reasonable.
+this is what I mean when I use them.
 
 =over 4
 
@@ -507,7 +510,7 @@ a module may contain many packages with completely arbitrary names.
 An "archive" is a collection of Perl modules that have been packaged
 in a particular structure.  This is what you get when you run C<"make
 dist"> or C<"./Build dist">.  Archives may come from a "mirror",
-or you may create your own.
+or you may create your own. An archive is the "A" in "CPAN".
 
 =item repository
 
@@ -577,7 +580,31 @@ L<http://search.cpan.org>.
 
 I wanted to avoid confusion, so I picked a name that has no connection
 to "CPAN".  "Pinto" is a nickname that I sometimes call my son,
-Wesley.  Daddy loves you, Wes!
+Wesley.
+
+=head1 TODO
+
+=over 4
+
+=item Enable plugins for visiting and filtering
+
+=item Implement Pinto::Store::Git
+
+=item Fix my Moose abuses
+
+=item Consider storing indexes in a DB, instead of files
+
+=item Automatically fetch dependecies when adding *VERY COOL*
+
+=item New command for listing conflicts between local and remote index
+
+=item Make file/directory permissions configurable
+
+=item Refine terminology: consider "distribution" instead of "archive"
+
+=item Need more error checking and logging
+
+=item Lots of tests to write
 
 =head1 THANKS
 

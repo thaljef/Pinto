@@ -42,8 +42,14 @@ Then, run some commands:
 
 =head1 DESCRIPTION
 
-
 C<pinto> is a command line utility for managing a Pinto repository.
+The repository can contain your own private archives of Perl packages,
+and/or mirror archives from another repository (like
+L<http://cpan.perl.org>).  You can also put patched versions of
+mirrored archives in your repository.
+
+You can then point L<cpan> or L<cpanm> to your Pinto repository and
+build and install your private archives (and their dependencies).
 
 =head1 CONFIGURATION
 
@@ -53,11 +59,94 @@ set the C<PERL_PINTO> environment variable to point to an different
 location.  You can also specify the path to the configuration file on
 the command line with the C<--profile> option.
 
+=over 4
+
+=item author
+
+Your identity as a module author.  This could be your PAUSE ID, but it
+doesn't have to be.  As long as it is just alpha-numeric characters.
+
+=item local
+
+The path to a directory where your repository will be kept.  This
+parameter is required for all operations.  You must be able to
+read and write to this directory.
+
+=item loglevel
+
+Controls the amount of noise to make.  Valid values are
+(debug|info|warn).  The default value is 'info'.  NOTE: this is not
+actually implemented yet.
+
+=item nocleanup
+
+If set to a true value, <pinto> will not automatically clean up files
+in your repository after each action.
+
+=item remote
+
+The URL of a repository that you would like to mirror.  This could
+be a public CPAN mirror, or another Pinto repository.  This parameter
+is required for the C<upgrade> operation.
+
+=item store_class
+
+The name of the class that will handle storage of your repository.
+The default is L<Pinto::Store>, which basically stores your repository
+on the local file system.  Alternatives like L<Pinto::Store::Svn>
+and L<Pinto::Store::Git> allow you to store your repository inside
+a revision control system.  See the documentation for each of those
+modules for additional configuration settings.
+
+=back
+
 Almost all the configuration parameters can also be overridden on the
 command line.  Say C<"pinto help COMMAND"> to display the options for
 the given C<COMMAND>.
 
 =head1 RULES
+
+There are certain rules that govern how the indexes are managed.
+These rules are intended to ensure that folks pulling packages
+from your repository will always get the *right  Also,
+the rules attempt to make Pinto behave somewhat like PAUSE does.
+
+=over 4
+
+=item A local package always masks a mirrored package, and all other
+packages that are in the same archive with the mirrored package.
+
+This rule is key, so pay attention.  If the CPAN mirror has an archive
+that contains both C<Foo> and C<Bar> packages, and you add your own
+archive that contains C<Foo> package, then both the C<Foo> and C<Bar>
+mirroed packages will be removed from your index.  This ensures that
+anyone pulling packages from your repository will always get *your*
+C<Foo>.  But they'll never be able to get C<Bar>.
+
+If this rule were not in place, someone could pull C<Bar> from the
+repository, which would overwrite the version of C<Foo> that you
+wanted them to have.  This situation is probably rare, but it can
+happen if you add a locally patched version of a mirrored archive, but
+the mirrored archive later includes additional packages.
+
+=item You can never add an archive with the same name twice.
+
+Most archive-building tools will put some kind of version number in
+the name of the archive, so this is rarely a problem.
+
+=item Only the original author of a local package can add a newer
+version of it.
+
+Ownership is given on a first-come basis, just like PAUSE.  So if
+C<SALLY> is the first author to add local package C<Foo::Bar> to the
+repository, then only C<SALLY> can ever add that package again.
+
+=item Only the original author of a local package can remove it.
+
+Just like when adding new versions of a local package, only the
+original author can remove it.
+
+=back
 
 =cut
 

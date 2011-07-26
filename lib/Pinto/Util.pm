@@ -91,3 +91,9 @@ sub native_file {
 
 __END__
 
+=head1 DESCRIPTION
+
+This is a private module for internal use only.  There is nothing for
+you to see here (yet).
+
+=cut
