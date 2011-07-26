@@ -186,9 +186,16 @@ Creates a new empty repoistory.
 =cut
 
 sub create {
-    my ($self) = @_;
+    my ($self, %args) = @_;
+
+    my $local = $args{local} || $self->config->get_required('local');
 
     $self->_store()->initialize();
+
+    if (-e $self->master_index()->file()) {
+      $self->log->info("Repository already exists at $local");
+      return $self;
+    }
 
     $self->_rebuild_master_index();
 
@@ -209,6 +216,8 @@ override those on the mirror.
 
 sub update {
     my ($self, %args) = @_;
+
+    $self->_store()->initialize();
 
     my $local  = $args{local}  || $self->config()->get_required('local');
     my $remote = $args{remote} || $self->config()->get_required('remote');
@@ -232,6 +241,9 @@ sub update {
     }
 
     $self->_rebuild_master_index();
+
+    my $message = "Updated to latest mirror of $remote";
+    $self->_store()->finalize(message => $message);
 
     return $self;
 }
@@ -301,7 +313,8 @@ sub add {
 
     $self->_rebuild_master_index();
 
-    $self->_store->finalize(message => 'Added stuff');
+    my $message = "Added local archive $file_in_index";
+    $self->_store->finalize(message => $message);
 
     return $self;
 }
@@ -350,7 +363,8 @@ sub remove {
     # Do not rebuild master index after removing packages,
     # or else the packages from the remote index will appear.
 
-    $self->_store()->finalize(message => 'Removed stuff');
+    my $message = "Removed local packages " . join ', ' @local_removed;
+    $self->_store()->finalize(message => $message);
 
     return $self;
 }
@@ -395,8 +409,8 @@ sub clean {
     # TODO: Consider using Path::Class::Dir->recurse() instead;
     File::Find::find($wanted, $base_dir);
 
-    $DB::single=1;
-    $self->_store()->finalize(message => 'Cleaned stuff');
+    my $message = 'Cleaned up archives not found in the index.';
+    $self->_store()->finalize(message => $cleanup);
 
     return $self;
 }
@@ -412,6 +426,8 @@ This is basically what the F<02packages> file looks like.
 
 sub list {
     my ($self) = @_;
+
+    $self->_store()->initialize();
 
     for my $package ( @{ $self->master_index()->packages() } ) {
         # TODO: Report native paths instead?
@@ -433,6 +449,8 @@ have gone wrong.
 
 sub verify {
     my ($self, %args) = @_;
+
+    $self->_store()->initialize();
 
     my $local = $args{local} || $self->config()->get_required('local');
 

@@ -10,26 +10,9 @@ use IPC::Cmd 0.72 qw(run can_run);
 use List::MoreUtils qw(any);
 use Path::Class;
 
-use base 'Exporter';
-
 #--------------------------------------------------------------------------
 
 # VERSION
-
-#--------------------------------------------------------------------------
-
-our @EXPORT_OK = qw(
-    svn_mkdir
-    svn_ls
-    svn_add
-    svn_delete
-    svn_commit
-    svn_tag
-    svn_schedule
-    svn_checkout
-);
-
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 #--------------------------------------------------------------------------
 
@@ -40,7 +23,7 @@ BEGIN { can_run('svn') or croak 'svn is not available' };
 sub svn_mkdir {
     my %args = @_;
     my $url = $args{url};
-    my $message = $args{message};
+    my $message = $args{message} || 'NO MESSAGE GIVEN';
 
     if ( not svn_ls(url => $url) ) {
         return _svn( command => [qw(mkdir --parents -m), $message, $url]);
@@ -139,6 +122,8 @@ sub svn_delete {
             svn_delete(path => $dir, prune => 1);
         }
     }
+
+    return 1;
 }
 
 #--------------------------------------------------------------------------
@@ -146,7 +131,7 @@ sub svn_delete {
 sub svn_commit {
     my %args     = @_;
     my $paths    = $args{paths};
-    my $message  = $args{message};
+    my $message  = $args{message} || 'NO MESSAGE GIVEN';
 
     my @paths = ref $paths ? @$paths : ($paths);
     return _svn(command => [qw(commit -m), $message, @paths] );
