@@ -12,7 +12,7 @@ use Pinto::UserAgent;
 use Carp;
 use File::Copy;
 use File::Find;
-use Dist::MetaData;
+use Dist::Metadata;
 use Path::Class;
 use Class::Load;
 use URI;
