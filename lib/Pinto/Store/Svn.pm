@@ -154,4 +154,4 @@ problem.  But I have a workaround planned for a future release.
 
 =back
 
-=back
+=cut

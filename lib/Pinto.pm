@@ -606,6 +606,8 @@ Wesley.
 
 =item Lots of tests to write
 
+=back
+
 =head1 THANKS
 
 =over 4
