@@ -363,7 +363,7 @@ sub remove {
     # Do not rebuild master index after removing packages,
     # or else the packages from the remote index will appear.
 
-    my $message = "Removed local packages " . join ', ' @local_removed;
+    my $message = "Removed local packages " . join ', ', @local_removed;
     $self->_store()->finalize(message => $message);
 
     return $self;
@@ -410,7 +410,7 @@ sub clean {
     File::Find::find($wanted, $base_dir);
 
     my $message = 'Cleaned up archives not found in the index.';
-    $self->_store()->finalize(message => $cleanup);
+    $self->_store()->finalize(message => $message);
 
     return $self;
 }

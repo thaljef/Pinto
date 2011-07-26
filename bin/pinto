@@ -18,3 +18,46 @@ exit App::Pinto->run();
 #-----------------------------------------------------------------------------
 
 __END__
+
+=head1 SYNOPSIS
+
+First, create a configuration file at F<~/.pinto/config.ini>:
+
+  # Required for all operations
+  local = /path/to/your/pinto/repository
+
+  # Optional. Defaults to http://cpan.perl.org
+  remote = http://some-cpan-mirror
+
+Then, run some commands:
+
+  # Create an empty repository
+  $> pinto create
+
+  # Add your own archive to the repository
+  $> pinto add Foo-Bar-1.2.tar.gz
+
+  # Fill your repository with latest packages from the remote mirror
+  $> pinto mirror
+
+=head1 DESCRIPTION
+
+
+C<pinto> is a command line utility for managing a Pinto repository.
+
+=head1 CONFIGURATION
+
+The following parameters can be set in your configuration file.  The
+default location of this file is F<~/.pinto/config.ini>, or you can
+set the C<PERL_PINTO> environment variable to point to an different
+location.  You can also specify the path to the configuration file on
+the command line with the C<--profile> option.
+
+Almost all the configuration parameters can also be overridden on the
+command line.  Say C<"pinto help COMMAND"> to display the options for
+the given C<COMMAND>.
+
+=head1 RULES
+
+=cut
+

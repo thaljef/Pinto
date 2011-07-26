@@ -20,6 +20,14 @@ use overload ('+' => '__plus', '-' => '__minus');
 
 #------------------------------------------------------------------------------
 
+=attr packages_by_name()
+
+Returns a reference to a hash.  The keys will be the names of every
+package in this Index (as strings) and the values will be the
+corresponding L<Pinto::Package> object.
+
+=cut
+
 has 'packages_by_name' => (
     is         => 'ro',
     isa        => 'HashRef',
@@ -28,6 +36,17 @@ has 'packages_by_name' => (
     writer     => '_set_packages_by_name',
 );
 
+=attr packages_by_file()
+
+Returns a reference to hash.  The keys will be the path to every
+archive file in this Index (as strings) and the values will be a
+reference to an array of all the L<Pinto::Package> objects that belong
+in that archive file.  Note that the keys are the paths as they appear
+in the index.  This means they will be Unix-style paths and will be
+relative to the F<authors/id> directory.
+
+=cut
+
 has 'packages_by_file' => (
     is         => 'ro',
     isa        => 'HashRef',
@@ -35,6 +54,14 @@ has 'packages_by_file' => (
     init_arg   => undef,
     writer     => '_set_packages_by_file',
 );
+
+=attr file()
+
+Returns the path to the file this Index was created from (as a
+Path::Class::File).  If you constructed this index by hand (rather
+than reading from a file) this attribute may be undefined.
+
+=cut
 
 has 'file' => (
     is       => 'ro',
@@ -53,6 +80,16 @@ sub BUILD {
 }
 
 #------------------------------------------------------------------------------
+
+=method read(file => '02packages.details.txt.gz')
+
+Populates this Index by reading the packages from a file.  This file
+is expected to conform to the F<02packages.details.txt> format, and
+should be C<gzipped>.  You normally should not need to call this
+method, as it will be called for you if you supply a C<file> argument
+to the constructor.
+
+=cut
 
 sub read  {
     my ($self, %args) = @_;
@@ -77,13 +114,22 @@ sub read  {
         chomp;
         my ($n, $v, $f) = split;
         my $package = Pinto::Package->new(name => $n, version => $v, file => $f);
-        $self->put($package);
+        $self->add($package);
     }
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
+
+=attr write(file => '02packages.details.txt.gz')
+
+Writes this Index to file in the format of the
+F<02packages.details.txt> file.  The file will also be C<gzipped>.  If
+the C<file> argument is not explicitly given here, the name of the
+file is taken from the C<file> attribute for this Index.
+
+=cut
 
 sub write {
     my ($self, %args) = @_;
@@ -142,36 +188,60 @@ sub _gz_write_packages {
 
 #------------------------------------------------------------------------------
 
+=attr merge( @packages )
+
+Adds a list of L<Pinto::Package> objects to this Index, and removes
+any existing packages that conflict with the added ones.  Use this
+method when combining an Index of private packages with an Index of
+public packages.
+
+=cut
+
 sub merge {
     my ($self, @packages) = @_;
 
     # Maybe instead...
     # $self->remove($_) for @packages;
-    # $self->put($_)    for @packages;
+    # $self->add($_)    for @packages;
 
     for my $package (@packages) {
         $self->remove($package);
-        $self->put($package);
+        $self->add($package);
     }
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
+
+=attr add( @packages)
+
+Unconditionally adds a list of L<Pinto::Package> objects to this
+Index.  If the index already contains packages by the same name, they
+will be overwritten.  Use this method only when you know that the
+names of all the added packages are unique.
+
+=cut
 
 sub add {
     my ($self, @packages) = @_;
 
     for my $package (@packages) {
-        my $name = $package->name();
-        my $author = $package->author();
-        $self->put($package);
+        $self->packages_by_name()->put($package->name(), $package);
+        ($self->packages_by_file()->{$package->file()} ||= [])->push($package);
     }
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
+
+=method relaod()
+
+Clears all the packages in this Index and reloads them from the file
+specified by the C<file> attribute.
+
+=cut
 
 sub reload {
     my ($self) = @_;
@@ -180,6 +250,12 @@ sub reload {
 }
 
 #------------------------------------------------------------------------------
+
+=method clear()
+
+Removes all packages from this Index.
+
+=cut
 
 sub clear {
     my ($self) = @_;
@@ -192,19 +268,13 @@ sub clear {
 
 #------------------------------------------------------------------------------
 
+=method remove( @packages )
 
-sub put {
-    my ($self, @packages) = @_;
+Removes the packages from the index.  Whenever a package is removed, all
+the other packages that belonged in the same archive are also removed.
+Arguments can be L<Pinto::Package> objects or package names as strings.
 
-    for my $package (@packages) {
-        $self->packages_by_name()->put($package->name(), $package);
-        ($self->packages_by_file()->{$package->file()} ||= [])->push($package);
-    }
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
+=cut
 
 sub remove {
     my ($self, @packages) = @_;
@@ -228,12 +298,25 @@ sub remove {
 
 #------------------------------------------------------------------------------
 
+=method package_count()
+
+Returns the total number of packages currently in this Index.
+
+=cut
+
 sub package_count {
     my ($self) = @_;
     return $self->packages_by_name()->keys()->length();
 }
 
 #------------------------------------------------------------------------------
+
+=method packages()
+
+Returns a reference to an array of all the L<Pinto::Package> objects
+in this index, sorted by name.
+
+=cut
 
 sub packages {
     my ($self) = @_;
@@ -243,12 +326,30 @@ sub packages {
 
 #------------------------------------------------------------------------------
 
+=method files()
+
+Returns a reference to a sorted array of paths to all the files in
+this index (as Path::Class::File objects). Note that paths will be as
+they appear in the index, which means they will be in Unix format and
+relative to the F<authors/id> directory.
+
+=cut
+
 sub files {
     my ($self) = @_;
     return $self->packages_by_file()->keys()->sort();
 }
 
 #------------------------------------------------------------------------------
+
+=method files_native(@base)
+
+Same as the C<files()> method, except the paths are converted to your
+OS.  The C<@base> can be a series of L<Path::Class::Dir> objects or
+path fragments (as strings).  If given, all the returned paths will
+have C<@base> prepended to them.
+
+=cut
 
 sub files_native {
     my ($self, @base) = @_;
@@ -257,6 +358,13 @@ sub files_native {
 }
 
 #------------------------------------------------------------------------------
+
+=method validate()
+
+Checks to see if the internal state of this Index is sane.  Basically, every
+package must map to a file, and vice-versa.  If not, an exception is thrown.
+
+=cut
 
 sub validate {
     my ($self) = @_;
@@ -279,7 +387,6 @@ sub validate {
 #------------------------------------------------------------------------------
 
 sub __plus {
-    $DB::single = 1;
     my ($self, $other, $swap) = @_;
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
@@ -292,7 +399,6 @@ sub __plus {
 #------------------------------------------------------------------------------
 
 sub __minus {
-    $DB::single = 1;
     my ($self, $other, $swap) = @_;
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
