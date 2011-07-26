@@ -29,6 +29,15 @@ has _ua => (
 
 #------------------------------------------------------------------------------
 
+=method mirror(url => 'http://someplace' to => 'some/path')
+
+Mirrors the file located at the C<url> to the file located at C<to>.
+If the intervening directories do not exist, they will be created for
+you.  Returns a true value if the file has changed, returns false if
+it has not changed.  Throws and exception if anything goes wrong.
+
+=cut
+
 sub mirror {
     my ($self, %args) = @_;
     my $url = $args{url};

@@ -31,6 +31,13 @@ sub usage_desc {
 
 #------------------------------------------------------------------------------
 
+=method pinto()
+
+Returns a reference to the L<Pinto> object.  If it does not already
+exist, one will be created using the global command options as
+arguments.
+
+=cut
 
 sub pinto {
     my ($self) = @_;

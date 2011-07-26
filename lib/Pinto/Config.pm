@@ -31,6 +31,12 @@ has 'profile' => (
 
 #------------------------------------------------------------------------------
 
+=for Pod::Coverage BUILD
+
+Internal, not documented
+
+=cut
+
 sub BUILD {
     my ($self, $args) = @_;
 
@@ -53,6 +59,13 @@ sub BUILD {
 
 #------------------------------------------------------------------------------
 
+=method get_required($key)
+
+Returns the configuration value assocated with the given C<$key>.  If
+that value is not defined, then an exception is thrown.
+
+=cut
+
 sub get_required {
     my ($self, $key) = @_;
 
@@ -66,6 +79,13 @@ sub get_required {
 }
 
 #------------------------------------------------------------------------------
+
+=method get($key)
+
+Returns the configuration value associated with the given C<$key>.  The
+value may be undefined.
+
+=cut
 
 sub get {
     my ($self, $key) = @_;

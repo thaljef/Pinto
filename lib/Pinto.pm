@@ -581,10 +581,14 @@ Wesley.  Daddy loves you, Wes!
 
 =head1 THANKS
 
+=over 4
+
 =item Randal Schwartz - for pioneering the first mini CPAN back in 2002
 
 =item Ricardo Signes - for creating CPAN::Mini, which inspired much of Pinto
 
 =item Shawn Sorichetti & Christian Walde - for creating CPAN::Mini::Inject
+
+=back
 
 =cut

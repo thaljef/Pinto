@@ -20,6 +20,15 @@ BEGIN { can_run('svn') or croak 'svn is not available' };
 
 #--------------------------------------------------------------------------
 
+=func svn_mkdir(url => 'http://somewhere')
+
+Given a URL that is presumed to be a location within a Subversion
+repsitory, creates a directory at that location.  Any intervening
+directories will be created for you.  If the direcory already exists,
+an exception will be thrown.
+
+=cut
+
 sub svn_mkdir {
     my %args = @_;
     my $url = $args{url};
@@ -34,6 +43,13 @@ sub svn_mkdir {
 
 #--------------------------------------------------------------------------
 
+=func svn_ls(url => 'http://somewhere')
+
+Given a URL that is presumed to be a location within a Subversion
+repository, returns true if that location actually exists.
+
+=cut
+
 sub svn_ls {
     my %args = @_;
     my $url  = $args{url};
@@ -42,6 +58,15 @@ sub svn_ls {
 }
 
 #--------------------------------------------------------------------------
+
+=func svn_checkout(url => 'http://somewhere' to => '/some/path')
+
+Checks out the specified URL to the specified path.  If the URL does
+not exist in the repository, it will be created for you.  If the path
+already exists and it is a working copy for URL, an update will be
+performed instead.
+
+=cut
 
 sub svn_checkout {
     my %args = @_;
@@ -64,6 +89,15 @@ sub svn_checkout {
 }
 
 #--------------------------------------------------------------------------
+
+=func svn_schedule(path => '/some/path')
+
+Given a path to a directory or file within a Subversion working copy,
+recursively scans the directory for new or missing files and schedules
+them or addition or deletion from the repository.  Any new file is
+added, and any missing file is deleted.
+
+=cut
 
 sub svn_schedule {
     my %args = @_;
@@ -99,6 +133,12 @@ sub svn_schedule {
 
 #--------------------------------------------------------------------------
 
+=func svn_add(path => '/some/path')
+
+Schedules the specified path for addition to the repository.
+
+=cut
+
 sub svn_add {
     my %args = @_;
     my $path = $args{path};
@@ -107,6 +147,14 @@ sub svn_add {
 }
 
 #--------------------------------------------------------------------------
+
+=func svn_delete(path => '/some/path' prune => 1)
+
+Schedules the specified path for deletion from the repository.  If the
+C<prune> flag is true, then any ancestors of the path will also be
+deleted if all their contents are scheduled for deletion.
+
+=cut
 
 sub svn_delete {
     my %args  = @_;
@@ -128,6 +176,12 @@ sub svn_delete {
 
 #--------------------------------------------------------------------------
 
+=func svn_commit(paths => [@paths], message => 'Commit message')
+
+Commits all the changes to the specified C<@paths>.
+
+=cut
+
 sub svn_commit {
     my %args     = @_;
     my $paths    = $args{paths};
@@ -139,11 +193,18 @@ sub svn_commit {
 
 #--------------------------------------------------------------------------
 
+=func svn_tag(from => 'http://here', to => 'http://there')
+
+Creates a tag by copying from one URL to another.  Note this is a
+server-side copy and does no affect on any working copy.
+
+=cut
+
 sub svn_tag {
     my %args = @_;
     my $from    = $args{from};
     my $to      = $args{to};
-    my $message = $args{message};
+    my $message = $args{message} || 'NO MESSAGE GIVEN';
 
     return _svn(command => [qw(cp --parents -m), $message, $from, $to]);
 }

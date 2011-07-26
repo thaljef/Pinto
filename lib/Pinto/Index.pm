@@ -71,6 +71,13 @@ has 'file' => (
 
 #------------------------------------------------------------------------------
 
+=for Pod::Coverage BUILD
+
+Internal, not documented
+
+=cut
+
+
 sub BUILD {
     my ($self) = @_;
     if (my $file = $self->file()){
@@ -236,7 +243,7 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method relaod()
+=method reload()
 
 Clears all the packages in this Index and reloads them from the file
 specified by the C<file> attribute.
@@ -361,8 +368,9 @@ sub files_native {
 
 =method validate()
 
-Checks to see if the internal state of this Index is sane.  Basically, every
-package must map to a file, and vice-versa.  If not, an exception is thrown.
+Checks to see if the internal state of this Index is sane.  Basically,
+every package must map to a file, and vice-versa.  If not, an
+exception is thrown.
 
 =cut
 
@@ -413,3 +421,8 @@ sub __minus {
 1;
 
 __END__
+
+
+
+
+
