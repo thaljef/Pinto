@@ -100,7 +100,7 @@ sub get {
 
 sub _find_profile {
     return $ENV{PERL_PINTO} if defined $ENV{PERL_PINTO};
-    my $home_file = file(File::HomeDir->my_home(), 'pinto', 'config.ini');
+    my $home_file = file(File::HomeDir->my_home(), '.pinto', 'config.ini');
     return $home_file if -e $home_file;
     return;
 }
