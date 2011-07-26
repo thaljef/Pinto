@@ -530,9 +530,10 @@ not every "repository" is a "mirror".
 =head1 RULES
 
 There are certain rules that govern how the indexes are managed.
-These rules are intended to ensure that folks pulling packages
-from your repository will always get the *right  Also,
-the rules attempt to make Pinto behave somewhat like PAUSE does.
+These rules are intended to ensure that folks pulling packages from
+your repository will always get the *right* packages (according to my
+definitionof "right").  Also, the rules attempt to make Pinto behave
+somewhat like PAUSE does.
 
 =over 4
 
@@ -544,13 +545,8 @@ that contains both C<Foo> and C<Bar> packages, and you add your own
 archive that contains C<Foo> package, then both the C<Foo> and C<Bar>
 mirroed packages will be removed from your index.  This ensures that
 anyone pulling packages from your repository will always get *your*
-C<Foo>.  But they'll never be able to get C<Bar>.
-
-If this rule were not in place, someone could pull C<Bar> from the
-repository, which would overwrite the version of C<Foo> that you
-wanted them to have.  This situation is probably rare, but it can
-happen if you add a locally patched version of a mirrored archive, but
-the mirrored archive later includes additional packages.
+version of C<Foo>.  But as a result, they'll never be able to get
+C<Bar>.
 
 =item You can never add an archive with the same name twice.
 
@@ -579,7 +575,7 @@ mirror like L<http://cpan.perl.org> or a site like
 L<http://search.cpan.org>.
 
 I wanted to avoid confusion, so I picked a name that has no connection
-to "CPAN".  "Pinto" is a nickname that I sometimes call my son,
+to "CPAN" at all.  "Pinto" is a nickname that I sometimes call my son,
 Wesley.
 
 =head1 TODO
