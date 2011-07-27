@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.002     2011-07-26 17:20:46 America/Los_Angeles
+
 Corrected default path to the Pinto configuration file.
 
 Expanded POD for pinto[1]
