@@ -17,6 +17,7 @@ extends 'Pinto::Event';
 
 sub execute {
     my ($self, %args) = @_;
+    return;
 
     my $local = $self->config()->get_required('local');
 

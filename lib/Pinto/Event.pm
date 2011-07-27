@@ -20,7 +20,7 @@ has message => (
     is       => 'ro',
     isa      => 'Str',
     writer   => '_set_message',
-    default  => 'NO MESSAGE GIVEN',
+    default  => '',
     init_arg => undef,
 );
 

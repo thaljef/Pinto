@@ -5,6 +5,8 @@ package Pinto::Transaction;
 use Moose;
 use Moose::Autobox;
 
+use Pinto::IndexManager;
+
 #-----------------------------------------------------------------------------
 
 # VERSION
@@ -50,11 +52,19 @@ sub run {
 
     $self->store()->initialize();
 
-    $DB::single = 1;
-    $_->prepare() for @{ $self->events() };
-    $_->execute() for @{ $self->events() };
+    for my $event ($self->events()->flatten()) {
+      $event->prepare();
+    }
 
-    my $message = join "\n\n", map {$_->message()} $self->events()->flatten();
+    for my $event ($self->events()->flatten()) {
+      $event->execute();
+    }
+
+    my $idx_mgr = Pinto::IndexManager->instance();
+    $idx_mgr->commit();
+
+    my $message = join "\n\n", grep {length} map {$_->message()} $self->events()->flatten();
+    $self->logger->log("Commit message is:\n\n$message");
     $self->store()->finalize(message => $message);
 
     return $self;

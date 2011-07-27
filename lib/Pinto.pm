@@ -105,16 +105,18 @@ sub update {
 =cut
 
 sub add {
+    $DB::single = 1;
     my ($self, %args) = @_;
 
-    my $files = ref $args{files};
+    my $files = $args{files};
     $files = [ $files ] if ref $files ne 'ARRAY';
 
     require Pinto::Event::Add;
     require Pinto::Event::Clean;
 
-    my $tx = Pinto::Transaction->new();
-    $tx->add(event => Pinto::Event::Add->new(file => $_)) for @{ $files };
+    my $auth = $self->config()->get_required('author');
+    my $tx = Pinto::Transaction->new(store => $self->store());
+    $tx->add(event => Pinto::Event::Add->new(author => $auth, file => file($_))) for @{ $files };
     $tx->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $tx->run();
 
@@ -128,7 +130,6 @@ sub add {
 =cut
 
 sub remove {
-    $DB::single = 1;
     my ($self, %args) = @_;
 
     my $packages = $args{packages};

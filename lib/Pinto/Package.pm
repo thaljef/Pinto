@@ -3,7 +3,8 @@ package Pinto::Package;
 # ABSTRACT: Represents a single record in the 02packages.details.txt file
 
 use Moose;
-use Path::Class::File;
+
+use Path::Class qw();
 
 #------------------------------------------------------------------------------
 
@@ -77,7 +78,7 @@ has 'author'  => (
     isa       => 'Str',
     lazy      => 1,
     init_arg  => undef,
-    default   => sub { $_[0]->native_file()->dir()->dir_list(2, 1) },
+    builder   => '__build_author',
 );
 
 #------------------------------------------------------------------------------
@@ -86,6 +87,11 @@ has 'author'  => (
 # Path::Class::File to a string that always looks like a Unix path.
 
 #------------------------------------------------------------------------------
+
+sub __build_author {
+    my ($self) = @_;
+    return Path::Class::file( $self->file() )->dir()->dir_list(2, 1);
+}
 
 =method to_string()
 

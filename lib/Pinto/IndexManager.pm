@@ -150,13 +150,12 @@ sub remove_local_package {
     my $package = $args{package};
 
     my @local_removed = $self->local_index()->remove($package);
-    $self->logger->log("Removed $_ from local index") for @local_removed;
+    $self->logger->debug("Removed $_ from local index") for @local_removed;
 
     my @master_removed = $self->master_index()->remove($package);
-    $self->logger->log("Removed $_ from master index") for @master_removed;
+    $self->logger->debug("Removed $_ from master index") for @master_removed;
 
-    return () if not @local_removed;
-    return ($local_removed[0]->file(), sort map { $_->name() } @local_removed);
+    return sort map {$_->name()} @local_removed;
 }
 
 #------------------------------------------------------------------------------
@@ -183,7 +182,27 @@ sub has_local_file {
     my $author_dir    = Pinto::Util::directory_for_author($author);
     my $file_in_index = Path::Class::file($author_dir, $file->basename())->as_foreign('Unix');
 
-    return $self->master_index()->packages_by_file->at($file_in_index);
+    my $packages = $self->master_index()->packages_by_file->at($file_in_index);
+    return $packages ? $packages->[0]->file() : ();
+}
+
+#------------------------------------------------------------------------------
+
+sub add_local_package {
+    my ($self, %args) = @_;
+
+    my $file    = $args{file};
+    my $name    = $args{name};
+    my $version = $args{version};
+    my $author  = $args{author};
+
+    my $author_dir    = Pinto::Util::directory_for_author($author);
+    my $file_in_index = Path::Class::file($author_dir, $file->basename())->as_foreign('Unix')->stringify();
+    my $package = Pinto::Package->new(name => $name, version => $version, file => $file_in_index);
+
+    $self->local_index()->add($package);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
