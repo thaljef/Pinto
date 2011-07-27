@@ -28,19 +28,19 @@ the initialization fails, an exception should be thrown.
 =cut
 
 sub initialize {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
-    my $local = $args{local} || $self->config()->get_required('local');
+    my $local = $self->config()->get_required('local');
     $local = dir($local) if not eval {$local->isa('Path::Class::Dir') };
 
     if (-e $local) {
-        $self->log()->debug("Repository directory exists at $local");
+        $self->logger()->log("Repository directory already exists at $local");
     }
     else {
 
-        $self->log()->info("Making directory at $local ... ", {nolf => 1});
+        $self->logger()->log("Making directory at $local ... ", {nolf => 1});
         $local->mkpath(); # TODO: Set dirmode and verbosity here.
-        $self->log()->info("DONE");
+        $self->logger()->log("DONE");
     }
 
     return 1;

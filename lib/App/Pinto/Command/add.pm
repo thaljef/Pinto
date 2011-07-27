@@ -32,18 +32,15 @@ sub usage_desc {
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opt, $args) = @_;
-    $self->usage_error("Must specify one or more file arguments")
-      if not @{ $args };
+    my ($self, $opts, $args) = @_;
+    $self->usage_error("Must specify one or more file arguments") if not @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->add(author => $opts->{author}, file => $_) for @{ $args };
-    $self->pinto()->clean() unless $self->pinto()->config()->get('nocleanup');
-    return 0;
+    $self->pinto()->add( %{ $opts }, files => $args);
 }
 
 #------------------------------------------------------------------------------

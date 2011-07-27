@@ -32,19 +32,18 @@ sub usage_desc {
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opt, $args) = @_;
+    my ($self, $opts, $args) = @_;
     $self->usage_error("Must specify one or more package arguments") unless @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
-    $DB::single = 1;
     my ($self, $opts, $args) = @_;
-    $self->pinto()->remove(author => $opts->{author}, package => $_) for @{ $args };
-    $self->pinto()->clean() unless $self->pinto()->config()->get('nocleanup');
-    return 0;
+    $self->pinto()->remove( %{ $opts }, package_names => $args );
 }
+
+#------------------------------------------------------------------------------
 
 1;
 

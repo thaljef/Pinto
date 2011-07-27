@@ -24,18 +24,15 @@ sub opt_spec {
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opt, $args) = @_;
+    my ($self, $opts, $args) = @_;
     $self->usage_error("Arguments are not allowed") if @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
-    $DB::single = 1;
     my ($self, $opts, $args) = @_;
-    $self->pinto()->update(remote => $opts->{remote});
-    $self->pinto()->clean() unless $self->pinto()->config()->get('nocleanup');
-    return 0;
+    $self->pinto()->update( %{ $opts } );
 }
 
 #------------------------------------------------------------------------------
