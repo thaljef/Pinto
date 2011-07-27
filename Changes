@@ -2,6 +2,8 @@
 
 Corrected default path to the Pinto configuration file.
 
+Expanded POD for pinto[1]
+
 0.001     2011-07-26 14:17:06 America/Los_Angeles
 
 Initial release.
