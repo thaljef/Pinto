@@ -26,7 +26,7 @@ First, create a configuration file at F<~/.pinto/config.ini>:
   # Required for all operations
   local = /path/to/your/pinto/repository
 
-  # Required only for the 'upgrade' action
+  # Required only for the 'update' action
   remote = http://some-cpan-mirror
 
 Then, run some commands:
@@ -38,7 +38,7 @@ Then, run some commands:
   $> pinto add Foo-Bar-1.2.tar.gz
 
   # Fill your repository with latest packages from the remote mirror
-  $> pinto upgrade
+  $> pinto update
 
 =head1 DESCRIPTION
 
@@ -87,7 +87,7 @@ in your repository after each command.
 
 The URL of a repository that you would like to mirror.  This could
 be a public CPAN mirror, or another Pinto repository.  This parameter
-is required for the C<upgrade> operation.
+is required for the C<update> operation.
 
 =item store_class
 
@@ -139,10 +139,10 @@ F<02packages.details.txt> file.
 
 Removes the local archive that contains the given packages.  All other
 packages that were contained in the same archive are also removed.
-After removing a package, you will usually want to run C<upgrade> to
+After removing a package, you will usually want to run C<update> to
 pull in any archives that might have been blocked by your local ones.
 
-=item upgrade
+=item update
 
 Fills your repository with the archives that contain the latest
 version of all packages on your remote mirror.  See the L<"RULES">
@@ -161,7 +161,7 @@ has gone wrong.
 
 There are certain rules that govern how the indexes are managed.
 These rules are intended to ensure that folks pulling packages
-from your repository will always get the *right  Also,
+from your repository will always get the B<right one>.  Also,
 the rules attempt to make Pinto behave somewhat like PAUSE does.
 
 =over 4
@@ -173,7 +173,7 @@ This rule is key, so pay attention.  If the CPAN mirror has an archive
 that contains both C<Foo> and C<Bar> packages, and you add your own
 archive that contains C<Foo> package, then both the C<Foo> and C<Bar>
 mirroed packages will be removed from your index.  This ensures that
-anyone pulling packages from your repository will always get *your*
+anyone pulling packages from your repository will always get B<your>
 C<Foo>.  But they'll never be able to get C<Bar>.
 
 If this rule were not in place, someone could pull C<Bar> from the
