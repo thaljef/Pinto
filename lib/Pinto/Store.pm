@@ -5,27 +5,17 @@ package Pinto::Store;
 use Moose;
 use Path::Class;
 
-#---------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # VERSION
 
-#---------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# Moose roles
 
-=attr config()
+with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 
-Returns the L<Pinto::Config> object for this Store.  This must be
-provided through the constructor and should be the same
-L<Pinto::Config> that L<Pinto> has.
-
-=cut
-
-has config => (
-    is       => 'ro',
-    isa      => 'Pinto::Config',
-    required => 1,
-);
-
-#---------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# Methods
 
 =method initialize()
 
@@ -41,12 +31,22 @@ sub initialize {
     my ($self, %args) = @_;
 
     my $local = $args{local} || $self->config()->get_required('local');
-    Path::Class::dir($local)->mkpath();
+    $local = dir($local) if not eval {$local->isa('Path::Class::Dir') };
+
+    if (-e $local) {
+        $self->log()->debug("Repository directory exists at $local");
+    }
+    else {
+
+        $self->log()->info("Making directory at $local ... ", {nolf => 1});
+        $local->mkpath(); # TODO: Set dirmode and verbosity here.
+        $self->log()->info("DONE");
+    }
 
     return 1;
 }
 
-#---------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 =method finalize(message => 'what happened')
 
@@ -65,7 +65,7 @@ sub finalize {
 }
 
 
-#---------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 1;
 

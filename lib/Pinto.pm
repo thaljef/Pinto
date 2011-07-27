@@ -6,7 +6,6 @@ use Moose;
 
 use Pinto::Util;
 use Pinto::Index;
-use Pinto::Config;
 use Pinto::UserAgent;
 
 use Carp;
@@ -22,20 +21,12 @@ use URI;
 # VERSION
 
 #------------------------------------------------------------------------------
+# Moose roles
+
+with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
+
+#------------------------------------------------------------------------------
 # Moose attributes
-
-=attr config
-
-Returns the L<Pinto::Config> object for this Pinto.  You must provide
-one through the constructor.
-
-=cut
-
-has 'config' => (
-    is       => 'ro',
-    isa      => 'Pinto::Config',
-    required => 1,
-);
 
 has '_store' => (
     is       => 'ro',
@@ -152,7 +143,7 @@ sub __build_store {
    my $store_class = $self->config()->get('store_class') || 'Pinto::Store';
    Class::Load::load_class($store_class);
 
-   return $store_class->new( config => $self->config() );
+   return $store_class->new( config => $self->config(), log => $self->log() );
 }
 
 #------------------------------------------------------------------------------
