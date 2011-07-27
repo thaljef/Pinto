@@ -123,21 +123,23 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method remove(package_names => ['Some::Package', 'Another::Package'])
+=method remove(packages => ['Some::Package', 'Another::Package'])
 
 =cut
 
 sub remove {
+    $DB::single = 1;
     my ($self, %args) = @_;
 
-    my $package_names = ref $args{package_names};
-    $package_names = [ $package_names ] if ref $package_names ne 'ARRAY';
+    my $packages = $args{packages};
+    $packages = [ $packages ] if ref $packages ne 'ARRAY';
 
     require Pinto::Event::Remove;
     require Pinto::Event::Clean;
 
-    my $tx = Pinto::Transaction->new();
-    $tx->add(event => Pinto::Event::Remove->new(package_name => $_)) for @{ $package_names };
+    my $auth = $self->config->get_required('author');
+    my $tx = Pinto::Transaction->new(store => $self->store());
+    $tx->add(event => Pinto::Event::Remove->new(author => $auth, package => $_)) for @{ $packages };
     $tx->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $tx->run();
 
@@ -159,7 +161,7 @@ sub clean {
 
     require Pinto::Event::Clean;
 
-    my $tx = Pinto::Transaction->new();
+    my $tx = Pinto::Transaction->new(store => $self->store());
     $tx->add(event => Pinto::Event::Clean()->new());
     $tx->run();
 

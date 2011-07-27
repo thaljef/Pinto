@@ -5,6 +5,7 @@ package Pinto::Event::Clean;
 use Moose;
 
 use File::Find;
+use Path::Class;
 
 extends 'Pinto::Event';
 
@@ -19,7 +20,7 @@ sub execute {
 
     my $local = $self->config()->get_required('local');
 
-    my $base_dir = dir($local, qw(authors id));
+    my $base_dir = Path::Class::dir($local, qw(authors id));
     return if not -e $base_dir;
 
     my $wanted = sub {

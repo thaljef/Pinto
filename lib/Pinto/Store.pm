@@ -33,11 +33,7 @@ sub initialize {
     my $local = $self->config()->get_required('local');
     $local = dir($local) if not eval {$local->isa('Path::Class::Dir') };
 
-    if (-e $local) {
-        $self->logger()->log("Repository directory already exists at $local");
-    }
-    else {
-
+    if (not -e $local) {
         $self->logger()->log("Making directory at $local ... ", {nolf => 1});
         $local->mkpath(); # TODO: Set dirmode and verbosity here.
         $self->logger()->log("DONE");

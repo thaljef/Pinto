@@ -5,6 +5,7 @@ package Pinto::Event::Create;
 use Moose;
 
 use Carp;
+use Path::Class;
 
 extends 'Pinto::Event';
 
@@ -16,10 +17,19 @@ extends 'Pinto::Event';
 
 sub execute {
     my ($self) = @_;
+
+    my $local = Path::Class::dir($self->config()->get_required('local'));
+
+    # croak "Repository already exists at $local" if -e $local;
+
+    $local->mkpath( qw(authors id) );
+    $local->mkpath( qw(modules) );
     # TODO: Generate empty indexes
-    # TODO: Create some directory structure in repository
+
     my $message = 'Created new repository';
     $self->_set_message($message);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

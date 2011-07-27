@@ -33,14 +33,14 @@ sub usage_desc {
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify one or more package arguments") unless @{ $args };
+    $self->usage_error("Must specify one or more package arguments") if not @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->remove( %{ $opts }, package_names => $args );
+    $self->pinto()->remove( %{ $opts }, packages => $args );
 }
 
 #------------------------------------------------------------------------------

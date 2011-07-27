@@ -54,9 +54,7 @@ sub run {
     $_->prepare() for @{ $self->events() };
     $_->execute() for @{ $self->events() };
 
-    my $message = '';
-    $message .= $_->message() for @{ $self->events() };
-
+    my $message = join "\n\n", map {$_->message()} $self->events()->flatten();
     $self->store()->finalize(message => $message);
 
     return $self;
