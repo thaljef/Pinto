@@ -38,7 +38,7 @@ Then, run some commands:
   $> pinto add Foo-Bar-1.2.tar.gz
 
   # Fill your repository with latest packages from the remote mirror
-  $> pinto upgrade
+  $> pinto update
 
 =head1 DESCRIPTION
 

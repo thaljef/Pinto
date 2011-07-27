@@ -304,7 +304,8 @@ sub add {
 
     $self->_rebuild_master_index();
 
-    my $message = "Added local archive $file_in_index";
+    my $message = "Added local archive $file_in_index containing these packages:\n\n";
+    $message .= join "\n", sort map {$_->name()} @packages;
     $self->_store->finalize(message => $message);
 
     return $self;

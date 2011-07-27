@@ -125,7 +125,7 @@ For example, if you had this in your F<~/.pinto/config.ini>:
 
  svn_tag_url: http://my-company/svn/tags/PINTO-%y.%m.%d
 
-and ran C<pinto upgrade> on June 17, 2011, then it would produce a tag at this URL:
+and ran C<pinto update> on June 17, 2011, then it would produce a tag at this URL:
 
  http://my-company/svn/tags/PINTO-11.06.17
 
