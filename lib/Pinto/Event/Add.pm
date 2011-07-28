@@ -73,7 +73,7 @@ sub execute {
     die @conflicts if @conflicts;
 
     while( my ($package_name, $version) = each %{ $provides } ) {
-        $self->logger->log("Adding $package_name $version");
+        $self->logger->log("Adding package $package_name $version");
         $idx_mgr->add_local_package(name  => $package_name,
             version => $version, author => $author, file => $file);
     }
@@ -83,7 +83,7 @@ sub execute {
     $destination_dir->mkpath();    # TODO: log & error check
     copy($file, $destination_dir); # TODO: log & error check
 
-    my $message = Pinto::Util::format_message("Added $base providing:", sort keys %{$provides});
+    my $message = Pinto::Util::format_message("Added archive $base providing:", sort keys %{$provides});
     $self->_set_message($message);
 
     return 1;

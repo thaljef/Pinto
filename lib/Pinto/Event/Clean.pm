@@ -36,11 +36,12 @@ sub execute {
             return;
         }
 
+        $DB::single =1;
         return if not -f $physical_file;
         my $idx_mgr = Pinto::IndexManager->instance();
         return if exists $idx_mgr->master_index()->packages_by_file()->{$index_file};
-        $self->logger()->log("Deleting $index_file"); # TODO: report as physical file instead?
-        push @deleted, $physical_file;
+        $self->logger()->log("Deleting archive $index_file"); # TODO: report as physical file instead?
+        push @deleted, $index_file;
         $physical_file->remove(); # TODO: Error check!
     };
 

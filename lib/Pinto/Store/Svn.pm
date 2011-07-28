@@ -64,7 +64,7 @@ sub _make_tag {
     my $as_of = time2str('%C', $now);
     my $message  = "Tagging Pinto repository as of $as_of.";
 
-    $self->logger()->log("Tagging $trunk_url as $tag_url ... ", {nolf => 1});
+    $self->logger()->log("Tagging ... ", {nolf => 1});
     Pinto::Util::Svn::svn_tag(from => $trunk_url, to => $tag_url, message => $message);
     $self->logger()->log('DONE');
 
