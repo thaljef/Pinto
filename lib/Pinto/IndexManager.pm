@@ -5,8 +5,10 @@ package Pinto::IndexManager;
 use MooseX::Singleton;
 use Moose::Autobox;
 
-use Pinto::Util;
 use Path::Class;
+
+use Pinto::Util;
+use Pinto::Index;
 
 #-----------------------------------------------------------------------------
 
