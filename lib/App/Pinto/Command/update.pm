@@ -17,7 +17,8 @@ use base 'App::Pinto::Command';
 
 sub opt_spec {
     return (
-        [ "remote=s"  => 'URL of a CPAN mirror' ],
+        [ 'force'     => 'Force update, even if indexes appear unchanged' ],
+        [ 'remote=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
     );
 }
 
