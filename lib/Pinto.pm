@@ -80,7 +80,7 @@ sub create {
 
 #------------------------------------------------------------------------------
 
-=method update(remote => 'http://cpan-mirror')
+=method mirror(mirror => 'http://cpan-mirror')
 
 Populates your repository with the latest version of all packages
 found on the CPAN mirror.  Your locally added packages will always
@@ -88,14 +88,14 @@ override those on the mirror.
 
 =cut
 
-sub update {
+sub mirror {
     my ($self, %args) = @_;
 
-    require Pinto::Event::Update;
+    require Pinto::Event::Mirror;
     require Pinto::Event::Clean;
 
     my $batch = Pinto::EventBatch->new();
-    $batch->add(event => Pinto::Event::Update->new(file => $_));
+    $batch->add(event => Pinto::Event::Mirror->new(file => $_));
     $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
@@ -155,9 +155,10 @@ sub remove {
 
 =method clean()
 
-Deletes any archives in the repository that are not currently
-represented in the master index.  You will usually want to run this
-after performing an C<"update">, C<"add">, or C<"remove"> operation.
+Deletes any archives in the repository that are not currently listed
+in the master index.  Unless you have set the C<nocleanup> option, a
+cleanup is performed after every C<mirror>, C<add>, or C<remove>
+operation.
 
 =cut
 
@@ -349,7 +350,7 @@ Wesley.
 
 =item Automatically fetch dependecies when adding *VERY COOL*
 
-=item New command for listing conflicts between local and remote index
+=item New command for listing conflicts between local and mirrored index
 
 =item Make file/directory permissions configurable
 

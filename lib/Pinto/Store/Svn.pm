@@ -125,7 +125,7 @@ For example, if you had this in your F<~/.pinto/config.ini>:
 
  svn_tag_url: http://my-company/svn/tags/PINTO-%y.%m.%d
 
-and ran C<pinto update> on June 17, 2011, then it would produce a tag at this URL:
+and ran C<pinto mirror> on June 17, 2011, then it would produce a tag at this URL:
 
  http://my-company/svn/tags/PINTO-11.06.17
 
@@ -162,7 +162,7 @@ not work.
 =item Subversion does not accurately manage timestamps.
 
 This may fool L<Pinto> into making an inaccurate mirror because it
-thinks your local copy is newer than the remote source.  As long as
+thinks your local copy is newer than the mirror. As long as
 you don't throw away your working copy, you shouldn't run into this
 problem.  But I have a workaround planned for a future release.
 

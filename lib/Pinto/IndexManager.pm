@@ -16,7 +16,7 @@ use Pinto::Index;
 
 #-----------------------------------------------------------------------------
 
-=attr remote_index
+=attr mirror_index
 
 Returns the L<Pinto::Index> that represents our copy of the
 F<02packages> file from a CPAN mirror (or possibly another Pinto
@@ -25,10 +25,10 @@ packages on the mirror.
 
 =cut
 
-has 'remote_index' => (
+has 'mirror_index' => (
     is             => 'ro',
     isa            => 'Pinto::Index',
-    builder        => '__build_remote_index',
+    builder        => '__build_mirror_index',
     init_arg       => undef,
     lazy           => 1,
 );
@@ -52,7 +52,7 @@ has 'local_index'   => (
 =attr master_index
 
 Returns the L<Pinto::Index> that is the logical combination of
-packages from both the remote and local indexes.  See the L<"RULES">
+packages from both the mirror and local indexes.  See the L<"RULES">
 section below for information on how the indexes are combined.
 
 =cut
@@ -73,10 +73,10 @@ with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 #------------------------------------------------------------------------------
 # Builders
 
-sub __build_remote_index {
+sub __build_mirror_index {
     my ($self) = @_;
 
-    return $self->__build_index(file => '02packages.details.remote.txt.gz');
+    return $self->__build_index(file => '02packages.details.mirror.txt.gz');
 }
 
 #------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ sub rebuild_master_index {
 
     $self->logger()->debug("Building master index");
 
-    $self->master_index()->add( @{$self->remote_index()->packages()} );
+    $self->master_index()->add( @{$self->mirror_index()->packages()} );
     $self->master_index()->merge( @{$self->local_index()->packages()} );
 
     return $self->master_index();
@@ -140,7 +140,7 @@ sub commit {
 
 sub mirrorable_index {
     my ($self) = @_;
-    return $self->remote_index() - $self->local_index();
+    return $self->mirror_index() - $self->local_index();
 }
 
 #------------------------------------------------------------------------------

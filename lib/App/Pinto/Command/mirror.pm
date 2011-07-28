@@ -1,4 +1,4 @@
-package App::Pinto::Command::update;
+package App::Pinto::Command::mirror;
 
 # ABSTRACT: get the latest archives from a CPAN mirror
 
@@ -18,7 +18,7 @@ use base 'App::Pinto::Command';
 sub opt_spec {
     return (
         [ 'force'     => 'Force update, even if indexes appear unchanged' ],
-        [ 'remote=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
+        [ 'mirror=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
     );
 }
 
@@ -33,7 +33,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->update( %{ $opts } );
+    $self->pinto()->mirror( %{ $opts } );
 }
 
 #------------------------------------------------------------------------------
