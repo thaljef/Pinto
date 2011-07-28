@@ -4,6 +4,7 @@ package Pinto;
 
 use Moose;
 
+use Carp;
 use Path::Class;
 use Class::Load;
 
@@ -61,8 +62,12 @@ Creates a new empty repoistory.
 =cut
 
 sub create {
-    $DB::single = 1;
     my ($self) = @_;
+
+    # HACK...I want to do this before checking out from VCS
+    my $local = Path::Class::dir($self->config()->get_required('local'));
+    die "Looks like you already have a repository at $local\n"
+        if -e file($local, qw(modules 02packages.details.txt.gz));
 
     require Pinto::Event::Create;
 

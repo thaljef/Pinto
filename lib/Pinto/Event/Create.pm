@@ -18,18 +18,14 @@ extends 'Pinto::Event';
 sub execute {
     my ($self) = @_;
 
-    my $local = Path::Class::dir($self->config()->get_required('local'));
+    # This event does not have to do anything, since the EventBatch
+    # and Store will take care of making directories and generating
+    # the initial index files for us.
 
-    # croak "Repository already exists at $local" if -e $local;
-
-    $local->mkpath( qw(authors id) );
-    $local->mkpath( qw(modules) );
-    # TODO: Generate empty indexes
-
-    my $message = 'Created new repository';
+    my $message = 'Created a new Pinto repository.';
     $self->_set_message($message);
 
-    return $self;
+    return 1;
 }
 
 #------------------------------------------------------------------------------
