@@ -131,7 +131,6 @@ sub commit {
     my ($self) = @_;
 
     $self->local_index->write();
-    $self->remote_index->write();
     $self->rebuild_master_index()->write();
 
     return $self;
@@ -156,6 +155,9 @@ sub remove_package {
 
     my @master_removed = $self->master_index()->remove($package);
     $self->logger->debug("Removed $_ from master index") for @master_removed;
+
+    # TODO: Sanity check - packages removed from the local and the
+    # master indexes should always be the same.
 
     return sort map {$_->name()} @local_removed;
 }
@@ -203,6 +205,7 @@ sub add_local_package {
     my $package = Pinto::Package->new(name => $name, version => $version, file => $file_in_index);
 
     $self->local_index()->add($package);
+    $self->rebuild_master_index();
 
     return $self;
 }
