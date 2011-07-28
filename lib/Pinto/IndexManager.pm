@@ -112,8 +112,6 @@ sub __build_index {
 
     my $local = $self->config()->get_required('local');
     my $index_file = Path::Class::file($local, 'modules', $args{file});
-    $self->logger->debug("Reading index $index_file");
-
     return Pinto::Index->new(file => $index_file);
 }
 
@@ -148,7 +146,7 @@ sub update_mirror_index {
     my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
     my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
     my $file_has_changed = $self->ua()->mirror(url => $mirror_index_uri, to => $mirrored_file);
-    $self->mirror_index()->reload() if $file_has_changed;
+    $self->mirror_index() if $file_has_changed;
 
     return $file_has_changed;
 }

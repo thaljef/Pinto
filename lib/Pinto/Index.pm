@@ -106,6 +106,8 @@ sub read  {
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
+    print ">> Reading index at $file\n";
+
     return if not -e $file;
 
     my $fh = $file->openr();
