@@ -51,9 +51,12 @@ sub execute {
     if (@removed) {
         my $message = "Removed packages:\n    " . join "\n    ", @removed;
         $self->_set_message($message);
+        return 1;
     }
-
-    return 1;
+    else {
+        $self->log()->warn("Package $pkg is not in the local index");
+        return 0;
+    }
 }
 
 #------------------------------------------------------------------------------
