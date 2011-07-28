@@ -87,6 +87,19 @@ sub native_file {
 
 #-------------------------------------------------------------------------------
 
+=func format_message($header, @items)
+
+Formats a commit message, consisting of a header followed by a list
+of items.
+
+=cut
+
+sub format_message {
+    my ($header, @items) = @_;
+    return "$header\n    " . join "\n    ", @items;
+}
+
+#-------------------------------------------------------------------------------
 1;
 
 __END__

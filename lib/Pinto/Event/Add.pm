@@ -52,8 +52,8 @@ sub execute {
     my $file   = $self->file();
 
     my $idx_mgr = Pinto::IndexManager->instance();
-    if ( my $file_in_index = $idx_mgr->has_local_file(author => $author, file => $file) ) {
-        croak "File $file already exists in the local index as $file_in_index";
+    if ( my $existing = $idx_mgr->has_local_file(author => $author, file => $file) ) {
+        croak "Archive $file already exists in the local index as $existing";
     }
 
     # Dist::Metadata will croak for us if $file is whack!
@@ -79,12 +79,11 @@ sub execute {
 
 
     my $destination_dir = Pinto::Util::directory_for_author($local, qw(authors id), $author);
-    $destination_dir->mkpath();  #TODO: log & error check
-    copy($file, $destination_dir); #TODO: log & error check
+    $destination_dir->mkpath();    # TODO: log & error check
+    copy($file, $destination_dir); # TODO: log & error check
 
     my $base = $file->basename();
-    my $message = "Added $base providing:\n    ";
-    $message .= join "\n    ", sort keys %{ $provides };
+    my $message = Pinto::Util::format_message("Added $base providing:", sort keys %{$provides});
     $self->_set_message($message);
 
     return 1;

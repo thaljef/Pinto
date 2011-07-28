@@ -1,6 +1,6 @@
-package Pinto::Transaction;
+package Pinto::EventBatch;
 
-# ABSTRACT: Groups a series of events
+# ABSTRACT: Runs a series of events
 
 use Moose;
 use Moose::Autobox;
@@ -33,39 +33,62 @@ with qw(Pinto::Role::Loggable Pinto::Role::Configurable);
 
 #-----------------------------------------------------------------------------
 
+=method add(event => $some_event)
+
+Pushes C<$some_event> onto the stack of L<Pinto::Event>s that will be
+run.
+
+=cut
+
 sub add {
-    $DB::single = 1;
     my ($self, %args) = @_;
 
     my $event = $args{event};
     $event = [$event] if ref $event ne 'ARRAY';
 
-    $self->events()->push( @{ $event } );
+    $self->events()->push( $event->flatten() );
 
     return $self;
 }
 
 #-----------------------------------------------------------------------------
+# TODO: Trap exceptions here...
+
+=method run()
+
+Runs all the events in this Batch.  First, the C<prepare> method will
+be called on each Event, and then the C<execute> method will be called
+on each Event.
+
+=cut
 
 sub run {
     my ($self) = @_;
 
     $self->store()->initialize();
 
-    for my $event ($self->events()->flatten()) {
+    for my $event ( $self->events()->flatten() ) {
       $event->prepare();
     }
 
-    for my $event ($self->events()->flatten()) {
-      $event->execute();
+    my $changes_were_made = 0;
+    for my $event ( $self->events()->flatten() ) {
+      $changes_were_made += $event->execute();
     }
 
-    my $idx_mgr = Pinto::IndexManager->instance();
-    $idx_mgr->commit();
+    if ($changes_were_made) {
+        my $idx_mgr = Pinto::IndexManager->instance();
+        $idx_mgr->commit();
 
-    my $message = join "\n\n", grep {length} map {$_->message()} $self->events()->flatten();
-    $self->logger->log("Commit message is:\n\n$message");
-    $self->store()->finalize(message => $message);
+        my @event_messages = map {$_->message()} $self->events()->flatten();
+        my $batch_message  = join "\n\n", grep {length} @event_messages;
+
+        $self->logger()->debug("Commit message is:\n\n$batch_message");
+        $self->store()->finalize(message => $batch_message);
+    }
+    else {
+        $self->logger()->debug('No changes were made');
+    }
 
     return $self;
 }

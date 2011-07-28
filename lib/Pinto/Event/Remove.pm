@@ -49,7 +49,7 @@ sub execute {
     my @removed = $idx_mgr->remove_local_package(package => $pkg);
 
     if (@removed) {
-        my $message = "Removed packages:\n    " . join "\n    ", @removed;
+        my $message = Pinto::Util::format_message("Removed packages:", sort @removed);
         $self->_set_message($message);
         return 1;
     }

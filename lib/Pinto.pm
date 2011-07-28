@@ -8,8 +8,7 @@ use Path::Class;
 use Class::Load;
 
 use Pinto::Util;
-use Pinto::Index;
-use Pinto::Transaction;
+use Pinto::EventBatch;
 
 #------------------------------------------------------------------------------
 
@@ -67,9 +66,9 @@ sub create {
 
     require Pinto::Event::Create;
 
-    my $tx = Pinto::Transaction->new(store => $self->store());
-    $tx->add(event => Pinto::Event::Create->new());
-    $tx->run();
+    my $batch = Pinto::EventBatch->new(store => $self->store());
+    $batch->add(event => Pinto::Event::Create->new());
+    $batch->run();
 
     return $self;
 }
@@ -90,10 +89,10 @@ sub update {
     require Pinto::Event::Update;
     require Pinto::Event::Clean;
 
-    my $tx = Pinto::Transaction->new();
-    $tx->add(event => Pinto::Event::Update->new(file => $_));
-    $tx->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
-    $tx->run();
+    my $batch = Pinto::EventBatch->new();
+    $batch->add(event => Pinto::Event::Update->new(file => $_));
+    $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    $batch->run();
 
     return $self;
 }
@@ -115,10 +114,10 @@ sub add {
     require Pinto::Event::Clean;
 
     my $auth = $self->config()->get_required('author');
-    my $tx = Pinto::Transaction->new(store => $self->store());
-    $tx->add(event => Pinto::Event::Add->new(author => $auth, file => file($_))) for @{ $files };
-    $tx->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
-    $tx->run();
+    my $batch = Pinto::EventBatch->new(store => $self->store());
+    $batch->add(event => Pinto::Event::Add->new(author => $auth, file => file($_))) for @{ $files };
+    $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    $batch->run();
 
     return $self;
 }
@@ -139,10 +138,10 @@ sub remove {
     require Pinto::Event::Clean;
 
     my $auth = $self->config->get_required('author');
-    my $tx = Pinto::Transaction->new(store => $self->store());
-    $tx->add(event => Pinto::Event::Remove->new(author => $auth, package => $_)) for @{ $packages };
-    $tx->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
-    $tx->run();
+    my $batch = Pinto::EventBatch->new(store => $self->store());
+    $batch->add(event => Pinto::Event::Remove->new(author => $auth, package => $_)) for @{ $packages };
+    $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    $batch->run();
 
     return $self;
 }
@@ -162,9 +161,9 @@ sub clean {
 
     require Pinto::Event::Clean;
 
-    my $tx = Pinto::Transaction->new(store => $self->store());
-    $tx->add(event => Pinto::Event::Clean()->new());
-    $tx->run();
+    my $batch = Pinto::EventBatch->new(store => $self->store());
+    $batch->add(event => Pinto::Event::Clean()->new());
+    $batch->run();
 
     return $self;
 }
