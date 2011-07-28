@@ -84,7 +84,7 @@ sub create {
 
 Populates your repository with the latest version of all packages
 found on the CPAN mirror.  Your locally added packages will always
-override those on the mirror.
+mask those pulled from the mirror.
 
 =cut
 
@@ -94,7 +94,7 @@ sub mirror {
     require Pinto::Event::Mirror;
     require Pinto::Event::Clean;
 
-    my $batch = Pinto::EventBatch->new();
+    my $batch = Pinto::EventBatch->new(store => $self->store());
     $batch->add(event => Pinto::Event::Mirror->new(file => $_));
     $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $batch->run();

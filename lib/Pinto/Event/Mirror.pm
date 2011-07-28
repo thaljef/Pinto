@@ -4,8 +4,10 @@ package Pinto::Event::Mirror;
 
 use Moose;
 
-use Pinto::Util;
 use URI;
+
+use Pinto::Util;
+use Pinto::UserAgent;
 
 extends 'Pinto::Event';
 
@@ -40,20 +42,29 @@ sub execute {
     my $local  = $self->config()->get_required('local');
     my $mirror = $self->config()->get_required('mirror');
 
-    my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
-    $self->ua()->mirror(url => $mirror_index_uri, to => $self->mirror_index()->file());
-    $self->mirror_index()->reload();
+    my $idx_mgr = Pinto::IndexManager->instance();
+    my $index_has_changed = $idx_mgr->update_mirror_index();
+    return 0 unless $index_has_changed or $self->config()->get('force');
 
-    # TODO: Stop now if index has not changed, unless -force option is given.
+    for my $file ( $idx_mgr->mirrorable_files() ) {
 
-    my $mirrorable_index = $self->mirror_index() - $self->local_index();
-
-    for my $file ( @{ $mirrorable_index->files() } ) {
-        $self->log()->debug("Mirroring $file");
+        $self->logger()->debug("Looking at $file");
         my $mirror_uri = URI->new( "$mirror/authors/id/$file" );
         my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
-        my $changed = $self->mirror(url => $mirror_uri, to => $destination);
-        $self->log->info("Mirrored $file") if $changed;
+
+        # We assume that the file is up-to-date if it is present.
+        # This is usually true, because an archive on the mirror
+        # should never change.  But if the transmission was
+        # interrupted or somehow corrupted, then our file could be
+        # out-of-date.  So the 'force' flag causes us to try and
+        # mirror every file, even if we already have it.  Remember
+        # that mirror() will still only fetch the file if it thinks
+        # the remote one is newer than our local one.
+
+        next if -e $destination and not $self->config()->get('force');
+
+        my $file_has_changed = $self->mirror(url => $mirror_uri, to => $destination);
+        $self->logger->log("Mirrored archive $file") if $file_has_changed;
     }
 
     my $message = "Updated to latest mirror of $mirror";

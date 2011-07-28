@@ -65,7 +65,9 @@ on each Event.
 sub run {
     my ($self) = @_;
 
-    $self->store()->initialize();
+    if (not $self->config()->get('quick')) {
+        $self->store()->initialize();
+    }
 
     for my $event ( $self->events()->flatten() ) {
       $event->prepare();
@@ -77,8 +79,14 @@ sub run {
     }
 
     if ($changes_were_made) {
+
         my $idx_mgr = Pinto::IndexManager->instance();
-        $idx_mgr->commit();
+        $idx_mgr->write_indexes();
+
+        if ($self->config()->get('nocommit')) {
+            $self->logger->log('Not committing due to --nocommit flag');
+            return $self;
+        }
 
         my @event_messages = map {$_->message()} $self->events()->flatten();
         my $batch_message  = join "\n\n", grep {length} @event_messages;

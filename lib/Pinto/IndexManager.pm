@@ -16,6 +16,16 @@ use Pinto::Index;
 
 #-----------------------------------------------------------------------------
 
+has 'ua'      => (
+    is         => 'ro',
+    isa        => 'Pinto::UserAgent',
+    default    => sub { Pinto::UserAgent->new() },
+    handles    => [qw(mirror)],
+    init_arg   => undef,
+);
+
+#-----------------------------------------------------------------------------
+
 =attr mirror_index
 
 Returns the L<Pinto::Index> that represents our copy of the
@@ -113,12 +123,9 @@ sub rebuild_master_index {
     my ($self) = @_;
 
 
-    # Do this first, to kick lazy builders which also causes
-    # validation on the configuration.  Then we can log...
-    $self->master_index()->clear();
-
     $self->logger()->debug("Building master index");
 
+    $self->master_index()->clear();
     $self->master_index()->add( @{$self->mirror_index()->packages()} );
     $self->master_index()->merge( @{$self->local_index()->packages()} );
 
@@ -127,20 +134,43 @@ sub rebuild_master_index {
 
 #------------------------------------------------------------------------------
 
-sub commit {
+sub update_mirror_index {
+    my ($self) = @_;
+
+    $DB::single = 1;
+    my $local  = $self->config()->get_required('local');
+    my $mirror = $self->config()->get_required('mirror');
+
+    # TODO: Make an Index subclass for the mirror index, which knows
+    # how to update itself from a remote source.  Maybe optimize
+    # to reduce the number of times we have to read the index file.
+
+    my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
+    my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
+    my $file_has_changed = $self->ua()->mirror(url => $mirror_index_uri, to => $mirrored_file);
+    $self->mirror_index()->reload() if $file_has_changed;
+
+    return $file_has_changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub mirrorable_files {
+    my ($self) = @_;
+
+    $DB::single = 1;
+    return ($self->mirror_index() - $self->local_index())->files()->flatten();
+}
+
+#------------------------------------------------------------------------------
+
+sub write_indexes {
     my ($self) = @_;
 
     $self->local_index->write();
     $self->rebuild_master_index()->write();
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub mirrorable_index {
-    my ($self) = @_;
-    return $self->mirror_index() - $self->local_index();
 }
 
 #------------------------------------------------------------------------------

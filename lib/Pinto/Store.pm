@@ -19,11 +19,13 @@ with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 
 =method initialize()
 
-This method is called before each Pinto action, and is responsible for
-doing any setup work that is required by the Store.  This could
-include making a directory on the file system, checking out some
-directory from an SCM repository, or cloning an SCM repository.  If
-the initialization fails, an exception should be thrown.
+This method is called before each batch of Pinto events, and is
+responsible for doing any setup work that is required by the Store.
+This could include making a directory on the file system, checking out
+or updating a working copy, cloning, or pulling commits.  If the
+initialization fails, an exception should be thrown.
+
+The default implementation simply creates a directory.
 
 =cut
 
@@ -46,17 +48,17 @@ sub initialize {
 
 =method finalize(message => 'what happened')
 
-This method is called after each Pinto action and is responsible for
-doing any work that is required to commit the Store.  This could
-include committing changes, pushing commits to a remote repository,
-and/or making a tag.  If the finalization fails, an exception should
-be thrown.
+This method is called after each batch of Pinto events and is
+responsible for doing any work that is required to commit the Store.
+This could include scheduling files for addition/deletion, pushing
+commits to a remote repository, and/or making a tag.  If the
+finalization fails, an exception should be thrown.
 
 =cut
 
 sub finalize {
     my ($self, %args) = @_;
-
+    # TODO: Default implementation - delete empty directories.
     return 1;
 }
 
