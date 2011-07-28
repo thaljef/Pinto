@@ -146,7 +146,7 @@ sub mirrorable_index {
 
 #------------------------------------------------------------------------------
 
-sub remove_local_package {
+sub remove_package {
     my ($self, %args) = @_;
 
     my $package = $args{package};

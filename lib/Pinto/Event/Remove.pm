@@ -46,7 +46,7 @@ sub execute {
 
     my $pkg = $self->package();
     my $idx_mgr = Pinto::IndexManager->instance();
-    my @removed = $idx_mgr->remove_local_package(package => $pkg);
+    my @removed = $idx_mgr->remove_package(package => $pkg);
 
     if (@removed) {
         my $message = Pinto::Util::format_message("Removed packages:", sort @removed);
@@ -54,9 +54,11 @@ sub execute {
         return 1;
     }
     else {
-        $self->log()->warn("Package $pkg is not in the local index");
+        $self->logger()->warn("Package $pkg is not in the index");
         return 0;
     }
+
+    return 0;
 }
 
 #------------------------------------------------------------------------------

@@ -36,7 +36,7 @@ anything smells fishy, throw an exception.
 
 =cut
 
-sub prepare { return 1 }
+sub prepare { return 0 }
 
 =method execute()
 
@@ -44,7 +44,7 @@ Executes the transaction.  Throws an exception if anything goes wrong.
 
 =cut
 
-sub execute { return 1 }
+sub execute { return 0 }
 
 =method rollback()
 

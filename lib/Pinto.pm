@@ -167,7 +167,7 @@ sub clean {
     require Pinto::Event::Clean;
 
     my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::Clean()->new());
+    $batch->add(event => Pinto::Event::Clean->new());
     $batch->run();
 
     return $self;
@@ -185,12 +185,11 @@ This is basically what the F<02packages> file looks like.
 sub list {
     my ($self) = @_;
 
-    $self->_store()->initialize();
+    require Pinto::Event::List;
 
-    for my $package ( @{ $self->master_index()->packages() } ) {
-        # TODO: Report native paths instead?
-        print $package->to_string(), "\n";
-    }
+    my $batch = Pinto::EventBatch->new(store => $self->store());
+    $batch->add(event => Pinto::Event::List->new());
+    $batch->run();
 
     return $self;
 }

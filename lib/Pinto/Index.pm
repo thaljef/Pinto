@@ -284,12 +284,10 @@ Arguments can be L<Pinto::Package> objects or package names as strings.
 =cut
 
 sub remove {
-    my ($self, @packages) = @_;
+    my ($self, @package_names) = @_;
 
     my @removed = ();
-    for my $package (@packages) {
-
-      my $name = eval { $package->name() } || $package;
+    for my $name (@package_names) {
 
       if (my $incumbent = $self->packages_by_name()->at($name)) {
           # Remove the file that contains the incumbent package and

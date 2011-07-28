@@ -50,16 +50,17 @@ sub execute {
     my $local  = $self->config()->get_required('local');
     my $author = $self->config()->get_required('author');
     my $file   = $self->file();
+    my $base   = $file->basename();
 
     my $idx_mgr = Pinto::IndexManager->instance();
     if ( my $existing = $idx_mgr->has_local_file(author => $author, file => $file) ) {
-        croak "Archive $file already exists in the local index as $existing";
+        croak "Archive $base already exists as $existing";
     }
 
     # Dist::Metadata will croak for us if $file is whack!
     my $distmeta = Dist::Metadata->new(file => $file->stringify());
     my $provides = $distmeta->package_versions();
-    return if not %{ $provides };
+    return 0 if not %{ $provides };
 
 
     my @conflicts = ();
@@ -82,7 +83,6 @@ sub execute {
     $destination_dir->mkpath();    # TODO: log & error check
     copy($file, $destination_dir); # TODO: log & error check
 
-    my $base = $file->basename();
     my $message = Pinto::Util::format_message("Added $base providing:", sort keys %{$provides});
     $self->_set_message($message);
 

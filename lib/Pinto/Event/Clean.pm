@@ -7,6 +7,8 @@ use Moose;
 use File::Find;
 use Path::Class;
 
+use Pinto::IndexManager;
+
 extends 'Pinto::Event';
 
 #------------------------------------------------------------------------------
@@ -17,17 +19,16 @@ extends 'Pinto::Event';
 
 sub execute {
     my ($self, %args) = @_;
-    return;
 
-    my $local = $self->config()->get_required('local');
+    my $local      = $self->config()->get_required('local');
+    my $search_dir = Path::Class::dir($local, qw(authors id));
+    return 0 if not -e $search_dir;
 
-    my $base_dir = Path::Class::dir($local, qw(authors id));
-    return if not -e $base_dir;
-
+    my @deleted = ();
     my $wanted = sub {
 
         my $physical_file = file($File::Find::name);
-        my $index_file  = $physical_file->relative($base_dir)->as_foreign('Unix');
+        my $index_file  = $physical_file->relative($search_dir)->as_foreign('Unix');
 
         # TODO: Can we just use $_ instead of calling basename() ?
         if (Pinto::Util::is_source_control_file( $physical_file->basename() )) {
@@ -36,18 +37,21 @@ sub execute {
         }
 
         return if not -f $physical_file;
-        return if exists $self->master_index()->packages_by_file()->{$index_file};
-        $self->log()->info("Cleaning $index_file"); # TODO: report as physical file instead?
+        my $idx_mgr = Pinto::IndexManager->instance();
+        return if exists $idx_mgr->master_index()->packages_by_file()->{$index_file};
+        $self->logger()->log("Deleting $index_file"); # TODO: report as physical file instead?
+        push @deleted, $physical_file;
         $physical_file->remove(); # TODO: Error check!
     };
 
     # TODO: Consider using Path::Class::Dir->recurse() instead;
-    File::Find::find($wanted, $base_dir);
+    File::Find::find($wanted, $search_dir);
 
-    my $message = 'Cleaned up archives not found in the index.';
+    return 0 if not @deleted;
+
+    my $message = Pinto::Util::format_message('Deleted archives:', sort @deleted);
     $self->_set_message($message);
-
-    return $self;
+    return 1;
 
 }
 
