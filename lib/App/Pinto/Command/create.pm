@@ -16,8 +16,7 @@ use base 'App::Pinto::Command';
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opt, $args) = @_;
-
+    my ($self, $opts, $args) = @_;
     $self->usage_error('Arguments are not allowed') if @{ $args };
 }
 
@@ -27,7 +26,6 @@ sub execute {
     $DB::single = 1;
     my ($self, $opts, $args) = @_;
     $self->pinto()->create();
-    return 0;
 }
 
 #------------------------------------------------------------------------------

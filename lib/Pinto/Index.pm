@@ -291,12 +291,12 @@ sub remove {
 
       my $name = eval { $package->name() } || $package;
 
-      if (my $encumbent = $self->packages_by_name()->at($name)) {
+      if (my $incumbent = $self->packages_by_name()->at($name)) {
           # Remove the file that contains the incumbent package and
           # then remove all packages that were contained in that file
-          my $kin = $self->packages_by_file()->delete($encumbent->file());
+          my $kin = $self->packages_by_file()->delete($incumbent->file());
           $self->packages_by_name()->delete($_) for map {$_->name()} @{$kin};
-          push @removed, $encumbent->file();
+          push @removed, $kin->flatten();
       }
 
     }

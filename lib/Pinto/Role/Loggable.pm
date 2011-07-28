@@ -1,15 +1,24 @@
 package Pinto::Role::Loggable;
 
-# ABSTRACT: Something that logs activity
+# ABSTRACT: Something that wants to log its activity
 
 use Moose::Role;
 
-has log => (
+use Pinto::Logger;
+
+#-----------------------------------------------------------------------------
+
+# VERSION
+
+#-----------------------------------------------------------------------------
+
+has logger => (
     is       => 'ro',
     isa      => 'Pinto::Logger',
-    handles  => [qw(debug info warn fatal)],
-    required => 1,
+    default  => sub { Pinto::Logger->instance() },
 );
+
+#-----------------------------------------------------------------------------
 
 1;
 

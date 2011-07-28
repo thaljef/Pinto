@@ -17,25 +17,23 @@ use base 'App::Pinto::Command';
 
 sub opt_spec {
     return (
-        [ "remote=s"  => 'URL of a CPAN mirror' ],
+        [ 'force'     => 'Force update, even if indexes appear unchanged' ],
+        [ 'remote=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
     );
 }
 
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opt, $args) = @_;
-    $self->usage_error("Arguments are not allowed") if @{ $args };
+    my ($self, $opts, $args) = @_;
+    $self->usage_error('Arguments are not allowed') if @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
-    $DB::single = 1;
     my ($self, $opts, $args) = @_;
-    $self->pinto()->update(remote => $opts->{remote});
-    $self->pinto()->clean() unless $self->pinto()->config()->get('nocleanup');
-    return 0;
+    $self->pinto()->update( %{ $opts } );
 }
 
 #------------------------------------------------------------------------------

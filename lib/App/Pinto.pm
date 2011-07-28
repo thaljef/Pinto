@@ -43,14 +43,13 @@ sub pinto {
     my ($self) = @_;
 
     require Pinto;
-    require Pinto::Logger;
     require Pinto::Config;
 
+    $DB::single = 1;
     return $self->{pinto} ||= do {
         my %global_options = %{ $self->global_options() };
         my $config = Pinto::Config->new(%global_options);
-        my $log   = Pinto::Logger->new(config => $config);
-        my $pinto = Pinto->new(config => $config, log => $log);
+        my $pinto = Pinto->new(config => $config);
     };
 }
 
