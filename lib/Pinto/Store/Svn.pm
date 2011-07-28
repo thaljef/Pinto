@@ -21,9 +21,9 @@ sub initialize {
     my $local = $args{local} || $self->config()->get_required('local');
     my $trunk_url = $args{svn_trunk_url} || $self->config()->get_required('svn_trunk_url');
 
-    $self->log()->info("Checking out (or updating) $local from $trunk_url ... ", {nolf => 1});
+    $self->logger()->log("Checking out (or updating) working copy ... ", {nolf => 1});
     Pinto::Util::Svn::svn_checkout(url => $trunk_url, to => $local);
-    $self->log()->info('DONE');
+    $self->logger()->log('DONE');
 
     return 1;
 }
@@ -33,17 +33,17 @@ sub initialize {
 sub finalize {
     my ($self, %args) = @_;
 
-    my $local   = $args{local}   || $self->config()->get_required('local');
-    my $message = $args{message} || 'NO MESSAGE WAS GIVEN';
+    my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
+    my $local     = $self->config()->get_required('local');
 
-    $self->log()->info("Scheduling files for addition/deletion ... ", {nolf => 1});
+    $self->logger()->log("Scheduling files for addition/deletion ... ", {nolf => 1});
     Pinto::Util::Svn::svn_schedule(path => $local);
-    $self->log()->info('DONE');
+    $self->logger()->log('DONE');
 
 
-    $self->log()->info("Committing changes to $local ... ", {nolf => 1});
+    $self->logger()->log("Committing changes ... ", {nolf => 1});
     Pinto::Util::Svn::svn_commit(paths => $local, message => $message);
-    $self->log()->info('DONE');
+    $self->logger()->log('DONE');
 
     $self->_make_tag() if $self->config()->get('svn_tag_url');
 
@@ -64,9 +64,9 @@ sub _make_tag {
     my $as_of = time2str('%C', $now);
     my $message  = "Tagging Pinto repository as of $as_of.";
 
-    $self->log()->info("Tagging $trunk_url as $tag_url ... ", {nolf => 1});
+    $self->logger()->log("Tagging $trunk_url as $tag_url ... ", {nolf => 1});
     Pinto::Util::Svn::svn_tag(from => $trunk_url, to => $tag_url, message => $message);
-    $self->log()->info('DONE');
+    $self->logger()->log('DONE');
 
     return 1;
 }
