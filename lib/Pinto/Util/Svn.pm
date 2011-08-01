@@ -6,17 +6,13 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
-use IPC::Cmd 0.72 qw(run can_run);
+use IPC::Cmd 0.72;
 use List::MoreUtils qw(any);
 use Path::Class;
 
 #--------------------------------------------------------------------------
 
 # VERSION
-
-#--------------------------------------------------------------------------
-
-BEGIN { can_run('svn') or croak 'svn is not available' };
 
 #--------------------------------------------------------------------------
 
