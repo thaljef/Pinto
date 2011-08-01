@@ -1,6 +1,6 @@
-package Pinto::EventBatch;
+package Pinto::ActionBatch;
 
-# ABSTRACT: Runs a series of events
+# ABSTRACT: Runs a series of actions
 
 use Moose;
 use Moose::Autobox;
@@ -22,9 +22,9 @@ has 'store' => (
     lazy     => 1,
 );
 
-has events => (
+has actions => (
     is       => 'ro',
-    isa      => 'ArrayRef[Pinto::Event]',
+    isa      => 'ArrayRef[Pinto::Action]',
     default  => sub { [] },
 );
 
@@ -48,9 +48,9 @@ sub __build_store {
 
 #-----------------------------------------------------------------------------
 
-=method add(event => $some_event)
+=method add(action => $some_action)
 
-Pushes C<$some_event> onto the stack of L<Pinto::Event>s that will be
+Pushes C<$some_action> onto the stack of L<Pinto::Action>s that will be
 run.
 
 =cut
@@ -58,10 +58,10 @@ run.
 sub add {
     my ($self, %args) = @_;
 
-    my $event = $args{event};
-    $event = [$event] if ref $event ne 'ARRAY';
+    my $action = $args{action};
+    $action = [$action] if ref $action ne 'ARRAY';
 
-    $self->events()->push( $event->flatten() );
+    $self->actions()->push( $action->flatten() );
 
     return $self;
 }
@@ -71,9 +71,9 @@ sub add {
 
 =method run()
 
-Runs all the events in this Batch.  First, the C<prepare> method will
-be called on each Event, and then the C<execute> method will be called
-on each Event.
+Runs all the actions in this Batch.  First, the C<prepare> method will
+be called on each Action, and then the C<execute> method will be called
+on each Action.
 
 =cut
 
@@ -86,8 +86,8 @@ sub run {
     }
 
     my $changes_were_made = 0;
-    for my $event ( $self->events()->flatten() ) {
-        $changes_were_made += $event->execute();
+    for my $action ( $self->actions()->flatten() ) {
+        $changes_were_made += $action->execute();
     }
 
     if ($self->config()->get('nocommit')) {
@@ -96,8 +96,8 @@ sub run {
     }
 
     if ($changes_were_made) {
-        my @event_messages = map {$_->message()} $self->events()->flatten();
-        my $batch_message  = join "\n\n", grep {length} @event_messages;
+        my @action_messages = map {$_->message()} $self->actions()->flatten();
+        my $batch_message  = join "\n\n", grep {length} @action_messages;
         $self->store()->finalize(message => $batch_message);
         return $self;
     }

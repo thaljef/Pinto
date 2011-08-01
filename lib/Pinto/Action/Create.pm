@@ -1,13 +1,13 @@
-package Pinto::Event::Create;
+package Pinto::Action::Create;
 
-# ABSTRACT: An event to create a new repository
+# ABSTRACT: An action to create a new repository
 
 use Moose;
 
 use Carp;
 use Path::Class;
 
-extends 'Pinto::Event';
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ extends 'Pinto::Event';
 sub execute {
     my ($self) = @_;
 
-    # Someone could use the <create> event to pull an existing repository
+    # Someone could use the <create> action to pull an existing repository
     # out of VCS to a new location on the file system.  So if the
     # master index file already exists, then assume that the repository
     # has already been created and return false to indicate that

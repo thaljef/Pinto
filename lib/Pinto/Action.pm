@@ -1,6 +1,6 @@
-package Pinto::Event;
+package Pinto::Action;
 
-# ABSTRACT: Base class for events
+# ABSTRACT: Base class for Actions
 
 use Moose;
 

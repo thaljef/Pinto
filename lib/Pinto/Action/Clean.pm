@@ -1,6 +1,6 @@
-package Pinto::Event::Clean;
+package Pinto::Action::Clean;
 
-# ABSTRACT: An event to remove cruft from the repository
+# ABSTRACT: An action to remove cruft from the repository
 
 use Moose;
 
@@ -9,7 +9,7 @@ use Path::Class;
 
 use Pinto::IndexManager;
 
-extends 'Pinto::Event';
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 

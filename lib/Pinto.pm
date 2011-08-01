@@ -9,8 +9,8 @@ use Path::Class;
 use Class::Load;
 
 use Pinto::Util;
-use Pinto::EventFactory;
-use Pinto::EventBatch;
+use Pinto::ActionFactory;
+use Pinto::ActionBatch;
 
 #------------------------------------------------------------------------------
 
@@ -19,10 +19,10 @@ use Pinto::EventBatch;
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has event_factory => (
+has action_factory => (
     is        => 'ro',
-    isa       => 'Pinto::EventFactory',
-    builder   => '__build_event_factory',
+    isa       => 'Pinto::ActionFactory',
+    builder   => '__build_action_factory',
     lazy      => 1,
 );
 
@@ -35,10 +35,10 @@ with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 #------------------------------------------------------------------------------
 # Builders
 
-sub __build_event_factory {
+sub __build_action_factory {
     my ($self) = @_;
 
-    return Pinto::EventFactory->new( config => $self->config(),
+    return Pinto::ActionFactory->new( config => $self->config(),
                                      logger => $self->logger() );
 }
 
@@ -70,9 +70,9 @@ sub create {
         if -e file($local, qw(modules 02packages.details.txt.gz));
 
 
-    my $batch = $self->_make_event_batch();
-    my $event = $self->event_factory()->create_event('Create');
-    $batch->add(event => $event);
+    my $batch = $self->_make_action_batch();
+    my $action = $self->action_factory()->create_action('Create');
+    $batch->add(action => $action);
     $batch->run();
 
     return $self;
@@ -91,10 +91,10 @@ mask those pulled from the mirror.
 sub mirror {
     my ($self) = @_;
 
-    my $batch = $self->_make_event_batch();
-    my $event = $self->event_factory()->create_event('Mirror');
-    $batch->add(event => $event);
-    #$batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    my $batch = $self->_make_action_batch();
+    my $action = $self->action_factory()->create_action('Mirror');
+    $batch->add(action => $action);
+    #$batch->add(action => Pinto::Action::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
     return $self;
@@ -111,16 +111,16 @@ sub add {
 
     my $files  = $args{files};
 
-    my @events = map {
+    my @actions = map {
 
-        my $ef = $self->event_factory();
-        $ef->create_event('Add', file => Path::Class::file($_));
+        my $ef = $self->action_factory();
+        $ef->create_action('Add', file => Path::Class::file($_));
 
     } @{ $files };
 
-    my $batch = $self->_make_event_batch();
-    $batch->add(event => \@events);
-    #$batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    my $batch = $self->_make_action_batch();
+    $batch->add(action => \@actions);
+    #$batch->add(action => Pinto::Action::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
     return $self;
@@ -137,16 +137,16 @@ sub remove {
 
     my $packages = $args{packages};
 
-    my @events = map {
+    my @actions = map {
 
-        my $ef = $self->event_factory();
-        $ef->create_event('Remove', package => $_);
+        my $ef = $self->action_factory();
+        $ef->create_action('Remove', package => $_);
 
     } @{ $packages };
 
-    my $batch = $self->_make_event_batch();
-    $batch->add(event => \@events);
-    #$batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    my $batch = $self->_make_action_batch();
+    $batch->add(action => \@actions);
+    #$batch->add(action => Pinto::Action::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
     return $self;
@@ -166,9 +166,9 @@ operation.
 sub clean {
     my ($self) = @_;
 
-    my $batch = $self->_make_event_batch();
-    my $event = $self->event_factory()->create_event('Clean');
-    $batch->add(event => $event);
+    my $batch = $self->_make_action_batch();
+    my $action = $self->action_factory()->create_action('Clean');
+    $batch->add(action => $action);
     $batch->run();
 
     return $self;
@@ -186,9 +186,9 @@ This is basically what the F<02packages> file looks like.
 sub list {
     my ($self) = @_;
 
-    my $batch = $self->_make_event_batch();
-    my $event = $self->event_factory()->create_event('List');
-    $batch->add(event => $event);
+    my $batch = $self->_make_action_batch();
+    my $action = $self->action_factory()->create_action('List');
+    $batch->add(action => $action);
     $batch->run();
 
     return $self;
@@ -207,9 +207,9 @@ have gone wrong.
 sub verify {
     my ($self, %args) = @_;
 
-    my $batch = $self->_make_event_batch();
-    my $event = $self->event_factory()->create_event('Verify');
-    $batch->add(event => $event);
+    my $batch = $self->_make_action_batch();
+    my $action = $self->action_factory()->create_action('Verify');
+    $batch->add(action => $action);
     $batch->run();
 
     return $self;
@@ -217,11 +217,11 @@ sub verify {
 
 #------------------------------------------------------------------------------
 
-sub _make_event_batch {
+sub _make_action_batch {
     my ($self) = @_;
 
-    return Pinto::EventBatch->new( config => $self->config(),
-                                   logger => $self->logger() );
+    return Pinto::ActionBatch->new( config => $self->config(),
+                                    logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------

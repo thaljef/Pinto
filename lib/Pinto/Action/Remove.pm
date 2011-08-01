@@ -1,12 +1,12 @@
-package Pinto::Event::Remove;
+package Pinto::Action::Remove;
 
-# ABSTRACT: An event to remove packages from the repository
+# ABSTRACT: An action to remove packages from the repository
 
 use Moose;
 
 use Carp;
 
-extends 'Pinto::Event';
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 

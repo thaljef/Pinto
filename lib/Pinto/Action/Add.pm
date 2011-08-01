@@ -1,6 +1,6 @@
-package Pinto::Event::Add;
+package Pinto::Action::Add;
 
-# ABSTRACT: An event to add one archive to the repository
+# ABSTRACT: An action to add one archive to the repository
 
 use Moose;
 
@@ -11,7 +11,7 @@ use Dist::MetaData;
 use Pinto::Util;
 use Pinto::IndexManager;
 
-extends 'Pinto::Event';
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ sub execute {
     $destination_dir->mkpath();    # TODO: log & error check
     copy($file, $destination_dir); # TODO: log & error check
 
-    # TODO: Events shouldn't care about when to write indexes.
+    # TODO: Actions shouldn't care about when to write indexes.
     $idxmgr->rebuild_master_index()->write();
     $idxmgr->local_index()->write();
 

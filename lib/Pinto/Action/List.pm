@@ -1,10 +1,10 @@
-package Pinto::Event::List;
+package Pinto::Action::List;
 
-# ABSTRACT: An event that lists the contents of a repository
+# ABSTRACT: An action that lists the contents of a repository
 
 use Moose;
 
-extends 'Pinto::Event';
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 

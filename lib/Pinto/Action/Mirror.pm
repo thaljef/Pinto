@@ -1,6 +1,6 @@
-package Pinto::Event::Mirror;
+package Pinto::Action::Mirror;
 
-# ABSTRACT: An event to fill the repository from a mirror
+# ABSTRACT: An action to fill the repository from a mirror
 
 use Moose;
 
@@ -9,7 +9,7 @@ use URI;
 use Pinto::Util;
 use Pinto::UserAgent;
 
-extends 'Pinto::Event';
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
-package Pinto::EventFactory;
+package Pinto::ActionFactory;
 
-# ABSTRACT: Factory class for making Events
+# ABSTRACT: Factory class for making Actions
 
 use Moose;
 
@@ -37,13 +37,13 @@ sub __build_idxmgr {
 #------------------------------------------------------------------------------
 # Methods
 
-sub create_event {
-    my ($self, $event, %args) = @_;
+sub create_action {
+    my ($self, $action_name, %args) = @_;
 
-    my $event_class = "Pinto::Event::$event";
-    Class::Load::load_class( $event_class );
+    my $action_class = "Pinto::Action::$action_name";
+    Class::Load::load_class( $action_class );
 
-    return $event_class->new( config => $self->config(),
+    return $action_class->new( config => $self->config(),
                               logger => $self->logger(),
                               idxmgr => $self->idxmgr(),
                               %args );
