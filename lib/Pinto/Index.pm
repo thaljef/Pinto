@@ -120,6 +120,7 @@ sub read  {
             $inheader = 0 if not /\S/;
             next;
         }
+
         chomp;
         my ($n, $v, $f) = split;
         my $package = Pinto::Package->new(name => $n, version => $v, file => $f);
