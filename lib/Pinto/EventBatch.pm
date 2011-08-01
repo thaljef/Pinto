@@ -80,7 +80,8 @@ on each Event.
 sub run {
     my ($self) = @_;
 
-    if ($self->config()->get('force')) {
+    if ($self->config()->get('force')
+        or not $self->store()->is_initialized()) {
         $self->store()->initialize();
     }
 
