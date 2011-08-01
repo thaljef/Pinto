@@ -2,13 +2,14 @@ package Pinto::IndexManager;
 
 # ABSTRACT: Manages the indexes of a Pinto repository
 
-use MooseX::Singleton;
+use Moose;
 use Moose::Autobox;
 
 use Path::Class;
 
 use Pinto::Util;
 use Pinto::Index;
+use Pinto::UserAgent;
 
 #-----------------------------------------------------------------------------
 
@@ -16,7 +17,7 @@ use Pinto::Index;
 
 #-----------------------------------------------------------------------------
 
-has 'ua'      => (
+has 'ua'  => (
     is         => 'ro',
     isa        => 'Pinto::UserAgent',
     default    => sub { Pinto::UserAgent->new() },
@@ -233,8 +234,6 @@ sub add_local_package {
     my $package = Pinto::Package->new(name => $name, version => $version, file => $file_in_index);
 
     $self->local_index()->add($package);
-    $self->rebuild_master_index();
-
     return $self;
 }
 

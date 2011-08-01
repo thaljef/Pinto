@@ -33,27 +33,20 @@ with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 
 #------------------------------------------------------------------------------
 
-sub prepare {
-    my ($self) = @_;
-
-    my $file = $self->file();
-    croak "$file does not exist" if not -e $file;
-    croak "$file is not readable" if not -r $file;
-}
-
-#------------------------------------------------------------------------------
-# TODO: Refactor this. Consider checking authorship in the prepare() stage
-
 sub execute {
     my ($self) = @_;
 
     my $local  = $self->config()->get_required('local');
     my $author = $self->config()->get_required('author');
+
     my $file   = $self->file();
     my $base   = $file->basename();
 
-    my $idx_mgr = Pinto::IndexManager->instance();
-    if ( my $existing = $idx_mgr->has_local_file(author => $author, file => $file) ) {
+    # croak "$file does not exist" if not -e $file;
+    # croak "$file is not readable" if not -r $file;
+
+    my $idxmgr = $self->idxmgr();
+    if ( my $existing = $idxmgr->has_local_file(author => $author, file => $file) ) {
         croak "Archive $base already exists as $existing";
     }
 
@@ -64,24 +57,28 @@ sub execute {
 
 
     my @conflicts = ();
-    for my $package_name (keys %{ $provides }) {
-        if ( my $orig_author = $idx_mgr->local_author_of(package => $package_name) ) {
+    for my $package_name (sort keys %{ $provides }) {
+        if ( my $orig_author = $idxmgr->local_author_of(package => $package_name) ) {
             push @conflicts, "Package $package_name is already owned by $orig_author\n"
                 if $orig_author ne $author;
         }
     }
     die @conflicts if @conflicts;
 
-    while( my ($package_name, $version) = each %{ $provides } ) {
+    for my $package_name (sort keys %{ $provides }) {
+        my $version = $provides->{$package_name};
         $self->logger->log("Adding package $package_name $version");
-        $idx_mgr->add_local_package(name  => $package_name,
+        $idxmgr->add_local_package(name  => $package_name,
             version => $version, author => $author, file => $file);
     }
-
 
     my $destination_dir = Pinto::Util::directory_for_author($local, qw(authors id), $author);
     $destination_dir->mkpath();    # TODO: log & error check
     copy($file, $destination_dir); # TODO: log & error check
+
+    # TODO: Events shouldn't care about when to write indexes.
+    $idxmgr->rebuild_master_index()->write();
+    $idxmgr->local_index()->write();
 
     my $message = Pinto::Util::format_message("Added archive $base providing:", sort keys %{$provides});
     $self->_set_message($message);

@@ -40,7 +40,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->add( %{ $opts }, files => $args);
+    $self->pinto( $opts )->add(files => $args);
 }
 
 #------------------------------------------------------------------------------

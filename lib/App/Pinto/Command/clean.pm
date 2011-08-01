@@ -24,7 +24,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->clean();
+    $self->pinto( $opts )->clean();
 }
 
 #------------------------------------------------------------------------------

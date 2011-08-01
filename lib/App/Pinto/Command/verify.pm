@@ -25,7 +25,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->verify();
+    $self->pinto( $opts )->verify();
     # TODO: exit with status 1 if not verified!
 }
 

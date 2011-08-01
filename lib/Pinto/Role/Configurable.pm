@@ -15,7 +15,7 @@ use Pinto::Config;
 has config => (
     is       => 'ro',
     isa      => 'Pinto::Config',
-    default  => sub { Pinto::Config->instance() },
+    required => 1,
 );
 
 #-----------------------------------------------------------------------------

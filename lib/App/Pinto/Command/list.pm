@@ -24,7 +24,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->list();
+    $self->pinto( $opts )->list();
 }
 
 #------------------------------------------------------------------------------

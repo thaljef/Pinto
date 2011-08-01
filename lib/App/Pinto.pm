@@ -14,12 +14,13 @@ use App::Cmd::Setup -app;
 #------------------------------------------------------------------------------
 
 sub global_opt_spec {
-  return (
-    [ "local=s"     => "Path to local repository directory"],
-    [ "log_level=s" => "Set the amount of noise (debug|info|warn)" ],
-    [ "nocleanup"   => "Do not clean repository after each action" ],
-    [ "profile=s"   => "Path to your pinto profile" ],
 
+  return (
+
+      [ "local=s"     => "Path to local repository directory"],
+      [ "log_level=i" => "Set the amount of noise (0|1|2)" ],
+      [ "nocleanup"   => "Do not clean repository after each action" ],
+      [ "profile=s"   => "Path to your pinto profile" ],
   );
 }
 
@@ -40,16 +41,18 @@ arguments.
 =cut
 
 sub pinto {
-    my ($self) = @_;
+    my ($self, $command_options) = @_;
 
     require Pinto;
     require Pinto::Config;
+    require Pinto::Logger;
 
     $DB::single = 1;
     return $self->{pinto} ||= do {
         my %global_options = %{ $self->global_options() };
-        my $config = Pinto::Config->new(%global_options);
-        my $pinto = Pinto->new(config => $config);
+        my $config = Pinto::Config->new(%global_options, %{$command_options});
+        my $logger = Pinto::Logger->new(config => $config);
+        my $pinto = Pinto->new(config => $config, logger => $logger);
     };
 }
 

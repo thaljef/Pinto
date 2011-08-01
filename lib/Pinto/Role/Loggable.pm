@@ -15,7 +15,7 @@ use Pinto::Logger;
 has logger => (
     is       => 'ro',
     isa      => 'Pinto::Logger',
-    default  => sub { Pinto::Logger->instance() },
+    required => 1,
 );
 
 #-----------------------------------------------------------------------------

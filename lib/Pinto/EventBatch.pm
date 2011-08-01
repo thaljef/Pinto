@@ -11,13 +11,15 @@ use Pinto::IndexManager;
 
 # VERSION
 
-#-----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Moose attributes
 
-has store => (
+has 'store' => (
     is       => 'ro',
     isa      => 'Pinto::Store',
-    required => 1,
+    builder  => '__build_store',
+    init_arg => undef,
+    lazy     => 1,
 );
 
 has events => (
@@ -30,6 +32,19 @@ has events => (
 # Moose roles
 
 with qw(Pinto::Role::Loggable Pinto::Role::Configurable);
+
+#-----------------------------------------------------------------------------
+# Builders
+
+sub __build_store {
+   my ($self) = @_;
+
+   my $store_class = $self->config()->get('store_class') || 'Pinto::Store';
+   Class::Load::load_class($store_class);
+
+   return $store_class->new( config => $self->config(),
+                             logger => $self->logger() );
+}
 
 #-----------------------------------------------------------------------------
 
@@ -65,38 +80,28 @@ on each Event.
 sub run {
     my ($self) = @_;
 
-    if (not $self->config()->get('quick')) {
+    if ($self->config()->get('force')) {
         $self->store()->initialize();
-    }
-
-    for my $event ( $self->events()->flatten() ) {
-      $event->prepare();
     }
 
     my $changes_were_made = 0;
     for my $event ( $self->events()->flatten() ) {
-      $changes_were_made += $event->execute();
+        $changes_were_made += $event->execute();
+    }
+
+    if ($self->config()->get('nocommit')) {
+        $self->logger->log('Not committing due to --nocommit flag');
+        return $self;
     }
 
     if ($changes_were_made) {
-
-        my $idx_mgr = Pinto::IndexManager->instance();
-        $idx_mgr->write_indexes();
-
-        if ($self->config()->get('nocommit')) {
-            $self->logger->log('Not committing due to --nocommit flag');
-            return $self;
-        }
-
         my @event_messages = map {$_->message()} $self->events()->flatten();
         my $batch_message  = join "\n\n", grep {length} @event_messages;
-
-        $self->logger()->debug("Commit message is:\n\n$batch_message");
         $self->store()->finalize(message => $batch_message);
+        return $self;
     }
-    else {
-        $self->logger()->debug('No changes were made');
-    }
+
+    $self->logger()->debug('No changes were made');
 
     return $self;
 }

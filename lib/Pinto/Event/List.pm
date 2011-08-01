@@ -1,13 +1,8 @@
 package Pinto::Event::List;
 
-# ABSTRACT: An event that list the contents of a repository
+# ABSTRACT: An event that lists the contents of a repository
 
 use Moose;
-
-use Carp;
-use Path::Class;
-
-use Pinto::IndexManager;
 
 extends 'Pinto::Event';
 
@@ -20,8 +15,8 @@ extends 'Pinto::Event';
 sub execute {
     my ($self) = @_;
 
-    my $idx_mgr = Pinto::IndexManager->instance();
-    for my $package ( @{ $idx_mgr->master_index()->packages() } ) {
+    my $idxmgr = $self->idxmgr();
+    for my $package ( @{ $idxmgr->master_index()->packages() } ) {
         print $package->to_string(), "\n";
     }
 

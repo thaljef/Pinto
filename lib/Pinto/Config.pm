@@ -2,7 +2,7 @@ package Pinto::Config;
 
 # ABSTRACT: User configuration for Pinto
 
-use MooseX::Singleton;
+use Moose;
 
 use Carp;
 use Config::Tiny;

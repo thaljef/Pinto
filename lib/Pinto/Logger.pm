@@ -2,7 +2,7 @@ package Pinto::Logger;
 
 # ABSTRACT: A simple logger
 
-use MooseX::Singleton;
+use Moose;
 use Moose::Util::TypeConstraints;
 
 #-----------------------------------------------------------------------------
@@ -14,9 +14,10 @@ use Moose::Util::TypeConstraints;
 
 has log_level => (
     is      => 'ro',
-    isa     => enum( [qw(0 1 2) ] ),
-    default => 1,
+    builder => '__build_log_level',
+    lazy    => 1,
 );
+
 
 #-----------------------------------------------------------------------------
 # Moose roles
@@ -24,7 +25,16 @@ has log_level => (
 with qw(Pinto::Role::Configurable);
 
 #-----------------------------------------------------------------------------
-# Public attributes
+# Builders
+
+sub __build_log_level {
+    my ($self) = @_;
+    # TODO: Default log_level to 1.  Maybe delegate this
+    return $self->config()->get('log_level');
+}
+
+#-----------------------------------------------------------------------------
+# Private functions
 
 sub _logit {
     my ($message, $opts) = @_;

@@ -150,6 +150,8 @@ sub write {
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
 
+    print ">> Writing index at $file\n";
+
     $file->dir()->mkpath(); # TODO: log & error check
     my $gz = Compress::Zlib::gzopen( $file->openw(), 'wb' );
     $self->_gz_write_header($gz);

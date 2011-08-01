@@ -40,7 +40,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto()->remove( %{ $opts }, packages => $args );
+    $self->pinto( $opts )->remove( packages => $args );
 }
 
 #------------------------------------------------------------------------------

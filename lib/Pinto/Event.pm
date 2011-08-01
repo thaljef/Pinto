@@ -9,12 +9,14 @@ use Moose;
 # VERSION
 
 #------------------------------------------------------------------------------
+# Attributes
 
-=attr message()
+has idxmgr => (
+    is       => 'ro',
+    isa      => 'Pinto::IndexManager',
+    required => 1,
+);
 
-Returns the message associated with this transaction.
-
-=cut
 
 has message => (
     is       => 'ro',
@@ -24,36 +26,15 @@ has message => (
     init_arg => undef,
 );
 
+#------------------------------------------------------------------------------
+# Roles
+
 with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 
 #------------------------------------------------------------------------------
-
-=method prepare()
-
-The C<prepare> method is called before each transaction is executed.
-This gives the transaction an opportunity to validate its self.  If
-anything smells fishy, throw an exception.
-
-=cut
-
-sub prepare { return 0 }
-
-=method execute()
-
-Executes the transaction.  Throws an exception if anything goes wrong.
-
-=cut
+# Methods
 
 sub execute { return 0 }
-
-=method rollback()
-
-Restores the universe to the state before the transaction.  This should
-be called if the C<execute()> method throws an exception.
-
-=cut
-
-sub rollback { return 1 }
 
 #------------------------------------------------------------------------------
 

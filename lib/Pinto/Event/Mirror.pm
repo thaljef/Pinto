@@ -21,18 +21,8 @@ has 'ua'      => (
     is         => 'ro',
     isa        => 'Pinto::UserAgent',
     default    => sub { Pinto::UserAgent->new() },
-    handles    => [qw(mirror)],
     init_arg   => undef,
 );
-
-#------------------------------------------------------------------------------
-
-sub prepare {
-    my ($self) = @_;
-
-    # TODO: Test that mirror is available!
-
-}
 
 #------------------------------------------------------------------------------
 
@@ -41,12 +31,13 @@ sub execute {
 
     my $local  = $self->config()->get_required('local');
     my $mirror = $self->config()->get_required('mirror');
+    my $force  = $self->config()->get('force');
 
-    my $idx_mgr = Pinto::IndexManager->instance();
-    my $index_has_changed = $idx_mgr->update_mirror_index();
-    return 0 unless $index_has_changed or $self->config()->get('force');
+    my $idxmgr = $self->idxmgr();
+    my $index_has_changed = $idxmgr->update_mirror_index();
+    return 0 unless $index_has_changed or $force;
 
-    for my $file ( $idx_mgr->mirrorable_files() ) {
+    for my $file ( $idxmgr->mirrorable_files() ) {
 
         $self->logger()->debug("Looking at $file");
         my $mirror_uri = URI->new( "$mirror/authors/id/$file" );
@@ -63,7 +54,7 @@ sub execute {
 
         next if -e $destination and not $self->config()->get('force');
 
-        my $file_has_changed = $self->mirror(url => $mirror_uri, to => $destination);
+        my $file_has_changed = $self->ua->mirror(url => $mirror_uri, to => $destination);
         $self->logger->log("Mirrored archive $file") if $file_has_changed;
     }
 

@@ -9,6 +9,7 @@ use Path::Class;
 use Class::Load;
 
 use Pinto::Util;
+use Pinto::EventFactory;
 use Pinto::EventBatch;
 
 #------------------------------------------------------------------------------
@@ -16,30 +17,29 @@ use Pinto::EventBatch;
 # VERSION
 
 #------------------------------------------------------------------------------
+# Moose attributes
+
+has event_factory => (
+    is        => 'ro',
+    isa       => 'Pinto::EventFactory',
+    builder   => '__build_event_factory',
+    lazy      => 1,
+);
+
+#------------------------------------------------------------------------------
 # Moose roles
 
 with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 
-#------------------------------------------------------------------------------
-# Moose attributes
-
-has 'store' => (
-    is       => 'ro',
-    isa      => 'Pinto::Store',
-    builder  => '__build_store',
-    init_arg => undef,
-    lazy     => 1,
-);
 
 #------------------------------------------------------------------------------
+# Builders
 
-sub __build_store {
-   my ($self) = @_;
+sub __build_event_factory {
+    my ($self) = @_;
 
-   my $store_class = $self->config()->get('store_class') || 'Pinto::Store';
-   Class::Load::load_class($store_class);
-
-   return $store_class->new();
+    return Pinto::EventFactory->new( config => $self->config(),
+                                     logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ sub should_cleanup {
 
 =method create()
 
-Creates a new empty repoistory.
+Creates a new empty repository.
 
 =cut
 
@@ -69,10 +69,10 @@ sub create {
     die "Looks like you already have a repository at $local\n"
         if -e file($local, qw(modules 02packages.details.txt.gz));
 
-    require Pinto::Event::Create;
 
-    my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::Create->new());
+    my $batch = $self->_make_event_batch();
+    my $event = $self->event_factory()->create_event('Create');
+    $batch->add(event => $event);
     $batch->run();
 
     return $self;
@@ -89,14 +89,12 @@ mask those pulled from the mirror.
 =cut
 
 sub mirror {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
-    require Pinto::Event::Mirror;
-    require Pinto::Event::Clean;
-
-    my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::Mirror->new(file => $_));
-    $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+    my $batch = $self->_make_event_batch();
+    my $event = $self->event_factory()->create_event('Mirror');
+    $batch->add(event => $event);
+    #$batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
     return $self;
@@ -109,19 +107,19 @@ sub mirror {
 =cut
 
 sub add {
-    $DB::single = 1;
     my ($self, %args) = @_;
 
-    my $files = $args{files};
-    $files = [ $files ] if ref $files ne 'ARRAY';
+    my $files  = $args{files};
 
-    require Pinto::Event::Add;
-    require Pinto::Event::Clean;
+    my @events = map {
 
-    my $auth = $self->config()->get_required('author');
-    my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::Add->new(author => $auth, file => file($_))) for @{ $files };
-    $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+        my $ef = $self->event_factory();
+        $ef->create_event('Add', file => Path::Class::file($_));
+
+    } @{ $files };
+
+    my $batch = $self->_make_event_batch();
+    $batch->add(event => \@events);
     $batch->run();
 
     return $self;
@@ -137,15 +135,17 @@ sub remove {
     my ($self, %args) = @_;
 
     my $packages = $args{packages};
-    $packages = [ $packages ] if ref $packages ne 'ARRAY';
 
-    require Pinto::Event::Remove;
-    require Pinto::Event::Clean;
+    my @events = map {
 
-    my $auth = $self->config->get_required('author');
-    my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::Remove->new(author => $auth, package => $_)) for @{ $packages };
-    $batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
+        my $ef = $self->event_factory();
+        $ef->create_event('Remove', package => $_);
+
+    } @{ $packages };
+
+    my $batch = $self->_make_event_batch();
+    $batch->add(event => \@events);
+    #$batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
     return $self;
@@ -165,10 +165,9 @@ operation.
 sub clean {
     my ($self) = @_;
 
-    require Pinto::Event::Clean;
-
-    my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::Clean->new());
+    my $batch = $self->_make_event_batch();
+    my $event = $self->event_factory()->create_event('Clean');
+    $batch->add(event => $event);
     $batch->run();
 
     return $self;
@@ -186,10 +185,9 @@ This is basically what the F<02packages> file looks like.
 sub list {
     my ($self) = @_;
 
-    require Pinto::Event::List;
-
-    my $batch = Pinto::EventBatch->new(store => $self->store());
-    $batch->add(event => Pinto::Event::List->new());
+    my $batch = $self->_make_event_batch();
+    my $event = $self->event_factory()->create_event('List');
+    $batch->add(event => $event);
     $batch->run();
 
     return $self;
@@ -208,17 +206,21 @@ have gone wrong.
 sub verify {
     my ($self, %args) = @_;
 
-    $self->_store()->initialize();
-
-    my $local = $args{local} || $self->config()->get_required('local');
-
-    my @base = ($local, 'authors', 'id');
-    for my $file ( @{ $self->master_index()->files_native(@base) } ) {
-        # TODO: Report absolute or relative path?
-        print "$file is missing\n" if not -e $file;
-    }
+    my $batch = $self->_make_event_batch();
+    my $event = $self->event_factory()->create_event('Verify');
+    $batch->add(event => $event);
+    $batch->run();
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _make_event_batch {
+    my ($self) = @_;
+
+    return Pinto::EventBatch->new( config => $self->config(),
+                                   logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------

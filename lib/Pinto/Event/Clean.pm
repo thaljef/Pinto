@@ -18,7 +18,7 @@ extends 'Pinto::Event';
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
     my $local      = $self->config()->get_required('local');
     my $search_dir = Path::Class::dir($local, qw(authors id));
