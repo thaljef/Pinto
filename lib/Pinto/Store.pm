@@ -46,6 +46,21 @@ sub initialize {
 
 #------------------------------------------------------------------------------
 
+=method is_initialized()
+
+Returns true if the store appears to be initialized.  In this base class,
+it simply means that the working directory exists.  For other subclasses,
+this could mean that the working copy is up-to-date.
+
+=cut
+
+sub is_initialized {
+    my ($self) = @_;
+    return -e $self->config()->get_required('local');
+}
+
+#------------------------------------------------------------------------------
+
 =method finalize(message => 'what happened')
 
 This method is called after each batch of Pinto events and is

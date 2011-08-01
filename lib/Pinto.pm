@@ -120,6 +120,7 @@ sub add {
 
     my $batch = $self->_make_event_batch();
     $batch->add(event => \@events);
+    #$batch->add(event => Pinto::Event::Clean->new()) if $self->should_cleanup();
     $batch->run();
 
     return $self;
