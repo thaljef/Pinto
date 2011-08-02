@@ -167,14 +167,8 @@ public packages.
 sub merge {
     my ($self, @packages) = @_;
 
-    # Maybe instead...
-    # $self->remove($_) for @packages;
-    # $self->add($_)    for @packages;
-
-    for my $package (@packages) {
-        $self->remove($package);
-        $self->add($package);
-    }
+    $self->remove($_) for @packages;
+    $self->add($_)    for @packages;
 
     return $self;
 }
