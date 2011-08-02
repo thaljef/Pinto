@@ -203,9 +203,9 @@ specified by the C<file> attribute.
 =cut
 
 sub reload {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    return $self->clear()->read();
+    return $self->clear()->read(%args);
 }
 
 #------------------------------------------------------------------------------
@@ -266,6 +266,7 @@ Returns the total number of packages currently in this Index.
 
 sub package_count {
     my ($self) = @_;
+
     return $self->packages()->keys()->length();
 }
 
@@ -282,7 +283,9 @@ relative to the F<authors/id> directory.
 
 sub files {
     my ($self) = @_;
+
     my $mapper = sub { $_[0]->file() };
+
     return uniq $self->packages()->values()->map($mapper)->sort()->flatten();
 }
 
@@ -290,6 +293,7 @@ sub files {
 
 sub find {
     my ($self, %args) = @_;
+
     if (my $pkg = $args{package}) {
         return $self->packages()->at($pkg);
     }
@@ -318,7 +322,9 @@ have C<@base> prepended to them.
 
 sub files_native {
     my ($self, @base) = @_;
+
     my $mapper = sub { return Pinto::Util::native_file(@base, $_[0]) };
+
     return $self->files()->map($mapper);
 }
 
@@ -326,11 +332,13 @@ sub files_native {
 
 sub __plus {
     my ($self, $other, $swap) = @_;
+
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
     my $result = $class->new();
     $result->add( $self->packages()->values()->flatten() );
     $result->merge( $other->packages()->values()->flatten() );
+
     return $result;
 }
 
@@ -338,11 +346,13 @@ sub __plus {
 
 sub __minus {
     my ($self, $other, $swap) = @_;
+
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
     my $result = $class->new();
     $result->add( $self->packages()->values()->flatten() );
     $result->remove( $other->packages()->values()->flatten() );
+
     return $result;
 }
 
