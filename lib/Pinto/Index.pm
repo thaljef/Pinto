@@ -67,6 +67,7 @@ sub _build_packages {
     my $inheader = 1;
     my $packages = {};
     while ($gz->gzreadline($_) > 0) {
+
         if ($inheader) {
             $inheader = 0 if not /\S/;
             next;

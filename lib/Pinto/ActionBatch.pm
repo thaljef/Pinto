@@ -71,9 +71,7 @@ sub add {
 
 =method run()
 
-Runs all the actions in this Batch.  First, the C<prepare> method will
-be called on each Action, and then the C<execute> method will be called
-on each Action.
+Runs all the actions in this Batch.
 
 =cut
 
@@ -91,7 +89,7 @@ sub run {
     }
 
     if ($self->config()->get('nocommit')) {
-        $self->logger->log('Not committing due to --nocommit flag');
+        $self->logger->log('Not committing due to nocommit flag');
         return $self;
     }
 
@@ -101,8 +99,6 @@ sub run {
         $self->store()->finalize(message => $batch_message);
         return $self;
     }
-
-    $self->logger()->debug('No changes were made');
 
     return $self;
 }

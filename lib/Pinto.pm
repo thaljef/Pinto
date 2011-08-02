@@ -39,7 +39,7 @@ sub __build_action_factory {
     my ($self) = @_;
 
     return Pinto::ActionFactory->new( config => $self->config(),
-                                     logger => $self->logger() );
+                                      logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------

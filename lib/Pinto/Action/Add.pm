@@ -42,8 +42,9 @@ sub execute {
     my $file   = $self->file();
     my $base   = $file->basename();
 
-    # croak "$file does not exist" if not -e $file;
-    # croak "$file is not readable" if not -r $file;
+    croak "$file does not exist"  if not -e $file;
+    croak "$file is not readable" if not -r $file;
+    croak "$file is not a file"   if not -f $file;
 
     my $idxmgr = $self->idxmgr();
     if ( my $existing = $idxmgr->find_file(author => $author, file => $file) ) {
