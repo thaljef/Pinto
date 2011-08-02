@@ -37,7 +37,7 @@ sub execute {
     my $index_has_changed = $idxmgr->update_mirror_index();
     return 0 unless $index_has_changed or $force;
 
-    for my $file ( $idxmgr->mirrorable_files() ) {
+    for my $file ( $idxmgr->files_to_mirror() ) {
 
         $self->logger()->debug("Looking at $file");
         my $mirror_uri = URI->new( "$mirror/authors/id/$file" );

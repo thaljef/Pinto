@@ -122,11 +122,11 @@ sub rebuild_master_index {
     my ($self) = @_;
 
 
-    $self->logger()->debug("Building master index");
+    $self->logger()->debug("(Re)building master index");
 
     $self->master_index()->clear();
-    $self->master_index()->add( @{$self->mirror_index()->packages()} );
-    $self->master_index()->merge( @{$self->local_index()->packages()} );
+    $self->master_index()->add( $self->mirror_index()->packages()->values()->flatten() );
+    $self->master_index()->merge( $self->local_index()->packages()->values()->flatten() );
 
     return $self->master_index();
 }
@@ -136,7 +136,6 @@ sub rebuild_master_index {
 sub update_mirror_index {
     my ($self) = @_;
 
-    $DB::single = 1;
     my $local  = $self->config()->get_required('local');
     my $mirror = $self->config()->get_required('mirror');
 
@@ -147,18 +146,26 @@ sub update_mirror_index {
     my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
     my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
     my $file_has_changed = $self->ua()->mirror(url => $mirror_index_uri, to => $mirrored_file);
-    $self->mirror_index() if $file_has_changed;
+    $self->mirror_index()->reload() if $file_has_changed;
 
     return $file_has_changed;
 }
 
 #------------------------------------------------------------------------------
 
-sub mirrorable_files {
+sub files_to_mirror {
     my ($self) = @_;
 
-    $DB::single = 1;
     return ($self->mirror_index() - $self->local_index())->files()->flatten();
+}
+
+#------------------------------------------------------------------------------
+
+sub all_packages {
+    my ($self) = @_;
+
+    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+    return $self->master_index()->packages()->values->sort($sorter)->flatten();
 }
 
 #------------------------------------------------------------------------------
@@ -174,16 +181,20 @@ sub write_indexes {
 
 #------------------------------------------------------------------------------
 
-sub remove_package {
+sub remove_local_package {
     my ($self, %args) = @_;
 
     my $package = $args{package};
 
     my @local_removed = $self->local_index()->remove($package);
-    $self->logger->debug("Removed $_ from local index") for @local_removed;
+    $self->logger->debug("Removed $_ from local index")
+      for @local_removed->map( sub {$_[0]->name()} )->flatten();
+
+    return if not @local_removed;
 
     my @master_removed = $self->master_index()->remove($package);
-    $self->logger->debug("Removed $_ from master index") for @master_removed;
+    $self->logger->debug("Removed $_ from master index")
+      for @master_removed->map( sub {$_[0]->name()} )->flatten();
 
     # TODO: Sanity check - packages removed from the local and the
     # master indexes should always be the same.
@@ -198,7 +209,7 @@ sub local_author_of {
 
     my $package = $args{package};
 
-    my $pkg = $self->local_index()->packages_by_name()->at($package);
+    my $pkg = $self->local_index()->packages()->at($package);
 
     return $pkg ? $pkg->author() : ();
 }
@@ -206,17 +217,16 @@ sub local_author_of {
 
 #------------------------------------------------------------------------------
 
-sub has_local_file {
+sub find_file {
     my ($self, %args) = @_;
 
     my $file   = $args{file};
     my $author = $args{author};
 
-    my $author_dir    = Pinto::Util::directory_for_author($author);
-    my $file_in_index = Path::Class::file($author_dir, $file->basename())->as_foreign('Unix');
-
-    my $packages = $self->master_index()->packages_by_file->at($file_in_index);
-    return $packages ? $packages->[0]->file() : ();
+    my $local         = $self->config()->get_required('local');
+    my $author_dir    = Pinto::Util::directory_for_author($local, qw(authors id), $author);
+    my $physical_file = Path::Class::file($author_dir, $file->basename());
+    return -e $physical_file ? $physical_file : ();
 }
 
 #------------------------------------------------------------------------------
@@ -224,16 +234,9 @@ sub has_local_file {
 sub add_local_package {
     my ($self, %args) = @_;
 
-    my $file    = $args{file};
-    my $name    = $args{name};
-    my $version = $args{version};
-    my $author  = $args{author};
-
-    my $author_dir    = Pinto::Util::directory_for_author($author);
-    my $file_in_index = Path::Class::file($author_dir, $file->basename())->as_foreign('Unix')->stringify();
-    my $package = Pinto::Package->new(name => $name, version => $version, file => $file_in_index);
-
+    my $package = Pinto::Package->new(%args);
     $self->local_index()->add($package);
+
     return $self;
 }
 

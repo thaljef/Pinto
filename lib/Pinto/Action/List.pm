@@ -15,8 +15,7 @@ extends 'Pinto::Action';
 sub execute {
     my ($self) = @_;
 
-    my $idxmgr = $self->idxmgr();
-    for my $package ( @{ $idxmgr->master_index()->packages() } ) {
+    for my $package ( $self->idxmgr()->all_packages() ) {
         print $package->to_string(), "\n";
     }
 

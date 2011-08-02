@@ -46,7 +46,7 @@ sub execute {
     # croak "$file is not readable" if not -r $file;
 
     my $idxmgr = $self->idxmgr();
-    if ( my $existing = $idxmgr->has_local_file(author => $author, file => $file) ) {
+    if ( my $existing = $idxmgr->find_file(author => $author, file => $file) ) {
         croak "Archive $base already exists as $existing";
     }
 
@@ -66,7 +66,7 @@ sub execute {
     die @conflicts if @conflicts;
 
     for my $package_name (sort keys %{ $provides }) {
-        my $version = $provides->{$package_name};
+        my $version = $provides->{$package_name} || 'undef';
         $self->logger->log("Adding package $package_name $version");
         $idxmgr->add_local_package(name  => $package_name,
             version => $version, author => $author, file => $file);

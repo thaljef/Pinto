@@ -63,7 +63,7 @@ sub log {
 
 sub warn {
     my ($self, $message) = @_;
-    CORE::warn $message if $self->log_level() <= 2;
+    CORE::warn "$message\n" if $self->log_level() <= 2;
 }
 
 #-----------------------------------------------------------------------------

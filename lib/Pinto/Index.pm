@@ -8,6 +8,7 @@ use MooseX::Types::Path::Class;
 
 use Carp;
 use Compress::Zlib;
+use List::MoreUtils qw(uniq);
 use Path::Class qw();
 
 use Pinto::Package;
@@ -20,40 +21,21 @@ use overload ('+' => '__plus', '-' => '__minus');
 
 #------------------------------------------------------------------------------
 
-=attr packages_by_name()
+=attr packages()
 
-Returns a reference to a hash.  The keys will be the names of every
-package in this Index (as strings) and the values will be the
-corresponding L<Pinto::Package> object.
-
-=cut
-
-has 'packages_by_name' => (
-    is         => 'ro',
-    isa        => 'HashRef',
-    default    => sub { {} },
-    init_arg   => undef,
-    writer     => '_set_packages_by_name',
-);
-
-=attr packages_by_file()
-
-Returns a reference to hash.  The keys will be the path to every
-archive file in this Index (as strings) and the values will be a
-reference to an array of all the L<Pinto::Package> objects that belong
-in that archive file.  Note that the keys are the paths as they appear
-in the index.  This means they will be Unix-style paths and will be
-relative to the F<authors/id> directory.
+Returns a reference to hash of packages listed in this index.  The
+keys are packages names (as strings) and the values are the associated
+L<Pinto::Package> objects.
 
 =cut
 
-has 'packages_by_file' => (
+has packages => (
     is         => 'ro',
     isa        => 'HashRef',
-    default    => sub { {} },
-    init_arg   => undef,
-    writer     => '_set_packages_by_file',
+    writer     => '_set_packages',
+    lazy_build => 1,
 );
+
 
 =attr file()
 
@@ -70,51 +52,20 @@ has 'file' => (
 );
 
 #------------------------------------------------------------------------------
+# Builders
 
-=for Pod::Coverage BUILD
-
-Internal, not documented
-
-=cut
-
-
-sub BUILD {
+sub _build_packages {
     my ($self) = @_;
-    if (my $file = $self->file()){
-        $self->read(file => $file);
-    }
-    return $self;
-}
 
-#------------------------------------------------------------------------------
-
-=method read(file => '02packages.details.txt.gz')
-
-Populates this Index by reading the packages from a file.  This file
-is expected to conform to the F<02packages.details.txt> format, and
-should be C<gzipped>.  You normally should not need to call this
-method, as it will be called for you if you supply a C<file> argument
-to the constructor.
-
-=cut
-
-sub read  {
-    my ($self, %args) = @_;
-
-    my $file = $args{file} || $self->file()
-        or croak "This index has no file attribute, so you must specify one";
-
-    $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
-
-    print ">> Reading index at $file\n";
-
-    return if not -e $file;
+    my $file = $self->file() or return {};
+    -e $file or return {};  # TODO: hmmm....
 
     my $fh = $file->openr();
     my $gz = Compress::Zlib::gzopen($fh, "rb")
         or die "Cannot open $file: $Compress::Zlib::gzerrno";
 
     my $inheader = 1;
+    my $packages = {};
     while ($gz->gzreadline($_) > 0) {
         if ($inheader) {
             $inheader = 0 if not /\S/;
@@ -122,12 +73,14 @@ sub read  {
         }
 
         chomp;
-        my ($n, $v, $f) = split;
-        my $package = Pinto::Package->new(name => $n, version => $v, file => $f);
-        $self->add($package);
+        my ($name, $version, $file) = split;
+        $packages->{$name} = Pinto::Package->new( name    => $name,
+                                                  file    => $file,
+                                                  version => $version );
+
     }
 
-    return $self;
+    return $packages;
 }
 
 #------------------------------------------------------------------------------
@@ -191,7 +144,9 @@ END_PACKAGE_HEADER
 sub _gz_write_packages {
     my ($self, $gz) = @_;
 
-    for my $package ( @{ $self->packages() } ) {
+    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+    my $packages = $self->packages()->values()->sort($sorter);
+    for my $package ( $packages->flatten() ) {
         $gz->gzwrite($package->to_string() . "\n");
     }
 
@@ -230,8 +185,7 @@ sub merge {
 
 Unconditionally adds a list of L<Pinto::Package> objects to this
 Index.  If the index already contains packages by the same name, they
-will be overwritten.  Use this method only when you know that the
-names of all the added packages are unique.
+will be overwritten.
 
 =cut
 
@@ -239,8 +193,7 @@ sub add {
     my ($self, @packages) = @_;
 
     for my $package (@packages) {
-        $self->packages_by_name()->put($package->name(), $package);
-        ($self->packages_by_file()->{$package->file()} ||= [])->push($package);
+        $self->packages()->put($package->name(), $package);
     }
 
     return $self;
@@ -272,8 +225,7 @@ Removes all packages from this Index.
 sub clear {
     my ($self) = @_;
 
-    $self->_set_packages_by_name( {} );
-    $self->_set_packages_by_file( {} );
+    $self->_set_packages( {} );
 
     return $self;
 }
@@ -289,18 +241,22 @@ Arguments can be L<Pinto::Package> objects or package names as strings.
 =cut
 
 sub remove {
-    my ($self, @package_names) = @_;
+    my ($self, @packages) = @_;
 
     my @removed = ();
-    for my $name (@package_names) {
+    for my $package (@packages) {
 
-      if (my $incumbent = $self->packages_by_name()->at($name)) {
-          # Remove the file that contains the incumbent package and
-          # then remove all packages that were contained in that file
-          my $kin = $self->packages_by_file()->delete($incumbent->file());
-          $self->packages_by_name()->delete($_) for map {$_->name()} @{$kin};
-          push @removed, $kin->flatten();
-      }
+        $package = $package->name()
+            if eval { $package->isa('Pinto::Package') };
+
+        if (my $incumbent = $self->packages()->at($package)) {
+            # Remove the file that contains the incumbent package and
+            # then remove all packages that were contained in that file
+            my $filter = sub { $_[0]->file() eq $incumbent->file() };
+            my @kin = $self->packages()->values()->grep($filter)->flatten();
+            $self->packages()->delete($_) for map {$_->name()} @kin;
+            push @removed, @kin;
+        }
 
     }
     return @removed;
@@ -316,22 +272,7 @@ Returns the total number of packages currently in this Index.
 
 sub package_count {
     my ($self) = @_;
-    return $self->packages_by_name()->keys()->length();
-}
-
-#------------------------------------------------------------------------------
-
-=method packages()
-
-Returns a reference to an array of all the L<Pinto::Package> objects
-in this index, sorted by name.
-
-=cut
-
-sub packages {
-    my ($self) = @_;
-    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
-    return $self->packages_by_name()->values()->sort($sorter);
+    return $self->packages()->keys()->length();
 }
 
 #------------------------------------------------------------------------------
@@ -347,7 +288,27 @@ relative to the F<authors/id> directory.
 
 sub files {
     my ($self) = @_;
-    return $self->packages_by_file()->keys()->sort();
+    my $mapper = sub { $_[0]->file() };
+    return uniq $self->packages()->values()->map($mapper)->sort()->flatten();
+}
+
+#------------------------------------------------------------------------------
+
+sub find {
+    my ($self, %args) = @_;
+    if (my $pkg = $args{package}) {
+        return $self->packages()->at($pkg);
+    }
+    elsif (my $file = $args{file}) {
+        my $filter = sub { $_[0]->file() eq $file };
+        return $self->packages()->values()->grep( $filter )->flatten();
+    }
+    elsif (my $author = $args{author}) {
+        my $filter = sub { $_[0]->file() eq $author };
+        return $self->packages()->values()->grep( $filter )->flatten();
+    }
+
+    croak "Don't know how to find by %args";
 }
 
 #------------------------------------------------------------------------------
@@ -369,41 +330,13 @@ sub files_native {
 
 #------------------------------------------------------------------------------
 
-=method validate()
-
-Checks to see if the internal state of this Index is sane.  Basically,
-every package must map to a file, and vice-versa.  If not, an
-exception is thrown.
-
-=cut
-
-sub validate {
-    my ($self) = @_;
-
-    for my $package ( $self->packages_by_file()->values()->map( sub {@{$_[0]}} )->flatten() ) {
-        my $name = $package->name();
-        $self->packages_by_name->exists($name)
-            or croak "Validation of package $name failed";
-    }
-
-    for my $package ( $self->packages_by_name()->values()->flatten() ) {
-        my $file = $package->file();
-        $self->packages_by_file->exists($file)
-            or croak "Validation of file $file failed";
-    }
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub __plus {
     my ($self, $other, $swap) = @_;
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
     my $result = $class->new();
-    $result->add( @{$self->packages()} );
-    $result->merge( @{$other->packages()} );
+    $result->add( $self->packages()->values()->flatten() );
+    $result->merge( $other->packages()->values()->flatten() );
     return $result;
 }
 
@@ -414,10 +347,14 @@ sub __minus {
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
     my $result = $class->new();
-    $result->add( @{$self->packages()} );
-    $result->remove( @{$other->packages()} );
+    $result->add( $self->packages()->values()->flatten() );
+    $result->remove( $other->packages()->values()->flatten() );
     return $result;
 }
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta()->make_immutable();
 
 #------------------------------------------------------------------------------
 

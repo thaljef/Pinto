@@ -6,6 +6,8 @@ use Moose;
 
 use Path::Class qw();
 
+use Pinto::Util;
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -67,19 +69,35 @@ has 'native_file' => (
 
 =attr author()
 
-Returns the author of this Package.  The author is extracted from the
-path to the file this Package lives in.  For example, the author of
-F<J/JO/JOHN/Foo-Bar-1.2.tar.gz> will be C<JOHN>.
+Returns the author of this Package.  If it wasn't given explicitly,
+the author is extracted from the path to the file this Package lives
+in.  For example, the author of F<J/JO/JOHN/Foo-Bar-1.2.tar.gz> will
+be C<JOHN>.
 
 =cut
 
 has 'author'  => (
     is        => 'ro',
     isa       => 'Str',
-    lazy      => 1,
-    init_arg  => undef,
-    builder   => '__build_author',
+    required  => 1,
 );
+
+#------------------------------------------------------------------------------
+
+sub BUILDARGS {
+    my ($class, %args)  = @_;
+
+    if (my $author = $args{author}) {
+      my $author_dir = Pinto::Util::directory_for_author($author);
+      my $basename   = Path::Class::file( $args{file} )->basename();
+      $args{file}  = Path::Class::file($author_dir, $basename)->as_foreign('Unix')->stringify();
+    }
+    else {
+      $args{author} = Path::Class::file( $args{file} )->dir()->dir_list(2, 1);
+    }
+
+    return \%args;
+}
 
 #------------------------------------------------------------------------------
 
@@ -87,11 +105,6 @@ has 'author'  => (
 # Path::Class::File to a string that always looks like a Unix path.
 
 #------------------------------------------------------------------------------
-
-sub __build_author {
-    my ($self) = @_;
-    return Path::Class::file( $self->file() )->dir()->dir_list(2, 1);
-}
 
 =method to_string()
 
@@ -106,6 +119,10 @@ sub to_string {
     $fw = length $self->name() if $fw < length $self->name();
     return sprintf "%-${fw}s %s  %s", $self->name(), $self->version(), $self->file();
 }
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta()->make_immutable();
 
 #------------------------------------------------------------------------------
 

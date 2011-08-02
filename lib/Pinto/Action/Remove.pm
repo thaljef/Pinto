@@ -35,7 +35,7 @@ sub execute {
     croak "You are $author, but only $orig_author can remove $pkg"
         if defined $orig_author and $author ne $orig_author;
 
-    if (my @removed = $idxmgr->remove_package(package => $pkg)) {
+    if (my @removed = $idxmgr->remove_local_package(package => $pkg)) {
         my $message = Pinto::Util::format_message("Removed packages:", sort @removed);
         $self->_set_message($message);
         return 1;
