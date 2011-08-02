@@ -44,8 +44,6 @@ is($index->find(package=>'Baz'), undef,
 #-----------------------------------------------------------------------------
 # Merging...
 
-$DB::single = 1;
-
 $index->clear();
 $index->add( mkpkg(['Eenie', 'Meenie']) );
 $index->merge( mkpkg(['Meenie', 'Moe'], undef, '2.0') );
