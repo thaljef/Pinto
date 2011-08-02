@@ -21,17 +21,17 @@ use Path::Class;
 
 class_type('URI');
 
-subtype 'AuthorID' => (
-    as 'Str',
-    where { $_ !~ /\W/ },
-    message { "The author can only be alphanumeric characters" },
-);
-
-coerce 'AuthorID',
-    from 'Str',   via { uc $_ };
-
 coerce 'URI',
     from 'Str',   via { URI->new($_) };
+
+subtype 'AuthorID',
+    as 'Str',
+    where { $_ !~ /\W/ },
+    message { "The author ($_) can only be alphanumeric characters" };
+
+coerce 'AuthorID',
+    from 'Str',
+    via  { uc $_ };
 
 #------------------------------------------------------------------------------
 # Moose attributes
@@ -47,13 +47,13 @@ of those locations, then you will get an empty config.
 
 has 'profile' => (
     is           => 'ro',
-    isa          => 'Str',
+    isa          => 'Path::Class::File',
 );
 
 
 has 'local'   => (
     is        => 'ro',
-    isa       => 'Path::Class::File',
+    isa       => 'Path::Class::Dir',
     required  => 1,
     coerce    => 1,
 );
@@ -62,15 +62,14 @@ has 'local'   => (
 has 'mirror'  => (
     is        => 'ro',
     isa       => 'URI',
-    coerce    => 1,
     default   => sub { URI->new( 'http://cpan.perl.org' ) },
+    coerce    => 1,
 );
 
 
 has 'author'  => (
-    is        => 'ro',
+    is        => 'rw',
     isa       => 'AuthorID',
-    default   => sub { uc $ENV{USER} },
     coerce    => 1,
 );
 
