@@ -53,20 +53,6 @@ has 'file'    => (
     required  => 1,
 );
 
-=attr native_file()
-
-Same as the C<file()> method, but returns the path as a
-L<Path::Class::File> object that is suitable for your OS.
-
-has 'native_file' => (
-    is            => 'ro',
-    isa           => 'Path::Class::File',
-    lazy          => 1,
-    init_arg      => undef,
-    default       => sub { Path::Class::File->new( $_[0]->file() ) },
-);
-
-
 =attr author()
 
 Returns the author of this Package.  If it wasn't given explicitly,

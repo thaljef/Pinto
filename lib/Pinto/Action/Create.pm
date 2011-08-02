@@ -24,7 +24,7 @@ sub execute {
     # has already been created and return false to indicate that
     # no commits are required.
 
-    my $local = Path::Class::dir($self->config()->get_required('local'));
+    my $local = Path::Class::dir( $self->config()->local() );
     return 0 if -e file($local, qw(modules 02packages.details.txt.gz));
 
     # Otherwise, let Pinto create the directories and index files

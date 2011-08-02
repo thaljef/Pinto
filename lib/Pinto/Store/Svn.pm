@@ -18,7 +18,7 @@ extends 'Pinto::Store';
 sub initialize {
     my ($self, %args) = @_;
 
-    my $local = $args{local} || $self->config()->get_required('local');
+    my $local = $args{local} || $self->config()->local();
     my $trunk_url = $args{svn_trunk_url} || $self->config()->get_required('svn_trunk_url');
 
     $self->logger()->log("Checking out (or updating) working copy ... ", {nolf => 1});
@@ -34,7 +34,7 @@ sub finalize {
     my ($self, %args) = @_;
 
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
-    my $local     = $self->config()->get_required('local');
+    my $local     = $self->config()->local();
 
     $self->logger()->log("Scheduling files for addition/deletion ... ", {nolf => 1});
     Pinto::Util::Svn::svn_schedule(path => $local);

@@ -7,8 +7,6 @@ use Moose;
 use File::Find;
 use Path::Class;
 
-use Pinto::IndexManager;
-
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
@@ -20,7 +18,7 @@ extends 'Pinto::Action';
 sub execute {
     my ($self) = @_;
 
-    my $local      = $self->config()->get_required('local');
+    my $local      = $self->config()->local();
     my $search_dir = Path::Class::dir($local, qw(authors id));
     return 0 if not -e $search_dir;
 
@@ -36,10 +34,8 @@ sub execute {
             return;
         }
 
-        $DB::single =1;
         return if not -f $physical_file;
-        my $idx_mgr = Pinto::IndexManager->instance();
-        return if exists $idx_mgr->master_index()->packages_by_file()->{$index_file};
+        return if $self->idxmgr()->master_index()->find( file => $index_file );
         $self->logger()->log("Deleting archive $index_file"); # TODO: report as physical file instead?
         push @deleted, $index_file;
         $physical_file->remove(); # TODO: Error check!

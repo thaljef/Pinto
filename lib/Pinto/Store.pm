@@ -32,7 +32,7 @@ The default implementation simply creates a directory.
 sub initialize {
     my ($self) = @_;
 
-    my $local = $self->config()->get_required('local');
+    my $local = $self->config()->local();
     $local = dir($local) if not eval {$local->isa('Path::Class::Dir') };
 
     if (not -e $local) {
@@ -56,7 +56,7 @@ this could mean that the working copy is up-to-date.
 
 sub is_initialized {
     my ($self) = @_;
-    return -e $self->config()->get_required('local');
+    return -e $self->config()->local();
 }
 
 #------------------------------------------------------------------------------

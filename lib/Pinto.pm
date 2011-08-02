@@ -23,7 +23,18 @@ has action_factory => (
     is        => 'ro',
     isa       => 'Pinto::ActionFactory',
     builder   => '__build_action_factory',
+    handles   => [ qw(create_action) ],
     lazy      => 1,
+);
+
+#------------------------------------------------------------------------------
+
+has action_batch => (
+    is         => 'ro',
+    isa        => 'Pinto::ActionBatch',
+    builder    => '__build_action_batch',
+    handles    => [ qw(enqueue run) ],
+    lazy       => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -40,6 +51,13 @@ sub __build_action_factory {
 
     return Pinto::ActionFactory->new( config => $self->config(),
                                       logger => $self->logger() );
+}
+
+sub __build_action_batch {
+    my ($self) = @_;
+
+    return Pinto::ActionBatch->new( config => $self->config(),
+                                    logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------
@@ -65,22 +83,19 @@ sub create {
     my ($self) = @_;
 
     # HACK...I want to do this before checking out from VCS
-    my $local = Path::Class::dir($self->config()->get_required('local'));
+    my $local = Path::Class::dir( $self->config()->local() );
     die "Looks like you already have a repository at $local\n"
         if -e file($local, qw(modules 02packages.details.txt.gz));
 
-
-    my $batch = $self->_make_action_batch();
-    my $action = $self->action_factory()->create_action('Create');
-    $batch->add(action => $action);
-    $batch->run();
+    $self->enqueue( $self->create_action('Create') );
+    $self->run();
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
-=method mirror(mirror => 'http://cpan-mirror')
+=method mirror()
 
 Populates your repository with the latest version of all packages
 found on the CPAN mirror.  Your locally added packages will always
@@ -91,11 +106,9 @@ mask those pulled from the mirror.
 sub mirror {
     my ($self) = @_;
 
-    my $batch = $self->_make_action_batch();
-    my $action = $self->action_factory()->create_action('Mirror');
-    $batch->add(action => $action);
-    #$batch->add(action => Pinto::Action::Clean->new()) if $self->should_cleanup();
-    $batch->run();
+    $self->enqueue( $self->create_action('Mirror') );
+    $self->enqueue( $self->create_action('Clean') ) if $self->should_cleanup();
+    $self->run();
 
     return $self;
 }
@@ -111,17 +124,9 @@ sub add {
 
     my $files  = $args{files};
 
-    my @actions = map {
-
-        my $ef = $self->action_factory();
-        $ef->create_action('Add', file => Path::Class::file($_));
-
-    } @{ $files };
-
-    my $batch = $self->_make_action_batch();
-    $batch->add(action => \@actions);
-    #$batch->add(action => Pinto::Action::Clean->new()) if $self->should_cleanup();
-    $batch->run();
+    $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $files };
+    $self->enqueue( $self->create_action('Clean') ) if $self->should_cleanup();
+    $self->run();
 
     return $self;
 }
@@ -135,19 +140,11 @@ sub add {
 sub remove {
     my ($self, %args) = @_;
 
-    my $packages = $args{packages};
+    my $pkgs = $args{packages};
 
-    my @actions = map {
-
-        my $ef = $self->action_factory();
-        $ef->create_action('Remove', package => $_);
-
-    } @{ $packages };
-
-    my $batch = $self->_make_action_batch();
-    $batch->add(action => \@actions);
-    #$batch->add(action => Pinto::Action::Clean->new()) if $self->should_cleanup();
-    $batch->run();
+    $self->enqueue( $self->create_action('Remove', package => $_) ) for @{ $pkgs };
+    $self->enqueue( $self->create_action('Clean') ) if $self->should_cleanup();
+    $self->run();
 
     return $self;
 }
@@ -166,10 +163,8 @@ operation.
 sub clean {
     my ($self) = @_;
 
-    my $batch = $self->_make_action_batch();
-    my $action = $self->action_factory()->create_action('Clean');
-    $batch->add(action => $action);
-    $batch->run();
+    $self->enqueue( $self->create_action('Clean') );
+    $self->run();
 
     return $self;
 }
@@ -186,10 +181,8 @@ This is basically what the F<02packages> file looks like.
 sub list {
     my ($self) = @_;
 
-    my $batch = $self->_make_action_batch();
-    my $action = $self->action_factory()->create_action('List');
-    $batch->add(action => $action);
-    $batch->run();
+    $self->enqueue( $self->create_action('List') );
+    $self->run();
 
     return $self;
 }
@@ -207,21 +200,10 @@ have gone wrong.
 sub verify {
     my ($self, %args) = @_;
 
-    my $batch = $self->_make_action_batch();
-    my $action = $self->action_factory()->create_action('Verify');
-    $batch->add(action => $action);
-    $batch->run();
+    $self->enqueue( $self->create_action('Verify') );
+    $self->run();
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub _make_action_batch {
-    my ($self) = @_;
-
-    return Pinto::ActionBatch->new( config => $self->config(),
-                                    logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------

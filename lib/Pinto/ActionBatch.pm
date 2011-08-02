@@ -48,20 +48,17 @@ sub __build_store {
 
 #-----------------------------------------------------------------------------
 
-=method add(action => $some_action)
+=method enqueue($some_action)
 
-Pushes C<$some_action> onto the stack of L<Pinto::Action>s that will be
+Adds C<$some_action> to the end of the queue of L<Pinto::Action>s that will be
 run.
 
 =cut
 
-sub add {
-    my ($self, %args) = @_;
+sub enqueue {
+    my ($self, @actions) = @_;
 
-    my $action = $args{action};
-    $action = [$action] if ref $action ne 'ARRAY';
-
-    $self->actions()->push( $action->flatten() );
+    $self->actions()->push( @actions );
 
     return $self;
 }
@@ -84,7 +81,7 @@ sub run {
     }
 
     my $changes_were_made = 0;
-    for my $action ( $self->actions()->flatten() ) {
+    while( my $action = $self->actions()->shift() ) {
         $changes_were_made += $action->execute();
     }
 

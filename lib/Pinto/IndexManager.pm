@@ -111,7 +111,7 @@ sub __build_master_index {
 sub __build_index {
     my ($self, %args) = @_;
 
-    my $local = $self->config()->get_required('local');
+    my $local = $self->config()->local();
     my $index_file = Path::Class::file($local, 'modules', $args{file});
     return Pinto::Index->new(file => $index_file);
 }
@@ -136,8 +136,8 @@ sub rebuild_master_index {
 sub update_mirror_index {
     my ($self) = @_;
 
-    my $local  = $self->config()->get_required('local');
-    my $mirror = $self->config()->get_required('mirror');
+    my $local  = $self->config()->local();
+    my $mirror = $self->config()->mirror();
 
     # TODO: Make an Index subclass for the mirror index, which knows
     # how to update itself from a remote source.  Maybe optimize
@@ -156,7 +156,10 @@ sub update_mirror_index {
 sub files_to_mirror {
     my ($self) = @_;
 
-    return ($self->mirror_index() - $self->local_index())->files()->flatten();
+    return ($self->mirror_index() - $self->local_index())->files()
+                                                         ->keys()
+                                                         ->sort()
+                                                         ->flatten();
 }
 
 #------------------------------------------------------------------------------
@@ -223,7 +226,7 @@ sub find_file {
     my $file   = $args{file};
     my $author = $args{author};
 
-    my $local         = $self->config()->get_required('local');
+    my $local         = $self->config()->local();
     my $author_dir    = Pinto::Util::directory_for_author($local, qw(authors id), $author);
     my $physical_file = Path::Class::file($author_dir, $file->basename());
     return -e $physical_file ? $physical_file : ();

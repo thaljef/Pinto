@@ -36,6 +36,12 @@ has packages => (
     lazy_build => 1,
 );
 
+has files => (
+    is         => 'ro',
+    isa        => 'HashRef',
+    writer     => '_set_files',
+    lazy_build => 1,
+);
 
 =attr file()
 
@@ -82,6 +88,19 @@ sub _build_packages {
     }
 
     return $packages;
+}
+
+#------------------------------------------------------------------------------
+
+sub _build_files {
+    my ($self) = @_;
+
+    my $files = {};
+    for my $package ($self->packages()->values()->flatten()) {
+      ($files->{$package->file()} ||= [])->push($package);
+    }
+
+    return $files;
 }
 
 #------------------------------------------------------------------------------
@@ -145,7 +164,7 @@ END_PACKAGE_HEADER
 sub _gz_write_packages {
     my ($self, $gz) = @_;
 
-    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+    my $sorter = sub { $_->{name} cmp $_[1]->{name} };
     my $packages = $self->packages()->values()->sort($sorter);
     for my $package ( $packages->flatten() ) {
         $gz->gzwrite($package->to_string() . "\n");
@@ -206,7 +225,8 @@ specified by the C<file> attribute.
 sub reload {
     my ($self, %args) = @_;
 
-    return $self->clear()->read(%args);
+    $self->clear();
+    $self->_set_packages( $self->_build_packages() );
 }
 
 #------------------------------------------------------------------------------
@@ -221,6 +241,7 @@ sub clear {
     my ($self) = @_;
 
     $self->_set_packages( {} );
+    $self->_set_files( {} );
 
     return $self;
 }
@@ -273,25 +294,6 @@ sub package_count {
 
 #------------------------------------------------------------------------------
 
-=method files()
-
-Returns a reference to a sorted array of paths to all the files in
-this index (as Path::Class::File objects). Note that paths will be as
-they appear in the index, which means they will be in Unix format and
-relative to the F<authors/id> directory.
-
-=cut
-
-sub files {
-    my ($self) = @_;
-
-    my $mapper = sub { $_[0]->file() };
-
-    return uniq $self->packages()->values()->map($mapper)->sort()->flatten();
-}
-
-#------------------------------------------------------------------------------
-
 sub find {
     my ($self, %args) = @_;
 
@@ -299,8 +301,8 @@ sub find {
         return $self->packages()->at($pkg);
     }
     elsif (my $file = $args{file}) {
-        my $filter = sub { $_[0]->file() eq $file };
-        return $self->packages()->values()->grep( $filter )->flatten();
+        my $pkgs = $self->files()->at($file);
+        return $pkgs ? $pkgs->flatten() : ();
     }
     elsif (my $author = $args{author}) {
         my $filter = sub { $_[0]->file() eq $author };
@@ -308,25 +310,6 @@ sub find {
     }
 
     croak "Don't know how to find by %args";
-}
-
-#------------------------------------------------------------------------------
-
-=method files_native(@base)
-
-Same as the C<files()> method, except the paths are converted to your
-OS.  The C<@base> can be a series of L<Path::Class::Dir> objects or
-path fragments (as strings).  If given, all the returned paths will
-have C<@base> prepended to them.
-
-=cut
-
-sub files_native {
-    my ($self, @base) = @_;
-
-    my $mapper = sub { return Pinto::Util::native_file(@base, $_[0]) };
-
-    return $self->files()->map($mapper);
 }
 
 #------------------------------------------------------------------------------

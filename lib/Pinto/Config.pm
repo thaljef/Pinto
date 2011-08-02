@@ -3,7 +3,10 @@ package Pinto::Config;
 # ABSTRACT: User configuration for Pinto
 
 use Moose;
+use Moose::Util::TypeConstraints;
+use MooseX::Types::Path::Class;
 
+use URI;
 use Carp;
 use Config::Tiny;
 use File::HomeDir;
@@ -14,6 +17,24 @@ use Path::Class;
 # VERSION
 
 #------------------------------------------------------------------------------
+# Moose types (TOOD: Consider moving these out to another module)
+
+class_type('URI');
+
+subtype 'AuthorID' => (
+    as 'Str',
+    where { $_ !~ /\W/ },
+    message { "The author can only be alphanumeric characters" },
+);
+
+coerce 'AuthorID',
+    from 'Str',   via { uc $_ };
+
+coerce 'URI',
+    from 'Str',   via { URI->new($_) };
+
+#------------------------------------------------------------------------------
+# Moose attributes
 
 =attr profile
 
@@ -27,6 +48,37 @@ of those locations, then you will get an empty config.
 has 'profile' => (
     is           => 'ro',
     isa          => 'Str',
+);
+
+
+has 'local'   => (
+    is        => 'ro',
+    isa       => 'Path::Class::File',
+    required  => 1,
+    coerce    => 1,
+);
+
+
+has 'mirror'  => (
+    is        => 'ro',
+    isa       => 'URI',
+    coerce    => 1,
+    default   => sub { URI->new( 'http://cpan.perl.org' ) },
+);
+
+
+has 'author'  => (
+    is        => 'ro',
+    isa       => 'AuthorID',
+    default   => sub { uc $ENV{USER} },
+    coerce    => 1,
+);
+
+
+has 'nocleanup' => (
+    is        => 'ro',
+    isa       => 'Bool',
+    default   => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -100,7 +152,7 @@ sub get {
 
 sub _find_profile {
     return $ENV{PERL_PINTO} if defined $ENV{PERL_PINTO};
-    my $home_file = file(File::HomeDir->my_home(), '.pinto', 'config.ini');
+    my $home_file = Path::Class::file(File::HomeDir->my_home(), '.pinto', 'config.ini');
     return $home_file if -e $home_file;
     return;
 }

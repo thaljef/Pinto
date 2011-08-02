@@ -27,7 +27,7 @@ sub execute {
     my ($self) = @_;
 
     my $pkg    = $self->package();
-    my $author = $self->config()->get_required('author');
+    my $author = $self->config()->author();
 
     my $idxmgr = $self->idxmgr();
     my $orig_author = $idxmgr->local_author_of(package => $pkg);

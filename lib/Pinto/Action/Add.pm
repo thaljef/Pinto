@@ -36,8 +36,8 @@ with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
 sub execute {
     my ($self) = @_;
 
-    my $local  = $self->config()->get_required('local');
-    my $author = $self->config()->get_required('author');
+    my $local  = $self->config()->local();
+    my $author = $self->config()->author();
 
     my $file   = $self->file();
     my $base   = $file->basename();

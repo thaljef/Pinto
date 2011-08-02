@@ -29,8 +29,8 @@ has 'ua'      => (
 sub execute {
     my ($self) = @_;
 
-    my $local  = $self->config()->get_required('local');
-    my $mirror = $self->config()->get_required('mirror');
+    my $local  = $self->config()->local();
+    my $mirror = $self->config()->mirror();
     my $force  = $self->config()->get('force');
 
     my $idxmgr = $self->idxmgr();
