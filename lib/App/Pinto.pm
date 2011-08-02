@@ -32,11 +32,10 @@ sub usage_desc {
 
 #------------------------------------------------------------------------------
 
-=method pinto()
+=method pinto( $command_options )
 
 Returns a reference to the L<Pinto> object.  If it does not already
-exist, one will be created using the global command options as
-arguments.
+exist, one will be created using the global and command options.
 
 =cut
 
@@ -47,12 +46,11 @@ sub pinto {
     require Pinto::Config;
     require Pinto::Logger;
 
-    $DB::single = 1;
     return $self->{pinto} ||= do {
         my %global_options = %{ $self->global_options() };
         my $config = Pinto::Config->new(%global_options, %{$command_options});
         my $logger = Pinto::Logger->new(config => $config);
-        my $pinto = Pinto->new(config => $config, logger => $logger);
+        my $pinto  = Pinto->new(config => $config, logger => $logger);
     };
 }
 
