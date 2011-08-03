@@ -11,7 +11,7 @@ use Pinto::Config;
 
 #------------------------------------------------------------------------------
 
-local *Pinto::Config::_find_profile = sub{};
+local *Pinto::Config::_build_config_file = sub{};
 
 my $cfg = Pinto::Config->new(local => 'nowhere');
 is($cfg->mirror(), 'http://cpan.perl.org', 'Got default mirror');

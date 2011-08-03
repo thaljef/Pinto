@@ -4,6 +4,8 @@ package Pinto::Role::Loggable;
 
 use Moose::Role;
 
+use Pinto::Logger;
+
 use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
@@ -13,10 +15,15 @@ use namespace::autoclean;
 #-----------------------------------------------------------------------------
 
 has logger => (
-    is       => 'ro',
-    isa      => 'Pinto::Logger',
-    required => 1,
+    is         => 'ro',
+    isa        => 'Pinto::Logger',
+    lazy_build => 1,
 );
+
+
+sub _build_logger {
+    return Pinto::Logger->new();
+}
 
 #-----------------------------------------------------------------------------
 

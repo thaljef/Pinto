@@ -4,6 +4,8 @@ package Pinto::Role::Configurable;
 
 use Moose::Role;
 
+use Pinto::Config;
+
 use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
@@ -13,9 +15,15 @@ use namespace::autoclean;
 #-----------------------------------------------------------------------------
 
 has config => (
-    is       => 'ro',
-    isa      => 'Pinto::Config',
+    is         => 'ro',
+    isa        => 'Pinto::Config',
+    lazy_build => 1,
 );
+
+
+sub _build_config {
+    return Pinto::Config->new();
+}
 
 #-----------------------------------------------------------------------------
 
