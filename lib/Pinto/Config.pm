@@ -67,6 +67,14 @@ has 'store_class' => (
 );
 
 
+has 'quiet'  => (
+    is       => 'ro',
+    isa      => Bool,
+    key      => 'quiet',
+    default  => 0,
+);
+
+
 has 'verbose' => (
     is          => 'ro',
     isa         => Int,
