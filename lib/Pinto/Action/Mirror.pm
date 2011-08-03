@@ -46,7 +46,7 @@ sub execute {
 
         next if -e $destination;
 
-        my $file_has_changed = $self->ua->mirror(url => $mirror_uri, to => $destination);
+        my $file_has_changed = $self->ua->mirror(url => $mirror_uri, to => $destination, croak => 0);
         $self->logger->log("Mirrored archive $file") if $file_has_changed;
     }
 

@@ -88,6 +88,22 @@ has 'verbose' => (
     default     => 0,
 );
 
+
+has 'svn_trunk' => (
+    is          => 'ro',
+    isa         => Str,
+    key         => 'trunk',
+    section     => 'Pinto::Store::Svn',
+);
+
+
+has 'svn_tag' => (
+    is          => 'ro',
+    isa         => Str,
+    key         => 'tag',
+    section     => 'Pinto::Store::Svn',
+);
+
 #------------------------------------------------------------------------------
 # Override builder
 
@@ -95,6 +111,7 @@ sub _build_config_file {
 
     require File::HomeDir;
     require Path::Class;
+
     # TODO: look at $ENV{PERL_PINTO} first.
     return Path::Class::file( File::HomeDir->my_home(), qw(.pinto config.ini) );
 }

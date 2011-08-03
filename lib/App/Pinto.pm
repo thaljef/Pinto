@@ -17,10 +17,11 @@ sub global_opt_spec {
 
   return (
 
-      [ "local=s"     => "Path to local repository directory"],
-      [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
-      [ "nocleanup"   => "Do not clean repository after each action" ],
       [ "config=s"    => "Path to your pinto profile" ],
+      [ "local=s"     => "Path to local repository directory"],
+      [ "nocleanup"   => "Do not clean repository after each action" ],
+      [ "quiet|q"     => "Only report fatal errors"],
+      [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
   );
 }
 

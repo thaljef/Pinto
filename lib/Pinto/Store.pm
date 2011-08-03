@@ -3,7 +3,6 @@ package Pinto::Store;
 # ABSTRACT: Back-end storage for a Pinto repoistory
 
 use Moose;
-use Path::Class;
 
 #------------------------------------------------------------------------------
 
@@ -12,7 +11,8 @@ use Path::Class;
 #------------------------------------------------------------------------------
 # Moose roles
 
-with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 # Methods
@@ -32,13 +32,12 @@ The default implementation simply creates a directory.
 sub initialize {
     my ($self) = @_;
 
-    my $local = $self->config()->local();
-    $local = dir($local) if not eval {$local->isa('Path::Class::Dir') };
+    my $local = $self->config->local();
 
     if (not -e $local) {
-        $self->logger()->log("Making directory at $local ... ", {nolf => 1});
+        $self->logger->log("Making directory at $local ... ", {nolf => 1});
         $local->mkpath(); # TODO: Set dirmode and verbosity here.
-        $self->logger()->log("DONE");
+        $self->logger->log("DONE");
     }
 
     return 1;
@@ -56,7 +55,7 @@ this could mean that the working copy is up-to-date.
 
 sub is_initialized {
     my ($self) = @_;
-    return -e $self->config()->local();
+    return -e $self->config->local();
 }
 
 #------------------------------------------------------------------------------
@@ -73,7 +72,7 @@ finalization fails, an exception should be thrown.
 
 sub finalize {
     my ($self, %args) = @_;
-    # TODO: Default implementation - delete empty directories.
+    # TODO: Default implementation - delete empty directories?
     return 1;
 }
 

@@ -9,6 +9,8 @@ use Date::Format qw(time2str);
 
 extends 'Pinto::Store';
 
+use namespace::autoclean;
+
 #-------------------------------------------------------------------------------
 
 # VERSION
@@ -16,14 +18,13 @@ extends 'Pinto::Store';
 #-------------------------------------------------------------------------------
 
 sub initialize {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
-    my $local = $args{local} || $self->config()->local();
-    my $trunk_url = $args{svn_trunk_url} || $self->config()->get_required('svn_trunk_url');
+    my $local = $self->config->local();
+    my $trunk = $self->config->svn_trunk();
 
-    $self->logger()->log("Checking out (or updating) working copy ... ", {nolf => 1});
-    Pinto::Util::Svn::svn_checkout(url => $trunk_url, to => $local);
-    $self->logger()->log('DONE');
+    #$self->logger->log("Checking out (or updating) working copy");
+    #Pinto::Util::Svn::svn_checkout(url => $trunk, to => $local);
 
     return 1;
 }
@@ -34,18 +35,15 @@ sub finalize {
     my ($self, %args) = @_;
 
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
-    my $local     = $self->config()->local();
+    my $local     = $self->config->local();
 
-    $self->logger()->log("Scheduling files for addition/deletion ... ", {nolf => 1});
+    $self->logger->log("Scheduling files for addition/deletion");
     Pinto::Util::Svn::svn_schedule(path => $local);
-    $self->logger()->log('DONE');
 
-
-    $self->logger()->log("Committing changes ... ", {nolf => 1});
+    $self->logger->log("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $local, message => $message);
-    $self->logger()->log('DONE');
 
-    $self->_make_tag() if $self->config()->get('svn_tag_url');
+    $self->_make_tag() if $self->tag();
 
     return 1;
 }
@@ -57,19 +55,22 @@ sub _make_tag {
 
     my $now = time;
 
-    my $trunk_url    = $self->config()->get_required('svn_trunk_url');
-    my $tag_template = $self->config()->get_required('svn_tag_url');
-    my $tag_url      = time2str($tag_template, $now);
+    my $trunk = $self->config->svn_trunk();
+    my $tag   = time2str( $self->config->svn_tag(), $now );
 
     my $as_of = time2str('%C', $now);
     my $message  = "Tagging Pinto repository as of $as_of.";
 
-    $self->logger()->log("Tagging ... ", {nolf => 1});
-    Pinto::Util::Svn::svn_tag(from => $trunk_url, to => $tag_url, message => $message);
-    $self->logger()->log('DONE');
+    $self->logger->log("Copying to $tag");
+    Pinto::Util::Svn::svn_tag(from => $trunk, to => $tag, message => $message);
 
     return 1;
 }
+
+#-------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
+
 #-------------------------------------------------------------------------------
 
 1;
@@ -81,8 +82,10 @@ __END__
 Add this to your Pinto configuration (usually in F<~/.pinto/config.ini>):
 
   store_class   = Pinto::Store::Svn
-  svn_trunk_url = http://my-repository/trunk/PINTO
-  svn_tag_url   = http://my-repository/tags/PINTO-%Y%m%d.%H%M%S
+
+  [Pinto::Store::Svn]
+  trunk = http://my-repository/trunk/PINTO
+  tag   = http://my-repository/tags/PINTO-%Y%m%d.%H%M%S
 
 And then run L<pinto> as you normally would.
 

@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
-use IPC::Cmd 0.72;
+use IPC::Cmd 0.72 qw(run);
 use List::MoreUtils qw(any);
 use Path::Class;
 
@@ -183,7 +183,7 @@ sub svn_commit {
     my $paths    = $args{paths};
     my $message  = $args{message} || 'NO MESSAGE GIVEN';
 
-    my @paths = ref $paths ? @$paths : ($paths);
+    my @paths = ref $paths eq 'ARRAY' ? @{ $paths } : ($paths);
     return _svn(command => [qw(commit -m), $message, @paths] );
 }
 

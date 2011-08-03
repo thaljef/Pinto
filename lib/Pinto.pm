@@ -6,9 +6,7 @@ use Moose;
 
 use Carp;
 use Path::Class;
-use Class::Load;
 
-use Pinto::Util;
 use Pinto::ActionFactory;
 use Pinto::ActionBatch;
 

@@ -15,7 +15,6 @@ use namespace::autoclean;
 has config => (
     is       => 'ro',
     isa      => 'Pinto::Config',
-    required => 1,
 );
 
 #-----------------------------------------------------------------------------
