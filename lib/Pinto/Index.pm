@@ -4,11 +4,12 @@ package Pinto::Index;
 
 use Moose;
 use Moose::Autobox;
-use MooseX::Types::Path::Class;
+
+use MooseX::Types::Pinto qw(File);
+use MooseX::Types::Moose qw(HashRef);
 
 use Carp;
 use Compress::Zlib;
-use List::MoreUtils qw(uniq);
 use Path::Class qw();
 
 use Pinto::Package;
@@ -31,47 +32,55 @@ L<Pinto::Package> objects.
 
 has packages => (
     is         => 'ro',
-    isa        => 'HashRef',
+    isa        => HashRef,
+    default    => sub { {} },
     writer     => '_set_packages',
-    lazy_build => 1,
+    init_arg   => undef,
 );
 
 has files => (
     is         => 'ro',
-    isa        => 'HashRef',
+    isa        => HashRef,
+    default    => sub { {} },
     writer     => '_set_files',
-    lazy_build => 1,
+    init_arg   => undef,
 );
-
-=attr file()
-
-Returns the path to the file this Index was created from (as a
-Path::Class::File).  If you constructed this index by hand (rather
-than reading from a file) this attribute may be undefined.
-
-=cut
 
 has 'file' => (
     is       => 'ro',
-    isa      => 'Path::Class::File',
+    isa      => File,
     coerce   => 1,
 );
 
 #------------------------------------------------------------------------------
-# Builders
+# Moose roles
 
-sub _build_packages {
+with qw(Pinto::Role::Loggable);
+
+#------------------------------------------------------------------------------
+
+sub BUILD {
     my ($self) = @_;
 
-    my $file = $self->file() or return {};
-    -e $file or return {};  # TODO: hmmm....
+    $self->load() if $self->file();
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+# Methods
+
+sub load {
+    my ($self) = @_;
+
+    my $file = $self->file();
+    $self->logger->debug("Reading index at $file");
 
     my $fh = $file->openr();
     my $gz = Compress::Zlib::gzopen($fh, "rb")
-        or die "Cannot open $file: $Compress::Zlib::gzerrno";
+        or croak "Cannot open $file: $Compress::Zlib::gzerrno";
 
     my $inheader = 1;
-    my $packages = {};
     while ($gz->gzreadline($_) > 0) {
 
         if ($inheader) {
@@ -81,26 +90,14 @@ sub _build_packages {
 
         chomp;
         my ($name, $version, $file) = split;
-        $packages->{$name} = Pinto::Package->new( name    => $name,
-                                                  file    => $file,
-                                                  version => $version );
+
+        $self->add( Pinto::Package->new( name    => $name,
+                                         file    => $file,
+                                         version => $version ) );
 
     }
 
-    return $packages;
-}
-
-#------------------------------------------------------------------------------
-
-sub _build_files {
-    my ($self) = @_;
-
-    my $files = {};
-    for my $package ($self->packages()->values()->flatten()) {
-      ($files->{$package->file()} ||= [])->push($package);
-    }
-
-    return $files;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -123,10 +120,9 @@ sub write {
         or croak 'This index has no file attribute, so you must specify one';
 
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
+    $self->logger->debug("Writing index at $file");
 
-    print ">> Writing index at $file\n";
-
-    $file->dir()->mkpath(); # TODO: log & error check
+    $file->dir->mkpath(); # TODO: log & error check
     my $gz = Compress::Zlib::gzopen( $file->openw(), 'wb' );
     $self->_gz_write_header($gz);
     $self->_gz_write_packages($gz);
@@ -141,7 +137,7 @@ sub _gz_write_header {
     my ($self, $gz) = @_;
 
     my ($file, $url) = $self->file()
-        ? ($self->file()->basename(), 'file://' . $self->file()->as_foreign('Unix') )
+        ? ($self->file->basename(), 'file://' . $self->file->as_foreign('Unix') )
         : ('UNKNOWN', 'UNKNOWN');
 
     $gz->gzwrite( <<END_PACKAGE_HEADER );
@@ -164,8 +160,8 @@ END_PACKAGE_HEADER
 sub _gz_write_packages {
     my ($self, $gz) = @_;
 
-    my $sorter = sub { $_->{name} cmp $_[1]->{name} };
-    my $packages = $self->packages()->values()->sort($sorter);
+    my $sorter = sub { $_[0]->{name} cmp $_[1]->{name} };
+    my $packages = $self->packages->values->sort($sorter);
     for my $package ( $packages->flatten() ) {
         $gz->gzwrite($package->to_string() . "\n");
     }
@@ -187,8 +183,8 @@ public packages.
 sub merge {
     my ($self, @packages) = @_;
 
-    $self->remove($_) for @packages;
-    $self->add($_)    for @packages;
+    $self->remove( @packages );
+    $self->add( @packages );
 
     return $self;
 }
@@ -207,7 +203,11 @@ sub add {
     my ($self, @packages) = @_;
 
     for my $package (@packages) {
-        $self->packages()->put($package->name(), $package);
+        my $name = $package->name();
+        $self->packages->put($name, $package);
+
+        my $file = $package->file();
+        ($self->files()->{$file} ||= [] )->push($package);
     }
 
     return $self;
@@ -223,10 +223,12 @@ specified by the C<file> attribute.
 =cut
 
 sub reload {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
     $self->clear();
-    $self->_set_packages( $self->_build_packages() );
+    $self->load();
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -265,13 +267,12 @@ sub remove {
         $package = $package->name()
             if eval { $package->isa('Pinto::Package') };
 
-        if (my $incumbent = $self->packages()->at($package)) {
+        if (my $incumbent = $self->packages->at($package)) {
             # Remove the file that contains the incumbent package and
             # then remove all packages that were contained in that file
-            my $filter = sub { $_[0]->file() eq $incumbent->file() };
-            my @kin = $self->packages()->values()->grep($filter)->flatten();
-            $self->packages()->delete($_) for map {$_->name()} @kin;
-            push @removed, @kin;
+            my $kin = $self->files->delete( $incumbent->file() );
+            $self->packages->delete($_) for map {$_->name()} @{ $kin };
+            push @removed, @{ $kin };
         }
 
     }
@@ -289,7 +290,7 @@ Returns the total number of packages currently in this Index.
 sub package_count {
     my ($self) = @_;
 
-    return $self->packages()->keys()->length();
+    return $self->packages->keys->length();
 }
 
 #------------------------------------------------------------------------------
@@ -298,15 +299,15 @@ sub find {
     my ($self, %args) = @_;
 
     if (my $pkg = $args{package}) {
-        return $self->packages()->at($pkg);
+        return $self->packages->at($pkg);
     }
     elsif (my $file = $args{file}) {
-        my $pkgs = $self->files()->at($file);
+        my $pkgs = $self->files->at($file);
         return $pkgs ? $pkgs->flatten() : ();
     }
     elsif (my $author = $args{author}) {
         my $filter = sub { $_[0]->file() eq $author };
-        return $self->packages()->values()->grep( $filter )->flatten();
+        return $self->packages->values->grep( $filter )->flatten();
     }
 
     croak "Don't know how to find by %args";
@@ -319,9 +320,9 @@ sub __plus {
 
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
-    my $result = $class->new();
-    $result->add( $self->packages()->values()->flatten() );
-    $result->merge( $other->packages()->values()->flatten() );
+    my $result = $class->new( logger => $self->logger() );
+    $result->add( $self->packages->values->flatten() );
+    $result->merge( $other->packages->values->flatten() );
 
     return $result;
 }
@@ -333,9 +334,9 @@ sub __minus {
 
     ($self, $other) = ($other, $self) if $swap;
     my $class = ref $self;
-    my $result = $class->new();
-    $result->add( $self->packages()->values()->flatten() );
-    $result->remove( $other->packages()->values()->flatten() );
+    my $result = $class->new( logger => $self->logger() );
+    $result->add( $self->packages->values->flatten() );
+    $result->remove( $other->packages->values->flatten() );
 
     return $result;
 }

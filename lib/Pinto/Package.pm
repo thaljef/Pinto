@@ -74,12 +74,30 @@ sub BUILDARGS {
     my ($class, %args)  = @_;
 
     if (my $author = $args{author}) {
+
+      # If the author argument is specified, then assume we are
+      # constructing this Package manually (i.e. like by reading
+      # metadata about some distribution).  In this case, the file
+      # attribute can be determined from the author and the name of
+      # the distribution.
+
       my $author_dir = Pinto::Util::directory_for_author($author);
       my $basename   = Path::Class::file( $args{file} )->basename();
-      $args{file}  = Path::Class::file($author_dir, $basename)->as_foreign('Unix')->stringify();
+
+      $args{file}  = Path::Class::file($author_dir, $basename)
+        ->as_foreign('Unix')->stringify();
     }
     else {
-      $args{author} = Path::Class::file( $args{file} )->dir()->dir_list(2, 1);
+
+      # But if the author argument is not specified, then assume we
+      # are constructing this Package from data in an index.  In this
+      # case, the author can be determined from the file.  I'm doing
+      # this by hand (instead of using Path::Class or File::Spec) for
+      # performance reasons.  There's going to be a lot of these
+      # objects!
+
+      $args{author} = (split '/', $args{file})[2]
+        or die "Unable to extract author from $args{file}";
     }
 
     return \%args;

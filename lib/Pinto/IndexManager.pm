@@ -111,9 +111,11 @@ sub __build_master_index {
 sub __build_index {
     my ($self, %args) = @_;
 
-    my $local = $self->config()->local();
+    my $local = $self->config->local();
     my $index_file = Path::Class::file($local, 'modules', $args{file});
-    return Pinto::Index->new(file => $index_file);
+
+    return Pinto::Index->new( logger => $self->logger(),
+                              file   => $index_file );
 }
 
 #------------------------------------------------------------------------------
@@ -136,8 +138,9 @@ sub rebuild_master_index {
 sub update_mirror_index {
     my ($self) = @_;
 
-    my $local  = $self->config()->local();
-    my $mirror = $self->config()->mirror();
+    $DB::single = 1;
+    my $local  = $self->config->local();
+    my $mirror = $self->config->mirror();
 
     # TODO: Make an Index subclass for the mirror index, which knows
     # how to update itself from a remote source.  Maybe optimize
@@ -145,8 +148,10 @@ sub update_mirror_index {
 
     my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
     my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
-    my $file_has_changed = $self->ua()->mirror(url => $mirror_index_uri, to => $mirrored_file);
-    $self->mirror_index()->reload() if $file_has_changed;
+    my $file_has_changed = $self->ua->mirror(url => $mirror_index_uri, to => $mirrored_file);
+    $self->mirror_index->reload() if $file_has_changed or $self->config->force();
+    $self->rebuild_master_index();
+
 
     return $file_has_changed;
 }
@@ -168,7 +173,7 @@ sub all_packages {
     my ($self) = @_;
 
     my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
-    return $self->master_index()->packages()->values->sort($sorter)->flatten();
+    return $self->master_index->packages->values->sort($sorter)->flatten();
 }
 
 #------------------------------------------------------------------------------
@@ -177,7 +182,7 @@ sub write_indexes {
     my ($self) = @_;
 
     $self->local_index->write();
-    $self->rebuild_master_index()->write();
+    $self->master_index->write();
 
     return $self;
 }
@@ -189,13 +194,13 @@ sub remove_local_package {
 
     my $package = $args{package};
 
-    my @local_removed = $self->local_index()->remove($package);
+    my @local_removed = $self->local_index->remove($package);
     $self->logger->debug("Removed $_ from local index")
       for @local_removed->map( sub {$_[0]->name()} )->flatten();
 
     return if not @local_removed;
 
-    my @master_removed = $self->master_index()->remove($package);
+    my @master_removed = $self->master_index->remove($package);
     $self->logger->debug("Removed $_ from master index")
       for @master_removed->map( sub {$_[0]->name()} )->flatten();
 
@@ -212,7 +217,7 @@ sub local_author_of {
 
     my $package = $args{package};
 
-    my $pkg = $self->local_index()->packages()->at($package);
+    my $pkg = $self->local_index->packages->at($package);
 
     return $pkg ? $pkg->author() : ();
 }
@@ -226,7 +231,7 @@ sub find_file {
     my $file   = $args{file};
     my $author = $args{author};
 
-    my $local         = $self->config()->local();
+    my $local         = $self->config->local();
     my $author_dir    = Pinto::Util::directory_for_author($local, qw(authors id), $author);
     my $physical_file = Path::Class::file($author_dir, $file->basename());
     return -e $physical_file ? $physical_file : ();
@@ -234,18 +239,18 @@ sub find_file {
 
 #------------------------------------------------------------------------------
 
-sub add_local_package {
-    my ($self, %args) = @_;
+sub add_local_packages {
+    my ($self, @packages) = @_;
 
-    my $package = Pinto::Package->new(%args);
-    $self->local_index()->add($package);
+    $self->local_index->add(@packages);
+    $self->master_index->merge(@packages);
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta()->make_immutable();
+__PACKAGE__->meta->make_immutable();
 
 #-----------------------------------------------------------------------------
 1;

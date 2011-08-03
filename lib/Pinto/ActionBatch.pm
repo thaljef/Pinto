@@ -28,6 +28,13 @@ has actions => (
     default  => sub { [] },
 );
 
+
+has idxmgr => (
+    is       => 'ro',
+    isa      => 'Pinto::IndexManager',
+    required => 1,
+);
+
 #-----------------------------------------------------------------------------
 # Moose roles
 
@@ -39,7 +46,7 @@ with qw(Pinto::Role::Loggable Pinto::Role::Configurable);
 sub __build_store {
    my ($self) = @_;
 
-   my $store_class = $self->config()->get('store_class') || 'Pinto::Store';
+   my $store_class = $self->config->store_class();
    Class::Load::load_class($store_class);
 
    return $store_class->new( config => $self->config(),
@@ -75,22 +82,25 @@ Runs all the actions in this Batch.
 sub run {
     my ($self) = @_;
 
-    if ($self->config()->get('force')
-        or not $self->store()->is_initialized()) {
-        $self->store()->initialize();
-    }
+    # TODO: don't initialize if we don't have to!
+    $self->store()->initialize();
 
     my $changes_were_made = 0;
     while( my $action = $self->actions()->shift() ) {
-        $changes_were_made += $action->execute();
-    }
 
-    if ($self->config()->get('nocommit')) {
-        $self->logger->log('Not committing due to nocommit flag');
-        return $self;
+        $changes_were_made += $action->execute();
+
     }
 
     if ($changes_were_made) {
+
+        $self->idxmgr()->write_indexes();
+
+        if ( $self->config->nocommit() ) {
+            $self->logger->log('Not committing due to nocommit flag');
+            return $self;
+        }
+
         my @action_messages = map {$_->message()} $self->actions()->flatten();
         my $batch_message  = join "\n\n", grep {length} @action_messages;
         $self->store()->finalize(message => $batch_message);

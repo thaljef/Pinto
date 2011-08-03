@@ -4,7 +4,7 @@ package Pinto::Role::Loggable;
 
 use Moose::Role;
 
-use Pinto::Logger;
+use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 

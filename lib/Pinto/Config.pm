@@ -66,6 +66,12 @@ has 'store_class' => (
     default   => 'Pinto::Store',
 );
 
+has 'nocommit' => (
+    is       => 'ro',
+    isa      => Bool,
+    key      => 'nocommit',
+    default  => 0,
+);
 
 has 'quiet'  => (
     is       => 'ro',

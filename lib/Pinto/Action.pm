@@ -4,6 +4,8 @@ package Pinto::Action;
 
 use Moose;
 
+use namespace::autoclean;
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -29,7 +31,8 @@ has message => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 # Methods
@@ -38,7 +41,7 @@ sub execute { return 0 }
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta()->make_immutable();
+__PACKAGE__->meta->make_immutable();
 
 #------------------------------------------------------------------------------
 

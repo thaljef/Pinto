@@ -26,21 +26,21 @@ sub opt_spec {
 sub usage_desc {
     my ($self) = @_;
     my ($command) = $self->command_names();
-    return "%c [global options] $command [command options] ARCHIVE [ARCHIVE...]";
+    return "%c [global options] $command [command options] ARCHIVE";
 }
 
 #------------------------------------------------------------------------------
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify one or more file arguments") if not @{ $args };
+    $self->usage_error("Must specify exactly one archive") if @{ $args } != 1;
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->add(files => $args);
+    $self->pinto( $opts )->add( file => $args->[0] );
 }
 
 #------------------------------------------------------------------------------

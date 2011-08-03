@@ -18,9 +18,9 @@ sub global_opt_spec {
   return (
 
       [ "local=s"     => "Path to local repository directory"],
-      [ "log_level=i" => "Set the amount of noise (0|1|2)" ],
+      [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
       [ "nocleanup"   => "Do not clean repository after each action" ],
-      [ "profile=s"   => "Path to your pinto profile" ],
+      [ "config=s"    => "Path to your pinto profile" ],
   );
 }
 
@@ -46,6 +46,7 @@ sub pinto {
     require Pinto::Config;
     require Pinto::Logger;
 
+    $DB::single = 1;
     return $self->{pinto} ||= do {
         my %global_options = %{ $self->global_options() };
         my $config = Pinto::Config->new(%global_options, %{$command_options});

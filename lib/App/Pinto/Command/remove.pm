@@ -26,21 +26,21 @@ sub opt_spec {
 sub usage_desc {
     my ($self) = @_;
     my ($command) = $self->command_names();
-    return "%c [global options] $command [command options] PACKAGE [PACKAGE...]";
+    return "%c [global options] $command [command options] PACKAGE";
 }
 
 #------------------------------------------------------------------------------
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify one or more package arguments") if not @{ $args };
+    $self->usage_error("Must specify exactly one package") if @{ $args } != 1;
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->remove( packages => $args );
+    $self->pinto( $opts )->remove( package => $args->[0] );
 }
 
 #------------------------------------------------------------------------------

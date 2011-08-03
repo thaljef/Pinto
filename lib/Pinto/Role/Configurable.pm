@@ -4,7 +4,7 @@ package Pinto::Role::Configurable;
 
 use Moose::Role;
 
-use Pinto::Config;
+use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 

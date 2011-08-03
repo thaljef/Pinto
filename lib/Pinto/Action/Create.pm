@@ -9,6 +9,8 @@ use Path::Class;
 
 extends 'Pinto::Action';
 
+use namespace::autoclean;
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -33,6 +35,10 @@ sub execute {
     $self->_set_message('Created a new Pinto repository');
     return 1;
 }
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
 
 #------------------------------------------------------------------------------
 

@@ -3,10 +3,13 @@ package Pinto::Action::Remove;
 # ABSTRACT: An action to remove packages from the repository
 
 use Moose;
+use MooseX::Types::Moose qw( Str );
 
 use Carp;
 
 extends 'Pinto::Action';
+
+use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -16,10 +19,13 @@ extends 'Pinto::Action';
 
 has package  => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     required => 1,
 );
 
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Authored );
 
 #------------------------------------------------------------------------------
 
@@ -27,7 +33,7 @@ sub execute {
     my ($self) = @_;
 
     my $pkg    = $self->package();
-    my $author = $self->config()->author();
+    my $author = $self->author();
 
     my $idxmgr = $self->idxmgr();
     my $orig_author = $idxmgr->local_author_of(package => $pkg);

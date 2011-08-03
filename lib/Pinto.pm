@@ -12,6 +12,8 @@ use Pinto::Util;
 use Pinto::ActionFactory;
 use Pinto::ActionBatch;
 
+use namespace::autoclean;
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -38,6 +40,16 @@ has action_batch => (
 );
 
 #------------------------------------------------------------------------------
+
+has idxmgr => (
+    is       => 'ro',
+    isa      => 'Pinto::IndexManager',
+    builder  => '__build_idxmgr',
+    init_arg => undef,
+    lazy     => 1,
+);
+
+#------------------------------------------------------------------------------
 # Moose roles
 
 with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
@@ -50,23 +62,31 @@ sub __build_action_factory {
     my ($self) = @_;
 
     return Pinto::ActionFactory->new( config => $self->config(),
-                                      logger => $self->logger() );
+                                      logger => $self->logger(),
+                                      idxmgr => $self->idxmgr() );
 }
 
 sub __build_action_batch {
     my ($self) = @_;
 
     return Pinto::ActionBatch->new( config => $self->config(),
-                                    logger => $self->logger() );
+                                    logger => $self->logger(),
+                                    idxmgr => $self->idxmgr() );
+}
+
+sub __build_idxmgr {
+    my ($self) = @_;
+
+    return Pinto::IndexManager->new( config => $self->config(),
+                                     logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------
 # Private methods
 
-sub should_cleanup {
+sub _should_cleanup {
     my ($self) = @_;
-    # TODO: Maybe use delegation instead...
-    return not $self->config()->get('nocleanup');
+    return not $self->config->nocleanup();
 }
 
 #------------------------------------------------------------------------------
@@ -107,7 +127,7 @@ sub mirror {
     my ($self) = @_;
 
     $self->enqueue( $self->create_action('Mirror') );
-    $self->enqueue( $self->create_action('Clean') ) if $self->should_cleanup();
+    $self->enqueue( $self->create_action('Clean') ) if $self->_should_cleanup();
     $self->run();
 
     return $self;
@@ -115,17 +135,15 @@ sub mirror {
 
 #------------------------------------------------------------------------------
 
-=method add(files => ['YourDist.tar.gz', 'AnotherDist.tar.gz'])
+=method add(file => 'YourDist.tar.gz', author => 'SOMEONE')
 
 =cut
 
 sub add {
     my ($self, %args) = @_;
 
-    my $files  = $args{files};
-
-    $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $files };
-    $self->enqueue( $self->create_action('Clean') ) if $self->should_cleanup();
+    $self->enqueue( $self->create_action('Add', %args) );
+    $self->enqueue( $self->create_action('Clean') ) if $self->_should_cleanup();
     $self->run();
 
     return $self;
@@ -133,17 +151,15 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method remove(packages => ['Some::Package', 'Another::Package'])
+=method remove(package => 'Some::Package', author => 'SOMEONE')
 
 =cut
 
 sub remove {
     my ($self, %args) = @_;
 
-    my $pkgs = $args{packages};
-
-    $self->enqueue( $self->create_action('Remove', package => $_) ) for @{ $pkgs };
-    $self->enqueue( $self->create_action('Clean') ) if $self->should_cleanup();
+    $self->enqueue( $self->create_action('Remove', %args) );
+    $self->enqueue( $self->create_action('Clean') ) if $self->_should_cleanup();
     $self->run();
 
     return $self;
@@ -152,11 +168,6 @@ sub remove {
 #------------------------------------------------------------------------------
 
 =method clean()
-
-Deletes any archives in the repository that are not currently listed
-in the master index.  Unless you have set the C<nocleanup> option, a
-cleanup is performed after every C<mirror>, C<add>, or C<remove>
-operation.
 
 =cut
 
@@ -173,9 +184,6 @@ sub clean {
 
 =method list()
 
-Prints a listing of all the packages and archives in the master index.
-This is basically what the F<02packages> file looks like.
-
 =cut
 
 sub list {
@@ -191,10 +199,6 @@ sub list {
 
 =method verify()
 
-Prints a listing of all the archives that are in the master index, but
-are not present in the repository.  This is usually a sign that things
-have gone wrong.
-
 =cut
 
 sub verify {
@@ -208,7 +212,7 @@ sub verify {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta()->make_immutable();
+__PACKAGE__->meta->make_immutable();
 
 #-----------------------------------------------------------------------------
 1;
