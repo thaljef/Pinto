@@ -29,19 +29,16 @@ with qw(Pinto::Role::Configurable);
 
 sub __build_log_level {
     my ($self) = @_;
-    # TODO: Default log_level to 1.  Maybe delegate this
-    return $self->config()->get('log_level');
+    return -1 if $self->config->quiet();
+    return $self->config->verbose();
 }
 
 #-----------------------------------------------------------------------------
 # Private functions
 
 sub _logit {
-    my ($message, $opts) = @_;
-    $opts ||= {};
-
-    print $message;
-    print "\n" unless $opts->{nolf};
+    my ($message) = @_;
+    print "$message\n";
 }
 
 #-----------------------------------------------------------------------------
@@ -49,21 +46,21 @@ sub _logit {
 
 sub debug {
     my ($self, $message, $opts) = @_;
-    _logit($message, $opts) if $self->log_level() <= 0;
+    _logit($message, $opts) if $self->log_level() >= 2;
 }
 
 #-----------------------------------------------------------------------------
 
 sub log {
     my ($self, $message, $opts) = @_;
-    _logit($message, $opts) if $self->log_level() <= 1;
+    _logit($message, $opts) if $self->log_level() >= 1;
 }
 
 #-----------------------------------------------------------------------------
 
 sub warn {
     my ($self, $message) = @_;
-    CORE::warn "$message\n" if $self->log_level() <= 2;
+    CORE::warn "$message\n" if $self->log_level() >= 0;
 }
 
 #-----------------------------------------------------------------------------
