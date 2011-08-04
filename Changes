@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+Interface changes:
+
+    The 'author' parameter is now entirely optional.  It
+    defaults to your shell username, if we can figure that
+    out.  If not, then an exception is thrown, and you'll
+    have to set the 'author' parameter explicitly.
+
 0.007     2011-08-04 08:04:27 America/Los_Angeles
 
 Interface Changes:
