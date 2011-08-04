@@ -37,13 +37,16 @@ sub execute {
 
     my $idxmgr = $self->idxmgr();
     my $index_has_changed = $idxmgr->update_mirror_index();
-    return 0 unless $index_has_changed or $force;
+
+    if (not $index_has_changed and not $force) {
+        $self->logger->log("Mirror index has not changed");
+        return 0;
+    }
 
     for my $file ( $idxmgr->files_to_mirror() ) {
 
         my $mirror_uri = URI->new( "$mirror/authors/id/$file" );
         my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
-
         next if -e $destination;
 
         my $file_has_changed = $self->ua->mirror(url => $mirror_uri, to => $destination, croak => 0);
