@@ -17,7 +17,7 @@ use base 'App::Pinto::Command';
 
 sub opt_spec {
     return (
-        [ "author=s"  => 'Your PAUSE ID' ],
+        [ "author=s"  => 'Your author ID (like a PAUSE ID)' ],
     );
 }
 
