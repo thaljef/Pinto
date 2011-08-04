@@ -24,7 +24,7 @@ __END__
 First, create a configuration file at F<~/.pinto/config.ini>:
 
   # Required for all commands
-  local = /path/to/your/pinto/repository
+  local = /some/directory
 
   # Optional, defaults to http://cpan.perl.org
   mirror = http://some-cpan-mirror
@@ -43,6 +43,9 @@ Then, run some commands:
   # Fill your repository with latest packages from remote mirror
   $> pinto mirror
 
+  # Then install stuff from your repository
+  $> cpanm --mirror file:///some/directory --mirror-only Foo
+
 =head1 DESCRIPTION
 
 C<pinto> is a command line utility for managing a Pinto repository.
@@ -51,15 +54,27 @@ and/or mirror archives from another repository (such as
 L<http://cpan.perl.org>).  You can also put locally patched versions
 of mirrored archives in your repository.
 
-You can then point L<cpan> or L<cpanm> to your Pinto repository and
-build and install your private archives (and their dependencies).
+You can then point L<cpanm> to your Pinto repository and build and
+install your private archives (and their dependencies).  B<NOTE:> At
+this time, only L<cpanm> will work properly with a Pinto repository.
+But support for L<cpan> and L<cpanp> is coming real soon!
 
-=head1 GLOBAL OPTIONS
+=head1 CONFIGURATION
 
 The following parameters can be set in your configuration file.  The
 default location of this file is F<~/.pinto/config.ini>.  At the
 moment, you cannot specify an alternative location for your
 configuration file.
+
+Almost all configuration parameters can also be specified on the
+command line, either as global options or command options.  To display
+a list of global options:
+
+  $> pinto -help
+
+To get a list of options for a particular command:
+
+  $> pinto help <command>
 
 =over 4
 
@@ -67,11 +82,12 @@ configuration file.
 
 Your identity as a module author.  This could be your PAUSE ID, but it
 doesn't have to be.  As long as it is just alphanumeric characters.
+This parameter is required for C<add> and C<remove> commands.
 
 =item local = DIR_PATH
 
 The path to a directory where your repository will be kept.  This
-parameter is required for all operations.  You must be able to
+parameter is required for all commands.  You must be able to
 read and write to this directory.
 
 =item nocleanup = (0|1)
@@ -103,12 +119,7 @@ modules for additional configuration settings.
 
 Controls the amount of noise to make.  Default is 0.
 
-
 =back
-
-Almost all the global options can also be overridden on the
-command line.  Say C<pinto -help> to display the global options
-and a list of available commands.
 
 =head1 COMMANDS
 
