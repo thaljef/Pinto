@@ -1,4 +1,4 @@
-package MooseX::Types::Pinto;
+package Pinto::Types;
 
 # ABSTRACT: Moose types used within Pinto
 

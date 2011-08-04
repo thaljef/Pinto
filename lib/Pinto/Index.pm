@@ -5,7 +5,6 @@ package Pinto::Index;
 use Moose;
 use Moose::Autobox;
 
-use MooseX::Types::Pinto qw(File);
 use MooseX::Types::Moose qw(HashRef);
 
 use Carp;
@@ -13,6 +12,7 @@ use Compress::Zlib;
 use Path::Class qw();
 
 use Pinto::Package;
+use Pinto::Types qw(File);
 
 use overload ('+' => '__plus', '-' => '__minus');
 

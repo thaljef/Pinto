@@ -6,7 +6,7 @@ use Moose;
 use MooseX::Configuration;
 
 use MooseX::Types::Moose qw(Str Bool Int);
-use MooseX::Types::Pinto qw(AuthorID URI Dir);
+use Pinto::Pinto qw(AuthorID URI Dir);
 
 use namespace::autoclean;
 

@@ -3,7 +3,6 @@ package Pinto::Action::Add;
 # ABSTRACT: An action to add one archive to the repository
 
 use Moose;
-use MooseX::Types::Pinto qw(File);
 
 use Carp;
 use File::Copy;
@@ -11,6 +10,7 @@ use Dist::MetaData;
 
 use Pinto::Util;
 use Pinto::IndexManager;
+use Pinto::Types qw(File);
 
 extends 'Pinto::Action';
 

@@ -3,7 +3,7 @@ package Pinto::Role::Authored;
 # ABSTRACT: Something that has an author
 
 use Moose::Role;
-use MooseX::Types::Pinto qw(AuthorID);
+use Pinto::Types qw(AuthorID);
 
 use Carp;
 
