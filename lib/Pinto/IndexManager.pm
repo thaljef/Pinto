@@ -207,7 +207,8 @@ sub remove_local_package {
     # TODO: Sanity check - packages removed from the local and the
     # master indexes should always be the same.
 
-    return sort map {$_->name()} @local_removed;
+    my @sorted = sort map {$_->name()} @local_removed;
+    return @sorted;
 }
 
 #------------------------------------------------------------------------------
