@@ -1,5 +1,25 @@
 {{$NEXT}}
 
+Interface Changes:
+
+    A config file for pinto[1] is no longer mandatory. If you do not
+    have one, then you'll have to specify all required parameters on
+    the command line (this is usually just the '--local' and sometimes
+    the '--author' options).  If you don't specify these, you'll get a
+    really ugly stack trace from Moose.  I'll look into making these
+    error messages prettier in a future release.  Thanks to b.jakubski
+    for suggesting this change.
+
+Bug Fixes:
+
+    RT #70015: Can't create repository.  The 'create' command failed
+    because the 02packages file could not be read.  This has now been
+    remedied.
+
+Other Changes:
+    
+    Edited documenation for pinto[1]
+     
 0.006     2011-08-04 00:52:22 America/Los_Angeles
 
 More documentation edits.  No code changes.
