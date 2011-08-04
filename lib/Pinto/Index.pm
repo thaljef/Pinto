@@ -33,17 +33,15 @@ L<Pinto::Package> objects.
 has packages => (
     is         => 'ro',
     isa        => HashRef,
-    default    => sub { {} },
-    writer     => '_set_packages',
     init_arg   => undef,
+    lazy_build => 1,
 );
 
 has files => (
     is         => 'ro',
     isa        => HashRef,
-    default    => sub { {} },
-    writer     => '_set_files',
     init_arg   => undef,
+    lazy_build => 1,
 );
 
 has 'file' => (
@@ -56,6 +54,12 @@ has 'file' => (
 # Moose roles
 
 with qw(Pinto::Role::Loggable);
+
+#------------------------------------------------------------------------------
+
+sub _build_packages { return {} }
+
+sub _build_files    { return {} }
 
 #------------------------------------------------------------------------------
 
@@ -242,8 +246,8 @@ Removes all packages from this Index.
 sub clear {
     my ($self) = @_;
 
-    $self->_set_packages( {} );
-    $self->_set_files( {} );
+    $self->clear_packages();
+    $self->clear_files();
 
     return $self;
 }
