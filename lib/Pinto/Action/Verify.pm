@@ -21,7 +21,7 @@ sub execute {
     my ($self) = @_;
 
     my $local = $self->config()->local();
-    for my $location ( $self->idxmgr->master_index->files->keys->flatten() ) {
+    for my $location ( sort $self->idxmgr->master_index->files->keys->flatten() ) {
         my $file = Pinto::Util::native_file($local, 'authors', 'id', $location);
         print "Missing archive $file\n" if not -e $file;
     }
