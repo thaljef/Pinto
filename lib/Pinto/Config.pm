@@ -9,6 +9,8 @@ use MooseX::Types::Moose qw(Str Bool Int);
 use Pinto::Types qw(AuthorID URI Dir);
 
 use Carp;
+use Readonly;
+use English qw($REAL_USER_ID);
 
 use namespace::autoclean;
 
@@ -110,11 +112,13 @@ has 'svn_tag' => (
 );
 
 #------------------------------------------------------------------------------
-# Override builder
+# Builders
+
+Readonly my $PINTO_ENV_VAR => $ENV{PERL_PINTO};
 
 sub _build_config_file {
 
-    return $ENV{PERL_PINTO} if $ENV{PERL_PINTO} and -e $ENV{PERL_PINTO};
+    return $PINTO_ENV_VAR if $PINTO_ENV_VAR and -e $PINTO_ENV_VAR;
 
     require File::HomeDir;
     my $home = File::HomeDir->my_home()
@@ -126,6 +130,24 @@ sub _build_config_file {
     return -e $file ? $file : ();
 }
 
+#------------------------------------------------------------------------------
+
+sub _build_author {
+
+    # Look at typical environment variables
+    for my $var ( qw(USERNAME USER LOGNAME) ) {
+        return uc $ENV{$var} if $ENV{$var};
+    }
+
+    # Try using pwent.  Probably only works on *nix
+    if (my $name = getpwuid($REAL_USER_ID)) {
+        return $name;
+    }
+
+    # Otherwise, we are hosed
+    croak 'Unable to determine your user name';
+
+}
 #------------------------------------------------------------------------------
 
 __PACKAGE__->meta()->make_immutable();
