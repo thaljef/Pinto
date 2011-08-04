@@ -46,11 +46,11 @@ with qw(Pinto::Role::Loggable Pinto::Role::Configurable);
 sub __build_store {
    my ($self) = @_;
 
-   my $store_class = $self->config->store_class();
-   Class::Load::load_class($store_class);
+   my $store = $self->config->store();
+   Class::Load::load_class($store);
 
-   return $store_class->new( config => $self->config(),
-                             logger => $self->logger() );
+   return $store->new( config => $self->config(),
+                       logger => $self->logger() );
 }
 
 #-----------------------------------------------------------------------------

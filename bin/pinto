@@ -89,7 +89,7 @@ The URL of a repository that you would like to mirror.  This could
 be a public CPAN mirror, or another Pinto repository.  This parameter
 is required for the C<update> operation.
 
-=item store_class
+=item store
 
 The name of the class that will handle storage of your repository.
 The default is L<Pinto::Store>, which basically stores your repository

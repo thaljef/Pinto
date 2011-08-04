@@ -59,12 +59,13 @@ has 'force'    => (
 );
 
 
-has 'store_class' => (
+has 'store' => (
     is        => 'ro',
     isa       => Str,
-    key       => 'store_class',
+    key       => 'store',
     default   => 'Pinto::Store',
 );
+
 
 has 'nocommit' => (
     is       => 'ro',
@@ -72,6 +73,7 @@ has 'nocommit' => (
     key      => 'nocommit',
     default  => 0,
 );
+
 
 has 'quiet'  => (
     is       => 'ro',
