@@ -11,6 +11,7 @@ use MooseX::Types::Moose qw( Str );
 use URI;
 use Path::Class::Dir;
 use Path::Class::File;
+use File::HomeDir;
 
 use namespace::autoclean;
 
@@ -43,7 +44,8 @@ subtype Dir, as 'Path::Class::Dir';
 
 coerce Dir,
     from Str,
-    via { Path::Class::Dir->new($_) };
+    via { s|^~|File::HomeDir->my_home()|e;
+          Path::Class::Dir->new($_) };
 
 #-----------------------------------------------------------------------------
 
@@ -51,7 +53,8 @@ subtype File, as 'Path::Class::File';
 
 coerce File,
     from Str,
-    via { Path::Class::File->new($_) };
+    via { s|^~|File::HomeDir->my_home()|e;
+          Path::Class::File->new($_) };
 
 #-----------------------------------------------------------------------------
 
