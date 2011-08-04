@@ -41,6 +41,7 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
     $self->pinto( $opts )->add( file => $args->[0] );
+    return 0;
 }
 
 #------------------------------------------------------------------------------
