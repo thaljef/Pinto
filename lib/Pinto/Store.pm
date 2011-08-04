@@ -35,9 +35,8 @@ sub initialize {
     my $local = $self->config->local();
 
     if (not -e $local) {
-        $self->logger->log("Making directory at $local ... ", {nolf => 1});
+        $self->logger->log("Making directory at $local");
         $local->mkpath(); # TODO: Set dirmode and verbosity here.
-        $self->logger->log("DONE");
     }
 
     return 1;

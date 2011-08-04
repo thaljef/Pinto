@@ -45,9 +45,10 @@ has files => (
 );
 
 has 'file' => (
-    is       => 'ro',
-    isa      => File,
-    coerce   => 1,
+    is        => 'ro',
+    isa       => File,
+    predicate => 'has_file',
+    coerce    => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -66,7 +67,8 @@ sub _build_files    { return {} }
 sub BUILD {
     my ($self) = @_;
 
-    $self->load() if $self->file();
+    $self->load() if $self->has_file()
+      and -e $self->file();
 
     return $self;
 }
