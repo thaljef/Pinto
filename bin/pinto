@@ -87,13 +87,13 @@ This parameter is required for C<add> and C<remove> commands.
 =item local = DIR_PATH
 
 The path to a directory where your repository will be kept.  This
-parameter is required for all commands.  You must be able to
-read and write to this directory.
+parameter is required for all commands.  You must be able to read and
+write to this directory.
 
 =item nocleanup = (0|1)
 
 If set to a true value, L<pinto> will not automatically clean up files
-in your repository after most commands.
+in your repository after most commands.  The default is 0.
 
 =item mirror = URL
 
@@ -117,7 +117,7 @@ modules for additional configuration settings.
 
 =item verbose = (0|1|2)
 
-Controls the amount of noise to make.  Default is 0.
+Controls how much noise is made.  Default is 0.
 
 =back
 
