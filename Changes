@@ -2,6 +2,10 @@
 
 Default log level is now 1 (info).
 
+pinto[1] now exits with status 0 if successful.
+
+Improved some log messages.
+
 0.003     2011-08-03 22:59:10 America/Los_Angeles
 
 Major overhaul of internals.  But the pinto[1]
