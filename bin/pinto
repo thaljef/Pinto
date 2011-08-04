@@ -57,9 +57,9 @@ build and install your private archives (and their dependencies).
 =head1 GLOBAL OPTIONS
 
 The following parameters can be set in your configuration file.  The
-default location of this file is F<~/.pinto/config.ini>, or you can
-specify the path to the configuration file on the command line with
-the C<--config> option.
+default location of this file is F<~/.pinto/config.ini>.  At the
+moment, you cannot specify an alternative location for your
+configuration file.
 
 =over 4
 
@@ -67,11 +67,6 @@ the C<--config> option.
 
 Your identity as a module author.  This could be your PAUSE ID, but it
 doesn't have to be.  As long as it is just alphanumeric characters.
-
-=item config = FILE_PATH
-
-Alternative path to your L<pinto> configuration file.  The default
-is F<~/.pinto/config.ini>.
 
 =item local = DIR_PATH
 
