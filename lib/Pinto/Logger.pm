@@ -3,7 +3,9 @@ package Pinto::Logger;
 # ABSTRACT: A simple logger
 
 use Moose;
-use Moose::Util::TypeConstraints;
+use MooseX::Types::Moose qw(Int);
+
+use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
@@ -13,9 +15,9 @@ use Moose::Util::TypeConstraints;
 # Moose attributes
 
 has log_level => (
-    is      => 'ro',
-    builder => '__build_log_level',
-    lazy    => 1,
+    is         => 'ro',
+    isa        => Int,
+    lazy_build => 1,
 );
 
 
@@ -27,7 +29,7 @@ with qw(Pinto::Role::Configurable);
 #-----------------------------------------------------------------------------
 # Builders
 
-sub __build_log_level {
+sub _build_log_level {
     my ($self) = @_;
     return -2 if $self->config->quiet();
     return $self->config->verbose();
@@ -69,6 +71,10 @@ sub fatal {
     my ($self, $message) = @_;
     die "$message\n";
 }
+
+#-----------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
 
 #-----------------------------------------------------------------------------
 
