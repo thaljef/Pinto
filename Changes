@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+Brought the documentation for pinto[1] up to date
+with the actual API.
+
 0.004     2011-08-04 00:23:23 America/Los_Angeles
 
 Default log level is now 1 (info).

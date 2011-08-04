@@ -23,11 +23,14 @@ __END__
 
 First, create a configuration file at F<~/.pinto/config.ini>:
 
-  # Required for all operations
+  # Required for all commands
   local = /path/to/your/pinto/repository
 
-  # Required only for the 'update' action
-  remote = http://some-cpan-mirror
+  # Optional, defaults to http://cpan.perl.org
+  mirror = http://some-cpan-mirror
+
+  # Required to add/remove your own archives
+  author = MYNAME
 
 Then, run some commands:
 
@@ -37,16 +40,16 @@ Then, run some commands:
   # Add your own archive to the repository
   $> pinto add Foo-Bar-1.2.tar.gz
 
-  # Fill your repository with latest packages from the remote mirror
-  $> pinto update
+  # Fill your repository with latest packages from remote mirror
+  $> pinto mirror
 
 =head1 DESCRIPTION
 
 C<pinto> is a command line utility for managing a Pinto repository.
 The repository can contain your own private archives of Perl packages,
-and/or mirror archives from another repository (like
-L<http://cpan.perl.org>).  You can also put patched versions of
-mirrored archives in your repository.
+and/or mirror archives from another repository (such as
+L<http://cpan.perl.org>).  You can also put locally patched versions
+of mirrored archives in your repository.
 
 You can then point L<cpan> or L<cpanm> to your Pinto repository and
 build and install your private archives (and their dependencies).
@@ -55,41 +58,44 @@ build and install your private archives (and their dependencies).
 
 The following parameters can be set in your configuration file.  The
 default location of this file is F<~/.pinto/config.ini>, or you can
-set the C<PERL_PINTO> environment variable to point to an different
-location.  You can also specify the path to the configuration file on
-the command line with the C<--profile> option.
+specify the path to the configuration file on the command line with
+the C<--config> option.
 
 =over 4
 
-=item author
+=item --author NAME
 
 Your identity as a module author.  This could be your PAUSE ID, but it
-doesn't have to be.  As long as it is just alpha-numeric characters.
+doesn't have to be.  As long as it is just alphanumeric characters.
 
-=item local
+=item --config FILE_PATH
+
+Alternative path to your L<pinto> configuration file.  The default
+is F<~/.pinto/config.ini>.
+
+=item --local DIR_PATH
 
 The path to a directory where your repository will be kept.  This
 parameter is required for all operations.  You must be able to
 read and write to this directory.
 
-=item loglevel
-
-Controls the amount of noise to make.  Valid values are
-(debug|info|warn).  The default value is 'info'.  NOTE: this is not
-actually implemented yet.
-
 =item nocleanup
 
 If set to a true value, L<pinto> will not automatically clean up files
-in your repository after each command.
+in your repository after most commands.
 
-=item remote
+=item mirror URL
 
 The URL of a repository that you would like to mirror.  This could
 be a public CPAN mirror, or another Pinto repository.  This parameter
-is required for the C<update> operation.
+is required for the C<mirror> operation.
 
-=item store
+=item quiet
+
+If true, then only fatal error messages will be displayed.  This
+option silently overrides any C<verbose> setting.
+
+=item store CLASS_NAME
 
 The name of the class that will handle storage of your repository.
 The default is L<Pinto::Store>, which basically stores your repository
@@ -97,6 +103,12 @@ on the local file system.  Alternatives like L<Pinto::Store::Svn>
 and L<Pinto::Store::Git> allow you to store your repository inside
 a revision control system.  See the documentation for each of those
 modules for additional configuration settings.
+
+=item verbose INTEGER
+
+Controls the amount of noise to make.  Valid values are (0|1|2).
+Default is 0.
+
 
 =back
 
@@ -111,9 +123,9 @@ to display a list of options available for C<COMMAND>.
 
 =over 4
 
-=item add Some-Archive-1.2.tar.gz [Another-Archive-2.6.tar.gz ... ]
+=item add Some-Archive-1.2.tar.gz
 
-Adds the given archives to the Pinto repository.  Any packages
+Adds the given archive to the Pinto repository.  Any packages
 contained in those archives will override the mirrored packages with
 the same name.  See the L<"RULES"> section for more information about
 how locally added archives interact with mirrored ones.
@@ -122,7 +134,7 @@ how locally added archives interact with mirrored ones.
 
 Deletes any archive in the repository that is not currently in
 the master index.  This usually happens automatically, unless
-you've set the C<nocleanup> flag.
+you've set the C<nocleanup> option.
 
 =item create
 
@@ -135,17 +147,18 @@ Lists the curent packages and archives that are in the master index of
 your repository.  This is basically just the contents of the
 F<02packages.details.txt> file.
 
-=item remove Some::Package [Another::Package ... ]
+=item remove Some::Package
 
-Removes the local archive that contains the given packages.  All other
+Removes the local archive that contains the given package.  All other
 packages that were contained in the same archive are also removed.
-After removing a package, you will usually want to run C<update> to
-pull in any archives that might have been blocked by your local ones.
+After removing a package, you will usually want to run C<mirror> to
+pull in any archives that might have been previously blocked by your
+local ones.
 
-=item update
+=item mirror
 
 Fills your repository with the archives that contain the latest
-version of all packages on your remote mirror.  See the L<"RULES">
+version of all packages on the remote mirror.  See the L<"RULES">
 section for more information about how locally added archives interact
 with mirrored ones.
 
@@ -160,8 +173,8 @@ has gone wrong.
 =head1 RULES
 
 There are certain rules that govern how the indexes are managed.
-These rules are intended to ensure that folks pulling packages
-from your repository will always get the B<right one>.  Also,
+These rules are intended to ensure that clients pulling packages
+from your repository will always get the B<right ones>.  Also,
 the rules attempt to make Pinto behave somewhat like PAUSE does.
 
 =over 4
@@ -169,18 +182,12 @@ the rules attempt to make Pinto behave somewhat like PAUSE does.
 =item A local package always masks a mirrored package, and all other
 packages that are in the same archive with the mirrored package.
 
-This rule is key, so pay attention.  If the CPAN mirror has an archive
-that contains both C<Foo> and C<Bar> packages, and you add your own
-archive that contains C<Foo> package, then both the C<Foo> and C<Bar>
-mirroed packages will be removed from your index.  This ensures that
-anyone pulling packages from your repository will always get B<your>
-C<Foo>.  But they'll never be able to get C<Bar>.
-
-If this rule were not in place, someone could pull C<Bar> from the
-repository, which would overwrite the version of C<Foo> that you
-wanted them to have.  This situation is probably rare, but it can
-happen if you add a locally patched version of a mirrored archive, but
-the mirrored archive later includes additional packages.
+This rule is key, so pay attention.  If the remote mirror has an
+archive that contains both C<Foo> and C<Bar> packages, and you add
+your own archive that contains C<Foo> package, then both the C<Foo>
+and C<Bar> mirroed packages will be removed from your index.  This
+ensures that anyone pulling packages from your repository will always
+get B<your> C<Foo>.  But they'll never be able to get C<Bar>.
 
 =item You can never add an archive with the same name twice.
 
