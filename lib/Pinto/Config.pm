@@ -8,6 +8,8 @@ use MooseX::Configuration;
 use MooseX::Types::Moose qw(Str Bool Int);
 use Pinto::Types qw(AuthorID URI Dir);
 
+use Carp;
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -40,6 +42,7 @@ has 'author'  => (
     isa       => AuthorID,
     key       => 'author',
     coerce    => 1,
+    builder   => '_build_author',
 );
 
 
@@ -111,11 +114,15 @@ has 'svn_tag' => (
 
 sub _build_config_file {
 
-    require File::HomeDir;
-    require Path::Class;
+    return $ENV{PERL_PINTO} if $ENV{PERL_PINTO} and -e $ENV{PERL_PINTO};
 
-    # TODO: look at $ENV{PERL_PINTO} first.
-    my $file = Path::Class::file( File::HomeDir->my_home(), qw(.pinto config.ini) );
+    require File::HomeDir;
+    my $home = File::HomeDir->my_home()
+        or croak 'Unable to determine your home directory';
+
+    require Path::Class;
+    my $file = Path::Class::file($home, qw(.pinto config.ini));
+
     return -e $file ? $file : ();
 }
 
