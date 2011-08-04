@@ -44,8 +44,7 @@ subtype Dir, as 'Path::Class::Dir';
 
 coerce Dir,
     from Str,
-    via { s|^~|File::HomeDir->my_home()|e;
-          Path::Class::Dir->new($_) };
+    via { Path::Class::Dir->new( expand_tilde($_) ) };
 
 #-----------------------------------------------------------------------------
 
@@ -53,8 +52,15 @@ subtype File, as 'Path::Class::File';
 
 coerce File,
     from Str,
-    via { s|^~|File::HomeDir->my_home()|e;
-          Path::Class::File->new($_) };
+    via { Path::Class::File->new( expand_tilde($_) ) };
+
+#-----------------------------------------------------------------------------
+
+sub expand_tilde {
+    my ($path) = @_;
+    $path =~ s|\A ~ (?= \W )|File::HomeDir->my_home()|xe;
+    return $path;
+}
 
 #-----------------------------------------------------------------------------
 

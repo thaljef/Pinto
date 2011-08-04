@@ -11,13 +11,14 @@ use Pinto::Config;
 
 #------------------------------------------------------------------------------
 
+no warnings 'redefine';
 local *Pinto::Config::_build_config_file = sub{};
 
 my $cfg = Pinto::Config->new(local => 'nowhere');
 is($cfg->mirror(), 'http://cpan.perl.org', 'Got default mirror');
 
 $cfg = Pinto::Config->new(local => '~/nowhere');
-is($cfg->local(), "$ENV{HOME}/nowhere", 'Coerced ~ to home directory');
+is($cfg->local(), "$ENV{HOME}/nowhere", 'Coerced ~/ to my home directory');
 
 $cfg = Pinto::Config->new(local => 'nowhere', author => 'fooBar');
 is($cfg->author(), 'FOOBAR', 'Coerced author to ALL CAPS');
