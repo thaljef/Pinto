@@ -20,6 +20,6 @@ $cfg = Pinto::Config->new(local => 'nowhere', author => 'fooBar');
 is($cfg->author(), 'FOOBAR', 'Coerced author to ALL CAPS');
 
 throws_ok { Pinto::Config->new(local => 'nowhere', author => 'foo Bar') }
-  qr/only be alphanumeric/, 'Author cannot have funky characters';
+  qr/only capital letters/, 'Author cannot have funky characters';
 
 #------------------------------------------------------------------------------

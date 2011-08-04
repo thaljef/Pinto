@@ -36,7 +36,7 @@ has 'mirror'  => (
 
 
 has 'author'  => (
-    is        => 'rw',
+    is        => 'ro',
     isa       => AuthorID,
     key       => 'author',
     coerce    => 1,

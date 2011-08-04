@@ -22,8 +22,8 @@ use namespace::autoclean;
 
 subtype AuthorID,
     as Str,
-    where { $_ !~ /\W/ },
-    message { "The author ($_) can only be alphanumeric characters" };
+    where { not /[a-z\W]/ },
+    message { "The author ($_) must be only capital letters" };
 
 coerce AuthorID,
     from Str,
