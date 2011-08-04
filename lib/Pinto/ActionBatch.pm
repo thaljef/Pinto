@@ -85,8 +85,15 @@ sub run {
     # TODO: don't initialize if we don't have to!
     $self->store()->initialize();
 
-    my $changes_were_made = 0;
+    my $changes_were_made;
     while( my $action = $self->actions()->shift() ) {
+
+      # HACK: To avoid running cleanup if we don't
+      # have to.  But we still need to run it when
+      # explicitly asked to run a 'Clean' action.
+      next if $action->isa('Pinto::Action::Clean')
+        && defined $changes_were_made
+          && $changes_were_made == 0;
 
         $changes_were_made += $action->execute();
 

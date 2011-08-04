@@ -14,6 +14,8 @@ use Pinto::IndexManager;
 
 extends 'Pinto::Action';
 
+use namespace::autoclean;
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -39,7 +41,7 @@ sub execute {
     my ($self) = @_;
 
     my $local  = $self->config->local();
-    my $author = $self->author() || $self->config->author();
+    my $author = $self->author();
 
     my $file   = $self->file();
     my $base   = $file->basename();
@@ -97,7 +99,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta()->make_immutable();
+__PACKAGE__->meta->make_immutable();
 
 #-----------------------------------------------------------------------------
 1;
