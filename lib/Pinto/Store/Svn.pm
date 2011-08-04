@@ -23,8 +23,8 @@ sub initialize {
     my $local = $self->config->local();
     my $trunk = $self->config->svn_trunk();
 
-    #$self->logger->log("Checking out (or updating) working copy");
-    #Pinto::Util::Svn::svn_checkout(url => $trunk, to => $local);
+    $self->logger->log("Checking out (or updating) working copy");
+    Pinto::Util::Svn::svn_checkout(url => $trunk, to => $local);
 
     return 1;
 }
@@ -43,7 +43,7 @@ sub finalize {
     $self->logger->log("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $local, message => $message);
 
-    $self->_make_tag() if $self->tag();
+    $self->_make_tag() if $self->config->svn_tag();
 
     return 1;
 }
