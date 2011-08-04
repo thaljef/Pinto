@@ -6,7 +6,7 @@ use Moose;
 
 use Carp;
 use File::Copy;
-use Dist::MetaData;
+use Dist::Metadata;
 
 use Pinto::Util;
 use Pinto::IndexManager;
