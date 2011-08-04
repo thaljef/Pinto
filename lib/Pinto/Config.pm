@@ -44,6 +44,7 @@ has 'author'  => (
     isa       => AuthorID,
     key       => 'author',
     coerce    => 1,
+    lazy      => 1,
     builder   => '_build_author',
 );
 
@@ -114,10 +115,9 @@ has 'svn_tag' => (
 #------------------------------------------------------------------------------
 # Builders
 
-Readonly my $PINTO_ENV_VAR => $ENV{PERL_PINTO};
-
 sub _build_config_file {
 
+    my $PINTO_ENV_VAR = $ENV{PERL_PINTO};
     return $PINTO_ENV_VAR if $PINTO_ENV_VAR and -e $PINTO_ENV_VAR;
 
     require File::HomeDir;
