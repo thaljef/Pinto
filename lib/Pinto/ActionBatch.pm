@@ -86,7 +86,7 @@ sub run {
     $self->store()->initialize();
 
     my $changes_were_made;
-    while( my $action = $self->actions()->shift() ) {
+    for my $action ( $self->actions->flatten() ) {
 
       # HACK: To avoid running cleanup if we don't
       # have to.  But we still need to run it when
@@ -108,9 +108,9 @@ sub run {
             return $self;
         }
 
-        my @action_messages = map {$_->message()} $self->actions()->flatten();
+        my @action_messages = map {$_->message()} $self->actions->flatten();
         my $batch_message  = join "\n\n", grep {length} @action_messages;
-        $self->store()->finalize(message => $batch_message);
+        $self->store->finalize(message => $batch_message);
         return $self;
     }
 
