@@ -63,39 +63,39 @@ the C<--config> option.
 
 =over 4
 
-=item --author NAME
+=item author = NAME
 
 Your identity as a module author.  This could be your PAUSE ID, but it
 doesn't have to be.  As long as it is just alphanumeric characters.
 
-=item --config FILE_PATH
+=item config = FILE_PATH
 
 Alternative path to your L<pinto> configuration file.  The default
 is F<~/.pinto/config.ini>.
 
-=item --local DIR_PATH
+=item local = DIR_PATH
 
 The path to a directory where your repository will be kept.  This
 parameter is required for all operations.  You must be able to
 read and write to this directory.
 
-=item nocleanup
+=item nocleanup = (0|1)
 
 If set to a true value, L<pinto> will not automatically clean up files
 in your repository after most commands.
 
-=item mirror URL
+=item mirror = URL
 
 The URL of a repository that you would like to mirror.  This could
-be a public CPAN mirror, or another Pinto repository.  This parameter
-is required for the C<mirror> operation.
+be a public CPAN mirror, or another Pinto repository.  Defaults
+to L<http://cpan.perl.org>.
 
-=item quiet
+=item quiet = (0|1)
 
 If true, then only fatal error messages will be displayed.  This
 option silently overrides any C<verbose> setting.
 
-=item store CLASS_NAME
+=item store = CLASS_NAME
 
 The name of the class that will handle storage of your repository.
 The default is L<Pinto::Store>, which basically stores your repository
@@ -104,10 +104,9 @@ and L<Pinto::Store::Git> allow you to store your repository inside
 a revision control system.  See the documentation for each of those
 modules for additional configuration settings.
 
-=item verbose INTEGER
+=item verbose = (0|1|2)
 
-Controls the amount of noise to make.  Valid values are (0|1|2).
-Default is 0.
+Controls the amount of noise to make.  Default is 0.
 
 
 =back
