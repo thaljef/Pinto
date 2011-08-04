@@ -21,6 +21,14 @@ __END__
 
 =head1 SYNOPSIS
 
+  pinto [global options] COMMAND [command options] [ARG]
+
+  pinto help COMMAND
+
+  pinto help
+
+=head1 TYPICAL USAGE
+
 First, create a configuration file at F<~/.pinto/config.ini>:
 
   # Required for all commands
@@ -29,7 +37,7 @@ First, create a configuration file at F<~/.pinto/config.ini>:
   # Optional, defaults to http://cpan.perl.org
   mirror = http://some-cpan-mirror
 
-  # Required to add/remove your own archives
+  # Optional, defaults to your shell user name
   author = MYNAME
 
 Then, run some commands:
@@ -55,9 +63,9 @@ L<http://cpan.perl.org>).  You can also put locally patched versions
 of mirrored archives in your repository.
 
 You can then point L<cpanm> to your Pinto repository and build and
-install your private archives (and their dependencies).  B<NOTE:> At
-this time, only L<cpanm> will work properly with a Pinto repository.
-But support for L<cpan> and L<cpanp> is coming real soon!
+install your archives (and their dependencies).  B<NOTE:> At this
+time, only L<cpanm> will work properly with a Pinto repository.  But
+support for L<cpan> and L<cpanp> is coming real soon!
 
 =head1 CONFIGURATION
 
@@ -82,7 +90,8 @@ To get a list of options for a particular command:
 
 Your identity as a module author.  This could be your PAUSE ID, but it
 doesn't have to be.  As long as it is just alphanumeric characters.
-This parameter is required for C<add> and C<remove> commands.
+This defaults to your shell username (either C<$ENV{USERNAME}> or
+C<$ENV{USER}> or C<$ENV{LOGNAME}>).
 
 =item local = DIR_PATH
 
@@ -90,7 +99,7 @@ The path to a directory where your repository will be kept.  This
 parameter is required for all commands.  You must be able to read and
 write to this directory.
 
-=item nocleanup = (0|1)
+=item nocleanup = 0|1
 
 If set to a true value, L<pinto> will not automatically clean up files
 in your repository after most commands.  The default is 0.
@@ -101,7 +110,7 @@ The URL of a repository that you would like to mirror.  This could
 be a public CPAN mirror, or another Pinto repository.  Defaults
 to L<http://cpan.perl.org>.
 
-=item quiet = (0|1)
+=item quiet = 0|1
 
 If true, then only fatal error messages will be displayed.  This
 option silently overrides any C<verbose> setting.
@@ -115,7 +124,7 @@ and L<Pinto::Store::Git> allow you to store your repository inside
 a revision control system.  See the documentation for each of those
 modules for additional configuration settings.
 
-=item verbose = (0|1|2)
+=item verbose = 0|1|2
 
 Controls how much noise is made.  Default is 0.
 
@@ -187,24 +196,31 @@ the rules attempt to make Pinto behave somewhat like PAUSE does.
 =item A local package always masks a mirrored package, and all other
 packages that are in the same archive with the mirrored package.
 
-This rule is key, so pay attention.  If the remote mirror has an
+This rule is important, so pay attention.  If the remote mirror has an
 archive that contains both C<Foo> and C<Bar> packages, and you add
 your own archive that contains C<Foo> package, then both the C<Foo>
 and C<Bar> mirroed packages will be removed from your index.  This
 ensures that anyone pulling packages from your repository will always
-get B<your> C<Foo>.  But they'll never be able to get C<Bar>.
+get B<your> version of C<Foo>.  But they'll never be able to get
+C<Bar>, because doing so would overwrite your C<Foo>.
 
 =item You can never add an archive with the same name twice.
 
 Most archive-building tools will put some kind of version number in
-the name of the archive, so this is rarely a problem.
+the name of the archive, so this is rarely a problem.  The "name" of
+an archive is actually a function of the name of the file and the name
+of the author.  So technically, it is possible for two different
+authors to both add an archive called C<Foo-Bar-1.2.tar.gz>.  But
+in practice, this rarely happens because...
 
-=item Only the original author of a local package can add a newer
-version of it.
+=item Only the original author of a local package can add an
+archive that contains the same package.
 
 Ownership is given on a first-come basis, just like PAUSE.  So if
-C<SALLY> is the first author to add local package C<Foo::Bar> to the
-repository, then only C<SALLY> can ever add that package again.
+C<SALLY> is the first author to add an archive to the repository with
+package C<Foo::Bar>, then only C<SALLY> can ever add another archive
+with that package again.  Unless that package is explicitly removed,
+but...
 
 =item Only the original author of a local package can remove it.
 
