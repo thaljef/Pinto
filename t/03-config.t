@@ -17,7 +17,7 @@ use Pinto::Config;
     local *Pinto::Config::_build_config_file = sub{};
     local *Pinto::Config::_build_author = sub{ 'TEST' };
 
-    my %test_cases = (
+    my %default_cases = (
         local     => 'nowhere',
         mirror    => 'http://cpan.perl.org',
         author    => 'TEST',
@@ -30,11 +30,28 @@ use Pinto::Config;
     );
 
     my $cfg = Pinto::Config->new(local => 'nowhere');
-    while ( my ($method, $expect) = each %test_cases ) {
-        my $msg = "Got default for '$method'";
+    while ( my ($method, $expect) = each %default_cases ) {
+        my $msg = "Got default value for '$method'";
         is($cfg->$method(), $expect, $msg);
     }
 
+   my %custom_cases = (
+        local     => 'nowhere',
+        mirror    => 'http://cpan.perl.org',
+        author    => 'TEST',
+        force     => 0,
+        verbose   => 0,
+        quiet     => 0,
+        store     => 'Pinto::Store',
+        nocleanup => 0,
+        nocommit  => 0,
+    );
+
+    $cfg = Pinto::Config->new(%custom_cases);
+    while ( my ($method, $expect) = each %custom_cases ) {
+        my $msg = "Got custom value for '$method'";
+        is($cfg->$method(), $expect, $msg);
+    }
 
     $cfg = Pinto::Config->new(local => '~/nowhere');
     is($cfg->local(), "$ENV{HOME}/nowhere", 'Coerced ~/ to my home directory');
@@ -44,6 +61,9 @@ use Pinto::Config;
 
     throws_ok { Pinto::Config->new(local => 'nowhere', author => 'foo Bar') }
         qr/only capital letters/, 'Author cannot have funky characters';
+
+    throws_ok { Pinto::Config->new()->local() }
+        qr/does not pass the type constraint/, 'local parameter is required';
 }
 
 
