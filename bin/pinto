@@ -31,13 +31,13 @@ __END__
 
 First, create a configuration file at F<~/.pinto/config.ini>:
 
-  # Required for all commands
+  ; Required for all commands
   local = /some/directory
 
-  # Optional, defaults to http://cpan.perl.org
+  ; Optional, defaults to http://cpan.perl.org
   mirror = http://some-cpan-mirror
 
-  # Optional, defaults to your shell user name
+  ; Optional, defaults to your shell user name
   author = MYNAME
 
 Then, run some commands:
@@ -73,6 +73,12 @@ The following parameters can be set in your configuration file.  The
 default location of this file is F<~/.pinto/config.ini>.  At the
 moment, you cannot specify an alternative location for your
 configuration file.
+
+The configuration file is in the typical INI format.  Parameters are
+C<NAME = VALUE> pairs.  Global parameters (which are all the ones
+described below) are at the top of the file. Blank lines are ignored,
+leading and trailing whitespace is discarded.  Comments start with a
+semi-colon (;).
 
 Almost all configuration parameters can also be specified on the
 command line, either as global options or command options.  To display

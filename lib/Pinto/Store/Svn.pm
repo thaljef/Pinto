@@ -81,11 +81,16 @@ __END__
 
 Add this to your Pinto configuration (usually in F<~/.pinto/config.ini>):
 
-  # ... other global params here ... #
+  ; other global params up here...
+
   store   = Pinto::Store::Svn
 
   [Pinto::Store::Svn]
+
+  ; Required.  URL of repository location where the mainline version will live
   trunk = http://my-repository/trunk/PINTO
+
+  ; Optional.  URL of location where trunk will be copied
   tag   = http://my-repository/tags/PINTO-%Y%m%d.%H%M%S
 
 And then run L<pinto> as you normally would.
