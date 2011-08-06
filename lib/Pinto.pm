@@ -22,7 +22,7 @@ use namespace::autoclean;
 has action_factory => (
     is        => 'ro',
     isa       => 'Pinto::ActionFactory',
-    builder   => '__build_action_factory',
+    builder   => '_build_action_factory',
     handles   => [ qw(create_action) ],
     lazy      => 1,
 );
@@ -32,7 +32,7 @@ has action_factory => (
 has action_batch => (
     is         => 'ro',
     isa        => 'Pinto::ActionBatch',
-    builder    => '__build_action_batch',
+    builder    => '_build_action_batch',
     handles    => [ qw(enqueue run) ],
     lazy       => 1,
 );
@@ -42,17 +42,16 @@ has action_batch => (
 has idxmgr => (
     is       => 'ro',
     isa      => 'Pinto::IndexManager',
-    builder  => '__build_idxmgr',
-    init_arg => undef,
+    builder  => '_build_idxmgr',
     lazy     => 1,
 );
 
+#------------------------------------------------------------------------------
 
 has store => (
     is       => 'ro',
     isa      => 'Pinto::Store',
-    builder  => '__build_store',
-    init_arg => undef,
+    builder  => '_build_store',
     lazy     => 1,
 );
 
@@ -65,7 +64,7 @@ with qw( Pinto::Role::Configurable
 #------------------------------------------------------------------------------
 # Builders
 
-sub __build_action_factory {
+sub _build_action_factory {
     my ($self) = @_;
 
     return Pinto::ActionFactory->new( config => $self->config(),
@@ -74,7 +73,7 @@ sub __build_action_factory {
                                       store  => $self->store() );
 }
 
-sub __build_action_batch {
+sub _build_action_batch {
     my ($self) = @_;
 
     return Pinto::ActionBatch->new( config => $self->config(),
@@ -83,14 +82,14 @@ sub __build_action_batch {
                                     store  => $self->store() );
 }
 
-sub __build_idxmgr {
+sub _build_idxmgr {
     my ($self) = @_;
 
     return Pinto::IndexManager->new( config => $self->config(),
                                      logger => $self->logger() );
 }
 
-sub __build_store {
+sub _build_store {
     my ($self) = @_;
 
     my $store_class = $self->config->store();
