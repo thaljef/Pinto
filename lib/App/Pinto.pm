@@ -17,10 +17,10 @@ sub global_opt_spec {
 
   return (
 
-      [ "config=s"    => "Path to your pinto profile" ],
+#      [ "config=s"    => "Path to your pinto config file" ],
       [ "local=s"     => "Path to local repository directory"],
       [ "nocleanup"   => "Do not clean repository after each action" ],
-      [ "nocleanup"   => "Do not commit changes to VCS" ],
+      [ "nocommit"    => "Do not commit changes to VCS" ],
       [ "noinit"      => "Skip updating or pulling from VCS" ],
       [ "quiet|q"     => "Only report fatal errors"],
       [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
