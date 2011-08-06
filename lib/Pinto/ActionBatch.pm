@@ -17,9 +17,7 @@ use Pinto::IndexManager;
 has 'store' => (
     is       => 'ro',
     isa      => 'Pinto::Store',
-    builder  => '__build_store',
-    init_arg => undef,
-    lazy     => 1,
+    required => 1
 );
 
 has actions => (
@@ -27,7 +25,6 @@ has actions => (
     isa      => 'ArrayRef[Pinto::Action]',
     default  => sub { [] },
 );
-
 
 has idxmgr => (
     is       => 'ro',
@@ -38,20 +35,8 @@ has idxmgr => (
 #-----------------------------------------------------------------------------
 # Moose roles
 
-with qw(Pinto::Role::Loggable Pinto::Role::Configurable);
-
-#-----------------------------------------------------------------------------
-# Builders
-
-sub __build_store {
-   my ($self) = @_;
-
-   my $store = $self->config->store();
-   Class::Load::load_class($store);
-
-   return $store->new( config => $self->config(),
-                       logger => $self->logger() );
-}
+with qw( Pinto::Role::Loggable
+         Pinto::Role::Configurable );
 
 #-----------------------------------------------------------------------------
 
@@ -82,36 +67,34 @@ Runs all the actions in this Batch.
 sub run {
     my ($self) = @_;
 
-    # TODO: don't initialize if we don't have to!
-    $self->store()->initialize();
+    $self->store()->initialize()
+        unless $self->config->noinit();
 
+    my @messages;
     my $changes_were_made;
-    for my $action ( $self->actions->flatten() ) {
+    while ( my $action = $self->actions->shift() ) {
 
       # HACK: To avoid running cleanup if we don't
       # have to.  But we still need to run it when
       # explicitly asked to run a 'Clean' action.
       next if $action->isa('Pinto::Action::Clean')
-        && defined $changes_were_made
-          && $changes_were_made == 0;
+          && defined $changes_were_made
+              && $changes_were_made == 0;
 
-        $changes_were_made += $action->execute();
+      $changes_were_made += $action->execute();
 
+      push @messages, $action->message()
+          if $action->has_message();
     }
 
     if ($changes_were_made) {
 
         $self->idxmgr()->write_indexes();
 
-        if ( $self->config->nocommit() ) {
-            $self->logger->log('Not committing due to nocommit flag');
-            return $self;
-        }
+        return $self if $self->config->nocommit();
 
-        my @action_messages = map {$_->message()} $self->actions->flatten();
-        my $batch_message  = join "\n\n", grep {length} @action_messages;
+        my $batch_message  = join "\n\n", @messages;
         $self->store->finalize(message => $batch_message);
-        return $self;
     }
 
     return $self;

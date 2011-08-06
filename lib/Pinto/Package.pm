@@ -81,7 +81,7 @@ sub BUILDARGS {
       # attribute can be determined from the author and the name of
       # the distribution.
 
-      my $author_dir = Pinto::Util::directory_for_author($author);
+      my $author_dir = Pinto::Util::author_dir($author);
       my $basename   = Path::Class::file( $args{file} )->basename();
 
       $args{file}  = Path::Class::file($author_dir, $basename)

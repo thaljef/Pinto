@@ -19,13 +19,18 @@ has idxmgr => (
     required => 1,
 );
 
+has store => (
+    is       => 'ro',
+    isa      => 'Pinto::Store',
+    required => 1,
+);
 
 has message => (
-    is       => 'ro',
-    isa      => 'Str',
-    writer   => '_set_message',
-    default  => '',
-    init_arg => undef,
+    is         => 'ro',
+    isa        => 'Str',
+    writer     => '_set_message',
+    predicate  => 'has_message',
+    init_arg   => undef,
 );
 
 #------------------------------------------------------------------------------

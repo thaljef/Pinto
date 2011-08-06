@@ -37,7 +37,7 @@ with qw( Pinto::Role::Authored );
 
 #------------------------------------------------------------------------------
 
-sub execute {
+override execute => sub {
     my ($self) = @_;
 
     my $local  = $self->config->local();
@@ -87,15 +87,15 @@ sub execute {
 
 
     $self->idxmgr()->add_local_packages(@packages);
-    my $destination_dir = Pinto::Util::directory_for_author($local, qw(authors id), $author);
-    $destination_dir->mkpath();    # TODO: log & error check
-    copy($file, $destination_dir); # TODO: log & error check
+
+    my $destination = Pinto::Util::author_dir($local, qw(authors id), $author)->file($base);
+    $self->store->add(file => $destination, source => $file);
 
     my $message = Pinto::Util::format_message("Added archive $base providing:", sort keys %{$provides});
     $self->_set_message($message);
 
     return 1;
-}
+};
 
 #------------------------------------------------------------------------------
 

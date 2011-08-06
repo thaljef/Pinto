@@ -28,10 +28,14 @@ an exception will be thrown.
 sub svn_mkdir {
     my %args = @_;
     my $url = $args{url};
+    my $dir = $args{dir};
     my $message = $args{message} || 'NO MESSAGE GIVEN';
 
-    if ( not svn_ls(url => $url) ) {
+    if ( $url && not svn_ls(url => $url) ) {
         return _svn( command => [qw(mkdir --parents -m), $message, $url]);
+    }
+    elsif ($dir and not -e $dir) {
+        return _svn( command => [qw(mkdir --parents), $dir] );
     }
 
     return 1;
@@ -144,30 +148,34 @@ sub svn_add {
 
 #--------------------------------------------------------------------------
 
-=func svn_delete(path => '/some/path' prune => 1)
+=func svn_remove(path => '/some/path' prune => 1)
 
-Schedules the specified path for deletion from the repository.  If the
+Schedules the specified path for remove from the repository.  If the
 C<prune> flag is true, then any ancestors of the path will also be
-deleted if all their contents are scheduled for deletion.
+removed if all their contents are scheduled for removal.
 
 =cut
 
-sub svn_delete {
+sub svn_remove {
     my %args  = @_;
-    my $path  = file($args{path});
+
+    my $path  = $args{file};
     my $prune = $args{prune};
+
+    return if not -e $path;
+    croak "$path is not a file" if $path->is_dir();
 
     _svn( command => ['rm', $path] );
 
     if($prune) {
-        my $dir = $path->dir();
-        if ( _all_scheduled_for_deletion( directory => $dir) ) {
-
-            svn_delete(path => $dir, prune => 1);
+        while (my $dir = $path->dir() ) {
+            last if not _all_scheduled_for_deletion(directory => $dir);
+            _svn( command => ['rm', $path] );
+            $path = $dir;
         }
     }
 
-    return 1;
+    return $path;
 }
 
 #--------------------------------------------------------------------------

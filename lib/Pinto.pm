@@ -47,11 +47,20 @@ has idxmgr => (
     lazy     => 1,
 );
 
+
+has store => (
+    is       => 'ro',
+    isa      => 'Pinto::Store',
+    builder  => '__build_store',
+    init_arg => undef,
+    lazy     => 1,
+);
+
 #------------------------------------------------------------------------------
 # Moose roles
 
-with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
-
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 # Builders
@@ -61,7 +70,8 @@ sub __build_action_factory {
 
     return Pinto::ActionFactory->new( config => $self->config(),
                                       logger => $self->logger(),
-                                      idxmgr => $self->idxmgr() );
+                                      idxmgr => $self->idxmgr(),
+                                      store  => $self->store() );
 }
 
 sub __build_action_batch {
@@ -69,7 +79,8 @@ sub __build_action_batch {
 
     return Pinto::ActionBatch->new( config => $self->config(),
                                     logger => $self->logger(),
-                                    idxmgr => $self->idxmgr() );
+                                    idxmgr => $self->idxmgr(),
+                                    store  => $self->store() );
 }
 
 sub __build_idxmgr {
@@ -77,6 +88,16 @@ sub __build_idxmgr {
 
     return Pinto::IndexManager->new( config => $self->config(),
                                      logger => $self->logger() );
+}
+
+sub __build_store {
+    my ($self) = @_;
+
+    my $store_class = $self->config->store();
+    Class::Load::load_class( $store_class );
+
+    return $store_class->new( config => $self->config(),
+                              logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------

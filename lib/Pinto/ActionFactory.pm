@@ -17,10 +17,17 @@ has idxmgr => (
     required => 1,
 );
 
+has store => (
+    is       => 'ro',
+    isa      => 'Pinto::Store',
+    required => 1,
+);
+
 #------------------------------------------------------------------------------
 # Roles
 
-with qw(Pinto::Role::Configurable Pinto::Role::Loggable);
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 # Methods
@@ -34,6 +41,7 @@ sub create_action {
     return $action_class->new( config => $self->config(),
                                logger => $self->logger(),
                                idxmgr => $self->idxmgr(),
+                               store  => $self->store(),
                                %args );
 
 }

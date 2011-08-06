@@ -4,9 +4,29 @@ package Pinto::Store;
 
 use Moose;
 
+use Carp;
+use File::Copy;
+
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+# Moose attributes
+
+has added_paths => (
+    is          => 'ro',
+    isa         => 'ArrayRef[Path::Class]',
+    init_arg    => undef,
+    default     => sub { [] },
+);
+
+has removed_paths => (
+    is          => 'ro',
+    isa         => 'ArrayRef[Path::Class]',
+    init_arg    => undef,
+    default     => sub { [] },
+);
 
 #------------------------------------------------------------------------------
 # Moose roles
@@ -36,7 +56,8 @@ sub initialize {
 
     if (not -e $local) {
         $self->logger->log("Making directory at $local");
-        $local->mkpath(); # TODO: Set dirmode and verbosity here.
+        eval { $local->mkpath(); 1 }
+            or croak "Failed to make directory $local: $@";
     }
 
     return 1;
@@ -71,10 +92,64 @@ finalization fails, an exception should be thrown.
 
 sub finalize {
     my ($self, %args) = @_;
-    # TODO: Default implementation - delete empty directories?
     return 1;
 }
 
+
+#------------------------------------------------------------------------------
+
+sub add {
+    my ($self, %args) = @_;
+
+    my $file   = $args{file};
+    my $source = $args{source};
+
+    croak "$file does not exist and no source was specified"
+        if -e $file and not defined $source;
+
+    croak "$file already exists"
+        if -e $file and $source;
+
+    croak "$source is not a file"
+        if $source->is_dir();
+
+    if ( not -e (my $parent = $file->parent()) ) {
+        $self->logger->debug("Making directory at $parent");
+        eval { $parent->mkpath(); 1 }
+            or croak "Failed to make directory $parent: $@";
+    }
+
+    $self->logger->debug("Copying $source to $file");
+    File::Copy::copy($source, $file) or croak "Failed to copy $source to $file: $!";
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub remove {
+    my ($self, %args) = @_;
+
+    my $path  = $args{file};
+    my $prune = $args{prune};
+
+    return $self if not -e $path;
+    croak "$path is not a file" if $path->is_dir();
+
+    $self->logger->log("Removing file $path");
+    $path->remove() or croak "Failed to remove $path: $!";
+
+    if ($prune) {
+        while (my $dir = $path->dir()) {
+            last if $dir->children();
+            $self->logger->debug("Removing empty directory $dir");
+            $dir->remove();
+            $path = $dir;
+         }
+    }
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
@@ -84,8 +159,8 @@ __END__
 
 =head1 DESCRIPTION
 
-L<Pinto::Store> util is the default back-end for a Pinto repository.
-It basically just represents files on disk.  You should look at
+L<Pinto::Store> is the default back-end for a Pinto repository.  It
+basically just represents files on disk.  You should look at
 L<Pinto::Store::Svn> or L<Pinto::Store::Git> for a more interesting
 example.
 

@@ -29,7 +29,7 @@ with qw( Pinto::Role::Authored );
 
 #------------------------------------------------------------------------------
 
-sub execute {
+override execute => sub {
     my ($self) = @_;
 
     my $pkg    = $self->package();
@@ -49,7 +49,11 @@ sub execute {
 
     $self->logger()->warn("Package $pkg is not in the index");
     return 0;
-}
+};
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
 
 #------------------------------------------------------------------------------
 

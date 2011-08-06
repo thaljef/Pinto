@@ -233,7 +233,7 @@ sub find_file {
     my $author = $args{author};
 
     my $local         = $self->config->local();
-    my $author_dir    = Pinto::Util::directory_for_author($local, qw(authors id), $author);
+    my $author_dir    = Pinto::Util::author_dir($local, qw(authors id), $author);
     my $physical_file = Path::Class::file($author_dir, $file->basename());
     return -e $physical_file ? $physical_file : ();
 }

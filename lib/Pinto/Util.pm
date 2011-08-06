@@ -17,7 +17,7 @@ use base 'Exporter';
 #-------------------------------------------------------------------------------
 # TODO: Don't export!
 
-our @EXPORT_OK = qw(directory_for_author is_source_control_file);
+our @EXPORT_OK = qw(author_dir is_source_control_file);
 
 #-------------------------------------------------------------------------------
 
@@ -25,9 +25,9 @@ Readonly my %SCM_FILES => (map {$_ => 1} qw(.svn .git .gitignore CVS));
 
 #-------------------------------------------------------------------------------
 
-=func directory_for_author( @base, $author )
+=func author_dir( @base, $author )
 
-Given the name of an C<$author> returns the directory where the
+Given the name of an C<$author>, returns the directory where the
 archives for that author belong (as a L<Path::Class::Dir>).  The
 optional C<@base> can be a series of L<Path::Class:Dir> or path parts
 (as strings).  If C<@base> is given, it will be prepended to the
@@ -35,7 +35,7 @@ directory that is returned.
 
 =cut
 
-sub directory_for_author {
+sub author_dir {
     my ($author) = pop;
     my @base = @_;
     $author = uc $author;

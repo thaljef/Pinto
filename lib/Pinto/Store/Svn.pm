@@ -3,6 +3,7 @@ package Pinto::Store::Svn;
 # ABSTRACT: Store your Pinto repository with Subversion
 
 use Moose;
+use Moose::Autobox;
 
 use Pinto::Util::Svn;
 use Date::Format qw(time2str);
@@ -17,7 +18,7 @@ use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
-sub initialize {
+override initialize => sub {
     my ($self) = @_;
 
     my $local = $self->config->local();
@@ -27,26 +28,58 @@ sub initialize {
     Pinto::Util::Svn::svn_checkout(url => $trunk, to => $local);
 
     return 1;
-}
+};
 
 #-------------------------------------------------------------------------------
 
-sub finalize {
+override add => sub {
+    my ($self, %args) = @_;
+    super();
+
+    my $path = $args{file};
+    while (not -e $path->dir->file('.svn') ) {
+        $path = $path->dir();
+    }
+
+    $self->logger->log("Scheduling $path for addition");
+    Pinto::Util::Svn::svn_add(path => $path);
+    $self->added_paths()->push($path);
+
+    return $self;
+};
+
+#-------------------------------------------------------------------------------
+
+override remove => sub {
+    my ($self, %args) = @_;
+
+    my $file  = $args{file};
+    my $prune = $args{prune};
+
+    $self->logger->log("Scheduling $file for removal");
+    my $removed = Pinto::Util::Svn::svn_remove(file => $file, prune => $prune);
+    $self->removed_paths->push($removed);
+
+    return $self;
+};
+
+#-------------------------------------------------------------------------------
+
+override finalize => sub {
     my ($self, %args) = @_;
 
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
-    my $local     = $self->config->local();
 
-    $self->logger->log("Scheduling additions/deletions");
-    Pinto::Util::Svn::svn_schedule(path => $local);
+    my $paths = [ $self->added_paths()->flatten(),
+                  $self->removed_paths->flatten() ];
 
     $self->logger->log("Committing changes");
-    Pinto::Util::Svn::svn_commit(paths => $local, message => $message);
+    Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
     $self->_make_tag() if $self->config->svn_tag();
 
     return 1;
-}
+};
 
 #-------------------------------------------------------------------------------
 

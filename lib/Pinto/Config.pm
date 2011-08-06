@@ -56,6 +56,14 @@ has 'nocleanup' => (
 );
 
 
+has 'noinit' => (
+    is        => 'ro',
+    isa       => Bool,
+    key       => 'noinit',
+    default   => 0,
+);
+
+
 has 'force'    => (
     is        => 'ro',
     isa       => Bool,
@@ -143,7 +151,7 @@ sub _build_author {
         return $name;
     }
 
-    # Otherwise, we are hosed
+    # Otherwise, we are hosed!
     croak 'Unable to determine your user name';
 
 }
