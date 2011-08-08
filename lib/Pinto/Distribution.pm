@@ -87,8 +87,8 @@ sub BUILD {
     my ($self, $args) = @_;
 
     my $dist_info = CPAN::DistnameInfo->new($self->location);
-    $self->_set_name( $dist_info->dist() );
-    $self->_set_version( $dist_info->version() );
+    $self->_set_version( $dist_info->version() || '');
+    $self->_set_name( $dist_info->dist() || '');
 
     if (not $self->has_author() ) {
         $self->_set_author( $dist_info->cpanid() );
