@@ -57,7 +57,7 @@ coerce File,
 #-----------------------------------------------------------------------------
 
 sub expand_tilde {
-    my ($paths) = @_;
+    my (@paths) = @_;
     $paths[0] =~ s|\A ~ (?= \W )|File::HomeDir->my_home()|xe;
     return @paths;
 }
