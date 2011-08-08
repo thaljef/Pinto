@@ -168,9 +168,9 @@ sub svn_remove {
     _svn( command => ['rm', $path] );
 
     if($prune) {
-        while (my $dir = $path->dir() ) {
+        while (my $dir = $path->parent() ) {
             last if not _all_scheduled_for_deletion(directory => $dir);
-            _svn( command => ['rm', $path] );
+            _svn( command => ['rm', $dir] );
             $path = $dir;
         }
     }
