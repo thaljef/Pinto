@@ -31,7 +31,7 @@ __END__
 
 First, create a configuration file at F<~/.pinto/config.ini>:
 
-  ; Required for all commands
+  ; Required. this wil be the path to your repository
   local = /some/directory
 
   ; Optional, defaults to http://cpan.perl.org
@@ -52,7 +52,7 @@ Then, run some commands:
   $> pinto mirror
 
   # Then install stuff from your repository
-  $> cpanm --mirror file:///some/directory --mirror-only Foo
+  $> cpanm --mirror-only --mirror file:///some/directory Foo
 
 =head1 DESCRIPTION
 
@@ -70,9 +70,9 @@ support for L<cpan> and L<cpanp> is coming real soon!
 =head1 CONFIGURATION
 
 The following parameters can be set in your configuration file.  The
-default location of this file is F<~/.pinto/config.ini>.  At the
-moment, you cannot specify an alternative location for your
-configuration file.
+default location of this file is F<~/.pinto/config.ini>.  You may
+specify an alternative location for this file by setting the
+C<PERL_PINTO> environment variable to point to another path.
 
 The configuration file is in the typical INI format.  Parameters are
 C<NAME = VALUE> pairs.  Global parameters (which are all the ones
@@ -103,12 +103,8 @@ C<$ENV{USER}> or C<$ENV{LOGNAME}>).
 
 The path to a directory where your repository will be kept.  This
 parameter is required for all commands.  You must be able to read and
-write to this directory.
-
-=item nocleanup = 0|1
-
-If set to a true value, L<pinto> will not automatically clean up files
-in your repository after most commands.  The default is 0.
+write to this directory.  You may use a tilde (~) as shorthand for
+your home directory.
 
 =item mirror = URL
 
@@ -116,18 +112,37 @@ The URL of a repository that you would like to mirror.  This could
 be a public CPAN mirror, or another Pinto repository.  Defaults
 to L<http://cpan.perl.org>.
 
+=item nocleanup = 0|1
+
+If true, L<pinto> will not automatically clean up files in your
+repository after most commands.  The default is 0.
+
+=item nocommit = 0|1
+
+If true, L<pinto> will not commit changes in the repository to your
+VCS at the end of each command.  If you're not using a VCS store, then
+this parameter has no effect.  The default is 0.
+
+=item noinit = 0|1
+
+If true, L<pinto> assumes that your repository is up-to-date and will
+not pull/update the repository from your VCS at the beginning of each
+command.  This can save a lot of time, but use with caution. If you're
+not using a VCS store, then this parameter has no effect.  The default
+is 0.
+
 =item quiet = 0|1
 
 If true, then only fatal error messages will be displayed.  This
-option silently overrides any C<verbose> setting.
+parameter silently overrides any C<verbose> setting.
 
 =item store = CLASS_NAME
 
 The name of the class that will handle storage of your repository.
-The default is L<Pinto::Store>, which basically stores your repository
-on the local file system.  Alternatives like L<Pinto::Store::Svn>
-and L<Pinto::Store::Git> allow you to store your repository inside
-a revision control system.  See the documentation for each of those
+The default is L<Pinto::Store>, which only stores your repository on
+the local file system.  Alternatives like L<Pinto::Store::Svn> and
+L<Pinto::Store::Git> allow you to store your repository inside a
+version control system (VCS).  See the documentation for each of those
 modules for additional configuration settings.
 
 =item verbose = 0|1|2
@@ -154,7 +169,7 @@ how locally added archives interact with mirrored ones.
 
 Deletes any archive in the repository that is not currently in
 the master index.  This usually happens automatically, unless
-you've set the C<nocleanup> option.
+you've set the C<nocleanup> parameter.
 
 =item create
 
