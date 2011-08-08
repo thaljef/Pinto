@@ -194,18 +194,18 @@ sub remove_local_package {
 
     my $package = $args{package};
 
-    my @removed_files = $self->local_index->remove($package);
-    return if not @removed_files;
+    my @removed_dists = $self->local_index->remove($package);
+    return if not @removed_dists;
 
     $self->logger->debug("Removed $_ from local index")
-        for @removed_files;
+        for @removed_dists;
 
-    @removed_files = $self->master_index->remove($package);
+    @removed_dists = $self->master_index->remove($package);
     $self->logger->debug("Removed $_ from master index")
-        for @removed_files;
+        for @removed_dists;
 
     # HACK...
-    return pop @removed_files;
+    return pop @removed_dists;
 }
 
 #------------------------------------------------------------------------------
