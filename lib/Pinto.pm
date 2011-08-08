@@ -161,7 +161,6 @@ sub add {
     my ($self, %args) = @_;
 
     $self->enqueue( $self->create_action('Add', %args) );
-    $self->enqueue( $self->create_action('Clean') ) if $self->_should_cleanup();
     $self->run();
 
     return $self;
@@ -177,7 +176,6 @@ sub remove {
     my ($self, %args) = @_;
 
     $self->enqueue( $self->create_action('Remove', %args) );
-    $self->enqueue( $self->create_action('Clean') ) if $self->_should_cleanup();
     $self->run();
 
     return $self;
