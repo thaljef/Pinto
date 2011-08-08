@@ -60,7 +60,7 @@ use Pinto::Config;
     is($cfg->author(), 'FOOBAR', 'Coerced author to ALL CAPS');
 
     throws_ok { Pinto::Config->new(local => 'nowhere', author => 'foo Bar') }
-        qr/only capital letters/, 'Author cannot have funky characters';
+        qr/must be alphanumeric/, 'Author cannot have funky characters';
 
     throws_ok { Pinto::Config->new()->local() }
         qr/does not pass the type constraint/, 'local parameter is required';
