@@ -267,7 +267,7 @@ Arguments can be L<Pinto::Package> objects or package names as strings.
 sub remove {
     my ($self, @packages) = @_;
 
-    my @removed = ();
+    my @removed_files = ();
     for my $package (@packages) {
 
         $package = $package->name()
@@ -278,11 +278,11 @@ sub remove {
             # then remove all packages that were contained in that file
             my $kin = $self->files->delete( $incumbent->file() );
             $self->packages->delete($_) for map {$_->name()} @{ $kin };
-            push @removed, @{ $kin };
+            push @removed_files, $incumbent->file();
         }
 
     }
-    return @removed;
+    return @removed_files;
 }
 
 #------------------------------------------------------------------------------

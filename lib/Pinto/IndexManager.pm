@@ -194,21 +194,18 @@ sub remove_local_package {
 
     my $package = $args{package};
 
-    my @local_removed = $self->local_index->remove($package);
+    my @removed_files = $self->local_index->remove($package);
+    return if not @removed_files;
+
     $self->logger->debug("Removed $_ from local index")
-      for @local_removed->map( sub {$_[0]->name()} )->flatten();
+        for @removed_files;
 
-    return if not @local_removed;
-
-    my @master_removed = $self->master_index->remove($package);
+    @removed_files = $self->master_index->remove($package);
     $self->logger->debug("Removed $_ from master index")
-      for @master_removed->map( sub {$_[0]->name()} )->flatten();
+        for @removed_files;
 
-    # TODO: Sanity check - packages removed from the local and the
-    # master indexes should always be the same.
-
-    my @sorted = sort map {$_->name()} @local_removed;
-    return @sorted;
+    # HACK...
+    return pop @removed_files;
 }
 
 #------------------------------------------------------------------------------
