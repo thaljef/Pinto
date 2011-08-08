@@ -37,8 +37,8 @@ override add => sub {
     super();
 
     my $path = $args{file};
-    while (not -e $path->dir->file('.svn') ) {
-        $path = $path->dir();
+    while (not -e $path->parent->file('.svn') ) {
+        $path = $path->parent();
     }
 
     $self->logger->log("Scheduling $path for addition");
@@ -70,7 +70,7 @@ override finalize => sub {
 
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
 
-    my $paths = [ $self->added_paths()->flatten(),
+    my $paths = [ $self->added_paths->flatten(),
                   $self->removed_paths->flatten() ];
 
     $self->logger->log("Committing changes");
