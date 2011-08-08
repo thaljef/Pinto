@@ -2,17 +2,20 @@ package Pinto::Index;
 
 # ABSTRACT: Represents an 02packages.details.txt file
 
+use autodie;
+
 use Moose;
 use Moose::Autobox;
 
 use MooseX::Types::Moose qw(HashRef);
+use Pinto::Types qw(File);
 
 use Carp;
-use Compress::Zlib;
+use PerlIO::gzip;
 use Path::Class qw();
 
 use Pinto::Package;
-use Pinto::Types qw(File);
+use Pinto::Distribution;
 
 use overload ('+' => '__plus', '-' => '__minus');
 
@@ -37,11 +40,11 @@ has packages => (
     lazy_build => 1,
 );
 
-has files => (
-    is         => 'ro',
-    isa        => HashRef,
-    init_arg   => undef,
-    lazy_build => 1,
+has distributions => (
+    is          => 'ro',
+    isa         => HashRef,
+    init_arg    => undef,
+    lazy_build  => 1,
 );
 
 has 'file' => (
@@ -60,7 +63,7 @@ with qw(Pinto::Role::Loggable);
 
 sub _build_packages { return {} }
 
-sub _build_files    { return {} }
+sub _build_distributions { return {} }
 
 #------------------------------------------------------------------------------
 
@@ -82,12 +85,11 @@ sub load {
     my $file = $self->file();
     $self->logger->debug("Reading index at $file");
 
-    my $fh = $file->openr();
-    my $gz = Compress::Zlib::gzopen($fh, "rb")
-        or croak "Cannot open $file: $Compress::Zlib::gzerrno";
+    open my $fh, '<:gzip', $file
+        or croak "Cannot open $file: $!";
 
     my $inheader = 1;
-    while ($gz->gzreadline($_) > 0) {
+    while (<$fh>) {
 
         if ($inheader) {
             $inheader = 0 if not /\S/;
@@ -103,6 +105,7 @@ sub load {
 
     }
 
+    close $fh;
     return $self;
 }
 
@@ -129,24 +132,24 @@ sub write {
     $self->logger->debug("Writing index at $file");
 
     $file->dir->mkpath(); # TODO: log & error check
-    my $gz = Compress::Zlib::gzopen( $file->openw(), 'wb' );
-    $self->_gz_write_header($gz);
-    $self->_gz_write_packages($gz);
-    $gz->gzclose();
+    open my $fh, '>:gzip', $file;
+    $self->_write_header($fh);
+    $self->_write_packages($fh);
+    close $fh;
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
-sub _gz_write_header {
-    my ($self, $gz) = @_;
+sub _write_header {
+    my ($self, $fh) = @_;
 
     my ($file, $url) = $self->file()
         ? ($self->file->basename(), 'file://' . $self->file->as_foreign('Unix') )
         : ('UNKNOWN', 'UNKNOWN');
 
-    $gz->gzwrite( <<END_PACKAGE_HEADER );
+    print {$fh} <<END_PACKAGE_HEADER;
 File:         $file
 URL:          $url
 Description:  Package names found in directory \$CPAN/authors/id/
@@ -163,13 +166,13 @@ END_PACKAGE_HEADER
 
 #------------------------------------------------------------------------------
 
-sub _gz_write_packages {
-    my ($self, $gz) = @_;
+sub _write_packages {
+    my ($self, $fh) = @_;
 
     my $sorter = sub { $_[0]->{name} cmp $_[1]->{name} };
     my $packages = $self->packages->values->sort($sorter);
     for my $package ( $packages->flatten() ) {
-        $gz->gzwrite($package->to_string() . "\n");
+        print {$fh} $package->to_string() . "\n";
     }
 
     return $self;
@@ -209,11 +212,13 @@ sub add {
     my ($self, @packages) = @_;
 
     for my $package (@packages) {
+
         my $name = $package->name();
         $self->packages->put($name, $package);
 
-        my $file = $package->file();
-        ($self->files()->{$file} ||= [] )->push($package);
+        my $location = $package->file();
+        $self->distributions->{$location} ||= Pinto::Distribution->new(location => $location);
+        $self->distributions->{$location}->add_packages($package);
     }
 
     return $self;
@@ -249,7 +254,7 @@ sub clear {
     my ($self) = @_;
 
     $self->clear_packages();
-    $self->clear_files();
+    $self->clear_distributions();
 
     return $self;
 }
@@ -267,22 +272,24 @@ Arguments can be L<Pinto::Package> objects or package names as strings.
 sub remove {
     my ($self, @packages) = @_;
 
-    my @removed_files = ();
+    my @removed_dists = ();
     for my $package (@packages) {
+
+        $DB::single = 1;
 
         $package = $package->name()
             if eval { $package->isa('Pinto::Package') };
 
         if (my $incumbent = $self->packages->at($package)) {
-            # Remove the file that contains the incumbent package and
-            # then remove all packages that were contained in that file
-            my $kin = $self->files->delete( $incumbent->file() );
-            $self->packages->delete($_) for map {$_->name()} @{ $kin };
-            push @removed_files, $incumbent->file();
+            my $location = $incumbent->file();
+            my $dist = $self->distributions->delete( $location );
+            my @package_names = map {$_->name()} $dist->packages()->flatten();
+            $self->packages->delete($_) for @package_names;
+            push @removed_dists, $dist;
         }
 
     }
-    return @removed_files;
+    return @removed_dists;
 }
 
 #------------------------------------------------------------------------------
