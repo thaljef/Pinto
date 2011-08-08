@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use MooseX::Types -declare => [ qw( AuthorID URI Dir File) ];
-use MooseX::Types::Moose qw( Str );
+use MooseX::Types::Moose qw( Str ArrayRef );
 
 use URI;
 use Path::Class::Dir;
@@ -43,23 +43,23 @@ coerce URI,
 subtype Dir, as 'Path::Class::Dir';
 
 coerce Dir,
-    from Str,
-    via { Path::Class::Dir->new( expand_tilde($_) ) };
+    from Str,             via { Path::Class::Dir->new( expand_tilde($_) ) },
+    from ArrayRef,        via { Path::Class::Dir->new( expand_tilde( @{$_} ) ) };
 
 #-----------------------------------------------------------------------------
 
 subtype File, as 'Path::Class::File';
 
 coerce File,
-    from Str,
-    via { Path::Class::File->new( expand_tilde($_) ) };
+    from Str,             via { Path::Class::File->new( expand_tilde($_) ) },
+    from ArrayRef,        via { Path::Class::File->new( @{$_} ) };
 
 #-----------------------------------------------------------------------------
 
 sub expand_tilde {
-    my ($path) = @_;
-    $path =~ s|\A ~ (?= \W )|File::HomeDir->my_home()|xe;
-    return $path;
+    my ($paths) = @_;
+    $paths[0] =~ s|\A ~ (?= \W )|File::HomeDir->my_home()|xe;
+    return @paths;
 }
 
 #-----------------------------------------------------------------------------
