@@ -91,7 +91,8 @@ override execute => sub {
     my $destination = Pinto::Util::author_dir($local, qw(authors id), $author)->file($base);
     $self->store->add(file => $destination, source => $file);
 
-    my $message = Pinto::Util::format_message("Added archive $base providing:", sort keys %{$provides});
+    my @list_items = sort map { "$_ $provides->{$_}" } keys %{ $provides };
+    my $message = Pinto::Util::format_message("Added archive $base providing:", @list_items);
     $self->_set_message($message);
 
     return 1;
