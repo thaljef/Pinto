@@ -50,7 +50,7 @@ override execute => sub {
     $self->logger->log(sprintf "Removing $dist with %i packages", $dist->package_count());
 
     my $file = $dist->path( $self->config->local() );
-    $self->store->remove( file => $file, prune => 1 );
+    $self->config->nocleanup() || $self->store->remove( file => $file );
 
     $self->add_message( Pinto::Util::removed_dist_message( $dist ) );
 

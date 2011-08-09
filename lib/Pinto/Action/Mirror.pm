@@ -46,8 +46,9 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $local  = $self->config->local();
-    my $mirror = $self->config->mirror();
+    my $local   = $self->config->local();
+    my $mirror  = $self->config->mirror();
+    my $cleanup = !$self->config->nocleanup();
 
     my $url = $dist->url($mirror);
     my $destination = $dist->path($local);
@@ -58,7 +59,7 @@ sub _do_mirror {
         $self->logger->log("Mirrored distribution $dist");
         $self->store->add(file => $destination);
         my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
-        $self->store->remove(file => $_->path($local)) for @removed;
+        $cleanup && $self->store->remove(file => $_->path($local)) for @removed;
         $changes_were_made++;
     }
 

@@ -41,7 +41,7 @@ sub _make_callback {
 
     return sub {
 
-        if (Pinto::Util::is_source_control_file( $_ )) {
+        if ( Pinto::Util::is_source_control_file($_) ) {
             $File::Find::prune = 1;
             return;
         }
@@ -52,7 +52,7 @@ sub _make_callback {
         my $index_file  = $physical_file->relative($search_dir)->as_foreign('Unix');
         return if $self->idxmgr()->master_index()->find( file => $index_file );
 
-        $self->store->remove(file => $physical_file, prune => 1);
+        $self->store->remove(file => $physical_file);
         push @{ $deleted }, $index_file;
     };
 }
