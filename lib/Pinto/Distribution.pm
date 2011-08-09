@@ -86,7 +86,7 @@ sub _build_author {
 sub path {
     my ($self, @base) = @_;
 
-    return Path::Class::file(@base, $self->_path());
+    return Path::Class::file(@base, qw(authors id), $self->_path());
 }
 
 #------------------------------------------------------------------------------
@@ -132,9 +132,8 @@ sub _extract_packages {
 
         my $version = $provides->{$package_name} || 'undef';
         push @packages, Pinto::Package->new( name    => $package_name,
-                                             file    => $file,
-                                             version => $version,
-                                             author  => $self->author() );
+                                             dist    => $self,
+                                             version => $version );
     }
 
     $self->add_packages(@packages);
@@ -142,6 +141,7 @@ sub _extract_packages {
 }
 
 #------------------------------------------------------------------------------
+# TODO: Consider using a "native trait" for this.
 
 sub add_packages {
     my ($self, @packages) = @_;
