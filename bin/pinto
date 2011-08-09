@@ -45,7 +45,7 @@ Then, run some commands:
   # Create an empty repository
   $> pinto create
 
-  # Add your own archive to the repository
+  # Add your own distribution to the repository
   $> pinto add Foo-Bar-1.2.tar.gz
 
   # Fill your repository with latest packages from remote mirror
@@ -57,13 +57,13 @@ Then, run some commands:
 =head1 DESCRIPTION
 
 C<pinto> is a command line utility for managing a Pinto repository.
-The repository can contain your own private archives of Perl packages,
-and/or mirror archives from another repository (such as
+The repository can contain your own private distributions of Perl packages,
+and/or mirror distributions from another repository (such as
 L<http://cpan.perl.org>).  You can also put locally patched versions
-of mirrored archives in your repository.
+of mirrored distributions in your repository.
 
 You can then point L<cpanm> to your Pinto repository and build and
-install your archives (and their dependencies).  B<NOTE:> At this
+install your distributions (and their dependencies).  B<NOTE:> At this
 time, only L<cpanm> will work properly with a Pinto repository.  But
 support for L<cpan> and L<cpanp> is coming real soon!
 
@@ -165,18 +165,18 @@ to display a list of options available for C<COMMAND>.
 
 =over 4
 
-=item add Some-Archive-1.2.tar.gz
+=item add Some-Distribution-1.2.tar.gz
 
-Adds the given archive to the Pinto repository.  Any packages
-contained in those archives will mask the mirrored packages with the
-same name.  See the L<"RULES"> section for more information about how
-locally added archives interact with mirrored ones.
+Adds the given distribution to the Pinto repository.  Any packages
+contained in that distribution will mask the mirrored packages with
+the same name.  See the L<"RULES"> section for more information about
+how locally added distributions interact with mirrored ones.
 
 =item clean
 
-Deletes any archive in the repository that is not currently in
-the master index.  This usually happens automatically, unless
-you've set the C<nocleanup> parameter.
+Deletes any distribution in the repository that is not currently in
+the master index.  This usually happens automatically, unless you've
+set the C<nocleanup> parameter.
 
 =item create
 
@@ -185,70 +185,71 @@ get a warning if a repository already exists at that location.
 
 =item list
 
-Lists the curent packages and archives that are in the master index of
-your repository.  This is basically just the contents of the
+Lists the curent packages and distributions that are in the master
+index of your repository.  This is basically just the contents of the
 F<02packages.details.txt> file.
 
 =item remove Some::Package
 
-Removes the local archive that contains the given package.  All other
-packages that were contained in the same archive are also removed.
-You can only remove a package that B<YOU> have locally added.  You
-cannot remove packages that come from the mirror (however you can mask
-them by adding your own versions).
+Removes the local distribution that contains the given package.  All
+other packages that were contained in the same distribution are also
+removed.  You can only remove a package that B<YOU> have locally
+added.  You cannot remove packages that come from the mirror (however
+you can mask them by adding your own versions).
 
 =item mirror
 
-Fills your repository with the archives that contain the latest
+Fills your repository with the distributions that contain the latest
 version of all packages on the remote mirror.  See the L<"RULES">
-section for more information about how locally added archives interact
-with mirrored ones.
+section for more information about how locally added distributions
+interact with mirrored ones.
 
 =item verify
 
-Reports any archives that are present in your repository but not
-listed in the master index.  This is usually a sign that something
-has gone wrong.
+Reports any distributions that are present in your repository but not
+listed in the master index.  This is usually a sign that something has
+gone wrong.
 
 =back
 
 =head1 RULES
 
 There are certain rules that govern how the indexes are managed.
-These rules are intended to ensure that clients pulling packages
-from your repository will always get the B<right ones>.  Also,
-the rules attempt to make Pinto behave somewhat like PAUSE does.
+These rules are intended to ensure that clients pulling packages from
+your repository will always get the B<right ones>.  Also, the rules
+attempt to make Pinto behave somewhat like PAUSE does.
 
 =over 4
 
 =item A local package always masks a mirrored package, and all other
-packages that are in the same archive with the mirrored package.
+packages that are in the same distribution with the mirrored package.
 
-This rule is important, so pay attention.  If the remote mirror has an
-archive that contains both C<Foo> and C<Bar> packages, and you add
-your own archive that contains C<Foo> package, then both the C<Foo>
-and C<Bar> mirroed packages will be removed from your index.  This
-ensures that anyone pulling packages from your repository will always
-get B<your> version of C<Foo>.  But they'll never be able to get
-C<Bar>, because doing so would overwrite your C<Foo>.
+This rule is important, so pay attention.  If the remote mirror has a
+distribution that contains both C<Foo> and C<Bar> packages, and you
+add your own distribution that contains C<Foo> package, then both the
+C<Foo> and C<Bar> mirroed packages will be removed from your index.
+This ensures that anyone pulling packages from your repository will
+always get B<your> version of C<Foo>.  But they'll never be able to
+get C<Bar>, because doing so would overwrite your C<Foo>.
 
-=item You can never add an archive with the same name twice.
+=item You can never add a distribution with the same name twice.
 
-Most archive-building tools will put some kind of version number in
-the name of the archive, so this is rarely a problem.  The "name" of
-an archive is actually a function of the name of the file and the name
-of the author.  So technically, it is possible for two different
-authors to both add an archive called C<Foo-Bar-1.2.tar.gz>.  But
-in practice, this rarely happens because...
+Most distribution-building tools will put some kind of version number
+in the name of the distribution, so this is rarely a problem.  The
+"name" of a distribution is actually a function of the name of the
+file and the name of the author.  So technically, it is possible for
+two different authors to both add a distribution called
+C<Foo-Bar-1.2.tar.gz>.  But in practice, this rarely happens
+because...
 
 =item Only the original author of a local package can add an
-archive that contains the same package.
+distribution that contains the same package.
 
 Ownership is given on a first-come basis, just like PAUSE.  So if
-C<SALLY> is the first author to add an archive to the repository with
-package C<Foo::Bar>, then only C<SALLY> can ever add another archive
-with that package again.  Unless that package is explicitly removed,
-but...
+C<SALLY> is the first author to add a distribution to the repository
+with package C<Foo::Bar>, then only C<SALLY> can ever add another
+distribution with that package again.  Unless that package is
+explicitly removed, but...
 
 =item Only the original author of a local package can remove it.
 
