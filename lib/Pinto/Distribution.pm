@@ -4,13 +4,16 @@ package Pinto::Distribution;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
-use Pinto::Types qw(AuthorID File);
 use Moose::Autobox;
 
 use Carp;
+use Dist::Metadata;
 use CPAN::DistnameInfo;
 use Path::Class qw();
+
 use Pinto::Util;
+use Pinto::Package;
+use Pinto::Types qw(AuthorID File);
 
 #------------------------------------------------------------------------------
 
@@ -21,83 +24,122 @@ use Pinto::Util;
 has location => (
     is         => 'ro',
     isa        => Str,
-);
-
-has file       => (
-    is         => 'ro',
-    isa        => File,
-    coerce     => 1,
+    required   => 1,
 );
 
 has author   => (
     is         => 'ro',
     isa        => AuthorID,
-    predicate  => 'has_author',
-    writer     => '_set_author',
     coerce     => 1,
+    lazy_build => 1,
 );
 
 has packages => (
     is         => 'ro',
     isa        => 'ArrayRef[Pinto::Package]',
     default    => sub { [] },
+    init_arg   => undef,
 );
 
-has version    => (
+has _info => (
     is         => 'ro',
-    isa        => Str,
+    isa        => 'CPAN::DistnameInfo',
     init_arg   => undef,
-    writer     => '_set_version',
+    lazy_build => 1,
+    handles    => {
+        name       => 'dist',
+        version    => 'version',
+    },
 );
 
-has name => (
+has _path => (
     is         => 'ro',
-    isa        => Str,
+    isa        => File,
     init_arg   => undef,
-    writer     => '_set_name',
+    lazy_build => 1,
 );
 
 #------------------------------------------------------------------------------
 
-sub BUILDARGS {
+sub _build__info {
+    my ($self) = @_;
+
+    return CPAN::DistnameInfo->new($self->location);
+}
+
+sub _build__path {
+    my ($self) = @_;
+
+    return Path::Class::file( split '/', $self->location() );
+}
+
+#------------------------------------------------------------------------------
+
+sub _build_author {
+    my ($self) = @_;
+
+    return $self->_info->cpanid();
+}
+
+#------------------------------------------------------------------------------
+
+sub path {
+    my ($self, @base) = @_;
+
+    return Path::Class::file(@base, $self->_path());
+}
+
+#------------------------------------------------------------------------------
+
+sub new_from_file {
     my ($class, %args) = @_;
 
-    croak 'Must specify either location or (file and author)'
-        if not ($args{location} or ($args{file} and $args{author}));
+    my $file = $args{file}
+        or croak 'Must specify a file';
 
-    croak 'Cannot specify location with file or author'
-        if $args{location} and ($args{file} or $args{author});
+    my $author = $args{author}
+        or croak 'Must specify an author';
 
-    croak 'Must specify file and author together'
-        if $args{file} and not $args{author};
+    $file = Path::Class::file($file)
+        if not eval {$file->isa('Path::Class::File')};
 
+    croak "$file does not exist"  if not -e $file;
+    croak "$file is not readable" if not -r $file;
+    croak "$file is not a file"   if not -f $file;
 
-    if ($args{file} and $args{author}) {
-        my $base = Path::Class::file($args{file})->basename();
-        $args{location} = Pinto::Util::author_dir($args{author})->file($base)->stringify();
-    }
+    my $basename = $file->basename();
+    my $author_dir = Pinto::Util::author_dir($author);
 
-    return \%args;
+    my $location = $author_dir->file($basename)->as_foreign('Unix');
+    my $self = $class->new(location => $location->stringify());
+    $self->_extract_packages(file => $file);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
-# TODO: Delegate to a (lazy) DistnameInfo instead of using a BUILD
 
-sub BUILD {
-    my ($self, $args) = @_;
+sub _extract_packages {
+    my ($self, %args) = @_;
 
-    my $dist_info = CPAN::DistnameInfo->new($self->location);
-    $self->_set_version( $dist_info->version() || '');
-    $self->_set_name( $dist_info->dist() || '');
+    my $file = $args{file};
+    my $distmeta = Dist::Metadata->new(file => $file->stringify());
+    my $provides = $distmeta->package_versions();
+    return $self if not %{ $provides };
 
-    if (not $self->has_author() ) {
-        $self->_set_author( $dist_info->cpanid() );
+    my @packages = ();
+    for my $package_name (sort keys %{ $provides }) {
+
+        my $version = $provides->{$package_name} || 'undef';
+        push @packages, Pinto::Package->new( name    => $package_name,
+                                             file    => $file,
+                                             version => $version,
+                                             author  => $self->author() );
     }
 
+    $self->add_packages(@packages);
     return $self;
-
 }
-
 
 #------------------------------------------------------------------------------
 
