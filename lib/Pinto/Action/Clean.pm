@@ -24,13 +24,13 @@ override execute => sub {
     my $search_dir = Path::Class::dir($local, qw(authors id));
     return 0 if not -e $search_dir;
 
-    my @deleted = ();
-    my $wanted = $self->_make_callback($search_dir, \@deleted);
+    my @removed = ();
+    my $wanted = $self->_make_callback($search_dir, \@removed);
     File::Find::find($wanted, $search_dir);
-    return 0 if not @deleted;
+    return 0 if not @removed;
 
-    my $message = Pinto::Util::format_message('Deleted archives:', sort @deleted);
-    $self->_set_message($message);
+    $self->add_message(Pinto::Util::removed_dist_message($_) for @removed;
+
     return 1;
 };
 

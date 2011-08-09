@@ -100,14 +100,6 @@ sub _build_store {
 }
 
 #------------------------------------------------------------------------------
-# Private methods
-
-sub _should_cleanup {
-    my ($self) = @_;
-    return not $self->config->nocleanup();
-}
-
-#------------------------------------------------------------------------------
 # Public methods
 
 
@@ -145,7 +137,6 @@ sub mirror {
     my ($self) = @_;
 
     $self->enqueue( $self->create_action('Mirror') );
-    $self->enqueue( $self->create_action('Clean') ) if $self->_should_cleanup();
     $self->run();
 
     return $self;

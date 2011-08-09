@@ -31,35 +31,38 @@ has 'ua'      => (
 sub execute {
     my ($self) = @_;
 
-    my $local  = $self->config->local();
-    my $mirror = $self->config->mirror();
-    my $force  = $self->config->force();
+    my $idxmgr  = $self->idxmgr();
+    my $changes = $idxmgr->update_mirror_index() or return 0;
+    $changes   += $self->_do_mirror($_) for $idxmgr->dists_to_mirror();
 
-    my $idxmgr = $self->idxmgr();
-    my $index_has_changed = $idxmgr->update_mirror_index();
-
-    if (not $index_has_changed and not $force) {
-        $self->logger->log("Mirror index has not changed");
-        return 0;
-    }
-
-    for my $file ( $idxmgr->files_to_mirror() ) {
-
-        my $mirror_uri = URI->new( "$mirror/authors/id/$file" );
-        my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
-        next if -e $destination;
-
-        $DB::single = 1;
-        if ( $self->ua->mirror(url => $mirror_uri, to => $destination, croak => 0) ) {
-            $self->logger->log("Mirrored archive $file");
-            $self->store->add(file => $destination);
-        }
-    }
-
-    my $message = "Updated to latest mirror of $mirror";
+    my $message = sprintf 'Updated to latest mirror of %s', $self->mirror();
     $self->_set_message($message);
 
-    return 1;
+    return $changes;
+}
+
+#------------------------------------------------------------------------------
+
+sub _do_mirror {
+    my ($self, $dist) = @_;
+
+    my $local  = $self->config->local();
+    my $mirror = $self->config->mirror();
+
+    my $url = $dist->url($mirror);
+    my $destination = $dist->path($local);
+    next if -e $destination;
+
+    my $changes_were_made = 0;
+    if ( $self->ua->mirror(url => $url, to => $destination, croak => 0) ) {
+        $self->logger->log("Mirrored distribution $dist");
+        $self->store->add(file => $destination);
+        my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
+        $self->store->remove(file => $_->path($local)) for @removed;
+        $changes_were_made++;
+    }
+
+    return $changes_were_made;
 }
 
 #------------------------------------------------------------------------------

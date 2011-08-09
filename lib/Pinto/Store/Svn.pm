@@ -18,6 +18,16 @@ use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
+override is_initialized => sub {
+    my ($self) = @_;
+
+    # TODO: maybe check last revision # against repos?
+    return -e $self->config->local->file('.svn');
+};
+
+#-------------------------------------------------------------------------------
+
+
 override initialize => sub {
     my ($self) = @_;
 
@@ -71,7 +81,8 @@ override finalize => sub {
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
 
     my $paths = [ $self->added_paths->flatten(),
-                  $self->removed_paths->flatten() ];
+                  $self->removed_paths->flatten(),
+                  $self->modified_paths->flatten() ];
 
     $self->logger->log("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);

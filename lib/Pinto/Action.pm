@@ -25,11 +25,10 @@ has store => (
     required => 1,
 );
 
-has message => (
+has messages => (
     is         => 'ro',
-    isa        => 'Str',
-    writer     => '_set_message',
-    predicate  => 'has_message',
+    isa        => 'ArrayRef[Str]',
+    default    => sub{ [] },
     init_arg   => undef,
 );
 
@@ -43,6 +42,8 @@ with qw( Pinto::Role::Configurable
 # Methods
 
 sub execute { return 0 }
+
+sub add_message { push @{ shift()->messages() }, @_ }
 
 #------------------------------------------------------------------------------
 

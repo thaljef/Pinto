@@ -67,33 +67,29 @@ Runs all the actions in this Batch.
 sub run {
     my ($self) = @_;
 
-    $self->store()->initialize()
-        unless $self->config->noinit();
+    $self->store->initialize()
+        unless $self->store->is_initialized()
+           and $self->config->noinit();
+
 
     my @messages;
     my $changes_were_made;
     while ( my $action = $self->actions->shift() ) {
-
-      # HACK: To avoid running cleanup if we don't
-      # have to.  But we still need to run it when
-      # explicitly asked to run a 'Clean' action.
-      next if $action->isa('Pinto::Action::Clean')
-          && defined $changes_were_made
-              && $changes_were_made == 0;
-
-      $changes_were_made += $action->execute();
-
-      push @messages, $action->message()
-          if $action->has_message();
+        $changes_were_made += $action->execute();
+        push @messages, $action->messages->flatten();
     }
 
     if ($changes_were_made) {
 
-        $self->idxmgr()->write_indexes();
+        $self->idxmgr->write_indexes();
+        # Always put the modules directory on the commit list!
+        my $modules_dir = $self->config->local->subdir('modules');
+        $self->store->modified_paths->push( $modules_dir );
 
         return $self if $self->config->nocommit();
 
         my $batch_message  = join "\n\n", @messages;
+        $self->logger->debug($batch_message);
         $self->store->finalize(message => $batch_message);
     }
 
@@ -102,7 +98,7 @@ sub run {
 
 #-----------------------------------------------------------------------------
 
-__PACKAGE__->meta()->make_immutable();
+__PACKAGE__->meta->make_immutable();
 
 #-----------------------------------------------------------------------------
 1;

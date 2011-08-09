@@ -21,9 +21,12 @@ sub execute {
     my ($self) = @_;
 
     my $local = $self->config()->local();
-    for my $location ( sort $self->idxmgr->master_index->files->keys->flatten() ) {
-        my $file = Pinto::Util::native_file($local, 'authors', 'id', $location);
-        print "Missing archive $file\n" if not -e $file;
+    my $dists = $self->idxmgr->master_index->distributions->values();
+    my $sorter = sub {$_[0]->location() cmp $_[1]->location};
+
+    for my $dist ( $dists->sort( $sorter )->flatten() ) {
+        my $file = $dist->path($local);
+        print "Missing distribution $file\n" if not -e $file;
     }
 
     return 0;

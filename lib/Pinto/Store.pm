@@ -28,6 +28,13 @@ has removed_paths => (
     default     => sub { [] },
 );
 
+has modified_paths => (
+    is          => 'ro',
+    isa         => 'ArrayRef[Path::Class]',
+    init_arg    => undef,
+    default     => sub { [] },
+);
+
 #------------------------------------------------------------------------------
 # Moose roles
 
@@ -75,6 +82,7 @@ this could mean that the working copy is up-to-date.
 
 sub is_initialized {
     my ($self) = @_;
+
     return -e $self->config->local();
 }
 
@@ -106,9 +114,6 @@ sub add {
 
     croak "$file does not exist and no source was specified"
         if not -e $file and not defined $source;
-
-    croak "$file already exists"
-        if -e $file and $source;
 
     croak "$source is not a file"
         if $source and $source->is_dir();

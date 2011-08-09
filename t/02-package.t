@@ -3,35 +3,30 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 3);
+use Test::More (tests => 5);
 use Test::Exception;
 
 use Pinto::Package;
+use Pinto::Distribution;
 
 
 #------------------------------------------------------------------------------
 
-my $pkg = Pinto::Package->new( name    => 'Foo',
-                               file    => 'Foo-1.2.tar.gz',
-                               version => '2.4',
-                               author  => 'CHAUCER' );
+my $dist = Pinto::Distribution->new( location => 'C/CH/CHAUCER/Foo-1.2.tar.gz');
+my $pkg = Pinto::Package->new( name => 'Foo', version => '2.4', dist => $dist );
 
-is($pkg->file(), 'C/CH/CHAUCER/Foo-1.2.tar.gz', 'With explicit author');
-
-#------------------------------------------------------------------------------
-
-$pkg = Pinto::Package->new( name    => 'Foo',
-                            file    => 'C/CH/CHAUCER/Foo-1.2.tar.gz',
-                            version => '2.4' );
-
-is($pkg->file(), 'C/CH/CHAUCER/Foo-1.2.tar.gz', 'Author implied by file name');
+is($pkg->name(), 'Foo', 'name attribute');
+is($pkg->version(), '2.4', 'version attribute');
 
 #------------------------------------------------------------------------------
 
-my %args = ( name    => 'Foo',
-             file    => 'Foo-1.2.tar.gz',
-             version => '2.4' );
+dies_ok { Pinto::Package->new( dist => $dist, version => '2.4' ) }
+  'name is required';
 
-dies_ok { Pinto::Package->new(%args) } 'Unable to compute author from path';
+dies_ok { Pinto::Package->new( dist => $dist, name => 'Foo' ) }
+  'version is required';
+
+dies_ok { Pinto::Package->new( name => 'Foo', version => '2.4' ) }
+  'dist is required';
 
 #------------------------------------------------------------------------------

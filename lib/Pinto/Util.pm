@@ -8,16 +8,11 @@ use warnings;
 use Path::Class;
 use Readonly;
 
-use base 'Exporter';
+use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
 # VERSION
-
-#-------------------------------------------------------------------------------
-# TODO: Don't export!
-
-our @EXPORT_OK = qw(author_dir is_source_control_file);
 
 #-------------------------------------------------------------------------------
 
@@ -43,20 +38,6 @@ sub author_dir {
 }
 
 #-------------------------------------------------------------------------------
-# TODO: Is this needed?
-
-=func index_directory_for_author()
-
-Same as C<directory_for_author()>, but returns the path as it would appear
-in the F<02packages.details.txt> file.  That is, in Unix format.
-
-=cut
-
-sub index_directory_for_author {
-    return directory_for_author(@_)->as_foreign('Unix');
-}
-
-#-------------------------------------------------------------------------------
 
 =func is_source_control_file($path)
 
@@ -72,31 +53,23 @@ sub is_source_control_file {
 
 #-------------------------------------------------------------------------------
 
-=func native_file(@base, $file)
-
-Given a Unix path to a file, returns the file in the native OS format
-(as a L<Path::Class::File>);
-
-=cut
-
-sub native_file {
-    my ($file) = pop;
-    my (@base) = @_;
-    return file(@base, split m{/}, $file);
+sub added_dist_message {
+    return _dist_message(@_, 'Added');
 }
 
 #-------------------------------------------------------------------------------
 
-=func format_message($header, @items)
+sub removed_dist_message {
+    return _dist_message(@_, 'Removed');
+}
 
-Formats a commit message, consisting of a header followed by a list
-of items.
+#-------------------------------------------------------------------------------
 
-=cut
-
-sub format_message {
-    my ($header, @items) = @_;
-    return "$header\n    " . join "\n    ", @items;
+sub _dist_message {
+    my ($dist, $action) = @_;
+    my @packages = @{ $dist->packages() };
+    my @items = sort map { $_->name() . ' ' . $_->version() } @packages;
+    return "$action distribution $dist providing:\n    " . join "\n    ", @items;
 }
 
 #-------------------------------------------------------------------------------

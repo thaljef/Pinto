@@ -6,6 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Str);
 use Moose::Autobox;
 
+use URI;
 use Carp;
 use Dist::Metadata;
 use CPAN::DistnameInfo;
@@ -14,6 +15,8 @@ use Path::Class qw();
 use Pinto::Util;
 use Pinto::Package;
 use Pinto::Types qw(AuthorID File);
+
+use overload ('""' => 'to_string');
 
 #------------------------------------------------------------------------------
 
@@ -91,6 +94,22 @@ sub path {
 
 #------------------------------------------------------------------------------
 
+sub url {
+    my ($self, $base) = @_;
+
+    return URI->new( "$base/authors/id/" . $self->location() )->canonical();
+}
+
+#------------------------------------------------------------------------------
+
+sub package_count {
+    my ($self) = @_;
+
+    return $self->packages->length();
+}
+
+#------------------------------------------------------------------------------
+
 sub new_from_file {
     my ($class, %args) = @_;
 
@@ -149,6 +168,13 @@ sub add_packages {
     $self->packages->push(@packages);
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+    return $self->location();
 }
 
 #------------------------------------------------------------------------------

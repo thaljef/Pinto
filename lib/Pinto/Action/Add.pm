@@ -4,13 +4,9 @@ package Pinto::Action::Add;
 
 use Moose;
 
-use Carp;
-use File::Copy;
-use Dist::Metadata;
-
 use Pinto::Util;
-use Pinto::IndexManager;
-use Pinto::Types qw(File);
+use Pinto::Distribution;
+use Pinto::Types qw(File AuthorID);
 
 extends 'Pinto::Action';
 
@@ -30,10 +26,17 @@ has file => (
     coerce   => 1,
 );
 
-#------------------------------------------------------------------------------
-# Roles
 
-with qw( Pinto::Role::Authored );
+has author => (
+    is         => 'ro',
+    isa        => AuthorID,
+    coerce     => 1,
+    lazy_build => 1,
+);
+
+#------------------------------------------------------------------------------
+
+sub _build_author { return shift()->config->author() }
 
 #------------------------------------------------------------------------------
 
@@ -42,58 +45,17 @@ override execute => sub {
 
     my $local  = $self->config->local();
     my $author = $self->author();
-
     my $file   = $self->file();
-    my $base   = $file->basename();
 
-    # Refactor to sub
-    croak "$file does not exist"  if not -e $file;
-    croak "$file is not readable" if not -r $file;
-    croak "$file is not a file"   if not -f $file;
+    my $added   = Pinto::Distribution->new_from_file( file   => $file, author => $author );
+    my @removed = $self->idxmgr->add_local_distribution( dist => $added );
+    $self->logger->log(sprintf "Adding $added with %i packages", $added->package_count());
 
-    # Refactor to sub
-    my $idxmgr = $self->idxmgr();
-    if ( my $existing = $idxmgr->find_file(author => $author, file => $file) ) {
-        croak "Archive $base already exists as $existing";
-    }
+    $self->store->add( file => $added->path($local), source => $file );
+    $self->store->remove( file => $_->path($local) ) for @removed;
 
-    # Refactor to sub
-    # Dist::Metadata will croak for us if $file is whack!
-    my $distmeta = Dist::Metadata->new(file => $file->stringify());
-    my $provides = $distmeta->package_versions();
-    return 0 if not %{ $provides };
-
-    # Refactor to sub
-    my @conflicts = ();
-    for my $package_name (sort keys %{ $provides }) {
-        if ( my $orig_author = $idxmgr->local_author_of(package => $package_name) ) {
-            push @conflicts, "Package $package_name is already owned by $orig_author\n"
-                if $orig_author ne $author;
-        }
-    }
-    die @conflicts if @conflicts;
-
-    # Refactor to sub
-    my @packages = ();
-    for my $package_name (sort keys %{ $provides }) {
-
-        my $version = $provides->{$package_name} || 'undef';
-        $self->logger->log("Adding package $package_name $version");
-        push @packages, Pinto::Package->new( name    => $package_name,
-                                             file    => $file,
-                                             version => $version,
-                                             author  => $author );
-    }
-
-
-    $self->idxmgr()->add_local_packages(@packages);
-
-    my $destination = Pinto::Util::author_dir($local, qw(authors id), $author)->file($base);
-    $self->store->add(file => $destination, source => $file);
-
-    my @list_items = sort map { "$_ $provides->{$_}" } keys %{ $provides };
-    my $message = Pinto::Util::format_message("Added archive $base providing:", @list_items);
-    $self->_set_message($message);
+    $self->add_message( Pinto::Util::added_dist_message($added) );
+    $self->add_message( Pinto::Util::removed_dist_message($_) ) for @removed;
 
     return 1;
 };

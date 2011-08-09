@@ -25,13 +25,13 @@ is($index->package_count(), 1,
 is($index->find(package=>'Foo')->version(), '2.0',
    'Adding same package again overrides original');
 
-#-----------------------------------------------------------------------------
-# Removing...
-
 $index->clear();
 $index->add( mkpkg(['Bar', 'Baz']) );
 is($index->package_count(), 2,
    'Added two packages at the same time');
+
+#-----------------------------------------------------------------------------
+# Removing...
 
 $index->remove( 'Bar' );
 is($index->package_count(), 0,
@@ -46,7 +46,7 @@ is($index->find(package=>'Baz'), undef,
 
 $index->clear();
 $index->add( mkpkg(['Eenie', 'Meenie']) );
-$index->merge( mkpkg(['Meenie', 'Moe'], undef, '2.0') );
+$index->add( mkpkg(['Meenie', 'Moe'], undef, '2.0') );
 
 is($index->find(package=>'Meenie')->version(), '2.0',
     'Incument package replaced with mine');
@@ -68,8 +68,16 @@ sub mkpkg {
     $file    ||= $pkg_names->[0] . "-$version.tar.gz";
     $author  ||= 'CHAUCER';
 
-    return map { Pinto::Package->new( name => $_,
-                                      file => $file,
-                                      version => $version,
-                                      author  => $author ) } @{$pkg_names};
+    my $authdir = Pinto::Util::author_dir($author);
+    my $dist = Pinto::Distribution->new(location => "$authdir/$file");
+
+    for my $pkg_name ( @{ $pkg_names } ) {
+      my $pkg = Pinto::Package->new( name    => $pkg_name,
+                                     version => $version,
+                                     dist    => $dist, );
+
+      $dist->add_packages($pkg);
+    }
+
+    return @{ $dist->packages() };
 }

@@ -7,7 +7,7 @@ use warnings;
 
 use Carp qw(croak);
 use IPC::Cmd 0.72 qw(run);
-use List::MoreUtils qw(any);
+use List::MoreUtils qw(firstidx);
 use Path::Class;
 
 #--------------------------------------------------------------------------
@@ -165,12 +165,12 @@ sub svn_remove {
     return if not -e $path;
     croak "$path is not a file" if $path->is_dir();
 
-    _svn( command => ['rm', $path] );
+    _svn( command => ['rm', '--force', $path] );
 
     if($prune) {
         while (my $dir = $path->parent() ) {
             last if not _all_scheduled_for_deletion(directory => $dir);
-            _svn( command => ['rm', $dir] );
+            _svn( command => ['rm', '--force', $dir] );
             $path = $dir;
         }
     }
@@ -264,7 +264,10 @@ sub _svn {
     my $ok = run( command => $command, buffer => $buffer);
 
     if ($croak and not $ok) {
-        my $command_string = join ' ', map { /\s/ ? qq<'$_'> : $_ } @{$command};
+        # Truncate the '-m MESSAGE' arguments, for readability
+        my $dash_m_offset = firstidx {$_ eq '-m'} @{ $command };
+        splice @{ $command }, $dash_m_offset + 1, 1, q{'...'};
+        my $command_string = join ' ', @{ $command };
         croak "Command failed: $command_string\n". ${$buffer};
     }
 

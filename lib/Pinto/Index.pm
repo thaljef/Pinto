@@ -17,8 +17,6 @@ use Path::Class qw();
 use Pinto::Package;
 use Pinto::Distribution;
 
-use overload ('+' => '__plus', '-' => '__minus');
-
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -60,6 +58,7 @@ has 'file' => (
 with qw(Pinto::Role::Loggable);
 
 #------------------------------------------------------------------------------
+# Moose builders
 
 sub _build_packages { return {} }
 
@@ -85,8 +84,7 @@ sub load {
     my $file = $self->file();
     $self->logger->debug("Reading index at $file");
 
-    open my $fh, '<:gzip', $file
-        or croak "Cannot open $file: $!";
+    open my $fh, '<:gzip', $file;
 
     my $inheader = 1;
     while (<$fh>) {
@@ -97,12 +95,14 @@ sub load {
         }
 
         chomp;
-        my ($name, $version, $file) = split;
+        my ($name, $version, $location) = split;
 
-        $self->add( Pinto::Package->new( name    => $name,
-                                         file    => $file,
-                                         version => $version ) );
+        my $dist = $self->distributions->{$location}
+          ||= Pinto::Distribution->new(location => $location);
 
+        my $pkg = Pinto::Package->new(name => $name, version => $version, dist => $dist);
+        $self->packages->put($name, $pkg);
+        $dist->add_packages($pkg);
     }
 
     close $fh;
@@ -180,48 +180,22 @@ sub _write_packages {
 
 #------------------------------------------------------------------------------
 
-=attr merge( @packages )
-
-Adds a list of L<Pinto::Package> objects to this Index, and removes
-any existing packages that conflict with the added ones.  Use this
-method when combining an Index of private packages with an Index of
-public packages.
-
-=cut
-
-sub merge {
-    my ($self, @packages) = @_;
-
-    $self->remove( @packages );
-    $self->add( @packages );
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-=attr add( @packages)
-
-Unconditionally adds a list of L<Pinto::Package> objects to this
-Index.  If the index already contains packages by the same name, they
-will be overwritten.
-
-=cut
-
 sub add {
     my ($self, @packages) = @_;
+
+    $DB::single = 1;
+    my @removed_dists = $self->remove( @packages );
 
     for my $package (@packages) {
 
         my $name = $package->name();
-        $self->packages->put($name, $package);
+        $self->packages->put( $name, $package );
 
-        my $location = $package->file();
-        $self->distributions->{$location} ||= Pinto::Distribution->new(location => $location);
-        $self->distributions->{$location}->add_packages($package);
+        my $location = $package->dist->location();
+        $self->distributions->put( $location, $package->dist() );
     }
 
-    return $self;
+    return @removed_dists;
 }
 
 #------------------------------------------------------------------------------
@@ -279,7 +253,7 @@ sub remove {
             if eval { $package->isa('Pinto::Package') };
 
         if (my $incumbent = $self->packages->at($package)) {
-            my $location = $incumbent->file();
+            my $location = $incumbent->dist->location();
             my $dist = $self->distributions->delete( $location );
             my @package_names = map {$_->name()} $dist->packages()->flatten();
             $self->packages->delete($_) for @package_names;
@@ -326,35 +300,7 @@ sub find {
 
 #------------------------------------------------------------------------------
 
-sub __plus {
-    my ($self, $other, $swap) = @_;
-
-    ($self, $other) = ($other, $self) if $swap;
-    my $class = ref $self;
-    my $result = $class->new( logger => $self->logger() );
-    $result->add( $self->packages->values->flatten() );
-    $result->merge( $other->packages->values->flatten() );
-
-    return $result;
-}
-
-#------------------------------------------------------------------------------
-
-sub __minus {
-    my ($self, $other, $swap) = @_;
-
-    ($self, $other) = ($other, $self) if $swap;
-    my $class = ref $self;
-    my $result = $class->new( logger => $self->logger() );
-    $result->add( $self->packages->values->flatten() );
-    $result->remove( $other->packages->values->flatten() );
-
-    return $result;
-}
-
-#------------------------------------------------------------------------------
-
-__PACKAGE__->meta()->make_immutable();
+__PACKAGE__->meta->make_immutable();
 
 #------------------------------------------------------------------------------
 
