@@ -171,6 +171,19 @@ sub write_indexes {
 
 #------------------------------------------------------------------------------
 
+sub rebuild_master_index {
+    my ($self) = @_;
+
+    $DB::single = 1;
+    $self->master_index->clear();
+    $self->master_index->add( $self->mirror_index->packages->values->flatten() );
+    $self->master_index->add( $self->local_index->packages->values->flatten() );
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub remove_local_package {
     my ($self, %args) = @_;
 
@@ -188,6 +201,8 @@ sub remove_local_package {
 
     my $master_dist = ( $self->master_index->remove($package) )[0];
     $self->logger->debug("Removed $master_dist from master index");
+
+    $self->rebuild_master_index();
 
     return $local_dist;
 }
@@ -236,8 +251,10 @@ sub add_local_distribution {
         }
     }
 
-    $self->master_index->add(@packages);
-    return $self->local_index->add(@packages);
+    my @removed_dists = $self->local_index->add(@packages);
+    $self->rebuild_master_index();
+
+    return @removed_dists;
 
 }
 
