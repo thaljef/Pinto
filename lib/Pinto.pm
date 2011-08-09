@@ -151,10 +151,10 @@ sub mirror {
 sub add {
     my ($self, %args) = @_;
 
-    my $dist = $args{dist};
-    $dist = [$dist] if not ref $dist;
+    my $file = $args{file};
+    $file = [$file] if not ref $file;
 
-    $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $dist };
+    $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $file };
     $self->run();
 
     return $self;
