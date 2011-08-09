@@ -238,7 +238,7 @@ sub clear {
 =method remove( @packages )
 
 Removes the packages from the index.  Whenever a package is removed, all
-the other packages that belonged in the same archive are also removed.
+the other packages that belonged in the same distribution are also removed.
 Arguments can be L<Pinto::Package> objects or package names as strings.
 
 =cut

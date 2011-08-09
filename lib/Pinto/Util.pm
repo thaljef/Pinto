@@ -23,7 +23,7 @@ Readonly my %SCM_FILES => (map {$_ => 1} qw(.svn .git .gitignore CVS));
 =func author_dir( @base, $author )
 
 Given the name of an C<$author>, returns the directory where the
-archives for that author belong (as a L<Path::Class::Dir>).  The
+distributions for that author belong (as a L<Path::Class::Dir>).  The
 optional C<@base> can be a series of L<Path::Class:Dir> or path parts
 (as strings).  If C<@base> is given, it will be prepended to the
 directory that is returned.

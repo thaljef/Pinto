@@ -1,6 +1,6 @@
 package App::Pinto::Command::add;
 
-# ABSTRACT: add your own Perl archives to the repository
+# ABSTRACT: add your own Perl distributions to the repository
 
 use strict;
 use warnings;
@@ -33,7 +33,7 @@ sub usage_desc {
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify exactly one archive") if @{ $args } != 1;
+    $self->usage_error("Must specify exactly one distribution") if @{ $args } != 1;
 }
 
 #------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 package Pinto;
 
-# ABSTRACT: Perl archive repository manager
+# ABSTRACT: Perl distribution repository manager
 
 use Moose;
 
@@ -262,18 +262,18 @@ somewhere.  A module usually contains only one package, and the name
 of the module usually matches the name of the package.  But sometimes,
 a module may contain many packages with completely arbitrary names.
 
-=item archive
+=item distribution 
 
-An "archive" is a collection of Perl modules that have been packaged
+An "distribution" is a collection of Perl modules that have been packaged
 in a particular structure.  This is what you get when you run C<"make
-dist"> or C<"./Build dist">.  Archives may come from a "mirror",
-or you may create your own. An archive is the "A" in "CPAN".
+dist"> or C<"./Build dist">.  Distributions may come from a "mirror",
+or you may create your own.
 
 =item repository
 
-A "repository" is a collection of archives that are organized in a
+A "repository" is a collection of distributions that are organized in a
 particular structure, and having an index describing which packages
-are contained in each archive.  This is where L<cpan> and L<cpanm>
+are contained in each distribution.  This is where L<cpan> and L<cpanm>
 get the packages from.
 
 =item mirror
@@ -295,20 +295,20 @@ somewhat like PAUSE does.
 =over 4
 
 =item A local package always masks a mirrored package, and all other
-packages that are in the same archive with the mirrored package.
+packages that are in the same distribution with the mirrored package.
 
-This rule is key, so pay attention.  If the CPAN mirror has an archive
+This rule is key, so pay attention.  If the CPAN mirror has a distribution
 that contains both C<Foo> and C<Bar> packages, and you add your own
-archive that contains C<Foo> package, then both the C<Foo> and C<Bar>
+distribution that contains C<Foo> package, then both the C<Foo> and C<Bar>
 mirroed packages will be removed from your index.  This ensures that
 anyone pulling packages from your repository will always get *your*
 version of C<Foo>.  But as a result, they'll never be able to get
 C<Bar>.
 
-=item You can never add an archive with the same name twice.
+=item You can never add an distribution with the same name twice.
 
-Most archive-building tools will put some kind of version number in
-the name of the archive, so this is rarely a problem.
+Most distribtuion-building tools will put some kind of version number in
+the name of the distribution, so this is rarely a problem.
 
 =item Only the original author of a local package can add a newer
 version of it.
@@ -352,8 +352,6 @@ Wesley.
 =item New command for listing conflicts between local and mirrored index
 
 =item Make file/directory permissions configurable
-
-=item Refine terminology: consider "distribution" instead of "archive"
 
 =item Need more error checking and logging
 

@@ -1,6 +1,6 @@
 package App::Pinto::Command::clean;
 
-# ABSTRACT: delete archives that are not in the index
+# ABSTRACT: delete distributions that are not in the index
 
 use strict;
 use warnings;

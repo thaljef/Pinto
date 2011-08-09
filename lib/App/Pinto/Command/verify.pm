@@ -1,6 +1,6 @@
 package App::Pinto::Command::verify;
 
-# ABSTRACT: verify that all the indexed archives are present
+# ABSTRACT: verify that all the indexed distributions are present
 
 use strict;
 use warnings;
