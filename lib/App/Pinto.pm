@@ -22,6 +22,7 @@ sub global_opt_spec {
       [ "nocleanup"   => "Do not remove archives that become outdated" ],
       [ "nocommit"    => "Do not commit changes to VCS" ],
       [ "noinit"      => "Skip updating or pulling from VCS" ],
+      [ "notag"       => "Do not make tag after committing to VCS" ],
       [ "quiet|q"     => "Only report fatal errors"],
       [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
   );
@@ -49,7 +50,6 @@ sub pinto {
     require Pinto::Config;
     require Pinto::Logger;
 
-    $DB::single = 1;
     return $self->{pinto} ||= do {
         my %global_options = %{ $self->global_options() };
         my $config = Pinto::Config->new(%global_options, %{$command_options});

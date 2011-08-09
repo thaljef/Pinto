@@ -88,6 +88,14 @@ has 'nocommit' => (
 );
 
 
+has 'notag' => (
+    is      => 'ro',
+    isa     => 'Bool',
+    key     => 'notag',
+    default => 0,
+);
+
+
 has 'quiet'  => (
     is       => 'ro',
     isa      => Bool,
