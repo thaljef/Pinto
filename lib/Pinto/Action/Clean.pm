@@ -29,7 +29,7 @@ override execute => sub {
     File::Find::find($wanted, $search_dir);
     return 0 if not @removed;
 
-    $self->add_message(Pinto::Util::removed_dist_message($_) for @removed;
+    $self->add_message( "Removed unindexed distribution $_" ) for @removed;
 
     return 1;
 };
@@ -48,12 +48,12 @@ sub _make_callback {
 
         return if not -f $File::Find::name;
 
-        my $physical_file = file($File::Find::name);
-        my $index_file  = $physical_file->relative($search_dir)->as_foreign('Unix');
-        return if $self->idxmgr()->master_index()->find( file => $index_file );
+        my $file = file($File::Find::name);
+        my $location  = $file->relative($search_dir)->as_foreign('Unix');
+        return if $self->idxmgr->master_index->distributions->{$location};
 
-        $self->store->remove(file => $physical_file);
-        push @{ $deleted }, $index_file;
+        $self->store->remove(file => $file);
+        push @{ $deleted }, $location;
     };
 }
 
