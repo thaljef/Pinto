@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use CGI::Application::Dispatch::Server;
+
+my $class = 'Pinto::Server::Dispatch';
+
+my $server = CGI::Application::Dispatch::Server->new( class => $class,
+                                                      port  => 1973, );
+
+$server->run;
