@@ -5,6 +5,7 @@ package Pinto;
 use Moose;
 
 use Carp;
+use Class::Load;
 use Path::Class;
 
 use Pinto::ActionFactory;

@@ -4,6 +4,8 @@ package Pinto::ActionFactory;
 
 use Moose;
 
+use Class::Load;
+
 #------------------------------------------------------------------------------
 
 # VERSION
