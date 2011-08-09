@@ -26,21 +26,21 @@ sub opt_spec {
 sub usage_desc {
     my ($self) = @_;
     my ($command) = $self->command_names();
-    return "%c [global options] $command [command options] ARCHIVE";
+    return "%c [global options] $command [command options] DISTRIBUTION";
 }
 
 #------------------------------------------------------------------------------
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify exactly one distribution") if @{ $args } != 1;
+    $self->usage_error("Must specify one or more distribution args") if not @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->add( file => $args->[0] );
+    $self->pinto( $opts )->add( file => $args );
     return 0;
 }
 

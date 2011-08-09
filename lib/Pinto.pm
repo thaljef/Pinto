@@ -151,7 +151,10 @@ sub mirror {
 sub add {
     my ($self, %args) = @_;
 
-    $self->enqueue( $self->create_action('Add', %args) );
+    my $dist = $args{dist};
+    $dist = [$dist] if not ref $dist;
+
+    $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $dist };
     $self->run();
 
     return $self;
@@ -166,7 +169,10 @@ sub add {
 sub remove {
     my ($self, %args) = @_;
 
-    $self->enqueue( $self->create_action('Remove', %args) );
+    my $package = $args{package};
+    $package = [$package] if not ref $package;
+
+    $self->enqueue( $self->create_action('Remove', package => $_) ) for @{ $package };
     $self->run();
 
     return $self;
