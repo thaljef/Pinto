@@ -114,8 +114,9 @@ to L<http://cpan.perl.org>.
 
 =item nocleanup = 0|1
 
-If true, L<pinto> will not automatically clean up files in your
-repository after most commands.  The default is 0.
+If true, L<pinto> will not automatically delete distributions that
+become out of date (because you've added your own local version or
+you've pulled a newer one from the mirror).  The default is 0.
 
 =item nocommit = 0|1
 
@@ -130,6 +131,12 @@ not pull/update the repository from your VCS at the beginning of each
 command.  This can save a lot of time, but use with caution. If you're
 not using a VCS store, then this parameter has no effect.  The default
 is 0.
+
+=item notag = 0|1
+
+If true, L<pinto> will not make a tag in your VCS after committing
+changes, even if you've configured a tag name.  If you're not using a
+VCS store, then this parameter has no effect.  The default is 0.
 
 =item quiet = 0|1
 
@@ -161,9 +168,9 @@ to display a list of options available for C<COMMAND>.
 =item add Some-Archive-1.2.tar.gz
 
 Adds the given archive to the Pinto repository.  Any packages
-contained in those archives will override the mirrored packages with
-the same name.  See the L<"RULES"> section for more information about
-how locally added archives interact with mirrored ones.
+contained in those archives will mask the mirrored packages with the
+same name.  See the L<"RULES"> section for more information about how
+locally added archives interact with mirrored ones.
 
 =item clean
 
@@ -186,9 +193,9 @@ F<02packages.details.txt> file.
 
 Removes the local archive that contains the given package.  All other
 packages that were contained in the same archive are also removed.
-After removing a package, you will usually want to run C<mirror> to
-pull in any archives that might have been previously blocked by your
-local ones.
+You can only remove a package that B<YOU> have locally added.  You
+cannot remove packages that come from the mirror (however you can mask
+them by adding your own versions).
 
 =item mirror
 
