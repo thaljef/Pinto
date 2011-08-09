@@ -105,22 +105,25 @@ sub add {
     my $source = $args{source};
 
     croak "$file does not exist and no source was specified"
-        if -e $file and not defined $source;
+        if not -e $file and not defined $source;
 
     croak "$file already exists"
         if -e $file and $source;
 
     croak "$source is not a file"
-        if $source->is_dir();
+        if $source and $source->is_dir();
 
-    if ( not -e (my $parent = $file->parent()) ) {
-        $self->logger->debug("Making directory at $parent");
-        eval { $parent->mkpath(); 1 }
-            or croak "Failed to make directory $parent: $@";
+    if ($source) {
+
+        if ( not -e (my $parent = $file->parent()) ) {
+            $self->logger->debug("Making directory at $parent");
+            eval { $parent->mkpath(); 1 }
+                or croak "Failed to make directory $parent: $@";
+        }
+
+        $self->logger->debug("Copying $source to $file");
+        File::Copy::copy($source, $file) or croak "Failed to copy $source to $file: $!";
     }
-
-    $self->logger->debug("Copying $source to $file");
-    File::Copy::copy($source, $file) or croak "Failed to copy $source to $file: $!";
 
     return $self;
 }

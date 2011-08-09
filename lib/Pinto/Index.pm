@@ -275,8 +275,6 @@ sub remove {
     my @removed_dists = ();
     for my $package (@packages) {
 
-        $DB::single = 1;
-
         $package = $package->name()
             if eval { $package->isa('Pinto::Package') };
 
@@ -315,8 +313,8 @@ sub find {
         return $self->packages->at($pkg);
     }
     elsif (my $file = $args{file}) {
-        my $pkgs = $self->files->at($file);
-        return $pkgs ? $pkgs->flatten() : ();
+        my $dist = $self->distributions->at($file);
+        return $dist ? $dist->packages->flatten() : ();
     }
     elsif (my $author = $args{author}) {
         my $filter = sub { $_[0]->file() eq $author };

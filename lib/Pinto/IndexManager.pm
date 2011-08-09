@@ -138,7 +138,6 @@ sub rebuild_master_index {
 sub update_mirror_index {
     my ($self) = @_;
 
-    $DB::single = 1;
     my $local  = $self->config->local();
     my $mirror = $self->config->mirror();
 
@@ -161,7 +160,7 @@ sub update_mirror_index {
 sub files_to_mirror {
     my ($self) = @_;
 
-    return ($self->mirror_index() - $self->local_index())->files()
+    return ($self->mirror_index() - $self->local_index())->distributions()
                                                          ->keys()
                                                          ->sort()
                                                          ->flatten();

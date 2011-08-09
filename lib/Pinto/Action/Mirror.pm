@@ -49,8 +49,11 @@ sub execute {
         my $destination = Pinto::Util::native_file($local, 'authors', 'id', $file);
         next if -e $destination;
 
-        my $file_has_changed = $self->ua->mirror(url => $mirror_uri, to => $destination, croak => 0);
-        $self->logger->log("Mirrored archive $file") if $file_has_changed;
+        $DB::single = 1;
+        if ( $self->ua->mirror(url => $mirror_uri, to => $destination, croak => 0) ) {
+            $self->logger->log("Mirrored archive $file");
+            $self->store->add(file => $destination);
+        }
     }
 
     my $message = "Updated to latest mirror of $mirror";
