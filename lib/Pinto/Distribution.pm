@@ -153,15 +153,6 @@ sub add_packages {
 
 #------------------------------------------------------------------------------
 
-# Constructing from index
-# $d = Dist->new(location => '/F/FO/FOO/Bar-1.0.tar.gz');
-# $d->add_package(package => 'Bar', version => '1.3');
-
-# Constructing from file
-# $d = Dist->new(file => '/home/Bar-1.2.tar.gz', author => 'ME');
-
-#------------------------------------------------------------------------------
-
 __PACKAGE__->meta->make_immutable();
 
 #------------------------------------------------------------------------------
