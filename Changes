@@ -7,6 +7,16 @@ Interface changes:
     out.  If not, then an exception is thrown, and you'll
     have to set the 'author' parameter explicitly.
 
+    pinto[1] now has --notag, --nocommit, and --noinit
+    options.  All these can also be set in your configuration
+    file.  See the pinto[1] documentation for details.
+
+Other changes:
+
+    The internals of Pinto have been substantially rewritten
+    to improve performance and readability of the code.  The
+    Pinto API is still considered alpha, and subject to change.
+
 0.007     2011-08-04 08:04:27 America/Los_Angeles
 
 Interface Changes:
