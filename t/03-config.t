@@ -5,6 +5,9 @@ use warnings;
 
 use Test::More (tests => 24);
 use Test::Exception;
+
+use Path::Class;
+use File::HomeDir;
 use File::Temp;
 
 use Pinto::Config;
@@ -54,7 +57,8 @@ use Pinto::Config;
     }
 
     $cfg = Pinto::Config->new(local => '~/nowhere');
-    is($cfg->local(), "$ENV{HOME}/nowhere", 'Coerced ~/ to my home directory');
+    my $home = dir( File::HomeDir->my_home() );
+    is($cfg->local(), $home->file('nowhere'), 'Expanded ~/ to home directory');
 
     $cfg = Pinto::Config->new(local => 'nowhere', author => 'fooBar');
     is($cfg->author(), 'FOOBAR', 'Coerced author to ALL CAPS');
