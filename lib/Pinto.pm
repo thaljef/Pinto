@@ -115,7 +115,7 @@ sub create {
 
     # HACK...I want to do this before checking out from VCS
     my $local = Path::Class::dir( $self->config()->local() );
-    die "Looks like you already have a repository at $local\n"
+    croak "A repository already exists at $local"
         if -e file($local, qw(modules 02packages.details.txt.gz));
 
     $self->enqueue( $self->create_action('Create') );
