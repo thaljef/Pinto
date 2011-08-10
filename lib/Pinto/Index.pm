@@ -183,7 +183,6 @@ sub _write_packages {
 sub add {
     my ($self, @packages) = @_;
 
-    $DB::single = 1;
     my @removed_dists = $self->remove( @packages );
 
     for my $package (@packages) {
