@@ -127,13 +127,15 @@ sub update_mirror_index {
 
     my $local  = $self->config->local();
     my $mirror = $self->config->mirror();
+    my $force  = $self->config->force();
 
     my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
     my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
-    my $file_has_changed = $self->ua->mirror(url => $mirror_index_uri, to => $mirrored_file);
-    $self->mirror_index->reload() if $file_has_changed or $self->config->force();
+    my $has_changed = $self->ua->mirror(url => $mirror_index_uri, to => $mirrored_file);
+    $self->logger->log("Index from $mirror is up to date") unless $has_changed or $force;
+    $self->mirror_index->reload() if $has_changed or $force;
 
-    return $file_has_changed or $self->config->force();
+    return $has_changed || $force;
 }
 
 #------------------------------------------------------------------------------
@@ -143,7 +145,7 @@ sub dists_to_mirror {
 
     my $temp_index = Pinto::Index->new();
     $temp_index->add( $self->mirror_index->packages->values->flatten() );
-    $temp_index->add( $self->local_index->packages->values->flatten() );
+    $temp_index->remove( $self->local_index->packages->values->flatten() );
 
     my $sorter = sub { $_[0]->location() cmp $_[1]->location() };
     return $temp_index->distributions->values->sort($sorter)->flatten();
@@ -174,7 +176,6 @@ sub write_indexes {
 sub rebuild_master_index {
     my ($self) = @_;
 
-    $DB::single = 1;
     $self->master_index->clear();
     $self->master_index->add( $self->mirror_index->packages->values->flatten() );
     $self->master_index->add( $self->local_index->packages->values->flatten() );
@@ -227,6 +228,13 @@ sub add_mirrored_distribution {
     my ($self, %args) = @_;
 
     my $dist = $args{dist};
+
+    # Don't add a distribution that already exists in the index.
+    if ( $self->master_index->distributions->at($dist->location) ) {
+        $self->logger->debug("$dist is already in the index");
+        return;
+    }
+
     my @packages = $dist->packages->flatten();
     my @removed_dists = $self->master_index->add( @packages );
 
