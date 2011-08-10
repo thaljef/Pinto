@@ -42,24 +42,15 @@ sub add :Runmode {
     my $self = shift;
 
     $DB::single = 1;
-    $self->header_add(-status => '501 Not Implemented');
 
     my $query     = $self->query();
     my $author    = $query->param('author');
-    my $filename  = $query->param('filename');
-    my $filedata  = $query->param('file');
+    my $file      = $query->param('file');
 
-    if (not $filedata) {
-        $self->header_add(-status => '400 No distribution file data supplied');
+    if (not $file) {
+        $self->header_add(-status => '400 No distribution file supplied');
         return;
     }
-
-
-    if (not $filename) {
-        $self->header_add(-status => '400 No distribution file name supplied');
-        return;
-    }
-
 
     if (not $author) {
         $self->header_add(-status => '400 No author supplied');
@@ -68,11 +59,14 @@ sub add :Runmode {
 
 
     my $tmp = File::Temp->new();
-    while ( read($filedata, my $buffer, 1024) ) { print { $tmp } $buffer }
+    while ( read($file, my $buffer, 1024) ) { print { $tmp } $buffer }
     $tmp->close();
 
-    $self->pinto->add( author => $author, file => $tmp->filename() );
-    $self->header_add(-status => '202 Module added');
+    my $ok = eval { $self->pinto->add( file => $tmp->filename(),
+                                       author => $author ); 1 };
+
+    my $status = $ok ? '202 Module added' : "500 Error: $@";
+    $self->header_add(-status => $status);
 
     return;
 }
