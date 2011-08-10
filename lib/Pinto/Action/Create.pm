@@ -32,7 +32,7 @@ sub execute {
     # Otherwise, let Pinto create the directories and index files
     # for us, and return true to indicate that a commit is required.
 
-    $self->_set_message('Created a new Pinto repository');
+    $self->add_message('Created a new Pinto repository');
     return 1;
 }
 
