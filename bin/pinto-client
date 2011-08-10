@@ -1,10 +1,18 @@
 #!/usr/bin/perl
 
+# ABSTRACT: interact with a remote Pinto repository
+# PODNAME: pinto-client
+
 use strict;
 use warnings;
 
 use LWP::UserAgent;
 
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
 
 my ($author, $file) = @ARGV;
 my %args = (

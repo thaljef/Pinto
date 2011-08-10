@@ -1,9 +1,18 @@
 #!/usr/bin/perl
 
+# ABSTRACT: provide a web interface to a Pinto repository
+# PODNAME: pinto-server
+
 use strict;
 use warnings;
 
 use CGI::Application::Dispatch::Server;
+
+#-----------------------------------------------------------------------------
+
+# VERSION
+
+#-----------------------------------------------------------------------------
 
 my $class = 'Pinto::Server::Dispatch';
 
