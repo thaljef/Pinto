@@ -66,6 +66,9 @@ override remove => sub {
     my $file  = $args{file};
     my $prune = $args{prune};
 
+    # HACK: this might be evil!
+    return $self if not -e $file;
+
     $self->logger->log("Scheduling $file for removal");
     my $removed = Pinto::Util::Svn::svn_remove(file => $file, prune => $prune);
     $self->removed_paths->push($removed);
