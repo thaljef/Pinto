@@ -1,4 +1,4 @@
-package App::Pinto::Command::create;
+package App::Pinto::Admin::Command::create;
 
 # ABSTRACT: create an empty repository
 
@@ -7,7 +7,7 @@ use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Command';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 

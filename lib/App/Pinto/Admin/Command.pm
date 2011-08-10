@@ -1,6 +1,6 @@
-package App::Pinto::Command;
+package App::Pinto::Admin::Command;
 
-# ABSTRACT: Base class for pinto commands
+# ABSTRACT: Base class for pinto-admin commands
 
 use strict;
 use warnings;

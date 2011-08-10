@@ -1,4 +1,4 @@
-package App::Pinto;
+package App::Pinto::Admin;
 
 # ABSTRACT: Command-line driver for Pinto
 

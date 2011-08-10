@@ -1,4 +1,4 @@
-package App::Pinto::Command::list;
+package App::Pinto::Admin::Command::list;
 
 # ABSTRACT: list the contents of the repository
 
@@ -7,7 +7,7 @@ use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Command';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 

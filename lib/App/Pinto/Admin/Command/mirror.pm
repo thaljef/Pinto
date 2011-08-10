@@ -1,4 +1,4 @@
-package App::Pinto::Command::mirror;
+package App::Pinto::Admin::Command::mirror;
 
 # ABSTRACT: get the latest distributions from a CPAN mirror
 
@@ -7,7 +7,7 @@ use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Command';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 

@@ -1,19 +1,19 @@
-package App::Pinto::Command::remove;
+package App::Pinto::Admin::Command::add;
 
-# ABSTRACT: remove your own packages from the repository
+# ABSTRACT: add your own Perl distributions to the repository
 
 use strict;
 use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Command';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
 # VERSION
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 sub opt_spec {
     return (
@@ -26,21 +26,21 @@ sub opt_spec {
 sub usage_desc {
     my ($self) = @_;
     my ($command) = $self->command_names();
-    return "%c [global options] $command [command options] PACKAGE";
+    return "%c [global options] $command [command options] DISTRIBUTION";
 }
 
 #------------------------------------------------------------------------------
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify one or more package args") if not @{ $args };
+    $self->usage_error("Must specify one or more distribution args") if not @{ $args };
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->remove( package => $args );
+    $self->pinto( $opts )->add( file => $args );
     return 0;
 }
 
