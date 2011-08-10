@@ -153,7 +153,7 @@ sub add {
     my ($self, %args) = @_;
 
     my $file = $args{file};
-    $file = [$file] if not ref $file;
+    $file = [$file] if ref $file ne 'ARRAY';
 
     $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $file };
     $self->run();
@@ -171,7 +171,7 @@ sub remove {
     my ($self, %args) = @_;
 
     my $package = $args{package};
-    $package = [$package] if not ref $package;
+    $package = [$package] if ref $package ne 'ARRAY';
 
     $self->enqueue( $self->create_action('Remove', package => $_) ) for @{ $package };
     $self->run();

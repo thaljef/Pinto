@@ -6,7 +6,8 @@ use Moose;
 
 use Pinto;
 
-use File::Temp;
+use Path::Class qw(dir);
+use File::Temp  qw(tempdir);
 
 use base 'CGI::Application';
 
@@ -58,11 +59,14 @@ sub add :Runmode {
     }
 
 
-    my $tmp = File::Temp->new();
-    while ( read($file, my $buffer, 1024) ) { print { $tmp } $buffer }
-    $tmp->close();
+    my $tmpdir = dir( tempdir(CLEANUP => 1) );
+    my $tmpfile = $tmpdir->file($file);
+    my $fh = $tmpfile->openw();
 
-    my $ok = eval { $self->pinto->add( file => $tmp->filename(),
+    while ( read($file, my $buffer, 1024) ) { print { $fh } $buffer }
+    $fh->close();
+
+    my $ok = eval { $self->pinto->add( file   => $tmpfile,
                                        author => $author ); 1 };
 
     my $status = $ok ? '202 Module added' : "500 Error: $@";
