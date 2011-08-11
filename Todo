@@ -1,0 +1,23 @@
+=head1 STUFF TODO
+
+In no particular order...
+
+=over 4
+
+=item Add a lock mechanism, so multiple processes don't mess with the
+same repository at the same time.  See Proc::Pidfile, Proc::Pid::File,
+etc.
+
+=item Replace the IndexManager and Index classes with a proper
+database.  Look at CPANDB for example.
+
+=item Use proper exceptions, instead of just croaking.
+
+=item Consider how we might mirror multiple repositories.
+
+=item Write a tutorial to explain different ways for using Pinto in
+the development/deployment cycle.
+
+=back
+
+=cut
