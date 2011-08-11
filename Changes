@@ -1,5 +1,17 @@
 {{$NEXT}}
 
+Interface changes:
+
+    pinto is now called pinto-admin.  It still has all the
+    same options and arguments.  Likewise, App::Pinto is
+    now App::Pinto::Admin.
+
+Other changes:
+
+    created pinto-server and pinto-client, for using
+    Pinto across a nework. These are still very 
+    experimental.
+
 0.008     2011-08-09 14:47:02 America/Los_Angeles
 
 Interface changes:
