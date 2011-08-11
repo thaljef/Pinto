@@ -274,3 +274,17 @@ __PACKAGE__->meta->make_immutable();
 1;
 
 __END__
+
+=head1 DESCRIPTION
+
+The role of L<Pinto::IndexManager> and L<Pinto::Index> is to create an
+abstraction layer between the rest of the application and the details
+of managing the 02packages index file.  At the moment, we use three
+separate index files: one for locally added packages, one for mirrored
+packages, and a master index that combines the other two according to
+specific rules.  But this file-based design is ugly and doesn't
+perform well.  So in the future, I hope to replace those files with a
+proper database.
+
+=cut
+
