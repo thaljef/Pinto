@@ -33,6 +33,18 @@ added in the last action (if any).
 =item Add feature for listing local packages that are outdated
 (i.e. there is a newer mirrored version).
 
+=item Implement Pinto::Store::Git.
+
+=item Improve Perl::Critic compliance.
+
+=item Document, document, document.
+
+=item Tests, tests, tests.
+
+=item Look for better ways to use Moose roles.
+
+=item Daemonize Pinto::Server.  See MooseX::Daemonize
+
 =back
 
 =cut
