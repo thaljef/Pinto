@@ -172,29 +172,30 @@ to the C<tag>. If you do not specify C<tag> then no
 tag is made.
 
 In most situations, you'll want to keep multiple tags that represent
-the state of CPAN at a various points in time.  So the typical
-practice is to put a date stamp in the name of your tag.  To make this
-easy and customizable, you can embed any of the L<Date::Format>
-conversion specifications in your URL.
+the state of CPAN at a various points in time.  The typical practice
+is to put a date stamp in the name of your tag.  Therefore, you can
+embed any of the L<Date::Format> conversion specifications in your
+URL and they will be expanded when the tag is constructed.
 
 For example, if you had this in your F<~/.pinto/config.ini>:
 
  tag = http://my-company/svn/tags/PINTO-%y.%m.%d
 
-and ran C<pinto mirror> on June 17, 2011, then it would produce a tag at this URL:
+and ran C<pinto mirror> on June 17, 2011, then it would produce a tag
+at this URL:
 
  http://my-company/svn/tags/PINTO-11.06.17
 
-Be sure to choose a datestamp with sufficient resolution for your
-needs.  If you are only going to run L<pinto> once a month, then
-you probably only need a year and month to distinguish your tag.  But
-if you are going to run it several times a day, then you'll need day,
+Be sure to choose a date stamp with sufficient resolution for your
+needs.  If you are only going to run L<pinto> once a month, then you
+probably only need a year and month to distinguish your tag.  But if
+you are going to run it several times a day, then you'll need day,
 hours and minutes (and possibly seconds) too.
 
-And if you don't put any datestamp in your C<tag> at all, then
-you're basically limited to running L<pinto> only once, because you
-can't make the same tag more than once (unless you remove the previous
-tag by some other means).
+And if you don't put any date stamp in your C<tag> at all, then you're
+basically limited to running L<pinto> only once, because you can't
+make the same tag more than once (unless you remove the previous tag
+by some other means).
 
 =back
 
@@ -202,7 +203,7 @@ tag by some other means).
 
 =over 4
 
-=item C<svn> client is required.
+=item The C<svn> program is required.
 
 At present, you must have the binary C<svn> client installed somewhere
 in your C<$PATH> for this module to work.  In future versions, we may

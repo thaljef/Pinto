@@ -292,6 +292,8 @@ call my son, Wesley.
 
 =head1 THANKS
 
+=for stopwords Genentech Hartzell Walde Sorichetti PASSed
+
 =over 4
 
 =item Randal Schwartz - for pioneering the first mini CPAN back in 2002

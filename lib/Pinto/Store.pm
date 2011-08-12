@@ -1,6 +1,6 @@
 package Pinto::Store;
 
-# ABSTRACT: Back-end storage for a Pinto repoistory
+# ABSTRACT: Back-end storage for a Pinto repository
 
 use Moose;
 
@@ -77,9 +77,9 @@ sub initialize {
 
 =method is_initialized()
 
-Returns true if the store appears to be initialized.  In this base class,
-it simply means that the working directory exists.  For other subclasses,
-this could mean that the working copy is up-to-date.
+Returns true if the store appears to be initialized.  In this base
+class, it simply means that the working directory exists.  For other
+derived classes, this could mean that the working copy is up-to-date.
 
 =cut
 

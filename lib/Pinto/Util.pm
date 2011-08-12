@@ -42,7 +42,7 @@ sub author_dir {                                  ## no critic (ArgUnpacking)
 =func is_source_control_file($path)
 
 Given a path (which may be a file or directory), returns true if that path
-is part of the internals of a source control system (e.g. git, svn, cvs).
+is part of the internals of a version control system (e.g. Git, Subversion).
 
 =cut
 
