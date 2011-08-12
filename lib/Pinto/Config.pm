@@ -159,7 +159,7 @@ sub _build_author {
 
     # Try using pwent.  Probably only works on *nix
     if (my $name = getpwuid($REAL_USER_ID)) {
-        return $name;
+        return uc $name;
     }
 
     # Otherwise, we are hosed!
