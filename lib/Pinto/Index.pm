@@ -102,7 +102,7 @@ sub _load {
     while (<$fh>) {
 
         if ($inheader) {
-            $inheader = 0 if not /\S/;
+            $inheader = 0 if not m/ \S /x;
             next;
         }
 
@@ -160,7 +160,7 @@ sub _write_header {
         ? ($self->file->basename(), 'file://' . $self->file->as_foreign('Unix') )
         : ('UNKNOWN', 'UNKNOWN');
 
-    print {$fh} <<END_PACKAGE_HEADER;
+    print {$fh} <<"END_PACKAGE_HEADER";
 File:         $file
 URL:          $url
 Description:  Package names found in directory \$CPAN/authors/id/

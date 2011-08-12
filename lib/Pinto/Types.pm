@@ -23,7 +23,7 @@ use namespace::autoclean;
 
 subtype AuthorID,
     as Str,
-    where { not /[^A-Z0-9-]/ },
+    where { not m/[^A-Z0-9-]/x },
     message { "The author ($_) must be alphanumeric" };
 
 coerce AuthorID,
@@ -58,7 +58,9 @@ coerce File,
 
 sub expand_tilde {
     my (@paths) = @_;
+
     $paths[0] =~ s|\A ~ (?= \W )|File::HomeDir->my_home()|xe;
+
     return @paths;
 }
 

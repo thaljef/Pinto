@@ -106,9 +106,9 @@ sub svn_schedule {
     my $buffer = '';
     _svn(command => ['status', $starting_path], buffer => \$buffer);
 
-    for my $line (split /\n/, $buffer) {
+    for my $line (split / \n /x, $buffer) {
 
-        $line =~ /^(\S)\s+(\S+)$/
+        $line =~ /^ (\S) \s+ (\S+) $/x
             or croak "Unable to parse svn status: $line";
 
         my ($status, $path) = ($1, $2);
@@ -119,7 +119,7 @@ sub svn_schedule {
         elsif ($status eq '!') {
             svn_delete(path => $path, prune => 1);
         }
-        elsif ($status =~ /^[AMD]$/) {
+        elsif ($status =~ /^ [AMD] $/x) {
             # Do nothing!
         }
         else {
@@ -222,7 +222,7 @@ sub _url_for_wc_path {
     my $buffer = '';
     _svn( command => ['info', $path], buffer => \$buffer);
 
-    $buffer =~ /^URL:\s+(\S+)$/m
+    $buffer =~ /^ URL: \s+ (\S+) $/xm
         or croak "Unable to parse svn info: $buffer";
 
     return $1;
@@ -246,7 +246,7 @@ sub _all_scheduled_for_deletion {
     for my $child ($directory->children()) {
         next if $child->basename() eq '.svn';
         _svn(command => ['status', $child], buffer => \my $buffer);
-        return 0 if not $buffer or $buffer =~ m/^[^D]/m;
+        return 0 if not $buffer or $buffer =~ m/^ [^D] /xm;
     }
 
     return 1;
@@ -258,7 +258,7 @@ sub _svn {
     my %args = @_;
     my $command = $args{command};
     my $buffer  = $args{buffer} || \my $anon;
-    my $croak   = defined $args{croak} ? $args{croak} : 1;
+    my $croak   = $args{croak}  || 1;
 
     unshift @{$command}, 'svn';
     my $ok = run( command => $command, buffer => $buffer);
