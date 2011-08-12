@@ -9,7 +9,7 @@ use MooseX::Types::Moose qw(Str Bool Int);
 use Pinto::Types qw(AuthorID URI Dir);
 
 use Carp;
-use English qw($REAL_USER_ID);
+use English qw(-no_match_vars);
 
 use namespace::autoclean;
 
