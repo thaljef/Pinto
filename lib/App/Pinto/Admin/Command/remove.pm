@@ -34,6 +34,7 @@ sub usage_desc {
 sub validate_args {
     my ($self, $opts, $args) = @_;
     $self->usage_error("Must specify one or more package args") if not @{ $args };
+    return 1;
 }
 
 #------------------------------------------------------------------------------

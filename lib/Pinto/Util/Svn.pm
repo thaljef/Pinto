@@ -31,7 +31,7 @@ sub svn_mkdir {
     my $dir = $args{dir};
     my $message = $args{message} || 'NO MESSAGE GIVEN';
 
-    if ( $url && not svn_ls(url => $url) ) {
+    if ( $url and not svn_ls(url => $url) ) {
         return _svn( command => [qw(mkdir --parents -m), $message, $url]);
     }
     elsif ($dir and not -e $dir) {
@@ -246,7 +246,7 @@ sub _all_scheduled_for_deletion {
     for my $child ($directory->children()) {
         next if $child->basename() eq '.svn';
         _svn(command => ['status', $child], buffer => \my $buffer);
-        return 0 if !$buffer or $buffer =~ m/^[^D]/m;
+        return 0 if not $buffer or $buffer =~ m/^[^D]/m;
     }
 
     return 1;

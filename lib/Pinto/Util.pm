@@ -30,10 +30,10 @@ directory that is returned.
 
 =cut
 
-sub author_dir {
-    my ($author) = pop;
-    my @base = @_;
-    $author = uc $author;
+sub author_dir {                                  ## no critic (ArgUnpacking)
+    my $author = uc pop;
+    my @base =  @_;
+
     return dir(@base, substr($author, 0, 1), substr($author, 0, 2), $author);
 }
 
@@ -54,13 +54,15 @@ sub is_source_control_file {
 #-------------------------------------------------------------------------------
 
 sub added_dist_message {
-    return _dist_message(@_, 'Added');
+    my ($distribution) = @_;
+    return _dist_message($distribution, 'Added');
 }
 
 #-------------------------------------------------------------------------------
 
 sub removed_dist_message {
-    return _dist_message(@_, 'Removed');
+    my ($distribution) = @_;
+    return _dist_message($distribution, 'Removed');
 }
 
 #-------------------------------------------------------------------------------

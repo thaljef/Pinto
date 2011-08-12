@@ -84,7 +84,19 @@ sub load {
     my $file = $self->file();
     $self->logger->debug("Reading index at $file");
 
+    # TODO: maybe support reading from non-zipped files?
+
     open my $fh, '<:gzip', $file;
+    $self->_load($fh);
+    close $fh;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _load {
+    my ($self, $fh) = @_;
 
     my $inheader = 1;
     while (<$fh>) {
@@ -105,7 +117,6 @@ sub load {
         $dist->add_packages($pkg);
     }
 
-    close $fh;
     return $self;
 }
 

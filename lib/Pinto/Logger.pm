@@ -31,6 +31,7 @@ with qw(Pinto::Role::Configurable);
 
 sub _build_log_level {
     my ($self) = @_;
+
     return -2 if $self->config->quiet();
     return $self->config->verbose();
 }
@@ -40,35 +41,46 @@ sub _build_log_level {
 
 sub _logit {
     my ($message) = @_;
-    print "$message\n";
+
+    return print "$message\n";
 }
 
 #-----------------------------------------------------------------------------
 # Public methods
 
 sub debug {
-    my ($self, $message, $opts) = @_;
-    _logit($message, $opts) if $self->log_level() >= 1;
+    my ($self, $message) = @_;
+
+    _logit($message) if $self->log_level() >= 1;
+
+    return 1;
 }
 
 #-----------------------------------------------------------------------------
 
 sub log {
-    my ($self, $message, $opts) = @_;
-    _logit($message, $opts) if $self->log_level() >= 0;
+    my ($self, $message) = @_;
+
+    _logit($message) if $self->log_level() >= 0;
+
+    return 1;
 }
 
 #-----------------------------------------------------------------------------
 
 sub warn {
     my ($self, $message) = @_;
+
     CORE::warn "$message\n" if $self->log_level() >= -1;
+
+    return 1;
 }
 
 #-----------------------------------------------------------------------------
 
 sub fatal {
     my ($self, $message) = @_;
+
     die "$message\n";
 }
 
