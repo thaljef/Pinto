@@ -50,6 +50,8 @@ my home-grown interface to Subversion.
 
 =item Consider using MooseX::Params::Validate on methods.
 
+=item Profile and look for performance optimizations.
+
 =back
 
 =cut
