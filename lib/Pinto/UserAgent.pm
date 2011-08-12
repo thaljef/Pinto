@@ -65,7 +65,6 @@ sub mirror {
 sub _build_ua {
     my ($self) = @_;
 
-    #$DB::single = 1;
     my $agent = sprintf "%s/%s", ref $self, 'VERSION';
     my $ua = LWP::UserAgent->new(
         agent      => $agent,
