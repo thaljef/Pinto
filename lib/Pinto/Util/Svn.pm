@@ -258,15 +258,18 @@ sub _svn {
     my %args = @_;
     my $command = $args{command};
     my $buffer  = $args{buffer} || \my $anon;
-    my $croak   = $args{croak}  || 1;
+    my $croak   = defined $args{croak} ? $args{croak} : 1;
 
     unshift @{$command}, 'svn';
     my $ok = run( command => $command, buffer => $buffer);
 
     if ($croak and not $ok) {
+
         # Truncate the '-m MESSAGE' arguments, for readability
-        my $dash_m_offset = firstidx {$_ eq '-m'} @{ $command };
-        splice @{ $command }, $dash_m_offset + 1, 1, q{'...'};
+        if ( (my $dash_m_offset = firstidx {$_ eq '-m'} @{ $command }) > 0 ) {
+            splice @{ $command }, $dash_m_offset + 1, 1, q{'...'};
+        }
+
         my $command_string = join ' ', @{ $command };
         croak "Command failed: $command_string\n". ${$buffer};
     }
