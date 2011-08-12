@@ -54,6 +54,6 @@ __END__
 
 =head1 DESCRIPTION
 
-This module is Not yet implimented.
+This module is Not yet implemented.
 
 =cut

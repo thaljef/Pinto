@@ -173,7 +173,7 @@ tag is made.
 
 In most situations, you'll want to keep multiple tags that represent
 the state of CPAN at a various points in time.  So the typical
-practice is to put a datestamp in the name of your tag.  To make this
+practice is to put a date stamp in the name of your tag.  To make this
 easy and customizable, you can embed any of the L<Date::Format>
 conversion specifications in your URL.
 
@@ -204,7 +204,7 @@ tag by some other means).
 
 =item C<svn> client is required.
 
-At present, you must have the binary C<svn> client installed somwhere
+At present, you must have the binary C<svn> client installed somewhere
 in your C<$PATH> for this module to work.  In future versions, we may
 try using L<SVN::Client> or some other interface.
 
@@ -215,7 +215,7 @@ the credentials for your repository already cached.  If you cannot or
 will not allow C<svn> to cache your credentials, then this module will
 not work.
 
-=item Subversion does not accurately manage timestamps.
+=item Subversion does not accurately manage time stamps.
 
 This may fool L<Pinto> into making an inaccurate mirror because it
 thinks your local copy is newer than the mirror. As long as

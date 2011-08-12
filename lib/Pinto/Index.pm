@@ -134,7 +134,7 @@ file is taken from the C<file> attribute for this Index.
 
 =cut
 
-sub write {
+sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
     # TODO: Accept a file handle argument

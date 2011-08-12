@@ -19,8 +19,8 @@ use Path::Class;
 =func svn_mkdir(url => 'http://somewhere')
 
 Given a URL that is presumed to be a location within a Subversion
-repsitory, creates a directory at that location.  Any intervening
-directories will be created for you.  If the direcory already exists,
+repository, creates a directory at that location.  Any intervening
+directories will be created for you.  If the directory already exists,
 an exception will be thrown.
 
 =cut
