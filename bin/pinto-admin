@@ -48,8 +48,8 @@ Then, run some commands:
   # Add your own distribution to the repository
   $> pinto-admin add Foo-Bar-1.2.tar.gz
 
-  # Fill your repository with latest distributions from a remote source
-  $> pinto-admin pull
+  # Fill your repository with all the latest distributions from a remote source
+  $> pinto-admin mirror 
 
   # Then install stuff from your repository
   $> cpanm --mirror-only --mirror file:///some/directory Foo
@@ -58,9 +58,9 @@ Then, run some commands:
 
 C<pinto-admin> is a command line utility for managing a Pinto
 repository.  The repository can contain your own private distributions
-of Perl packages, and/or pull foreign distributions from another
-repository (such as L<http://cpan.perl.org>).  You can also put
-locally patched versions of foreign distributions in your repository.
+of Perl packages, and/or distributions from another repository (such
+as L<http://cpan.perl.org>).  You can also put locally patched
+versions of foreign distributions in your repository.
 
 You can then point L<cpanm> to your Pinto repository and build and
 install your distributions (and their dependencies).  B<NOTE:> At this
@@ -113,17 +113,17 @@ your home directory.
 
 =item source = URL
 
-The URL of a repository that you would like to pull distributions
-from.  This could be a public CPAN mirror, or another Pinto
-repository.  Defaults to L<http://cpan.perl.org>.  This parameter is
-only relevant to the C<pull> command.
+The URL of a repository that you would like to pull foreign
+distributions from.  This could be a public CPAN mirror, or another
+Pinto repository.  Defaults to L<http://cpan.perl.org>.  This
+parameter is only relevant to the C<mirror> command.
 
 =item nocleanup = 0|1
 
 If true, L<pinto-admin> will not automatically delete distributions
-that become out of date (because you've added your own local version
-or you've pulled a newer one from a remote repository).  The default
-is 0.
+that become out of date (either because you've added your own local
+version or you've pulled a newer one from a remote repository).  The
+default is 0.
 
 =item nocommit = 0|1
 
@@ -205,7 +205,7 @@ removed.  You can only remove a package that B<YOU> have locally
 added.  You cannot remove foreign packages that you pulled in from a
 remote source (however you can mask them by adding your own versions).
 
-=item pull
+=item mirror
 
 Fills your repository with the distributions that contain the latest
 version of all packages in the remote repository.  See the L<"RULES">
@@ -214,16 +214,16 @@ interact with foreign ones.
 
 =item verify
 
-Reports any distributions that are present in your repository but not
-listed in the master index.  This is usually a sign that something has
-gone wrong.
+Reports any distributions that are listed in your index but not
+actually present.  This is usually a sign that something has gone
+wrong.
 
 =back
 
 =head1 RULES
 
 There are certain rules that govern how the indexes are managed.
-These rules are intended to ensure that clients pulling packages from
+These rules are intended to ensure that clients installing packages from
 your repository will always get the B<right ones>.  Also, the rules
 attempt to make Pinto behave somewhat like PAUSE does.
 
@@ -232,12 +232,12 @@ attempt to make Pinto behave somewhat like PAUSE does.
 =item A local package always masks a foreign package, and all other
 packages that are in the same distribution with the foreign package.
 
-This rule is important, so pay attention.  If you C<pull> a
+This rule is important, so pay attention.  If you C<mirror> a
 distribution from a foreign repository that contains both C<Foo> and
 C<Bar> packages, and you C<add> your own local distribution that
 contains just the C<Foo> package, then both the foreign C<Foo> and
 C<Bar> packages will be removed from your index.  This ensures that
-anyone pulling packages from your repository will always get B<your>
+anyone installing packages from your repository will always get B<your>
 version of C<Foo>.  But they'll never be able to get C<Bar>, because
 doing so would overwrite your C<Foo>.
 

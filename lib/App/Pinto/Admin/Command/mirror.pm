@@ -1,6 +1,6 @@
-package App::Pinto::Admin::Command::pull;
+package App::Pinto::Admin::Command::mirror
 
-# ABSTRACT: get the latest distributions from a remote repository
+# ABSTRACT: get all the latest distributions from a remote repository
 
 use strict;
 use warnings;
@@ -34,7 +34,7 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->pull();
+    $self->pinto( $opts )->mirror();
     return 0;
 }
 

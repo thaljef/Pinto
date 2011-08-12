@@ -130,19 +130,19 @@ sub create {
 
 #------------------------------------------------------------------------------
 
-=method pull()
+=method mirror()
 
 Populates your repository with the latest version of all distributions
 found in the foreign repository (which is usually a CPAN mirror).  Your
-locally added distributions will always mask those pulled from the
+locally added distributions will always mask those mirrored from the
 remote repository.
 
 =cut
 
-sub pull {
+sub mirror {
     my ($self) = @_;
 
-    $self->enqueue( $self->create_action('Pull') );
+    $self->enqueue( $self->create_action('Mirror') );
     $self->run();
 
     return $self;
@@ -263,7 +263,7 @@ L<Pinto> is a set of tools for creating and managing a CPAN-style
 repository.  This repository can contain just your own private
 distributions, or you can fill it with the latest ones from a CPAN
 mirror, or both.  You can then use your favorite CPAN client to
-pull distributions from your repository and install them as you
+fetch distributions from your repository and install them as you
 normally would.
 
 L<Pinto> shares a lot of DNA with L<CPAN::Site>, L<CPAN::Mini>, and

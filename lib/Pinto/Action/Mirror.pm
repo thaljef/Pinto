@@ -1,6 +1,6 @@
-package Pinto::Action::Pull;
+package Pinto::Action::Mirror;
 
-# ABSTRACT: An action to fill the repository from a remote source
+# ABSTRACT: An action to mirror a remote repository into your local one
 
 use Moose;
 
@@ -44,7 +44,7 @@ sub execute {
     if ($changes) {
         my $count  = @dists;
         my $source = $self->config->source();
-        $self->add_message("Pulled $count distributions from $source");
+        $self->add_message("Mirrored $count distributions from $source");
     }
 
     # Don't include an index change, just because --force was on
