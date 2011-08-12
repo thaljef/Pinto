@@ -81,7 +81,7 @@ sub warn {
 sub fatal {
     my ($self, $message) = @_;
 
-    die "$message\n";
+    die "$message\n";  ## no critic (RequireCarping)
 }
 
 #-----------------------------------------------------------------------------

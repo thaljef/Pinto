@@ -5,7 +5,7 @@ package Pinto::Util::Svn;
 use strict;
 use warnings;
 
-use Carp qw(croak);
+use Carp qw(carp croak);
 use IPC::Cmd 0.72 qw(run);
 use List::MoreUtils qw(firstidx);
 use Path::Class;
@@ -101,10 +101,10 @@ added, and any missing file is deleted.
 
 sub svn_schedule {
     my %args = @_;
-    my $path = $args{path};
+    my $starting_path = $args{path};
 
     my $buffer = '';
-    _svn(command => ['status', $path], buffer => \$buffer);
+    _svn(command => ['status', $starting_path], buffer => \$buffer);
 
     for my $line (split /\n/, $buffer) {
 
@@ -124,7 +124,7 @@ sub svn_schedule {
         }
         else {
             # TODO: Decide how to handle other statuses (e.g. locked).
-            warn "Unexpected status: $status for file $path";
+            carp "Unexpected status: $status for file $path";
         }
     }
 
@@ -223,7 +223,7 @@ sub _url_for_wc_path {
     _svn( command => ['info', $path], buffer => \$buffer);
 
     $buffer =~ /^URL:\s+(\S+)$/m
-        or die "Unable to parse svn info: $buffer";
+        or croak "Unable to parse svn info: $buffer";
 
     return $1;
 }
