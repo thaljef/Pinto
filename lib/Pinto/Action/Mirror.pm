@@ -61,7 +61,7 @@ sub _do_mirror {
     return 0 if -e $destination;
 
     $self->ua->mirror(url => $url, to => $destination) or return 0;
-    $self->logger->log("Mirrored distribution $dist");
+    $self->logger->info("Mirrored distribution $dist");
     $self->store->add(file => $destination);
     my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
     $cleanup && $self->store->remove(file => $_->path($local)) for @removed;

@@ -62,7 +62,7 @@ sub initialize {
     my $local = $self->config->local();
 
     if (not -e $local) {
-        $self->logger->log("Making directory at $local");
+        $self->logger->info("Making directory at $local");
         eval { $local->mkpath(); 1 }
             or croak "Failed to make directory $local: $@";
     }
@@ -144,7 +144,7 @@ sub remove {
     return $self if not -e $path;
     croak "$path is not a file" if $path->is_dir();
 
-    $self->logger->log("Removing file $path");
+    $self->logger->info("Removing file $path");
     $path->remove() or croak "Failed to remove $path: $!";
 
     if ($prune) {

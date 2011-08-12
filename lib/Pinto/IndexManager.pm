@@ -132,7 +132,7 @@ sub update_mirror_index {
     my $mirror_index_uri = URI->new("$mirror/modules/02packages.details.txt.gz");
     my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
     my $has_changed = $self->ua->mirror(url => $mirror_index_uri, to => $mirrored_file);
-    $self->logger->log("Index from $mirror is up to date") unless $has_changed or $force;
+    $self->logger->info("Index from $mirror is up to date") unless $has_changed or $force;
     $self->mirror_index->reload() if $has_changed or $force;
 
     return $has_changed || $force;

@@ -34,7 +34,7 @@ override initialize => sub {
     my $local = $self->config->local();
     my $trunk = $self->config->svn_trunk();
 
-    $self->logger->log("Checking out (or updating) working copy");
+    $self->logger->info("Checking out (or updating) working copy");
     Pinto::Util::Svn::svn_checkout(url => $trunk, to => $local);
 
     return 1;
@@ -51,7 +51,7 @@ override add => sub {
         $path = $path->parent();
     }
 
-    $self->logger->log("Scheduling $path for addition");
+    $self->logger->info("Scheduling $path for addition");
     Pinto::Util::Svn::svn_add(path => $path);
     $self->added_paths()->push($path);
 
@@ -69,7 +69,7 @@ override remove => sub {
     # HACK: this might be evil!
     return $self if not -e $file;
 
-    $self->logger->log("Scheduling $file for removal");
+    $self->logger->info("Scheduling $file for removal");
     my $removed = Pinto::Util::Svn::svn_remove(file => $file, prune => $prune);
     $self->removed_paths->push($removed);
 
@@ -87,7 +87,7 @@ override finalize => sub {
                   $self->removed_paths->flatten(),
                   $self->modified_paths->flatten() ];
 
-    $self->logger->log("Committing changes");
+    $self->logger->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
     $self->_make_tag() if $self->config->svn_tag()
@@ -108,7 +108,7 @@ sub _make_tag {
     my $as_of = time2str('%C', $now);
     my $message  = "Tagging Pinto repository as of $as_of.";
 
-    $self->logger->log("Making tag");
+    $self->logger->info("Making tag");
     Pinto::Util::Svn::svn_tag(from => $trunk, to => $tag, message => $message);
 
     return 1;

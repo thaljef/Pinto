@@ -58,7 +58,7 @@ sub debug {
 
 #-----------------------------------------------------------------------------
 
-sub log {
+sub info {
     my ($self, $message) = @_;
 
     _logit($message) if $self->log_level() >= 0;

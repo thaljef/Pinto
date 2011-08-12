@@ -51,7 +51,7 @@ override execute => sub {
 
     my $added   = Pinto::Distribution->new_from_file( file   => $file, author => $author );
     my @removed = $self->idxmgr->add_local_distribution( dist => $added );
-    $self->logger->log(sprintf "Adding $added with %i packages", $added->package_count());
+    $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
 
     $self->store->add( file => $added->path($local), source => $file );
     $cleanup && $self->store->remove( file => $_->path($local) ) for @removed;

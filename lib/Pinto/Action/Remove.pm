@@ -47,7 +47,7 @@ override execute => sub {
 
     my $dist = $idxmgr->remove_local_package(package => $pkg, author => $author);
     $self->logger->warn("Package $pkg is not in the local index") and return 0 if not $dist;
-    $self->logger->log(sprintf "Removing $dist with %i packages", $dist->package_count());
+    $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
 
     my $file = $dist->path( $self->config->local() );
     $self->config->nocleanup() || $self->store->remove( file => $file );
