@@ -42,8 +42,6 @@ sub _build_pinto {
 sub add :Runmode {
     my $self = shift;
 
-    $DB::single = 1;
-
     my $query     = $self->query();
     my $author    = $query->param('author');
     my $file      = $query->param('file');
