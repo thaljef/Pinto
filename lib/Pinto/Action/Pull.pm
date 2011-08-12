@@ -1,6 +1,6 @@
-package Pinto::Action::Mirror;
+package Pinto::Action::Pull;
 
-# ABSTRACT: An action to fill the repository from a mirror
+# ABSTRACT: An action to fill the repository from a remote source
 
 use Moose;
 
@@ -20,7 +20,7 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-has 'ua'      => (
+has ua   => (
     is         => 'ro',
     isa        => 'Pinto::UserAgent',
     default    => sub { Pinto::UserAgent->new() },

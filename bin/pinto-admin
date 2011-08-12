@@ -21,7 +21,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin [global options] COMMAND [command options] [ARG]
+  pinto-admin [global options] COMMAND [command options] [ARGS]
 
   pinto-admin help COMMAND
 
@@ -48,8 +48,8 @@ Then, run some commands:
   # Add your own distribution to the repository
   $> pinto-admin add Foo-Bar-1.2.tar.gz
 
-  # Fill your repository with latest packages from remote mirror
-  $> pinto-admin mirror
+  # Fill your repository with latest distributions from a remote source
+  $> pinto-admin pull
 
   # Then install stuff from your repository
   $> cpanm --mirror-only --mirror file:///some/directory Foo
@@ -58,7 +58,7 @@ Then, run some commands:
 
 C<pinto-admin> is a command line utility for managing a Pinto repository.
 The repository can contain your own private distributions of Perl packages,
-and/or mirror distributions from another repository (such as
+and/or pull distributions from another repository (such as
 L<http://cpan.perl.org>).  You can also put locally patched versions
 of mirrored distributions in your repository.
 
@@ -97,9 +97,14 @@ To get a list of options for a particular command:
 Your identity as a module author.  This could be your PAUSE ID, but it
 doesn't have to be.  As long as it is just alphanumeric characters.
 This defaults to your shell username (either C<$ENV{USERNAME}> or
-C<$ENV{USER}> or C<$ENV{LOGNAME}>).
+C<$ENV{USER}> or C<$ENV{LOGNAME}>).  This parameter is only relevant
+to the C<add> and C<remove> commands.
 
-=item local = DIR_PATH
+If you have a team of developers and you want them all to be able
+to add/remove the same packages to the repository, then everyone
+on the team should use the same C<author> parameter.
+
+=item local = DIRECTORY
 
 The path to a directory where your repository will be kept.  This
 parameter is required for all commands.  You must be able to read and
@@ -108,15 +113,17 @@ your home directory.
 
 =item mirror = URL
 
-The URL of a repository that you would like to mirror.  This could
-be a public CPAN mirror, or another Pinto repository.  Defaults
-to L<http://cpan.perl.org>.
+The URL of a repository that you would like to pull distributions
+from.  This could be a public CPAN mirror, or another Pinto
+repository.  Defaults to L<http://cpan.perl.org>.  This parameter is
+only relevant to the C<pull> command.
 
 =item nocleanup = 0|1
 
-If true, L<pinto-admin> will not automatically delete distributions that
-become out of date (because you've added your own local version or
-you've pulled a newer one from the mirror).  The default is 0.
+If true, L<pinto-admin> will not automatically delete distributions
+that become out of date (because you've added your own local version
+or you've pulled a newer one from a remote repository).  The default
+is 0.
 
 =item nocommit = 0|1
 
@@ -126,11 +133,11 @@ this parameter has no effect.  The default is 0.
 
 =item noinit = 0|1
 
-If true, L<pinto-admin> assumes that your repository is up-to-date and will
-not pull/update the repository from your VCS at the beginning of each
-command.  This can save a lot of time, but use with caution. If you're
-not using a VCS store, then this parameter has no effect.  The default
-is 0.
+If true, L<pinto-admin> assumes tha the working copy of your
+repository is up-to-date and will not pull/update the repository from
+your VCS at the beginning of each command.  This can save a lot of
+time, but use with caution. If you're not using a VCS store, then this
+parameter has no effect.  The default is 0.
 
 =item notag = 0|1
 
@@ -145,12 +152,13 @@ parameter silently overrides any C<verbose> setting.
 
 =item store = CLASS_NAME
 
-The name of the class that will handle storage of your repository.
-The default is L<Pinto::Store>, which only stores your repository on
-the local file system.  Alternatives like L<Pinto::Store::Svn> and
-L<Pinto::Store::Git> allow you to store your repository inside a
-version control system (VCS).  See the documentation for each of those
-modules for additional configuration settings.
+The name of the class that will handle storage of your Pinto
+repository.  The default is L<Pinto::Store>, which only stores your
+repository on the local file system.  Alternatives like
+L<Pinto::Store::Svn> and L<Pinto::Store::Git> allow you to store your
+repository inside a version control system (VCS).  See the
+documentation for each of those modules for additional configuration
+settings.
 
 =item verbose = 0|1|2
 
@@ -161,7 +169,7 @@ Controls how much noise is made.  Default is 0.
 =head1 COMMANDS
 
 The following commands are available.  Say C<pinto-admin help COMMAND>
-to display a list of options available for C<COMMAND>.
+to display a list of options available for that C<COMMAND>.
 
 =over 4
 
@@ -197,10 +205,10 @@ removed.  You can only remove a package that B<YOU> have locally
 added.  You cannot remove packages that come from the mirror (however
 you can mask them by adding your own versions).
 
-=item mirror
+=item pull
 
 Fills your repository with the distributions that contain the latest
-version of all packages on the remote mirror.  See the L<"RULES">
+version of all packages in the remote repository.  See the L<"RULES">
 section for more information about how locally added distributions
 interact with mirrored ones.
 
@@ -254,7 +262,10 @@ explicitly removed, but...
 =item Only the original author of a local package can remove it.
 
 Just like when adding new versions of a local package, only the
-original author can remove it.
+original author can remove it.  Yes, you can just change the C<author>
+parameter in your configuration, but C<SALLY> probably wouldn't
+appreciate you messing with her releases (unless C<SALLY> no longer
+works here).
 
 =back
 

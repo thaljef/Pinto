@@ -20,6 +20,7 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Moose attributes
 
+# TODO: make private
 has action_factory => (
     is        => 'ro',
     isa       => 'Pinto::ActionFactory',
@@ -30,6 +31,7 @@ has action_factory => (
 
 #------------------------------------------------------------------------------
 
+# TODO: make private
 has action_batch => (
     is         => 'ro',
     isa        => 'Pinto::ActionBatch',
@@ -40,6 +42,7 @@ has action_batch => (
 
 #------------------------------------------------------------------------------
 
+# TODO: make private
 has idxmgr => (
     is       => 'ro',
     isa      => 'Pinto::IndexManager',
@@ -49,6 +52,7 @@ has idxmgr => (
 
 #------------------------------------------------------------------------------
 
+# TODO: make private
 has store => (
     is       => 'ro',
     isa      => 'Pinto::Store',
@@ -126,18 +130,19 @@ sub create {
 
 #------------------------------------------------------------------------------
 
-=method mirror()
+=method pull()
 
-Populates your repository with the latest version of all packages
-found on the CPAN mirror.  Your locally added packages will always
-mask those pulled from the mirror.
+Populates your repository with the latest version of all distributions
+found in the remote repository (which is usually a CPAN mirror).  Your
+locally added distributions will always mask those pulled from the
+remote repository.
 
 =cut
 
-sub mirror {
+sub pull {
     my ($self) = @_;
 
-    $self->enqueue( $self->create_action('Mirror') );
+    $self->enqueue( $self->create_action('Pull') );
     $self->run();
 
     return $self;
@@ -229,6 +234,7 @@ sub verify {
 __PACKAGE__->meta->make_immutable();
 
 #-----------------------------------------------------------------------------
+
 1;
 
 __END__
