@@ -150,17 +150,22 @@ sub pull {
 
 #------------------------------------------------------------------------------
 
-=method add(file => 'YourDist.tar.gz', author => 'SOMEONE')
+=method add(dists => ['YourDist.tar.gz'], author => 'SOMEONE')
 
 =cut
 
 sub add {
     my ($self, %args) = @_;
 
-    my $file = $args{file};
-    $file = [$file] if ref $file ne 'ARRAY';
+    my $dists = delete $args{dists};
+    $dists = [$dists] if ref $dists ne 'ARRAY';
 
-    $self->enqueue( $self->create_action('Add', file => $_) ) for @{ $file };
+    # TODO: Allow $dist to be a URL (http://, ftp://, file://).
+
+    for my $dist ( @{$dists} ) {
+        $self->enqueue( $self->create_action('Add', dist => $dist, %args) );
+    }
+
     $self->run();
 
     return $self;
@@ -168,17 +173,20 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method remove(package => 'Some::Package', author => 'SOMEONE')
+=method remove(packages => ['Some::Package'], author => 'SOMEONE')
 
 =cut
 
 sub remove {
     my ($self, %args) = @_;
 
-    my $package = $args{package};
-    $package = [$package] if ref $package ne 'ARRAY';
+    my $packages = delete $args{packages};
+    $packages = [$packages] if ref $packages ne 'ARRAY';
 
-    $self->enqueue( $self->create_action('Remove', package => $_) ) for @{ $package };
+    for my $pkg ( @{$packages} ) {
+        $self->enqueue( $self->create_action('Remove', package => $pkg, %args) );
+    }
+
     $self->run();
 
     return $self;
