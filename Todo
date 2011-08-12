@@ -4,6 +4,9 @@ In no particular order...
 
 =over 4
 
+=item Standardize API, using named parameters except where it makes
+sense not to.
+
 =item Add a lock mechanism, so multiple processes don't mess with the
 same repository at the same time.  See Proc::Pidfile, Proc::Pid::File,
 etc.
