@@ -5,6 +5,8 @@ package Pinto::Package;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 
+use overload ('""' => 'to_string');
+
 #------------------------------------------------------------------------------
 
 # VERSION
