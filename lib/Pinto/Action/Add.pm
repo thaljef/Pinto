@@ -48,6 +48,9 @@ override execute => sub {
     my $author  = $self->author();
     my $file    = $self->file();
 
+    # TODO: Allow $file to be a URL (http://, ftp://, file://).
+    # Perhaps I could do this with a fancy type coercion, but that
+    # seems awful clever.
 
     my $added   = Pinto::Distribution->new_from_file( file   => $file, author => $author );
     my @removed = $self->idxmgr->add_local_distribution( dist => $added );
