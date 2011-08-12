@@ -4,6 +4,7 @@ package Pinto::Config;
 
 use Moose;
 use MooseX::Configuration;
+use MooseX::LazyRequire;
 
 use MooseX::Types::Moose qw(Str Bool Int);
 use Pinto::Types qw(AuthorID URI Dir);
@@ -113,10 +114,11 @@ has 'verbose' => (
 
 
 has 'svn_trunk' => (
-    is          => 'ro',
-    isa         => Str,
-    key         => 'trunk',
-    section     => 'Pinto::Store::Svn',
+    is            => 'ro',
+    isa           => Str,
+    key           => 'trunk',
+    section       => 'Pinto::Store::Svn',
+    lazy_required => 1,
 );
 
 
@@ -125,6 +127,7 @@ has 'svn_tag' => (
     isa         => Str,
     key         => 'tag',
     section     => 'Pinto::Store::Svn',
+    default     => '',
 );
 
 #------------------------------------------------------------------------------
