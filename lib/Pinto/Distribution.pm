@@ -141,6 +141,9 @@ sub new_from_file {
 sub _extract_packages {
     my ($self, %args) = @_;
 
+    # TODO: Throw exception if Dist::Metadata fails or doesn't find
+    # any packages in the dist.
+
     my $file = $args{file};
     my $distmeta = Dist::Metadata->new(file => $file->stringify());
     my $provides = $distmeta->package_versions();
