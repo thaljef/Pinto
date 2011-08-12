@@ -20,17 +20,14 @@ use namespace::autoclean;
 sub execute {
     my ($self) = @_;
 
-    # Someone could use the <create> action to pull an existing repository
-    # out of VCS to a new location on the file system.  So if the
-    # master index file already exists, then assume that the repository
-    # has already been created and return false to indicate that
-    # no commits are required.
+    # This is a terrible hack.  We are relying on Pinto::Index
+    # to create the files for us.
 
-    my $local = Path::Class::dir( $self->config()->local() );
-    return 0 if -e file($local, qw(modules 02packages.details.txt.gz));
+    my $master_index_file = $self->idxmgr->master_index->write->file();
+    my $local_index_file  = $self->idxmgr->local_index->write->file();
 
-    # Otherwise, let Pinto create the directories and index files
-    # for us, and return true to indicate that a commit is required.
+    $self->store->add( file => $master_index_file );
+    $self->store->add( file => $local_index_file );
 
     $self->add_message('Created a new Pinto repository');
     return 1;
