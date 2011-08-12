@@ -112,7 +112,10 @@ sub _load {
         my $dist = $self->distributions->{$location}
           ||= Pinto::Distribution->new(location => $location);
 
-        my $pkg = Pinto::Package->new(name => $name, version => $version, dist => $dist);
+        my $pkg = Pinto::Package->new( name => $name,
+                                       dist => $dist,
+                                       version => $version );
+
         $self->packages->put($name, $pkg);
         $dist->add_packages($pkg);
     }
