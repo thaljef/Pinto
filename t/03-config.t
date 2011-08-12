@@ -22,7 +22,7 @@ use Pinto::Config;
 
     my %default_cases = (
         local     => 'nowhere',
-        mirror    => 'http://cpan.perl.org',
+        source    => 'http://cpan.perl.org',
         author    => 'TEST',
         force     => 0,
         verbose   => 0,
@@ -40,14 +40,14 @@ use Pinto::Config;
 
    my %custom_cases = (
         local     => 'nowhere',
-        mirror    => 'http://cpan.perl.org',
+        source    => 'http://cpan.pair.com',
         author    => 'TEST',
-        force     => 0,
-        verbose   => 0,
-        quiet     => 0,
-        store     => 'Pinto::Store',
-        nocleanup => 0,
-        nocommit  => 0,
+        force     => 1,
+        verbose   => 1,
+        quiet     => 1,
+        store     => 'Pinto::Store::Git',
+        nocleanup => 1,
+        nocommit  => 1,
     );
 
     $cfg = Pinto::Config->new(%custom_cases);
