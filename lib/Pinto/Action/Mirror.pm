@@ -19,13 +19,9 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# Moose Roles
 
-has ua   => (
-    is         => 'ro',
-    isa        => 'Pinto::UserAgent',
-    default    => sub { Pinto::UserAgent->new() },
-    init_arg   => undef,
-);
+with qw(Pinto::Role::Downloadable);
 
 #------------------------------------------------------------------------------
 
@@ -37,7 +33,7 @@ sub execute {
     my @dists   = $idxmgr->dists_to_mirror();
 
     for my $dist ( @dists ) {
-        try   { $changes += $self->_fetch($dist) }
+        try   { $changes += $self->_do_fetch($dist) }
         catch { $self->logger->whine("Download of $dist failed: $_") };
     }
 
@@ -55,7 +51,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _fetch {
+sub _do_fetch {
     my ($self, $dist) = @_;
 
     my $local   = $self->config->local();
@@ -66,9 +62,9 @@ sub _fetch {
     my $destination = $dist->path($local);
     return 0 if -e $destination;
 
-    $self->logger->info("Fetching distribution $dist");
-    $self->ua->mirror(url => $url, to => $destination) or return 0;
+    $self->fetch(url => $url, to => $destination) or return 0;
     $self->store->add(file => $destination);
+
     my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
     $cleanup && $self->store->remove(file => $_->path($local)) for @removed;
 

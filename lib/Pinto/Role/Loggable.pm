@@ -17,13 +17,8 @@ use namespace::autoclean;
 has logger => (
     is         => 'ro',
     isa        => 'Pinto::Logger',
-    lazy_build => 1,
+    required   => 1,
 );
-
-
-sub _build_logger {
-    return Pinto::Logger->new();
-}
 
 #-----------------------------------------------------------------------------
 

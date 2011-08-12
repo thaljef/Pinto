@@ -1,12 +1,14 @@
-package Pinto::UserAgent;
+package Pinto::Role::Downloadable;
 
-# ABSTRACT: Thin wrapper around LWP::UserAgent
+# ABSTRACT: Something that downloads remote files
 
-use Moose;
+use Moose::Role;
 
 use Carp;
 use Path::Class;
 use LWP::UserAgent;
+
+use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -22,14 +24,11 @@ has _ua => (
     init_arg => undef,
 );
 
-#------------------------------------------------------------------------------
-# Roles
-
-#with 'Pinto::Log';
+requires 'logger';
 
 #------------------------------------------------------------------------------
 
-=method mirror(url => 'http://someplace' to => 'some/path')
+=method fetch(url => 'http://someplace' to => 'some/path')
 
 Mirrors the file located at the C<url> to the file located at C<to>.
 If the intervening directories do not exist, they will be created for
@@ -38,7 +37,7 @@ it has not changed.  Throws and exception if anything goes wrong.
 
 =cut
 
-sub mirror {
+sub fetch {
     my ($self, %args) = @_;
     my $url = $args{url};
     my $to  = $args{to};
@@ -46,8 +45,8 @@ sub mirror {
     $to = file($to) if not eval {$to->isa('Path::Class')};
     $to->dir()->mkpath();  # TODO: set mode & verbosity
 
-    my $ua = $self->_ua();
-    my $result = $ua->mirror($url, $to);
+    $self->logger->info("Fetching $url");
+    my $result = $self->_ua->mirror($url, $to);
 
     if ($result->is_success()) {
         return 1;
@@ -56,7 +55,7 @@ sub mirror {
         return 0;
     }
     else{
-      croak "Mirror of $url failed with status: " . $result->code();
+      croak "$url failed with status: " . $result->code();
     }
 }
 
@@ -65,12 +64,11 @@ sub mirror {
 sub _build_ua {
     my ($self) = @_;
 
+    # TODO: Do we need to make some of this configurable?
     my $agent = sprintf "%s/%s", ref $self, 'VERSION';
-    my $ua = LWP::UserAgent->new(
-        agent      => $agent,
-        env_proxy  => 1,
-        keep_alive => 5,
-    );
+    my $ua = LWP::UserAgent->new( agent      => $agent,
+                                  env_proxy  => 1,
+                                  keep_alive => 5 );
 
     return $ua;
 }

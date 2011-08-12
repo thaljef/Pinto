@@ -17,13 +17,8 @@ use namespace::autoclean;
 has config => (
     is         => 'ro',
     isa        => 'Pinto::Config',
-    lazy_build => 1,
+    required   => 1,
 );
-
-
-sub _build_config {
-    return Pinto::Config->new();
-}
 
 #-----------------------------------------------------------------------------
 

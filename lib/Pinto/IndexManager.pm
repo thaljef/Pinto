@@ -12,19 +12,10 @@ use Pinto::Util;
 use Pinto::Index;
 use Pinto::UserAgent;
 
+use namespace::autoclean;
 #-----------------------------------------------------------------------------
 
 # VERSION
-
-#-----------------------------------------------------------------------------
-
-has 'ua'  => (
-    is         => 'ro',
-    isa        => 'Pinto::UserAgent',
-    default    => sub { Pinto::UserAgent->new() },
-    handles    => [qw(mirror)],
-    init_arg   => undef,
-);
 
 #-----------------------------------------------------------------------------
 
@@ -83,6 +74,10 @@ has 'master_index'  => (
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable );
 
+# HACK: I'm not sure why the required method isn't found
+# when I load all my roles at once.
+with qw( Pinto::Role::Downloadable );
+
 #------------------------------------------------------------------------------
 # Builders
 
@@ -131,7 +126,7 @@ sub update_mirror_index {
 
     my $mirror_index_uri = URI->new("$source/modules/02packages.details.txt.gz");
     my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
-    my $has_changed = $self->ua->mirror(url => $mirror_index_uri, to => $mirrored_file);
+    my $has_changed = $self->fetch(url => $mirror_index_uri, to => $mirrored_file);
     $self->logger->info("Index from $source is up to date") unless $has_changed or $force;
     $self->mirror_index->reload() if $has_changed or $force;
 
@@ -143,7 +138,7 @@ sub update_mirror_index {
 sub dists_to_mirror {
     my ($self) = @_;
 
-    my $temp_index = Pinto::Index->new();
+    my $temp_index = Pinto::Index->new( logger => $self->logger() );
     $temp_index->add( $self->mirror_index->packages->values->flatten() );
     $temp_index->remove( $self->local_index->packages->values->flatten() );
 
