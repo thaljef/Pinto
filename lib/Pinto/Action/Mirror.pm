@@ -37,7 +37,7 @@ sub execute {
 
     for my $dist ( $idxmgr->dists_to_mirror() ) {
         try { $changes += $self->_do_mirror($dist) }
-      catch { $self->logger->warn("Mirror of $dist failed: $_") };
+      catch { $self->logger->whine("Mirror of $dist failed: $_") };
     }
 
     if ($changes) {

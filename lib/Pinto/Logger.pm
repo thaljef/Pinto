@@ -68,10 +68,10 @@ sub info {
 
 #-----------------------------------------------------------------------------
 
-sub warn {
+sub whine {
     my ($self, $message) = @_;
 
-    CORE::warn "$message\n" if $self->log_level() >= -1;
+    warn "$message\n" if $self->log_level() >= -1;
 
     return 1;
 }
