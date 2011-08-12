@@ -1,4 +1,4 @@
-package App::Pinto::Admin::Command::mirror
+package App::Pinto::Admin::Command::mirror;
 
 # ABSTRACT: get all the latest distributions from a remote repository
 
