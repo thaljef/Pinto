@@ -14,6 +14,9 @@ use File::Copy;
 #------------------------------------------------------------------------------
 # Moose attributes
 
+# TODO: Do we really need three different lists of paths, or can we just have
+# one that represents all the paths that need to be committed?
+
 has added_paths => (
     is          => 'ro',
     isa         => 'ArrayRef[Path::Class]',
@@ -106,6 +109,17 @@ sub finalize {
 
 #------------------------------------------------------------------------------
 
+=method add( file => $some_file, source => $other_file )
+
+Adds the specified C<file> (as a L<Path::Class::File>) to this Store.
+The path to C<file> is presumed to be somewhere beneath the root
+directory of this Store.  If the optional C<source> is given (as a
+L<Path::Class::File>), then that C<source> is first copied to C<file>.
+If C<source> is not specified, then the C<file> must already exist.
+Returns a reference to this Store.
+
+=cut
+
 sub add {
     my ($self, %args) = @_;
 
@@ -135,11 +149,21 @@ sub add {
 
 #------------------------------------------------------------------------------
 
+=method remove( file => $some_file, prune => 1 );
+
+Removes the specified C<file> (as a L<Path::Class::File>) from this
+Store.  The path to C<file> is presumed to be somewhere beneath the
+root directory of this Store.  If C<prune> is true, then any empty
+directories above C<file> will also be removed.  Returns a reference
+to this Store.
+
+=cut
+
 sub remove {
     my ($self, %args) = @_;
 
     my $path  = $args{file};
-    my $prune = $args{prune};
+    my $prune = $args{prune};  # TODO: prune=1 should be the default
 
     return $self if not -e $path;
     croak "$path is not a file" if $path->is_dir();
@@ -153,7 +177,7 @@ sub remove {
             $self->logger->debug("Removing empty directory $dir");
             $dir->remove();
             $path = $dir;
-         }
+        }
     }
 
     return $self;
