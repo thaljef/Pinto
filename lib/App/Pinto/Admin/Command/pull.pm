@@ -18,7 +18,7 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
     return (
         [ 'force'     => 'Force action, even if indexes appear unchanged' ],
-        [ 'mirror=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
+        [ 'source=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
     );
 }
 

@@ -29,10 +29,10 @@ has 'local'   => (
 );
 
 
-has 'mirror'  => (
+has 'source'  => (
     is        => 'ro',
     isa       => URI,
-    key       => 'mirror',
+    key       => 'source',
     default   => 'http://cpan.perl.org',
     coerce    => 1,
 );

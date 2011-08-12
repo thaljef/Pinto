@@ -35,7 +35,7 @@ First, create a configuration file at F<~/.pinto/config.ini>:
   local = /some/directory
 
   ; Optional, defaults to http://cpan.perl.org
-  mirror = http://some-cpan-mirror
+  source = http://some-cpan-mirror
 
   ; Optional, defaults to your shell user name
   author = MYNAME
@@ -56,11 +56,11 @@ Then, run some commands:
 
 =head1 DESCRIPTION
 
-C<pinto-admin> is a command line utility for managing a Pinto repository.
-The repository can contain your own private distributions of Perl packages,
-and/or pull distributions from another repository (such as
-L<http://cpan.perl.org>).  You can also put locally patched versions
-of mirrored distributions in your repository.
+C<pinto-admin> is a command line utility for managing a Pinto
+repository.  The repository can contain your own private distributions
+of Perl packages, and/or pull foreign distributions from another
+repository (such as L<http://cpan.perl.org>).  You can also put
+locally patched versions of foreign distributions in your repository.
 
 You can then point L<cpanm> to your Pinto repository and build and
 install your distributions (and their dependencies).  B<NOTE:> At this
@@ -111,7 +111,7 @@ parameter is required for all commands.  You must be able to read and
 write to this directory.  You may use a tilde (~) as shorthand for
 your home directory.
 
-=item mirror = URL
+=item source = URL
 
 The URL of a repository that you would like to pull distributions
 from.  This could be a public CPAN mirror, or another Pinto
@@ -176,9 +176,9 @@ to display a list of options available for that C<COMMAND>.
 =item add Some-Distribution-1.2.tar.gz
 
 Adds the given distribution to the Pinto repository.  Any packages
-contained in that distribution will mask the mirrored packages with
+contained in that distribution will mask the foreign packages with
 the same name.  See the L<"RULES"> section for more information about
-how locally added distributions interact with mirrored ones.
+how locally added distributions interact with foreign ones.
 
 =item clean
 
@@ -202,15 +202,15 @@ F<02packages.details.txt> file.
 Removes the local distribution that contains the given package.  All
 other packages that were contained in the same distribution are also
 removed.  You can only remove a package that B<YOU> have locally
-added.  You cannot remove packages that come from the mirror (however
-you can mask them by adding your own versions).
+added.  You cannot remove foreign packages that you pulled in from a
+remote source (however you can mask them by adding your own versions).
 
 =item pull
 
 Fills your repository with the distributions that contain the latest
 version of all packages in the remote repository.  See the L<"RULES">
 section for more information about how locally added distributions
-interact with mirrored ones.
+interact with foreign ones.
 
 =item verify
 
@@ -229,16 +229,17 @@ attempt to make Pinto behave somewhat like PAUSE does.
 
 =over 4
 
-=item A local package always masks a mirrored package, and all other
-packages that are in the same distribution with the mirrored package.
+=item A local package always masks a foreign package, and all other
+packages that are in the same distribution with the foreign package.
 
-This rule is important, so pay attention.  If the remote mirror has a
-distribution that contains both C<Foo> and C<Bar> packages, and you
-add your own distribution that contains C<Foo> package, then both the
-C<Foo> and C<Bar> mirroed packages will be removed from your index.
-This ensures that anyone pulling packages from your repository will
-always get B<your> version of C<Foo>.  But they'll never be able to
-get C<Bar>, because doing so would overwrite your C<Foo>.
+This rule is important, so pay attention.  If you C<pull> a
+distribution from a foreign repository that contains both C<Foo> and
+C<Bar> packages, and you C<add> your own local distribution that
+contains just the C<Foo> package, then both the foreign C<Foo> and
+C<Bar> packages will be removed from your index.  This ensures that
+anyone pulling packages from your repository will always get B<your>
+version of C<Foo>.  But they'll never be able to get C<Bar>, because
+doing so would overwrite your C<Foo>.
 
 =item You can never add a distribution with the same name twice.
 
@@ -247,7 +248,7 @@ in the name of the distribution, so this is rarely a problem.  The
 "name" of a distribution is actually a function of the name of the
 file and the name of the author.  So technically, it is possible for
 two different authors to both add a distribution called
-C<Foo-Bar-1.2.tar.gz>.  But in practice, this rarely happens
+F<Foo-Bar-1.2.tar.gz>.  But in practice, this rarely happens
 because...
 
 =item Only the original author of a local package can add an

@@ -34,34 +34,40 @@ sub execute {
 
     my $idxmgr  = $self->idxmgr();
     my $changes = $idxmgr->update_mirror_index() or return 0;
+    my @dists   = $idxmgr->dists_to_mirror();
 
-    for my $dist ( $idxmgr->dists_to_mirror() ) {
-        try { $changes += $self->_do_mirror($dist) }
-      catch { $self->logger->whine("Mirror of $dist failed: $_") };
+    for my $dist ( @dists ) {
+        try   { $changes += $self->_fetch($dist) }
+        catch { $self->logger->whine("Download of $dist failed: $_") };
     }
 
     if ($changes) {
-        my $msg = sprintf 'Updated to latest mirror of %s', $self->config->mirror();
-        $self->add_message($msg);
+        my $count  = @dists;
+        my $source = $self->config->source();
+        $self->add_message("Pulled $count distributions from $source");
     }
+
+    # Don't include an index change, just because --force was on
+    $changes -= $self->config->force();
+
     return $changes;
 }
 
 #------------------------------------------------------------------------------
 
-sub _do_mirror {
+sub _fetch {
     my ($self, $dist) = @_;
 
     my $local   = $self->config->local();
-    my $mirror  = $self->config->mirror();
+    my $source  = $self->config->source();
     my $cleanup = !$self->config->nocleanup();
 
-    my $url = $dist->url($mirror);
+    my $url = $dist->url($source);
     my $destination = $dist->path($local);
     return 0 if -e $destination;
 
+    $self->logger->info("Fetching distribution $dist");
     $self->ua->mirror(url => $url, to => $destination) or return 0;
-    $self->logger->info("Mirrored distribution $dist");
     $self->store->add(file => $destination);
     my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
     $cleanup && $self->store->remove(file => $_->path($local)) for @removed;
