@@ -4,13 +4,18 @@ use strict;
 use warnings;
 use Test::More (tests => 10);
 
+use Path::Class;
+use FindBin qw($Bin);
+use lib dir($Bin, 'lib')->stringify();
+
 use Pinto::Index;
 use Pinto::Package;
-
+use Pinto::TestLogger;
 
 #-----------------------------------------------------------------------------
 
-my $index = Pinto::Index->new();
+my $logger = Pinto::TestLogger->new();
+my $index = Pinto::Index->new(logger => $logger);
 
 #-----------------------------------------------------------------------------
 # Adding...
