@@ -2,34 +2,46 @@
 
 Interface changes:
 
-    pinto is now called pinto-admin.  It still has all the
-    same options and arguments.  Likewise, App::Pinto is
-    now App::Pinto::Admin.
+    pinto[1] is now called pinto-admin[1].  It still has all the same
+    options and arguments.  Likewise, App::Pinto is now
+    App::Pinto::Admin.
+
+    With pinto-admin, the "mirror" parameter is now called "source".
+    This reflects the fact that your dists don't necessarily have to
+    come from a CPAN mirror.  They just have to come from some place
+    that conforms to the CPAN structure.
 
 Other changes:
 
-    created pinto-server and pinto-client, for using
-    Pinto across a nework. These are still very 
-    experimental.
+    Revised documentation.
+
+    Added some basic functional tests.
+
+    Created pinto-server and pinto-client, for using Pinto across a
+    nework. These are still very experimental.
+
+    Once again, a lot of the internals have been rewritten.  But the
+    guts of Pinto are all private (for now), so you shouldn't really
+    care.
 
 0.008     2011-08-09 14:47:02 America/Los_Angeles
 
 Interface changes:
 
-    The 'author' parameter is now entirely optional.  It
-    defaults to your shell username, if we can figure that
-    out.  If not, then an exception is thrown, and you'll
-    have to set the 'author' parameter explicitly.
+    The 'author' parameter is now entirely optional.  It defaults to
+    your shell username, if we can figure that out.  If not, then an
+    exception is thrown, and you'll have to set the 'author' parameter
+    explicitly.
 
-    pinto[1] now has --notag, --nocommit, and --noinit
-    options.  All these can also be set in your configuration
-    file.  See the pinto[1] documentation for details.
+    pinto[1] now has --notag, --nocommit, and --noinit options.  All
+    these can also be set in your configuration file.  See the
+    pinto[1] documentation for details.
 
 Other changes:
 
-    The internals of Pinto have been substantially rewritten
-    to improve performance and readability of the code.  The
-    Pinto API is still considered alpha, and subject to change.
+    The internals of Pinto have been substantially rewritten to
+    improve performance and readability of the code.  The Pinto API is
+    still considered alpha, and subject to change.
 
 0.007     2011-08-04 08:04:27 America/Los_Angeles
 
