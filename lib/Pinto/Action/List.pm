@@ -17,6 +17,9 @@ use namespace::autoclean;
 sub execute {
     my ($self) = @_;
 
+    # TODO: accept an alternative filehandle for output.
+    # TODO: force log_level to quiet when running this action.
+
     for my $package ( $self->idxmgr()->all_packages() ) {
         print $package->to_string(), "\n";
     }

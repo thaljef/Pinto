@@ -24,6 +24,9 @@ sub execute {
     my $dists = $self->idxmgr->master_index->distributions->values();
     my $sorter = sub {$_[0]->location() cmp $_[1]->location};
 
+    # TODO: accept an alternative filehandle for output.
+    # TODO: force log_level to quiet when running this action.
+
     for my $dist ( $dists->sort( $sorter )->flatten() ) {
         my $file = $dist->path($local);
         print "Missing distribution $file\n" if not -e $file;
