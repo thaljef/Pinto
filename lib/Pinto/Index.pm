@@ -57,6 +57,8 @@ has 'file' => (
 
 with qw(Pinto::Role::Loggable);
 
+with qw(Pinto::Role::PathMaker);
+
 #------------------------------------------------------------------------------
 # Moose builders
 
@@ -145,7 +147,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     $file = Path::Class::file($file) unless eval { $file->isa('Path::Class::File') };
     $self->logger->debug("Writing index at $file");
 
-    $file->dir->mkpath(); # TODO: log & error check
+    $self->mkpath( $file->dir() );
     open my $fh, '>:gzip', $file;
     $self->_write_header($fh);
     $self->_write_packages($fh);

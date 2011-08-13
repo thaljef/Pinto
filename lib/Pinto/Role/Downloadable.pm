@@ -27,6 +27,11 @@ has _ua => (
 requires 'logger';
 
 #------------------------------------------------------------------------------
+# Roles
+
+with qw(Pinto::Role::PathMaker);
+
+#------------------------------------------------------------------------------
 
 =method fetch(url => 'http://someplace' to => 'some/path')
 
@@ -43,7 +48,7 @@ sub fetch {
     my $to  = $args{to};
 
     $to = file($to) if not eval {$to->isa('Path::Class')};
-    $to->dir()->mkpath();  # TODO: set mode & verbosity
+    $self->mkpath( $to->parent() );
 
     $self->logger->info("Fetching $url");
     my $result = $self->_ua->mirror($url, $to);

@@ -44,6 +44,8 @@ has modified_paths => (
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable );
 
+with qw( Pinto::Role::PathMaker );
+
 #------------------------------------------------------------------------------
 # Methods
 
@@ -63,12 +65,7 @@ sub initialize {
     my ($self) = @_;
 
     my $local = $self->config->local();
-
-    if (not -e $local) {
-        $self->logger->info("Making directory at $local");
-        eval { $local->mkpath(); 1 }
-            or croak "Failed to make directory $local: $@";
-    }
+    $self->mkpath($local);
 
     return 1;
 }
@@ -135,13 +132,13 @@ sub add {
     if ($source) {
 
         if ( not -e (my $parent = $file->parent()) ) {
-            $self->logger->debug("Making directory at $parent");
-            eval { $parent->mkpath(); 1 }
-                or croak "Failed to make directory $parent: $@";
+          $self->mkpath($parent);
         }
 
         $self->logger->debug("Copying $source to $file");
-        File::Copy::copy($source, $file) or croak "Failed to copy $source to $file: $!";
+
+        File::Copy::copy($source, $file)
+            or croak "Failed to copy $source to $file: $!";
     }
 
     return $self;
