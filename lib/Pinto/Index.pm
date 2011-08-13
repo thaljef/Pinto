@@ -187,8 +187,9 @@ sub _write_packages {
 
     my $sorter = sub { $_[0]->{name} cmp $_[1]->{name} };
     my $packages = $self->packages->values->sort($sorter);
+
     for my $package ( $packages->flatten() ) {
-        print {$fh} "$package\n";
+        print {$fh} $package->to_index_string();
     }
 
     return $self;

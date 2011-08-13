@@ -13,6 +13,7 @@ use Pinto::Index;
 use Pinto::UserAgent;
 
 use namespace::autoclean;
+
 #-----------------------------------------------------------------------------
 
 # VERSION
@@ -55,8 +56,7 @@ has 'local_index'   => (
 =attr master_index
 
 Returns the L<Pinto::Index> that is the logical combination of
-packages from both the mirror and local indexes.  See the L<"RULES">
-section below for information on how the indexes are combined.
+packages from both the mirror and local indexes.
 
 =cut
 
@@ -124,13 +124,13 @@ sub update_mirror_index {
     my $source = $self->config->source();
     my $force  = $self->config->force();
 
-    my $mirror_index_uri = URI->new("$source/modules/02packages.details.txt.gz");
-    my $mirrored_file = Path::Class::file($local, 'modules', '02packages.details.mirror.txt.gz');
-    my $has_changed = $self->fetch(url => $mirror_index_uri, to => $mirrored_file);
+    my $remote_url = URI->new("$source/modules/02packages.details.txt.gz");
+    my $local_file = file($local, 'modules', '02packages.details.mirror.txt.gz');
+    my $has_changed = $self->fetch(url => $remote_url, to => $local_file);
     $self->logger->info("Index from $source is up to date") unless $has_changed or $force;
     $self->mirror_index->reload() if $has_changed or $force;
 
-    return $has_changed || $force;
+    return $has_changed;
 }
 
 #------------------------------------------------------------------------------
@@ -143,6 +143,7 @@ sub dists_to_mirror {
     $temp_index->remove( $self->local_index->packages->values->flatten() );
 
     my $sorter = sub { $_[0]->location() cmp $_[1]->location() };
+
     return $temp_index->distributions->values->sort($sorter)->flatten();
 }
 
@@ -152,6 +153,7 @@ sub all_packages {
     my ($self) = @_;
 
     my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+
     return $self->master_index->packages->values->sort($sorter)->flatten();
   }
 
@@ -187,7 +189,7 @@ sub remove_local_package {
     my $author  = $args{author};
 
     my $orig_author = $self->local_author_of(package => $package);
-    croak "You are $author, but only $orig_author can remove $package"
+    croak "Only author $orig_author can remove $package"
         if defined $orig_author and $author ne $orig_author;
 
     my $local_dist = ( $self->local_index->remove($package) )[0];
@@ -243,14 +245,17 @@ sub add_local_distribution {
 
     my $dist = $args{dist};
 
-    croak 'A distribution already exists at ' . $dist->location()
-        if $self->master_index->distributions->at( $dist->location() );
+    croak "A distribution already exists as $dist"
+        if $self->master_index->distributions->at( $dist );
 
     my @packages = $dist->packages->flatten();
+
     for my $pkg ( @packages ) {
+
         if ( my $orig_author = $self->local_author_of(package => $pkg) ) {
-            croak sprintf "Package %s is owned by $orig_author", $pkg->name()
-              if $orig_author ne $dist->author();
+
+            croak "Only author $orig_author can update $pkg"
+                if $orig_author ne $dist->author();
         }
     }
 

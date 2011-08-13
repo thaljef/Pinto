@@ -44,14 +44,25 @@ override initialize => sub {
 
 override add => sub {
     my ($self, %args) = @_;
+
+    # Were going to let the superclass validate the arguments and copy
+    # the file into place for us (if needed).
     super();
 
+    # Now search the file path backwards until we find the first
+    # parent directory that is an svn working copy.  The directory
+    # or file that is immediately below that directory is the one
+    # we should schedule for addition.  Subversion will recursively
+    # add any directories and files below that point for us.
+
     my $path = $args{file};
+    my $original_path = $path;
+
     while (not -e $path->parent->file('.svn') ) {
         $path = $path->parent();
     }
 
-    $self->logger->info("Scheduling $path for addition");
+    $self->logger->info("Scheduling $original_path for addition");
     Pinto::Util::Svn::svn_add(path => $path);
     $self->added_paths()->push($path);
 
@@ -64,13 +75,10 @@ override remove => sub {
     my ($self, %args) = @_;
 
     my $file  = $args{file};
-    my $prune = $args{prune};
-
-    # HACK: this might be evil!
     return $self if not -e $file;
 
     $self->logger->info("Scheduling $file for removal");
-    my $removed = Pinto::Util::Svn::svn_remove(file => $file, prune => $prune);
+    my $removed = Pinto::Util::Svn::svn_remove(path => $file);
     $self->removed_paths->push($removed);
 
     return $self;

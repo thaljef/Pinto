@@ -29,24 +29,21 @@ sub execute {
     my ($self) = @_;
 
     my $idxmgr  = $self->idxmgr();
-    my $changes = $idxmgr->update_mirror_index() or return 0;
-    my @dists   = $idxmgr->dists_to_mirror();
+    my $idx_changes = $idxmgr->update_mirror_index();
+    return 0 if not $idx_changes and not $self->config->force();
 
-    for my $dist ( @dists ) {
-        try   { $changes += $self->_do_fetch($dist) }
+    my $dist_changes = 0;
+    for my $dist ( $idxmgr->dists_to_mirror() ) {
+        try   { $dist_changes += $self->_do_fetch($dist) }
         catch { $self->logger->whine("Download of $dist failed: $_") };
     }
 
-    if ($changes) {
-        my $count  = @dists;
-        my $source = $self->config->source();
-        $self->add_message("Mirrored $count distributions from $source");
-    }
+    return 0 if not ($idx_changes + $dist_changes);
 
-    # Don't include an index change, just because --force was on
-    $changes -= $self->config->force();
+    my $source = $self->config->source();
+    $self->add_message("Mirrored $dist_changes distributions from $source");
 
-    return $changes;
+    return 1;
 }
 
 #------------------------------------------------------------------------------

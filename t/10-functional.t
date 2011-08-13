@@ -49,7 +49,7 @@ throws_ok { $pinto->add(dists => $dist_file) }
    qr/already exists/, 'Cannot add same dist twice';
 
 throws_ok { $pinto->add(dists => $dist_file, author => 'CHAUCEY') }
-   qr/owned by AUTHOR/, 'Cannot add package owned by another author';
+   qr/Only author AUTHOR/, 'Cannot add package owned by another author';
 
 throws_ok { $pinto->add(dists => 'none_such') }
     qr/does not exist/, 'Cannot add nonexistant dist';
@@ -61,7 +61,7 @@ warning_like { $pinto->remove(packages => 'None::Such') }
     qr/is not in the local index/, 'Removing bogus package emits warning';
 
 throws_ok { $pinto->remove(packages => 'Bar', author => 'CHAUCEY') }
-    qr/only AUTHOR/, 'Cannot remove package owned by another author';
+    qr/Only author AUTHOR/, 'Cannot remove package owned by another author';
 
 $pinto->remove( packages => 'Bar' );
 repos_dist_not_exists_ok( 'AUTHOR', $dist_file->basename() );

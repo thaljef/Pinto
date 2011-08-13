@@ -148,31 +148,27 @@ sub svn_add {
 
 #--------------------------------------------------------------------------
 
-=func svn_remove(path => '/some/path' prune => 1)
+=func svn_remove(path => $some_path)
 
-Schedules the specified path for remove from the repository.  If the
-C<prune> flag is true, then any ancestors of the path will also be
-removed if all their contents are scheduled for removal.
+Schedules the specified path (as a L<Path::Class>) for removal from
+the repository.  Any directories above the path will also be removed
+if all their children are scheduled for removal (i.e empty directories
+will be removed).
 
 =cut
 
 sub svn_remove {
     my %args  = @_;
 
-    my $path  = $args{file};
-    my $prune = $args{prune};
-
+    my $path  = $args{path};
     return if not -e $path;
-    croak "$path is not a file" if $path->is_dir();
 
     _svn( command => ['rm', '--force', $path] );
 
-    if($prune) {
-        while (my $dir = $path->parent() ) {
-            last if not _all_scheduled_for_deletion(directory => $dir);
-            _svn( command => ['rm', '--force', $dir] );
-            $path = $dir;
-        }
+    while (my $parent = $path->parent() ) {
+        last if not _all_scheduled_for_deletion($parent);
+        _svn( command => ['rm', '--force', $parent] );
+        $path = $parent;
     }
 
     return $path;
@@ -180,7 +176,7 @@ sub svn_remove {
 
 #--------------------------------------------------------------------------
 
-=func svn_commit(paths => [@paths], message => 'Commit message')
+=func svn_commit(paths => \@paths, message => 'Commit message')
 
 Commits all the changes to the specified C<@paths>.
 
@@ -240,8 +236,7 @@ sub _is_svn_working_copy {
 #--------------------------------------------------------------------------
 
 sub _all_scheduled_for_deletion {
-    my %args      = @_;
-    my $directory = dir($args{directory});
+    my ($directory) = @_;
 
     for my $child ($directory->children()) {
         next if $child->basename() eq '.svn';
