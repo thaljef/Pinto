@@ -22,7 +22,7 @@ use CGI::Application::Plugin::AutoRunmode;
 has 'pinto'  => (
     is         => 'ro',
     isa        => 'Pinto',
-    lazy_build => 1,,
+    lazy_build => 1,
 );
 
 #-----------------------------------------------------------------------------

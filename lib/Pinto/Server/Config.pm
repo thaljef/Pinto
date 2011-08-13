@@ -20,7 +20,7 @@ has 'port'   => (
     is        => 'ro',
     isa       => Int,
     key       => 'port',
-    section   => 'Pinto::Server'
+    section   => 'Pinto::Server',
     default   => 1973,
 );
 
