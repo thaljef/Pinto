@@ -38,7 +38,7 @@ has 'dist'    => (
 
 =method to_string()
 
-Returns this Package as a string contaning the package name.  This is
+Returns this Package as a string containing the package name.  This is
 what you get when you evaluate and Package in double quotes.
 
 =cut
