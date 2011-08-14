@@ -16,7 +16,9 @@ Interface changes:
     With pinto-admin, the "mirror" parameter is now called "source".
     This reflects the fact that your dists don't necessarily have to
     come from a CPAN mirror.  They just have to come from some place
-    that conforms to the CPAN structure.
+    that conforms to the CPAN structure.  Do not confuse this with 
+    the "mirror" command, which still does actually mirror the
+    aforementioned "source".
 
 Other changes:
 
