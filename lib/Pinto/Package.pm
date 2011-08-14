@@ -38,13 +38,14 @@ has 'dist'    => (
 
 =method to_string()
 
-Returns this Package as a string containg the package name.  This is
+Returns this Package as a string contaning the package name.  This is
 what you get when you evaluate and Package in double quotes.
 
 =cut
 
 sub to_string {
     my ($self) = @_;
+
     return $self->name();
 }
 
@@ -58,7 +59,6 @@ to an F<02packages.details.txt> file.
 =cut
 
 sub to_index_string {
-
     my ($self) = @_;
 
     my $fw = 38 - length $self->version();
