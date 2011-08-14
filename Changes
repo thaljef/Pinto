@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+Bug Fixes:
+
+    Fixed test failures that I introduced by renaming some classes in
+    the last release.
+
 0.009     2011-08-12 17:50:28 America/Los_Angeles
 
 Interface changes:
