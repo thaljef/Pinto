@@ -8,11 +8,10 @@ use URI;
 use Try::Tiny;
 
 use Pinto::Util;
-use Pinto::UserAgent;
-
-extends 'Pinto::Action';
 
 use namespace::autoclean;
+
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
@@ -21,7 +20,7 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Moose Roles
 
-with qw(Pinto::Role::Downloadable);
+with qw(Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
@@ -34,7 +33,7 @@ sub execute {
 
     my $dist_changes = 0;
     for my $dist ( $idxmgr->dists_to_mirror() ) {
-        try   { $dist_changes += $self->_do_fetch($dist) }
+        try   { $dist_changes += $self->_do_mirror($dist) }
         catch { $self->logger->whine("Download of $dist failed: $_") };
     }
 
@@ -48,7 +47,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _do_fetch {
+sub _do_mirror {
     my ($self, $dist) = @_;
 
     my $local   = $self->config->local();
@@ -59,7 +58,7 @@ sub _do_fetch {
     my $destination = $dist->path($local);
     return 0 if -e $destination;
 
-    $self->fetch(url => $url, to => $destination) or return 0;
+    $self->mirror(url => $url, to => $destination) or return 0;
     $self->store->add(file => $destination);
 
     my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);

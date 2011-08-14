@@ -1,6 +1,6 @@
-package Pinto::Role::Downloadable;
+package Pinto::Role::UserAgent;
 
-# ABSTRACT: Something that downloads remote files
+# ABSTRACT: Something that fetches remote files
 
 use Moose::Role;
 
@@ -33,7 +33,7 @@ with qw(Pinto::Role::PathMaker);
 
 #------------------------------------------------------------------------------
 
-=method fetch(url => 'http://someplace' to => 'some/path')
+=method mirror(url => 'http://someplace' to => 'some/path')
 
 Mirrors the file located at the C<url> to the file located at C<to>.
 If the intervening directories do not exist, they will be created for
@@ -42,7 +42,7 @@ it has not changed.  Throws and exception if anything goes wrong.
 
 =cut
 
-sub fetch {
+sub mirror {
     my ($self, %args) = @_;
     my $url = $args{url};
     my $to  = $args{to};

@@ -10,7 +10,6 @@ use Path::Class;
 
 use Pinto::Util;
 use Pinto::Index;
-use Pinto::UserAgent;
 
 use namespace::autoclean;
 
@@ -76,7 +75,7 @@ with qw( Pinto::Role::Configurable
 
 # HACK: I'm not sure why the required method isn't found
 # when I load all my roles at once.
-with qw( Pinto::Role::Downloadable );
+with qw( Pinto::Role::UserAgent );
 
 #------------------------------------------------------------------------------
 # Builders
@@ -126,7 +125,7 @@ sub update_mirror_index {
 
     my $remote_url = URI->new("$source/modules/02packages.details.txt.gz");
     my $local_file = file($local, 'modules', '02packages.details.mirror.txt.gz');
-    my $has_changed = $self->fetch(url => $remote_url, to => $local_file);
+    my $has_changed = $self->mirror(url => $remote_url, to => $local_file);
     $self->logger->info("Index from $source is up to date") unless $has_changed or $force;
     $self->mirror_index->reload() if $has_changed or $force;
 
