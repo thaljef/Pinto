@@ -16,32 +16,32 @@ sense not to.
 
 =item Add a lock mechanism, so multiple processes don't mess with the
 same repository at the same time.  See Proc::Pidfile, Proc::Pid::File,
-etc.
+etc. ++
 
 =item Replace the IndexManager and Index classes with a proper
-database.  Look at CPANDB for example.
+database.  Look at CPANDB for example.  Estimate benefits for George.  ??
 
-=item Use proper exceptions, instead of just croaking.
+=item Use proper exceptions, instead of just croaking.  ++
 
 =item Consider how we might mirror multiple repositories.
 
 =item Write a tutorial to explain different ways for using Pinto in
-the development/deployment cycle.
+the development/deployment cycle. ++
 
 =item Add support for cpan[1] clients.  For this I think we just need
-to produce minimal version of the authors and modules index files.
+to produce minimal version of the authors and modules index files. ++
 
 =item Re-think the pinto-admin command line interface.  Should we
 just make all the options global, instead of having options for
 each subcommand?
 
-=item Add feature for listing just the locally added packages.
+=item Add feature for listing just the locally added packages. ++
 
 =item Generate a RECENT file.  This could just contain the files
 added in the last action (if any).
 
 =item Add feature for listing local packages that are outdated
-(i.e. there is a newer mirrored version).
+(i.e. there is a newer mirrored version). ++
 
 =item Implement Pinto::Store::Git.
 
