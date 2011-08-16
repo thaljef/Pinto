@@ -2,16 +2,15 @@ package Pinto::Server::Dispatch;
 
 # ABSTRACT: URL dispatcher for the Pinto server
 
-use Moose;
-
-use base 'CGI::Application::Dispatch';
+use Pinto;
+use Pinto::Logger;
+use Pinto::Server::Config;
 
 use Pinto::Server::Dispatch::Add;
 #use Pinto::Server::Dispatch::Remove;
 #use Pinto::Server::Dispatch::List;
 
-
-use namespace::autoclean;
+use base 'CGI::Application::Dispatch::PSGI';
 
 #-----------------------------------------------------------------------------
 
@@ -19,33 +18,21 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-has pinto => (
-    is       => 'ro',
-    isa      => 'Pinto',
-    required => 1,
-);
+my $config = Pinto::Server::Config->new();
+my $logger = Pinto::Logger->new(config => $config);
+my $pinto  = Pinto->new(config => $config, logger => $logger);
 
 #-----------------------------------------------------------------------------
 
 sub dispatch_args {
-    my ($self) = @_;
 
     return {
         prefix      => 'Pinto::Server::Dispatch',
-        args_to_new => { pinto => $self->pinto() },
+        args_to_new => { pinto => $pinto },
         table       => [ 'add[post]' => {app => 'Add', rm => 'add'} ],
     };
 }
 
 #----------------------------------------------------------------------------
 
-sub error_mode {
-    return 'my_error_rm';
-}
-
-#----------------------------------------------------------------------------
-
-__PACKAGE__->meta->make_immutable();
-
-#----------------------------------------------------------------------------
 1;

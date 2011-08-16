@@ -41,7 +41,6 @@ sub _build_author { return shift()->config->author() }
 #------------------------------------------------------------------------------
 
 override execute => sub {
-  $DB::single = 1;
     my ($self) = @_;
 
     my $local     = $self->config->local();

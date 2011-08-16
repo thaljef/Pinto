@@ -6,38 +6,15 @@
 use strict;
 use warnings;
 
-use Pinto::Server;
-use Pinto::Server::Config;
-
 #-----------------------------------------------------------------------------
 
 # VERSION
 
 #-----------------------------------------------------------------------------
 
-$DB::single = 1;
-my $config = Pinto::Server::Config->new();
-my $daemon = Pinto::Server->new_with_options(config => $config);
-
-my ($command) = @{$daemon->extra_argv};
-defined $command || die "No command specified";
-
-$daemon->start   if $command eq 'start';
-$daemon->status  if $command eq 'status';
-$daemon->restart if $command eq 'restart';
-$daemon->stop    if $command eq 'stop';
-
-warn($daemon->status_message);
-exit($daemon->exit_code);
+use Pinto::Server::Dispatch;
+Pinto::Server::Dispatch->as_psgi();
 
 #-----------------------------------------------------------------------------
 
 __END__
-
-# Old code here;
-my $class = 'Pinto::Server::Dispatch';
-
-my $server = CGI::Application::Dispatch::Server->new( class => $class,
-                                                      port  => 1973, );
-
-$server->run;

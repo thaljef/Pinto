@@ -2,8 +2,6 @@ package Pinto::Server::Dispatch::Add;
 
 # ABSTRACT: Web interface to a Pinto repository
 
-use Moose;
-
 use Path::Class qw(dir);
 use File::Temp  qw(tempdir);
 
@@ -16,22 +14,30 @@ use CGI::Application::Plugin::AutoRunmode;
 # VERSION
 
 #-----------------------------------------------------------------------------
+my $count = 1;
 
-has pinto => (
-    is       => 'ro',
-    isa      => 'Pinto',
-    required => 1,
-);
+sub new {
+    my ($class, $args) = @_;
+    my $self = $class->SUPER::new($args);
+    $self->{pinto} = $args->{pinto};
+    return $self;
+}
 
-#-----------------------------------------------------------------------------
+sub pinto {
+    my ($self) = @_;
+    return $self->{pinto};
+}
 
 sub add :RunMode {
 
-    my $self = shift;
+    print ">>Count is:" . $count++ . "\n";
 
+    my $self = shift;
+    $DB::single = 1;
     my $query     = $self->query();
     my $author    = $query->param('author');
     my $dist      = $query->param('dist');
+    my $dfh       = $dist->handle();
 
     if (not $dist) {
         $self->header_add(-status => '400 No distribution file supplied');
@@ -45,31 +51,22 @@ sub add :RunMode {
 
 
     my $tmpdir = dir( tempdir(CLEANUP => 1) );
+    $DB::single = 1;
     my $tmpfile = $tmpdir->file($dist);
-    my $fh = $tmpfile->openw();
+    my $tfh = $tmpfile->openw();
 
-    while ( read($dist, my $buffer, 1024) ) { print { $fh } $buffer }
-    $fh->close();
+    while ( $dfh->read(my $buffer, 1024) ) { print { $tfh } $buffer }
+    $tfh->close();
+    $dfh->close();
+   
 
-    eval { $self->pinto->add(dists => $tmpfile, author => $author); 1 }
-      or return $self->error_runmode($@);
+    eval { $self->pinto->add(dists => $tmpfile, author => $author) }
+      or return $@;
 
     $self->header_add(-status => '202 Module added');
 
     return;
 }
-
-#----------------------------------------------------------------------------
-
-sub error_runmode {
-  my ($self, $error) = @_;
-  $self->header_add(-status => '500 Server Error');
-  return "MY ERRORS: $error";
-}
-
-#----------------------------------------------------------------------------
-
-#__PACKAGE__->meta->make_immutable();
 
 #----------------------------------------------------------------------------
 1;
