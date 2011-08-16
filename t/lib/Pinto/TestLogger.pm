@@ -16,6 +16,13 @@ override _build_log_level => sub { return 1 };
 
 #-----------------------------------------------------------------------------
 
+__PACKAGE__->meta->make_immutable();
+
+#-----------------------------------------------------------------------------
+1;
+
+__END__
+
 =head1 DESCRIPTION
 
 L<Pinto::TestLogger> is a subclass of L<Pinto::Logger> than is used
