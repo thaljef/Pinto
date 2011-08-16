@@ -1,17 +1,13 @@
 package Pinto::Server;
 
 # ABSTRACT: Web interface to a Pinto repository
-
 use Moose;
 
+use CGI::Application::Server;
+
 use Pinto;
-
-use Path::Class qw(dir);
-use File::Temp  qw(tempdir);
-
-use base 'CGI::Application';
-
-use CGI::Application::Plugin::AutoRunmode;
+use Pinto::Logger;
+use Pinto::Server::Dispatch;
 
 #-----------------------------------------------------------------------------
 
@@ -19,59 +15,37 @@ use CGI::Application::Plugin::AutoRunmode;
 
 #-----------------------------------------------------------------------------
 
-has 'pinto'  => (
-    is         => 'ro',
-    isa        => 'Pinto',
-    lazy_build => 1,
+with qw( MooseX::Daemonize );
+
+#-----------------------------------------------------------------------------
+
+has config   => (
+    is       => 'ro',
+    isa      => 'Pinto::Server::Config',
+    required => 1,
+);
+
+
+has '+pidbase' => (
+    default  => sub { $_[0]->config->config_file->dir() },
 );
 
 #-----------------------------------------------------------------------------
 
-sub _build_pinto {
-    my ($self) = @_;
-
-    my $config = Pinto::Config->new();
-    my $logger = Pinto::Logger->new();
-    my $pinto  = Pinto->new(config => $config, logger => $logger);
-
-    return $pinto;
-}
-
-#-----------------------------------------------------------------------------
-
-sub add :Runmode {
+after start => sub {
     my $self = shift;
+    return unless $self->is_daemon();
 
-    my $query     = $self->query();
-    my $author    = $query->param('author');
-    my $file      = $query->param('file');
+    my $server = CGI::Application::Server->new( $self->config->port() );
+    $server->document_root( $self->config->local() );
 
-    if (not $file) {
-        $self->header_add(-status => '400 No distribution file supplied');
-        return;
-    }
+    my $logger = Pinto::Logger->new( config => $self->config() );
+    my $pinto = Pinto->new( config => $self->config(), logger => $logger );
+    my $dispatch = Pinto::Server::Dispatch->new( pinto => $pinto );
+    $server->entry_points( {'/action' => $dispatch} );
 
-    if (not $author) {
-        $self->header_add(-status => '400 No author supplied');
-        return;
-    }
-
-
-    my $tmpdir = dir( tempdir(CLEANUP => 1) );
-    my $tmpfile = $tmpdir->file($file);
-    my $fh = $tmpfile->openw();
-
-    while ( read($file, my $buffer, 1024) ) { print { $fh } $buffer }
-    $fh->close();
-
-    my $ok = eval { $self->pinto->add( file   => $tmpfile,
-                                       author => $author ); 1 };
-
-    my $status = $ok ? '202 Module added' : "500 Error: $@";
-    $self->header_add(-status => $status);
-
-    return;
-}
+    return $server->run();
+};
 
 #----------------------------------------------------------------------------
 

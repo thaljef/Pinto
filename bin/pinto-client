@@ -14,16 +14,12 @@ use LWP::UserAgent;
 
 #------------------------------------------------------------------------------
 
-my ($author, $file) = @ARGV;
+my ($author, $dist) = @ARGV;
 my %args = (
-        Content_Type => 'form-data',
-        Content      => [
-                         filename => $file,
-                         author   => $author,
-                         file     => [$file],
-                        ],
+    Content_Type => 'form-data',
+    Content      => [ author => $author, dist => [$dist], ],
 );
 
 my $ua = LWP::UserAgent->new();
-my $response = $ua->post( 'http://localhost:1973/add', %args );
+my $response = $ua->post( 'http://localhost:1973/action/add', %args );
 print $response->content(), "\n";

@@ -1,11 +1,17 @@
 package Pinto::Server::Dispatch;
 
-# ABSTRACT: Dispatch table for a Pinto server
+# ABSTRACT: URL dispatcher for the Pinto server
 
-use strict;
-use warnings;
+use Moose;
 
 use base 'CGI::Application::Dispatch';
+
+use Pinto::Server::Dispatch::Add;
+#use Pinto::Server::Dispatch::Remove;
+#use Pinto::Server::Dispatch::List;
+
+
+use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
@@ -13,11 +19,33 @@ use base 'CGI::Application::Dispatch';
 
 #-----------------------------------------------------------------------------
 
+has pinto => (
+    is       => 'ro',
+    isa      => 'Pinto',
+    required => 1,
+);
+
+#-----------------------------------------------------------------------------
+
 sub dispatch_args {
+    my ($self) = @_;
+
     return {
-        table => [ 'add[post]' => {app => 'Pinto::Server', rm => 'add'} ],
+        prefix      => 'Pinto::Server::Dispatch',
+        args_to_new => { pinto => $self->pinto() },
+        table       => [ 'add[post]' => {app => 'Add', rm => 'add'} ],
     };
 }
+
+#----------------------------------------------------------------------------
+
+sub error_mode {
+    return 'my_error_rm';
+}
+
+#----------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
 
 #----------------------------------------------------------------------------
 1;
