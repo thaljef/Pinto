@@ -1,6 +1,11 @@
 >> {{$NEXT}}
 
-0.011     2011-08-14 21:11:47 America/Los_Angeles
+    * Other Changes:
+
+    pinto-server[1] and all the Pinto::Server::* modules have been
+    pulled out into a separate distribtuion.
+
+>> 0.011     2011-08-14 21:11:47 America/Los_Angeles
 
     * Bug Fixes:
 
