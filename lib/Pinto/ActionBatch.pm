@@ -43,7 +43,7 @@ with qw( Pinto::Role::Loggable
 =method enqueue($some_action)
 
 Adds C<$some_action> to the end of the queue of L<Pinto::Action>s that will be
-run.
+run.  Returns a reference to this ActionBatch.
 
 =cut
 
@@ -60,7 +60,7 @@ sub enqueue {
 
 =method run()
 
-Runs all the actions in this Batch.
+Runs all the actions in this Batch.  Returns a reference to this ActionBatch;
 
 =cut
 
@@ -75,6 +75,7 @@ sub run {
     my @messages;
     my $changes_were_made;
     while ( my $action = $self->actions->shift() ) {
+        # TODO: Trap exceptions here?
         $changes_were_made += $action->execute();
         push @messages, $action->messages->flatten();
     }
