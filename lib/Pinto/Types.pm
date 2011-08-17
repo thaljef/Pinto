@@ -5,13 +5,16 @@ package Pinto::Types;
 use strict;
 use warnings;
 
-use MooseX::Types -declare => [ qw( AuthorID URI Dir File) ];
-use MooseX::Types::Moose qw( Str ArrayRef );
+use MooseX::Types -declare => [ qw( AuthorID URI Dir File IO) ];
+use MooseX::Types::Moose qw( Str ScalarRef ArrayRef FileHandle Object Int);
 
 use URI;
 use Path::Class::Dir;
 use Path::Class::File;
 use File::HomeDir;
+use IO::String;
+use IO::Handle;
+use IO::File;
 
 use namespace::autoclean;
 
@@ -63,6 +66,16 @@ sub expand_tilde {
 
     return @paths;
 }
+
+#-----------------------------------------------------------------------------
+
+subtype IO, as Object;
+
+coerce IO,
+    from Str,        via { my $fh = new IO::File; $fh->open($_); return $fh },
+    from File,       via { my $fh = new IO::File; $fh->open("$_"); return $fh },
+    from ArrayRef,   via { IO::Handle->new_from_fd( @$_ ) },
+    from ScalarRef,  via { IO::String->new( ${$_} ) };
 
 #-----------------------------------------------------------------------------
 

@@ -214,9 +214,9 @@ sub clean {
 =cut
 
 sub list {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    $self->enqueue( $self->create_action('List') );
+    $self->enqueue( $self->create_action('List', %args) );
     $self->run();
 
     return $self;
