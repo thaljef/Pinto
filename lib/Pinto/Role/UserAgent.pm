@@ -50,7 +50,7 @@ sub mirror {
     $to = file($to) if not eval {$to->isa('Path::Class')};
     $self->mkpath( $to->parent() );
 
-    $self->logger->info("Fetching $url");
+    $self->logger->info("Mirroring $url");
     my $result = $self->_ua->mirror($url, $to);
 
     if ($result->is_success()) {
