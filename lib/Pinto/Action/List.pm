@@ -19,6 +19,8 @@ use namespace::autoclean;
 has out => (
     is      => 'ro',
     isa     => IO,
+    coerce  => 1,
+    default => sub { [fileno(STDOUT), '>'] },
 );
 
 #------------------------------------------------------------------------------
@@ -29,8 +31,7 @@ sub execute {
     # TODO: force log_level to quiet when running this action.
 
     for my $package ( $self->idxmgr()->all_packages() ) {
-        my $fh = $self->out() || \*STDOUT;
-        print { $fh } $package->to_index_string();
+        print { $self->out() } $package->to_index_string();
     }
 
     return 0;
