@@ -21,7 +21,7 @@ sub execute {
     # TODO: force log_level to quiet when running this action.
 
     for my $package ( $self->idxmgr()->all_packages() ) {
-        print $package->to_string(), "\n";
+        print $package->to_index_string();
     }
 
     return 0;
