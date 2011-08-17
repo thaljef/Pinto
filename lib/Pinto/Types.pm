@@ -72,8 +72,8 @@ sub expand_tilde {
 subtype IO, as Object;
 
 coerce IO,
-    from Str,        via { my $fh = new IO::File; $fh->open($_); return $fh },
-    from File,       via { my $fh = new IO::File; $fh->open("$_"); return $fh },
+    from Str,        via { my $fh = IO::File->new(); $fh->open($_);   return $fh },
+    from File,       via { my $fh = IO::File->new(); $fh->open("$_"); return $fh },
     from ArrayRef,   via { IO::Handle->new_from_fd( @$_ ) },
     from ScalarRef,  via { IO::String->new( ${$_} ) };
 
