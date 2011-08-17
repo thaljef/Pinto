@@ -43,7 +43,7 @@ with qw( Pinto::Role::Loggable
 =method enqueue($some_action)
 
 Adds C<$some_action> to the end of the queue of L<Pinto::Action>s that will be
-run.  Returns a reference to this ActionBatch.
+run.  Returns a reference to this C<ActionBatch>.
 
 =cut
 
@@ -60,7 +60,7 @@ sub enqueue {
 
 =method run()
 
-Runs all the actions in this Batch.  Returns a reference to this ActionBatch;
+Runs all the actions in this Batch.  Returns a reference to this C<ActionBatch>.
 
 =cut
 
