@@ -1,5 +1,7 @@
 >> {{$NEXT}}
 
+0.012     2011-08-17 09:10:25 America/Los_Angeles
+
     * Bug Fixes:
 
     Pinto::TestLogger didn't end with a true value.  Thank you, CPAN
