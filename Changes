@@ -1,9 +1,29 @@
 >> {{$NEXT}}
 
+    * Bug Fixes:
+
+    Pinto::TestLogger didn't end with a true value.  Thank you, CPAN
+    Testers!
+
+    * Internal Changes:
+
+    Switched from IPC::Cmd to Proc::Reliable for running shell
+    commands. IPC::Cmd seems to do funky things with STDIN
+    and STDOUT that don't set well with CGI.
+
+    You can specify an output filehandle or a buffer (as a scalar
+    reference) where you want the output from Pinto::list() to
+    go.
+
+    The output from the List action contains the name, version,
+    and location in each package, rather than just the name.  This
+    was a regression in the last version.
+
     * Other Changes:
 
-    pinto-server[1] and all the Pinto::Server::* modules have been
-    pulled out into a separate distribtuion.
+    pinto-server[1], pinto-client[1], and all the Pinto::Server::*
+    modules have been pulled out into a separate distribtuion,
+    which will be released to CPAN shortly.
 
 >> 0.011     2011-08-14 21:11:47 America/Los_Angeles
 
