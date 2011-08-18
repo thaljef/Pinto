@@ -12,7 +12,23 @@ has '+config' => (
     required => 0,
 );
 
+#-----------------------------------------------------------------------------
+
 override _build_log_level => sub { return 1 };
+
+#-----------------------------------------------------------------------------
+
+override _logit => sub { 
+    my ($self, $message) = @_;
+    my $fileno = fileno $self->out();
+
+    # Call super() only if it isn't just going to write the messages
+    # to STDOUT, because that is what were going to do anyway, and I
+    # don't want to see the same messages twice on the console.
+
+    super() if !(defined $fileno) or ($fileno != fileno(STDOUT));
+    return print "$message\n";
+};
 
 #-----------------------------------------------------------------------------
 
