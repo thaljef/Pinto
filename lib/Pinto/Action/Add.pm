@@ -48,8 +48,9 @@ override execute => sub {
     my $author    = $self->author();
     my $dist_file = $self->dist();
 
+    # TODO: Consider moving Distribution construction to the index manager
     my $added   = Pinto::Distribution->new_from_file(file => $dist_file, author => $author);
-    my @removed = $self->idxmgr->add_local_distribution(dist => $added);
+    my @removed = $self->idxmgr->add_local_distribution(dist => $added, file => $dist_file);
     $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
 
     $self->store->add( file => $added->path($local), source => $dist_file );

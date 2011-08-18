@@ -47,7 +47,7 @@ repos_dist_exists_ok( 'AUTHOR', $dist_file->basename() );
 index_package_exists_ok('Bar', 'AUTHOR', 'v4.9.1');
 
 $pinto->add(dists => $dist_file);
-like($buffer, qr/already exists/, 'Cannot add same dist twice');
+like($buffer, qr/already contains/, 'Cannot add same dist twice');
 
 $pinto->add(dists => $dist_file, author => 'CHAUCEY');
 like($buffer, qr/Only author AUTHOR can update/, 'Cannot add package owned by another author');

@@ -16,6 +16,8 @@ has '+config' => (
 
 override _build_log_level => sub { return 1 };
 
+override _build_colorize => sub { return 1 };
+
 #-----------------------------------------------------------------------------
 
 override _logit => sub { 

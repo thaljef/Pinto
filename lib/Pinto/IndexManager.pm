@@ -7,6 +7,7 @@ use Moose::Autobox;
 
 use Carp;
 use Path::Class;
+use File::Compare;
 
 use Pinto::Util;
 use Pinto::Index;
@@ -243,9 +244,9 @@ sub add_local_distribution {
     my ($self, %args) = @_;
 
     my $dist = $args{dist};
+    my $file = $args{file};
 
-    croak "A distribution already exists as $dist"
-        if $self->master_index->distributions->at( $dist );
+    $self->_distribution_check($dist, $file);
 
     my @packages = $dist->packages->flatten();
 
@@ -262,6 +263,31 @@ sub add_local_distribution {
     $self->rebuild_master_index();
 
     return @removed_dists;
+
+}
+
+sub _distribution_check {
+    my ($self, $new_dist, $new_file) = @_;
+
+    my $location = $new_dist->location();
+    my $existing_dist = $self->master_index->distributions->at($location);
+    return 1 if not $existing_dist;
+
+    my $existing_path = $existing_dist->path( $self->config->local() );
+    return 1 if not -e $existing_path;
+
+    my $is_same = !compare($existing_path, $new_file);
+
+    # TODO: One of these situations is a lot more important than the
+    # other, so we need to trap the exceptions and handle them
+    # accordingly.  A different dist warrants a loud warning.  But the
+    # same dist only needs a whimper.
+
+    croak "A different distribution already exists as $location"
+        if not $is_same;
+
+    croak "Repository already contains the same distribution at $location"
+        if $is_same;
 
 }
 
