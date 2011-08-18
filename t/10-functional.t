@@ -20,14 +20,15 @@ use Pinto::TestLogger;
 
 #------------------------------------------------------------------------------
 
-my $repos     = dir(File::Temp->newdir());
-my $logger    = Pinto::TestLogger->new();
+my $repos     = dir( File::Temp::tempdir(CLEANUP => 1) );
+my $logger    = Pinto::TestLogger->new(out => \my $buffer);
 my $config    = Pinto::TestConfig->new(local => $repos);
 my $pinto     = Pinto->new(logger => $logger, config => $config);
 my $dist_file = file($Bin, qw(data Bar Bar-0.001.tar.gz));
 
 #------------------------------------------------------------------------------
 # Creation...
+
 $pinto->create();
 repos_file_exists_ok( [qw(modules 02packages.details.txt.gz)] );
 repos_file_exists_ok( [qw(modules 02packages.details.local.txt.gz)] );
@@ -45,23 +46,23 @@ repos_dist_exists_ok( 'AUTHOR', $dist_file->basename() );
 
 index_package_exists_ok('Bar', 'AUTHOR', 'v4.9.1');
 
-throws_ok { $pinto->add(dists => $dist_file) }
-   qr/already exists/, 'Cannot add same dist twice';
+$pinto->add(dists => $dist_file);
+like($buffer, qr/already exists/, 'Cannot add same dist twice');
 
-throws_ok { $pinto->add(dists => $dist_file, author => 'CHAUCEY') }
-   qr/Only author AUTHOR/, 'Cannot add package owned by another author';
+$pinto->add(dists => $dist_file, author => 'CHAUCEY');
+like($buffer, qr/Only author AUTHOR can update/, 'Cannot add package owned by another author');
 
-throws_ok { $pinto->add(dists => 'none_such') }
-    qr/does not exist/, 'Cannot add nonexistant dist';
+$pinto->add(dists => 'none_such');
+like($buffer, qr/does not exist/, 'Cannot add nonexistant dist');
 
 #------------------------------------------------------------------------------
 # Removal...
 
-warning_like { $pinto->remove(packages => 'None::Such') }
-    qr/is not in the local index/, 'Removing bogus package emits warning';
+$pinto->remove(packages => 'None::Such');
+like($buffer, qr/is not in the local index/, 'Removing bogus package emits warning');
 
-throws_ok { $pinto->remove(packages => 'Bar', author => 'CHAUCEY') }
-    qr/Only author AUTHOR/, 'Cannot remove package owned by another author';
+$pinto->remove(packages => 'Bar', author => 'CHAUCEY');
+like($buffer, qr/Only author AUTHOR can remove/, 'Cannot remove package owned by another author');
 
 $pinto->remove( packages => 'Bar' );
 repos_dist_not_exists_ok( 'AUTHOR', $dist_file->basename() );
