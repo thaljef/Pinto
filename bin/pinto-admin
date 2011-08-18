@@ -165,6 +165,10 @@ will mask the foreign packages with the same name.  See the
 L<"BEHAVIOR"> section for more information about how local
 distributions interact with foreign ones.
 
+Note that you can also pipe arguments to this command over STDIN.  In
+that case, blank lines and lines that look like comments will be
+ignored.
+
 =item clean
 
 Deletes any distribution in the repository that is not currently in
@@ -194,6 +198,10 @@ removed.  You can only remove a package that B<YOU> have added.  You
 cannot remove packages in foreign distributions that were pulled in
 from a remote source (however you can mask them by adding your own
 versions).
+
+Note that you can also pipe arguments to this command over STDIN.  In
+that case, blank lines and lines that look like comments will be
+ignored.
 
 =item mirror
 

@@ -1,5 +1,17 @@
 >> {{$NEXT}}
 
+    * Revised documentation
+
+    * Enhancements:
+
+    The "add" and "remove" commands for pinto-admin[1] can now read
+    arguments from STDIN.  When doing so, it filters out things that
+    look like comments and blank lines.  This makes it easy to pipe in
+    the output from a find[1] or dzil[1] command.
+
+    You can also specify arguments to the "add" command as URLs,
+    and Pinto will fetch them for you.
+
 0.016     2011-08-18 02:00:12 America/Los_Angeles
 
     Removed bin/pinto-client.  That wasn't supposed to be in there,
