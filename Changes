@@ -12,6 +12,8 @@
     You can also specify arguments to the "add" command as URLs,
     and Pinto will fetch them for you.
 
+    Added "nocolor" command line option.
+
 0.016     2011-08-18 02:00:12 America/Los_Angeles
 
     Removed bin/pinto-client.  That wasn't supposed to be in there,
