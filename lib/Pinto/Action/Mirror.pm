@@ -58,7 +58,7 @@ sub _do_mirror {
     my $destination = $dist->path($local);
     return 0 if -e $destination;
 
-    $self->mirror(url => $url, to => $destination) or return 0;
+    $self->fetch(url => $url, to => $destination) or return 0;
     $self->store->add(file => $destination);
 
     my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);

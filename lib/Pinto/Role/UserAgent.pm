@@ -33,7 +33,7 @@ with qw(Pinto::Role::PathMaker);
 
 #------------------------------------------------------------------------------
 
-=method mirror(url => 'http://someplace' to => 'some/path')
+=method fetch(url => 'http://someplace' to => 'some/path')
 
 Mirrors the file located at the C<url> to the file located at C<to>.
 If the intervening directories do not exist, they will be created for
@@ -42,7 +42,7 @@ it has not changed.  Throws and exception if anything goes wrong.
 
 =cut
 
-sub mirror {
+sub fetch {
     my ($self, %args) = @_;
     my $url = $args{url};
     my $to  = $args{to};
@@ -50,7 +50,7 @@ sub mirror {
     $to = file($to) if not eval {$to->isa('Path::Class')};
     $self->mkpath( $to->parent() );
 
-    $self->logger->info("Mirroring $url");
+    $self->logger->info("Fetching $url");
     my $result = $self->_ua->mirror($url, $to);
 
     if ($result->is_success()) {

@@ -67,6 +67,8 @@ has store => (
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable );
 
+with qw( Pinto::Role::UserAgent );
+
 #------------------------------------------------------------------------------
 # Builders
 
@@ -161,9 +163,8 @@ sub add {
     my $dists = delete $args{dists};
     $dists = [$dists] if ref $dists ne 'ARRAY';
 
-    # TODO: Allow $dist to be a URL (http://, ftp://, file://).
-
     for my $dist ( @{$dists} ) {
+        $dist = $self->_dist_from_url($dist) if _is_url($dist);
         $self->enqueue( $self->create_action('Add', dist => $dist, %args) );
     }
 
@@ -236,6 +237,32 @@ sub verify {
     $self->run();
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _is_url {
+    my ($string) = @_;
+
+    return $string =~ m/^ (?: http|ftp|file|) : /x;
+}
+
+#------------------------------------------------------------------------------
+
+sub _dist_from_url {
+    my ($self, $dist) = @_;
+
+    my $url = URI->new($dist)->canonical();
+    my $path = Path::Class::file( $url->path() );
+    return $path if $url->scheme() eq 'file';
+
+    my $base     = $path->basename();
+    my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
+    my $tempfile = Path::Class::file($tempdir, $base);
+
+    $self->fetch(url => $url, to => $tempfile);
+
+    return Path::Class::file($tempfile);
 }
 
 #------------------------------------------------------------------------------
