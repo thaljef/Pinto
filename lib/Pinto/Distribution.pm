@@ -16,9 +16,8 @@ use Pinto::Util;
 use Pinto::Package;
 use Pinto::Types qw(AuthorID File);
 
-use overload ('""' => 'to_string');
 
-use namespace::autoclean;
+use overload ('""' => 'to_string');
 
 #------------------------------------------------------------------------------
 

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 16);
+use Test::More (tests => 17);
 use Test::Exception;
 use FindBin qw($Bin);
 use Path::Class;
@@ -26,6 +26,8 @@ is($dist->location(), 'F/FO/FOO/Bar-1.2.tar.gz', 'Dist name from location');
 
 is($dist->path(), 'authors/id/F/FO/FOO/Bar-1.2.tar.gz', 'Dist path');
 is($dist->path('here'), 'here/authors/id/F/FO/FOO/Bar-1.2.tar.gz', 'Dist path, with base');
+
+is("$dist", $dist->location(), 'Stringification returns location of dist');
 
 #-----------------------------------------------------------------------------
 # Constructing from a dist file...
