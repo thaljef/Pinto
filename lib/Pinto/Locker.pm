@@ -85,6 +85,8 @@ __END__
 
 =head1 DESCRIPTION
 
+=for stopwords NFS
+
 In many situations, a Pinto repository is a shared resource.  At any
 given moment, multiple processes may be trying to add distributions,
 remove packages, or pull files from a mirror.  To keep things working
