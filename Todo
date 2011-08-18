@@ -4,6 +4,10 @@ In no particular order...
 
 =over 4
 
+=item Command line switch to specify additional commit message at command line.
+
+=item Command line switch Specify alternative tag name.
+
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
 CPAN::Mini::Visit.
 
