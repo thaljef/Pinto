@@ -32,6 +32,7 @@ with qw ( Pinto::Role::Configurable
 sub lock {
     my ($self) = @_;
 
+    my $local = $self->config->local();
     my $wfunc = sub { $self->logger->debug(@_) };
     my $efunc = sub { $self->logger->fatal(@_) };
 
@@ -41,9 +42,10 @@ sub lock {
                                           -stale     => 1,
                                           -nfs       => 1 );
 
-    my $lock = $lockmgr->lock( $self->config->local() . '/' )
+    my $lock = $lockmgr->lock( $local . '/' )
         or croak 'Unable to lock the repository.  Please try later.';
 
+    $self->logger->debug("Process $$ got the lock for $local");
     $self->_lock($lock);
 
     return $self;
