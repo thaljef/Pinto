@@ -1,5 +1,16 @@
 >> {{$NEXT}}
 
+    * No interface changes or bug fixes.
+
+    * Internal Changes:
+
+    Improved exception handling.
+
+    Pinto now uses a lock file to synchronize concurrent actions in
+    the repository.  Only one actor is allowed to operate in a given
+    repository at a time.  Others have to wait until they can get the
+    lock, or timeout after about 60 seconds.
+
 0.014     2011-08-17 16:09:48 America/Los_Angeles
 
     * No interface changes or bug fixes.
