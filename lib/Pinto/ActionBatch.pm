@@ -8,9 +8,8 @@ use Moose::Autobox;
 use Carp;
 use Try::Tiny;
 use Path::Class;
-use LockFile::Simple;
 
-use Pinto::IndexManager;
+use Pinto::Locker;
 
 #-----------------------------------------------------------------------------
 
@@ -37,17 +36,19 @@ has idxmgr => (
     required => 1,
 );
 
-has lock => (
-    is       => 'rw',
-    isa      => 'LockFile::Lock',
-    init_arg => undef,
-);
-
 has message => (
     is       => 'ro',
     isa      => 'Str',
     writer   => '_set_message',
     default  => '',
+);
+
+has _locker  => (
+    is       => 'ro',
+    isa      => 'Pinto::Locker',
+    builder  => '_build__locker',
+    init_arg =>  undef,
+    lazy     => 1,
 );
 
 #-----------------------------------------------------------------------------
@@ -57,6 +58,17 @@ with qw( Pinto::Role::Loggable
          Pinto::Role::Configurable );
 
 #-----------------------------------------------------------------------------
+# Builders
+
+sub _build__locker {
+    my ($self) = @_;
+
+    return Pinto::Locker->new( config => $self->config(),
+                               logger => $self->logger() );
+}
+
+#-----------------------------------------------------------------------------
+# Public methods
 
 =method enqueue($some_action)
 
@@ -84,9 +96,9 @@ Runs all the actions in this Batch.  Returns a reference to this C<ActionBatch>.
 sub run {
     my ($self) = @_;
 
-    $self->_obtain_lock();
+    $self->_locker->lock();
     $self->_run_actions();
-    $self->_release_lock();
+    $self->_locker->unlock();
 
     return $self;
 }
@@ -153,40 +165,6 @@ sub _append_messages {
     $current_message .= "\n\n" if $current_message;
     my $new_message = join "\n\n", @messages;
     $self->_set_message($new_message);
-
-    return $self;
-}
-
-#-----------------------------------------------------------------------------
-
-sub _obtain_lock {
-    my ($self) = @_;
-
-    my $wfunc = sub { $self->logger->debug(@_) };
-    my $efunc = sub { $self->logger->fatal(@_) };
-
-    my $lockmgr = LockFile::Simple->make( -autoclean => 1,
-                                          -efunc     => $efunc,
-                                          -wfunc     => $wfunc,
-                                          -stale     => 1,
-                                          -nfs       => 1 );
-
-    $DB::single = 1;
-    my $lock = $lockmgr->lock( $self->config->local() . '/' )
-        or croak 'Unable to lock the repository.  Please try later.';
-
-    $self->lock($lock);
-
-    return $self;
-}
-
-#-----------------------------------------------------------------------------
-
-sub _release_lock {
-    my ($self) = @_;
-
-    $self->lock->release()
-        or croak 'Unable to release the repository lock';
 
     return $self;
 }

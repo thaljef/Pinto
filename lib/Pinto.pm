@@ -10,6 +10,7 @@ use Path::Class;
 
 use Pinto::ActionFactory;
 use Pinto::ActionBatch;
+use Pinto::IndexManager;
 
 use namespace::autoclean;
 
