@@ -20,6 +20,7 @@ sub global_opt_spec {
 #      [ "config=s"    => "Path to your pinto config file" ],
       [ "local=s"     => "Path to local repository directory"],
       [ "nocleanup"   => "Do not remove distribtuions that become outdated" ],
+      [ "nocolor"     => "Do not colorize diagnostic messages" ],
       [ "nocommit"    => "Do not commit changes to VCS" ],
       [ "noinit"      => "Skip updating or pulling from VCS" ],
       [ "notag"       => "Do not make tag after committing to VCS" ],
