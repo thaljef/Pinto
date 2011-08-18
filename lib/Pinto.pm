@@ -164,6 +164,11 @@ sub add {
     $dists = [$dists] if ref $dists ne 'ARRAY';
 
     for my $dist ( @{$dists} ) {
+
+        # TODO: fetching remote dists should be done by the action,
+        # so that exceptions are trapped.  Must allow dist parameter
+        # to be a String, File or URL, and then do the right thing!
+
         $dist = $self->_dist_from_url($dist) if _is_url($dist);
         $self->enqueue( $self->create_action('Add', dist => $dist, %args) );
     }
