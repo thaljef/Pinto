@@ -29,7 +29,16 @@ with qw ( Pinto::Role::Configurable
 
 #-----------------------------------------------------------------------------
 
-sub lock {
+=method lock()
+
+Attempts to get a lock on the Pinto repository.  If the repository is already
+locked, we will attempt to contact the current lock holder and make sure they
+are really alive.  If not, then we will steal the lock.  If they are, then
+we patiently wait until we timeout, which is about 60 seconds.
+
+=cut
+
+sub lock {                                             ## no critic (Homonym)
     my ($self) = @_;
 
     my $local = $self->config->local();
@@ -53,6 +62,13 @@ sub lock {
 
 #-----------------------------------------------------------------------------
 
+=method unlock()
+
+Releases the lock on the Pinto repository so that other processes can
+get to work.
+
+=cut
+
 sub unlock {
     my ($self) = @_;
 
@@ -67,3 +83,13 @@ sub unlock {
 
 __END__
 
+=head1 DESCRIPTION
+
+In many situations, a Pinto repository is a shared resource.  At any
+given moment, multiple processes may be trying to add distributions,
+remove packages, or pull files from a mirror.  To keep things working
+properly, we can only let one process fiddle with the repository at a
+time.  This module manages a lock file for that purpose.
+
+Supposedly, this does work on NFS.  But it cannot steal the lock from
+a dead process if that process was not running on the same host.
