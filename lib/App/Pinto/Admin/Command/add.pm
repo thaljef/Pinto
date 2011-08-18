@@ -1,11 +1,13 @@
 package App::Pinto::Admin::Command::add;
 
-# ABSTRACT: add your own Perl distributions to the repository
+# ABSTRACT: add your own distributions to the repository
 
 use strict;
 use warnings;
 
-#-----------------------------------------------------------------------------
+use Pinto::Util;
+
+#------------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
 
@@ -25,23 +27,21 @@ sub opt_spec {
 
 sub usage_desc {
     my ($self) = @_;
+
     my ($command) = $self->command_names();
+
     return "%c [global options] $command [command options] DISTRIBUTION";
-}
-
-#------------------------------------------------------------------------------
-
-sub validate_args {
-    my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify one or more distribution args") if not @{ $args };
-    return 1;
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->add( dists => $args );
+
+    my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
+    die "Nothing to do\n" if not @args;
+
+    $self->pinto( $opts )->add( dists => \@args );
     return 0;
 }
 

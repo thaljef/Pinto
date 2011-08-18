@@ -75,6 +75,23 @@ sub _dist_message {
 }
 
 #-------------------------------------------------------------------------------
+
+sub args_from_fh {
+    my ($fh) = @_;
+
+    my @args;
+    while (my $line = <$fh>) {
+        chomp $line;
+        next if not length $line;
+        next if $line =~ m/^ \s* [;#]/x;
+        next if $line !~ m/\S/x;
+        push @args, $line;
+    }
+
+    return @args;
+}
+
+#-------------------------------------------------------------------------------
 1;
 
 __END__

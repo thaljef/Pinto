@@ -5,6 +5,8 @@ package App::Pinto::Admin::Command::remove;
 use strict;
 use warnings;
 
+use Pinto::Util;
+
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -25,23 +27,21 @@ sub opt_spec {
 
 sub usage_desc {
     my ($self) = @_;
+
     my ($command) = $self->command_names();
+
     return "%c [global options] $command [command options] PACKAGE";
-}
-
-#------------------------------------------------------------------------------
-
-sub validate_args {
-    my ($self, $opts, $args) = @_;
-    $self->usage_error("Must specify one or more package args") if not @{ $args };
-    return 1;
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->remove( packages => $args );
+
+    my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
+    die "Nothing to do\n" if not @args;
+
+    $self->pinto( $opts )->remove( packages => \@args );
     return 0;
 }
 
