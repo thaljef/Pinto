@@ -125,9 +125,10 @@ sub _run_actions {
 
     return $self if $self->config->nocommit();
 
-    # Always put the modules directory on the commit list!
-    my $modules_dir = $self->config->local->subdir('modules');
-    $self->store->modified_paths->push( $modules_dir );
+    if ( $self->store->isa('Pinto::Store::VCS') ) {
+        my $modules_dir = $self->config->local->subdir('modules');
+        $self->store->mark_path_as_modified($modules_dir)
+    }
 
     my $batch_message = $self->message();
     $self->logger->debug($batch_message);

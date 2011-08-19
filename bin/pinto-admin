@@ -137,7 +137,7 @@ parameter silently overrides any C<verbose> setting.
 The name of the class that will handle storage of your Pinto
 repository.  The default is L<Pinto::Store>, which only stores your
 repository on the local file system.  Alternatives like
-L<Pinto::Store::Svn> and L<Pinto::Store::Git> allow you to store your
+L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> allow you to store your
 repository inside a version control system (VCS).  See the
 documentation for each of those modules for additional configuration
 settings.
@@ -282,7 +282,7 @@ parameters are commented out.  So if you use this sample as the basis
 for your own configuration, then you may need to uncomment and adjust
 accordingly.
 
-Plugins like L<Pinto::Store::Svn> and L<Pinto::Store::Svn> may have
+Plugins like L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> may have
 additional parameters.  L<pinto-remote> and L<pinto-server> also use
 this same configuration file, and may require additional parameters of
 their own.
@@ -297,7 +297,7 @@ their own.
   ; author = MYNAME
 
   ; Class to use for back-end storage. Defaults to Pinto::Store
-  ; store = Pinto::Store::Svn
+  ; store = Pinto::Store::VCS::Svn
 
   ; Do not remove distributions that become out of date. Defaults to 0
   ; nocleanup = 0

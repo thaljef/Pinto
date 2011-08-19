@@ -1,4 +1,4 @@
-package Pinto::Store::Git;
+package Pinto::Store::VCS::Git;
 
 # ABSTRACT: Store your Pinto repository with Git
 
@@ -6,7 +6,7 @@ use Moose;
 
 use Carp;
 
-extends 'Pinto::Store';
+extends 'Pinto::Store::VCS';
 
 #-------------------------------------------------------------------------------
 

@@ -1,42 +1,17 @@
 package Pinto::Store;
 
-# ABSTRACT: Back-end storage for a Pinto repository
+# ABSTRACT: Storage for a Pinto repository
 
 use Moose;
 
 use Carp;
 use File::Copy;
 
+use namespace::autoclean;
+
 #------------------------------------------------------------------------------
 
 # VERSION
-
-#------------------------------------------------------------------------------
-# Moose attributes
-
-# TODO: Do we really need three different lists of paths, or can we just have
-# one that represents all the paths that need to be committed?
-
-has added_paths => (
-    is          => 'ro',
-    isa         => 'ArrayRef[Path::Class]',
-    init_arg    => undef,
-    default     => sub { [] },
-);
-
-has removed_paths => (
-    is          => 'ro',
-    isa         => 'ArrayRef[Path::Class]',
-    init_arg    => undef,
-    default     => sub { [] },
-);
-
-has modified_paths => (
-    is          => 'ro',
-    isa         => 'ArrayRef[Path::Class]',
-    init_arg    => undef,
-    default     => sub { [] },
-);
 
 #------------------------------------------------------------------------------
 # Moose roles
@@ -200,7 +175,7 @@ __END__
 
 L<Pinto::Store> is the default back-end for a Pinto repository.  It
 basically just represents files on disk.  You should look at
-L<Pinto::Store::Svn> or L<Pinto::Store::Git> for a more interesting
-example.
+L<Pinto::Store::VCS::Svn> or L<Pinto::Store::VCS::Git> for a more
+interesting example.
 
 =cut

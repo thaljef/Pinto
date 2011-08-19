@@ -1,14 +1,13 @@
-package Pinto::Store::Svn;
+package Pinto::Store::VCS::Svn;
 
 # ABSTRACT: Store your Pinto repository with Subversion
 
 use Moose;
-use Moose::Autobox;
 
 use Pinto::Util::Svn;
 use Date::Format qw(time2str);
 
-extends 'Pinto::Store';
+extends 'Pinto::Store::VCS';
 
 use namespace::autoclean;
 
@@ -64,7 +63,7 @@ override add => sub {
 
     $self->logger->info("Scheduling $original_path for addition");
     Pinto::Util::Svn::svn_add(path => $path);
-    $self->added_paths()->push($path);
+    $self->mark_path_as_added($path);
 
     return $self;
 };
@@ -79,7 +78,7 @@ override remove => sub {
 
     $self->logger->info("Scheduling $file for removal");
     my $removed = Pinto::Util::Svn::svn_remove(path => $file);
-    $self->removed_paths->push($removed);
+    $self->mark_path_as_removed($removed);
 
     return $self;
 };
@@ -91,9 +90,9 @@ override finalize => sub {
 
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
 
-    my $paths = [ $self->added_paths->flatten(),
-                  $self->removed_paths->flatten(),
-                  $self->modified_paths->flatten() ];
+    my $paths = [ $self->added_paths(),
+                  $self->removed_paths(),
+                  $self->modified_paths() ];
 
     $self->logger->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
@@ -138,9 +137,9 @@ Add this to your Pinto configuration (usually in F<~/.pinto/config.ini>):
 
   ; other global params up here...
 
-  store   = Pinto::Store::Svn
+  store   = Pinto::Store::VCS::Svn
 
-  [Pinto::Store::Svn]
+  [Pinto::Store::VCS::Svn]
 
   ; Required.  URL of repository location where the mainline version will live
   trunk = http://my-repository/trunk/PINTO
@@ -152,7 +151,7 @@ And then run L<pinto> as you normally would.
 
 =head1 DESCRIPTION
 
-L<Pinto::Store::Svn> is a back-end for L<Pinto> that stores the
+L<Pinto::Store::VCS::Svn> is a back-end for L<Pinto> that stores the
 repository inside Subversion.
 
 =head1 CONFIGURATION
