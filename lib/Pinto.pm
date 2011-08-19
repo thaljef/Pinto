@@ -121,9 +121,9 @@ sub create {
     my ($self) = @_;
 
     # HACK...I want to do this before checking out from VCS
-    my $local = Path::Class::dir( $self->config()->local() );
-    croak "A repository already exists at $local"
-        if -e file($local, qw(modules 02packages.details.txt.gz));
+    my $repos = $self->config()->repos();
+    croak "A repository already exists at $repos"
+        if -e file($repos, qw(modules 02packages.details.txt.gz));
 
     $self->enqueue( $self->create_action('Create') );
     $self->run();

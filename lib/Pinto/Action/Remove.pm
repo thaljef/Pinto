@@ -49,7 +49,7 @@ override execute => sub {
     $self->logger->whine("Package $pkg is not in the local index") and return 0 if not $dist;
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
 
-    my $file = $dist->path( $self->config->local() );
+    my $file = $dist->path( $self->config->repos() );
     $self->config->nocleanup() || $self->store->remove( file => $file );
 
     $self->add_message( Pinto::Util::removed_dist_message( $dist ) );

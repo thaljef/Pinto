@@ -108,8 +108,8 @@ sub __build_master_index {
 sub __build_index {
     my ($self, %args) = @_;
 
-    my $local = $self->config->local();
-    my $index_file = Path::Class::file($local, 'modules', $args{file});
+    my $repos = $self->config->repos();
+    my $index_file = Path::Class::file($repos, 'modules', $args{file});
 
     return Pinto::Index->new( logger => $self->logger(),
                               file   => $index_file );
@@ -120,13 +120,13 @@ sub __build_index {
 sub update_mirror_index {
     my ($self) = @_;
 
-    my $local  = $self->config->local();
+    my $repos  = $self->config->repos();
     my $source = $self->config->source();
     my $force  = $self->config->force();
 
     my $remote_url = URI->new("$source/modules/02packages.details.txt.gz");
-    my $local_file = file($local, 'modules', '02packages.details.mirror.txt.gz');
-    my $has_changed = $self->fetch(url => $remote_url, to => $local_file);
+    my $repos_file = file($repos, 'modules', '02packages.details.mirror.txt.gz');
+    my $has_changed = $self->fetch(url => $remote_url, to => $repos_file);
     $self->logger->info("Index from $source is up to date") unless $has_changed or $force;
     $self->mirror_index->reload() if $has_changed or $force;
 
@@ -273,7 +273,7 @@ sub _distribution_check {
     my $existing_dist = $self->master_index->distributions->at($location);
     return 1 if not $existing_dist;
 
-    my $existing_path = $existing_dist->path( $self->config->local() );
+    my $existing_path = $existing_dist->path( $self->config->repos() );
     return 1 if not -e $existing_path;
 
     my $is_same = !compare($existing_path, $new_file);

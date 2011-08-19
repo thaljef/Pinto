@@ -126,7 +126,7 @@ sub _run_actions {
     return $self if $self->config->nocommit();
 
     if ( $self->store->isa('Pinto::Store::VCS') ) {
-        my $modules_dir = $self->config->local->subdir('modules');
+        my $modules_dir = $self->config->repos->subdir('modules');
         $self->store->mark_path_as_modified($modules_dir)
     }
 
@@ -146,7 +146,7 @@ sub _run_one_action {
 
     try {
         $changes_were_made += $action->execute();
-        my @messages, $action->messages->flatten();
+        my @messages = $action->messages->flatten();
         $self->_append_messages(@messages);
     }
     catch {

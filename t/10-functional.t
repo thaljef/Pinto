@@ -22,7 +22,7 @@ use Pinto::TestLogger;
 
 my $repos     = dir( File::Temp::tempdir(CLEANUP => 1) );
 my $logger    = Pinto::TestLogger->new(out => \my $buffer);
-my $config    = Pinto::TestConfig->new(local => $repos);
+my $config    = Pinto::TestConfig->new(repos => $repos);
 my $pinto     = Pinto->new(logger => $logger, config => $config);
 my $dist_file = file($Bin, qw(data Bar Bar-0.001.tar.gz));
 

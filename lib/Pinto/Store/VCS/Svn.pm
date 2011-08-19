@@ -21,7 +21,7 @@ override is_initialized => sub {
     my ($self) = @_;
 
     # TODO: maybe check last revision # against repos?
-    return -e $self->config->local->file('.svn');
+    return -e $self->config->repos->file('.svn');
 };
 
 #-------------------------------------------------------------------------------
@@ -30,11 +30,11 @@ override is_initialized => sub {
 override initialize => sub {
     my ($self) = @_;
 
-    my $local = $self->config->local();
+    my $repos = $self->config->repos();
     my $trunk = $self->config->svn_trunk();
 
     $self->logger->info("Checking out (or updating) working copy");
-    Pinto::Util::Svn::svn_checkout(url => $trunk, to => $local);
+    Pinto::Util::Svn::svn_checkout(url => $trunk, to => $repos);
 
     return 1;
 };

@@ -20,7 +20,7 @@ use namespace::autoclean;
 sub execute {
     my ($self) = @_;
 
-    my $local = $self->config()->local();
+    my $repos = $self->config()->repos();
     my $dists = $self->idxmgr->master_index->distributions->values();
     my $sorter = sub {$_[0]->location() cmp $_[1]->location};
 
@@ -28,7 +28,7 @@ sub execute {
     # TODO: force log_level to quiet when running this action.
 
     for my $dist ( $dists->sort( $sorter )->flatten() ) {
-        my $file = $dist->path($local);
+        my $file = $dist->path($repos);
         print "Missing distribution $file\n" if not -e $file;
     }
 

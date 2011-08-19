@@ -43,7 +43,7 @@ sub _build_author { return shift()->config->author() }
 override execute => sub {
     my ($self) = @_;
 
-    my $local     = $self->config->local();
+    my $repos     = $self->config->repos();
     my $cleanup   = not $self->config->nocleanup();
     my $author    = $self->author();
     my $dist_file = $self->dist();
@@ -53,8 +53,8 @@ override execute => sub {
     my @removed = $self->idxmgr->add_local_distribution(dist => $added, file => $dist_file);
     $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
 
-    $self->store->add( file => $added->path($local), source => $dist_file );
-    $cleanup && $self->store->remove( file => $_->path($local) ) for @removed;
+    $self->store->add( file => $added->path($repos), source => $dist_file );
+    $cleanup && $self->store->remove( file => $_->path($repos) ) for @removed;
 
     $self->add_message( Pinto::Util::added_dist_message($added) );
     $self->add_message( Pinto::Util::removed_dist_message($_) ) for @removed;

@@ -35,7 +35,7 @@ derived classes, this could mean that the working copy is up-to-date.
 sub is_initialized {
     my ($self) = @_;
 
-    return -e $self->config->local();
+    return -e $self->config->repos();
 }
 
 #------------------------------------------------------------------------------
@@ -55,8 +55,8 @@ to this Store.
 sub initialize {
     my ($self) = @_;
 
-    my $local = $self->config->local();
-    $self->mkpath($local);
+    my $repos = $self->config->repos();
+    $self->mkpath($repos);
 
     return $self;
 }

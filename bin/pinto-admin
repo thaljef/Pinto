@@ -30,10 +30,10 @@ __END__
 =head1 TYPICAL USAGE
 
   # Create an empty repository
-  $> pinto-admin --local=/some/dir create
+  $> pinto-admin --repos=/some/dir create
 
   # Add your own distribution to the repository
-  $> pinto-admin --local=/some/dir add /path/to/Foo-Bar-1.2.tar.gz
+  $> pinto-admin --repos=/some/dir add /path/to/Foo-Bar-1.2.tar.gz
 
   # Then install stuff from your repository
   $> cpanm --mirror-only --mirror file:///some/dir Foo::Bar
@@ -82,7 +82,7 @@ If you have a team of developers and you want them all to be able
 to add/remove the same packages to the repository, then everyone
 on the team should use the same C<author> parameter.
 
-=item local = DIRECTORY
+=item repos = DIRECTORY
 
 The path to a directory where your Pinto repository will be kept.
 This parameter is required for all commands.  You must be able to read

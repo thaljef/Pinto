@@ -68,12 +68,12 @@ we patiently wait until we timeout, which is about 60 seconds.
 sub lock {                                             ## no critic (Homonym)
     my ($self) = @_;
 
-    my $local = $self->config->local();
+    my $repos = $self->config->repos();
 
-    my $lock = $self->_lockmgr->lock( $local . '/' )
+    my $lock = $self->_lockmgr->lock( $repos . '/' )
         or croak 'Unable to lock the repository.  Please try later.';
 
-    $self->logger->debug("Process $$ got the lock for $local");
+    $self->logger->debug("Process $$ got the lock for $repos");
     $self->_lock($lock);
 
     return $self;
@@ -91,8 +91,8 @@ get to work.
 sub unlock {
     my ($self) = @_;
 
-    my $local = $self->config->local();
-    $self->logger->debug("Releasing lock on $local");
+    my $repos = $self->config->repos();
+    $self->logger->debug("Releasing lock on $repos");
 
     $self->_lock->release() or croak "Unable to unlock repository";
 

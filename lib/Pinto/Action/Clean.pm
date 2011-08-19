@@ -20,8 +20,8 @@ use namespace::autoclean;
 override execute => sub {
     my ($self) = @_;
 
-    my $local      = $self->config()->local();
-    my $search_dir = Path::Class::dir($local, qw(authors id));
+    my $repos      = $self->config()->repos();
+    my $search_dir = Path::Class::dir($repos, qw(authors id));
     return 0 if not -e $search_dir;
 
     my @removed = ();

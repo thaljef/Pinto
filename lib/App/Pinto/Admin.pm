@@ -18,7 +18,7 @@ sub global_opt_spec {
   return (
 
 #      [ "config=s"    => "Path to your pinto config file" ],
-      [ "local=s"     => "Path to local repository directory"],
+      [ "repos=s"     => "Path to your repository directory"],
       [ "nocleanup"   => "Do not remove distribtuions that become outdated" ],
       [ "nocolor"     => "Do not colorize diagnostic messages" ],
       [ "nocommit"    => "Do not commit changes to VCS" ],

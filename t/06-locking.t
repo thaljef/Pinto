@@ -23,7 +23,7 @@ use Pinto::TestAction;
 # Ugh, this is a lot of setup.
 
 my $repos  = File::Temp::tempdir(CLEANUP => 1);
-my $config = Pinto::TestConfig->new(local => $repos);
+my $config = Pinto::TestConfig->new(repos => $repos);
 my $logger = Pinto::TestLogger->new(config => $config, out => \my $buffer);
 my %config_and_logger = (config => $config, logger => $logger);
 

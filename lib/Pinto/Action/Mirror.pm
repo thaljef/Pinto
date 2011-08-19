@@ -50,19 +50,19 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $local   = $self->config->local();
+    my $repos   = $self->config->repos();
     my $source  = $self->config->source();
     my $cleanup = !$self->config->nocleanup();
 
     my $url = $dist->url($source);
-    my $destination = $dist->path($local);
+    my $destination = $dist->path($repos);
     return 0 if -e $destination;
 
     $self->fetch(url => $url, to => $destination) or return 0;
     $self->store->add(file => $destination);
 
     my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
-    $cleanup && $self->store->remove(file => $_->path($local)) for @removed;
+    $cleanup && $self->store->remove(file => $_->path($repos)) for @removed;
 
     return 1;
 }
