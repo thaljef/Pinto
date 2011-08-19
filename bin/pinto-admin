@@ -288,7 +288,7 @@ this same configuration file, and may require additional parameters of
 their own.
 
   ; Directory where Pinto repository will live.  No default
-  ; local = ~/srv/PINTO
+  ; repos = ~/srv/PINTO
 
   ; URL of a CPAN mirror. Defaults to http://cpan.perl.org
   ; source = http://some-cpan-mirror.com
