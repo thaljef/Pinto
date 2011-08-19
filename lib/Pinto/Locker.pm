@@ -18,9 +18,17 @@ use namespace::autoclean;
 # Moose attributes
 
 has _lock => (
-    is       => 'rw',
-    isa      => 'LockFile::Lock',
-    init_arg => undef,
+    is         => 'rw',
+    isa        => 'LockFile::Lock',
+    init_arg   => undef,
+);
+
+has _lockmgr => (
+    is         => 'ro',
+    isa        => 'LockFile::Simple',
+    init_arg   => undef,
+    lazy_build => 1,
+
 );
 
 #-----------------------------------------------------------------------------
@@ -30,6 +38,23 @@ with qw ( Pinto::Role::Configurable
           Pinto::Role::Loggable );
 
 #-----------------------------------------------------------------------------
+# Builders
+
+sub _build__lockmgr {
+    my ($self) = @_;
+
+    my $wfunc = sub { $self->logger->debug(@_) };
+    my $efunc = sub { $self->logger->fatal(@_) };
+
+    return LockFile::Simple->make( -autoclean => 1,
+                                   -efunc     => $efunc,
+                                   -wfunc     => $wfunc,
+                                   -stale     => 1,
+                                   -nfs       => 1 );
+}
+
+#-----------------------------------------------------------------------------
+# Methods
 
 =method lock()
 
@@ -44,16 +69,8 @@ sub lock {                                             ## no critic (Homonym)
     my ($self) = @_;
 
     my $local = $self->config->local();
-    my $wfunc = sub { $self->logger->debug(@_) };
-    my $efunc = sub { $self->logger->fatal(@_) };
 
-    my $lockmgr = LockFile::Simple->make( -autoclean => 1,
-                                          -efunc     => $efunc,
-                                          -wfunc     => $wfunc,
-                                          -stale     => 1,
-                                          -nfs       => 1 );
-
-    my $lock = $lockmgr->lock( $local . '/' )
+    my $lock = $self->_lockmgr->lock( $local . '/' )
         or croak 'Unable to lock the repository.  Please try later.';
 
     $self->logger->debug("Process $$ got the lock for $local");
@@ -74,8 +91,10 @@ get to work.
 sub unlock {
     my ($self) = @_;
 
-    $self->_lock->release()
-        or croak 'Unable to unlock the repository';
+    my $local = $self->config->local();
+    $self->logger->debug("Releasing lock on $local");
+
+    $self->_lock->release() or croak "Unable to unlock repository";
 
     return $self;
 }
