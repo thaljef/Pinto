@@ -11,7 +11,7 @@ use warnings;
 
 #-----------------------------------------------------------------------------
 
-use Exception::Class ( Pinto::Exception => {isa  => 'Exception::Class::Base'} );
+use Exception::Class ( 'Pinto::Exception' => {isa  => 'Exception::Class::Base'} );
 
 use base 'Exporter';
 
