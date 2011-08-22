@@ -118,7 +118,7 @@ sub _run_actions {
         $changes_were_made += $self->_run_one_action($action);
     }
 
-    $self->logger->info('No changes were made') and return $self
+    $self->logger->debug('No changes were made') and return $self
       unless $changes_were_made;
 
     $self->idxmgr->write_indexes();
@@ -130,7 +130,7 @@ sub _run_actions {
         $self->store->mark_path_as_modified($modules_dir)
     }
 
-    $self->store->finalize(message => $batch_message);
+    $self->store->finalize( message => $self->message() );
 
     return $self;
 }

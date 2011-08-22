@@ -25,14 +25,12 @@ has package  => (
     required => 1,
 );
 
-has author => (
-    is         => 'ro',
-    isa        => AuthorID,
-    coerce     => 1,
-    required   => 1,
-);
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Authored );
 
 #------------------------------------------------------------------------------
+
 
 override execute => sub {
     my ($self) = @_;

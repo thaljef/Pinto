@@ -26,18 +26,11 @@ has dist => (
     coerce   => 1,
 );
 
-
-has author => (
-    is         => 'ro',
-    isa        => AuthorID,
-    coerce     => 1,
-    required   => 1,
-);
-
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::UserAgent );
+with qw( Pinto::Role::UserAgent
+         Pinto::Role::Authored );
 
 #------------------------------------------------------------------------------
 
