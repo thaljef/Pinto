@@ -19,7 +19,11 @@ use base 'App::Pinto::Admin::Command';
 
 sub opt_spec {
     return (
-        [ "author=s"  => 'Your author ID (like a PAUSE ID)' ],
+        [ 'author=s'  => 'Your (alphanumeric) author ID' ],
+        [ 'message=s' => 'An message to include in the VCS log'],
+        [ 'nocommit'  => 'Do not commit changes to VCS'],
+        [ 'notag'     => 'Do not create any tag in VCS'],
+        [ 'tag=s'     => 'Specify an alternate tag' ],
     );
 }
 
@@ -41,8 +45,10 @@ sub execute {
     my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
     die "Nothing to do\n" if not @args;
 
-    $self->pinto( $opts )->remove( packages => \@args );
-    return 0;
+    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->add_action('Remove', %{$opts}, package => $_) for @{ $args };
+    my $ok = $self->pinto->run_actions();
+    return $ok ? 0 : 1;
 }
 
 #------------------------------------------------------------------------------

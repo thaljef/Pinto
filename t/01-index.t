@@ -10,11 +10,10 @@ use lib dir($Bin, 'lib')->stringify();
 
 use Pinto::Index;
 use Pinto::Package;
-use Pinto::TestLogger;
 
 #-----------------------------------------------------------------------------
 
-my $logger = Pinto::TestLogger->new();
+my $logger = Pinto::Logger->new();
 my $index = Pinto::Index->new(logger => $logger);
 
 #-----------------------------------------------------------------------------

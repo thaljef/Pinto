@@ -31,12 +31,13 @@ has author => (
     is         => 'ro',
     isa        => AuthorID,
     coerce     => 1,
-    lazy_build => 1,
+    required   => 1,
 );
 
 #------------------------------------------------------------------------------
+# Roles
 
-sub _build_author { return shift()->config->author() }
+with qw( Pinto::Role::UserAgent );
 
 #------------------------------------------------------------------------------
 
@@ -61,6 +62,32 @@ override execute => sub {
 
     return 1;
 };
+
+#------------------------------------------------------------------------------
+
+sub _is_url {
+    my ($string) = @_;
+
+    return $string =~ m/^ (?: http|ftp|file|) : /x;
+}
+
+#------------------------------------------------------------------------------
+
+sub _dist_from_url {
+    my ($self, $dist) = @_;
+
+    my $url = URI->new($dist)->canonical();
+    my $path = Path::Class::file( $url->path() );
+    return $path if $url->scheme() eq 'file';
+
+    my $base     = $path->basename();
+    my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
+    my $tempfile = Path::Class::file($tempdir, $base);
+
+    $self->fetch(url => $url, to => $tempfile);
+
+    return Path::Class::file($tempfile);
+}
 
 #------------------------------------------------------------------------------
 

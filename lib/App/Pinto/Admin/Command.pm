@@ -24,8 +24,8 @@ Returns the Pinto object for this command.  Basically an alias for
 =cut
 
 sub pinto {
-  my ($self, $options) = @_;
-  return $self->app()->pinto($options);
+    my ($self) = @_;
+    return $self->app->pinto();
 }
 
 #-----------------------------------------------------------------------------

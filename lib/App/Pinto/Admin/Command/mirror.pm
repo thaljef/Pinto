@@ -17,8 +17,7 @@ use base 'App::Pinto::Admin::Command';
 
 sub opt_spec {
     return (
-        [ 'force'     => 'Force action, even if indexes appear unchanged' ],
-        [ 'source=s'  => 'URL of a CPAN mirror (or another Pinto repository)' ],
+        [ 'force' => 'Force action, even if indexes appear unchanged' ],
     );
 }
 
@@ -34,8 +33,11 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->mirror();
-    return 0;
+
+    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->add_action('Mirror', %{$opts});
+    my $ok = $self->pinto->run_actions();
+    return $ok ? 0 : 1;
 }
 
 #------------------------------------------------------------------------------

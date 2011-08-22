@@ -118,11 +118,11 @@ sub __build_index {
 #------------------------------------------------------------------------------
 
 sub update_mirror_index {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
     my $repos  = $self->config->repos();
     my $source = $self->config->source();
-    my $force  = $self->config->force();
+    my $force  = $args{force};
 
     my $remote_url = URI->new("$source/modules/02packages.details.txt.gz");
     my $repos_file = file($repos, 'modules', '02packages.details.mirror.txt.gz');

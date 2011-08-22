@@ -26,8 +26,11 @@ sub validate_args {
 
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->pinto( $opts )->verify();
-    return 0;  # TODO: exit non-zero if verification fails!
+
+    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->add_action('Verify', %{$opts});
+    my $ok = $self->pinto->run_actions();
+    return $ok ? 0 : 1;
 }
 
 #------------------------------------------------------------------------------

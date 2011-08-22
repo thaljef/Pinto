@@ -3,7 +3,6 @@ package Pinto::Action;
 # ABSTRACT: Base class for Actions
 
 use Moose;
-use Moose::Autobox;
 
 use Carp;
 
@@ -31,8 +30,11 @@ has store => (
 has messages => (
     is         => 'ro',
     isa        => 'ArrayRef[Str]',
+    traits     => [ 'Array' ],
     default    => sub{ [] },
     init_arg   => undef,
+    handles    => {add_message => 'push'},
+    auto_deref => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -46,18 +48,7 @@ with qw( Pinto::Role::Configurable
 
 sub execute {
     my ($self) = @_;
-
     croak 'This is an absract method';
-}
-
-#------------------------------------------------------------------------------
-
-sub add_message {
-    my ($self, @messages) = @_;
-
-    $self->messages()->push( @messages );
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------

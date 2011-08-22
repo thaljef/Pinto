@@ -21,11 +21,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin [global options] COMMAND [command options] [ARGS]
-
-  pinto-admin help COMMAND
-
-  pinto-admin help
+  pinto-admin --repos=/path/to/repos [global options] COMMAND [command options] [ARGS]
 
 =head1 TYPICAL USAGE
 
@@ -40,115 +36,45 @@ __END__
 
 =head1 DESCRIPTION
 
-C<pinto-admin> is a command line utility for managing a Pinto
-repository.  The repository can contain your own distributions and/or
-mirror distributions from another repository (such as
+C<pinto-admin> is a command line utility for creating and managing a
+Pinto repository.  The repository can contain your own distributions
+and/or mirror foreign distributions from another repository (such as
 L<http://cpan.perl.org>).  You can also put patched versions of
-mirrored distributions in your repository.
+foreign distributions in your repository.
 
-You can then point L<cpanm> to your Pinto repository and build and
+You can then point L<cpanm> to your Pinto repository, then build and
 install your distributions (and their dependencies).  B<NOTE:> At this
 time, only L<cpanm> will work properly with a Pinto repository.  But
 support for L<cpan> and L<cpanp> is coming real soon!
 
-=head1 CONFIGURATION
+=head1 OPTIONS
 
-The following parameters can be set in your configuration file.  The
-default location of this file is F<~/.pinto/config.ini>.  You may
-specify an alternative location for this file by setting the
-C<PERL_PINTO> environment variable to point to another path.
-
-The configuration file is in the typical INI format.  Parameters are
-C<NAME = VALUE> pairs.  Global parameters (which are all the ones
-described below) are at the top of the file. Blank lines are ignored,
-leading and trailing whitespace is discarded.  Comments start with a
-semi-colon (;).
-
-A configuration file is usually not mandatory.  Almost all
-configuration parameters can also be specified on the command line,
-either as global options or command options.
+The following global options are available for all commands.  Say
+C<pinto-admin help COMMAND> to display a list of sub-options available
+for that C<COMMAND>.
 
 =over 4
 
-=item author = NAME
+=item  --repos=/path/to/your/repository
 
-Your identity as a module author.  This could be your PAUSE ID, but it
-doesn't have to be.  As long as it is just alphanumeric characters
-with no spaces.  This defaults to your shell username (either
-C<$ENV{USERNAME}> or C<$ENV{USER}> or C<$ENV{LOGNAME}>).  This
-parameter is only relevant to the C<add> and C<remove> commands.
+Specifies the path to the root directory of your repository.  This
+option is mandatory for all commands.
 
-If you have a team of developers and you want them all to be able
-to add/remove the same packages to the repository, then everyone
-on the team should use the same C<author> parameter.
+=item --nocolor
 
-=item repos = DIRECTORY
+Do not colorize diagnostic messages according to severity.
 
-The path to a directory where your Pinto repository will be kept.
-This parameter is required for all commands.  You must be able to read
-and write to this directory, but it doesn't have to already exist.
-You may use a tilde (~) as shorthand for your home directory.
+=item --quiet | -q
 
-=item source = URL
+Report only fatal errors.  This option siletly overrides the
+C<--verbose> options.
 
-The URL of a repository that you would like L<Pinto> to pull foreign
-distributions from.  This could be a public CPAN mirror, or another
-Pinto repository.  Defaults to L<http://cpan.perl.org>.  This
-parameter is only relevant to the C<mirror> command.
+=item --verbose | -v
 
-=item nocleanup = 0|1
-
-If true, L<Pinto> will not automatically delete distributions that
-become out of date (either because you've added your own local version
-or you've pulled a newer one from a remote repository).  The default
-is 0, which means you won't be able to install older versions of a
-distribution from your repository.  But if you set <nocleanup> to 1,
-then you can still get older distributions in the usual way:
-
-  $> cpanm A/AU/AUTHOR/Older-Dist-1.2.tar gz
-
-=item nocommit = 0|1
-
-If true, L<Pinto> will not commit changes in the repository to your
-VCS at the end of each command.  If you're not using a VCS store, then
-this parameter has no effect.  The default is 0.
-
-=item noinit = 0|1
-
-If true, L<Pinto> assumes tha the working copy of your repository is
-up-to-date and will not pull/update the repository from your VCS at
-the beginning of each command.  This can save a lot of time, but use
-with caution. If you're not using a VCS store, then this parameter has
-no effect.  The default is 0.
-
-=item notag = 0|1
-
-If true, L<Pinto> will not make a tag in your VCS after committing
-changes, even if you've configured a tag name.  If you're not using a
-VCS store, then this parameter has no effect.  The default is 0.
-
-=item quiet = 0|1
-
-If true, then only fatal error messages will be displayed.  This
-parameter silently overrides any C<verbose> setting.
-
-=item store = CLASS_NAME
-
-The name of the class that will handle storage of your Pinto
-repository.  The default is L<Pinto::Store>, which only stores your
-repository on the local file system.  Alternatives like
-L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> allow you to store your
-repository inside a version control system (VCS).  See the
-documentation for each of those modules for additional configuration
-settings.
-
-=item verbose = 0|1|2
-
-Controls how much noise is made.  Default is 0.  A higher number means
-more diagnostic output.
+Display more diagnostic messages.  This switch can be repeated multiple
+times for greater effect.
 
 =back
-
 
 =head1 COMMANDS
 
@@ -218,6 +144,53 @@ something has gone wrong.
 
 =back
 
+
+=head1 CONFIGURATION
+
+The F<config> directory in the root of every repository contains a
+configuration file named F<pinto.ini>.  This file will be generated
+for you (with default values) whenever you create a new repository.
+Thereafter, it is up to you to manually adjust the configuration file
+as you see fit.
+
+The configuration file is in the typical INI format.  Parameters are
+C<NAME = VALUE> pairs.  Global parameters (which are all the ones
+described below) are at the top of the file. Blank lines are ignored,
+leading and trailing whitespace is discarded.  Comments start with a
+semi-colon (;).
+
+=over 4
+
+=item source = URL
+
+The URL of a repository that you would like L<Pinto> to pull foreign
+distributions from.  This could be a public CPAN mirror, or another
+Pinto repository.  Defaults to L<http://cpan.perl.org>.  This
+parameter is only relevant to the C<mirror> command.
+
+=item nocleanup = 0|1
+
+If true, L<Pinto> will not automatically delete distributions that
+become out of date (either because you've added your own local version
+or you've pulled a newer one from a remote repository).  The default
+is 0, which means you won't be able to install older versions of a
+distribution from your repository.  But if you set <nocleanup> to 1,
+then you can still get older distributions in the usual way:
+
+  $> cpanm A/AU/AUTHOR/Older-Dist-1.2.tar gz
+
+=item store = CLASS_NAME
+
+The name of the class that will handle storage of your Pinto
+repository.  The default is L<Pinto::Store>, which simply stores your
+repository on the local file system.  Alternatives Stores like
+L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> will also
+store your repository inside a version control system (VCS).  See the
+documentation for each of those modules for additional configuration
+settings.
+
+=back
+
 =head1 BEHAVIOR
 
 There are certain rules that govern how a Pinto repository behaves.
@@ -273,49 +246,6 @@ make releases of the same packages, then conisder having everyone
 use the same C<author> parameter.
 
 =back
-
-=head1 SAMPLE CONFIGURAION
-
-The following is a sample configuration file, showing all the
-parameters that L<pinto-admin> supports directly.  Note that all the
-parameters are commented out.  So if you use this sample as the basis
-for your own configuration, then you may need to uncomment and adjust
-accordingly.
-
-Plugins like L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> may have
-additional parameters.  L<pinto-remote> and L<pinto-server> also use
-this same configuration file, and may require additional parameters of
-their own.
-
-  ; Directory where Pinto repository will live.  No default
-  ; repos = ~/srv/PINTO
-
-  ; URL of a CPAN mirror. Defaults to http://cpan.perl.org
-  ; source = http://some-cpan-mirror.com
-
-  ; Your author ID.  Alphanumeric only.  Defaults to your username
-  ; author = MYNAME
-
-  ; Class to use for back-end storage. Defaults to Pinto::Store
-  ; store = Pinto::Store::VCS::Svn
-
-  ; Do not remove distributions that become out of date. Defaults to 0
-  ; nocleanup = 0
-
-  ; Do not commit changes to CS after each action.  Defaults to 0
-  ; nocommit = 0
-
-  ; Do not checkout/update the repository before every operation. Defaults to 0
-  ; noinit = 0
-
-  ; Do not make a tag after committing to VCS.  Defaults to 0
-  ; notag = 0
-
-  ; Only display fatal error messages.  Default is 0
-  ; quiet = 0
-
-  ; Show more diagnostic output (0|1|2|).  Default is 0
-  ; verbose = 0
 
 =cut
 

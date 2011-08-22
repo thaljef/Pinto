@@ -17,13 +17,8 @@ sub global_opt_spec {
 
   return (
 
-#      [ "config=s"    => "Path to your pinto config file" ],
-      [ "repos=s"     => "Path to your repository directory"],
-      [ "nocleanup"   => "Do not remove distribtuions that become outdated" ],
+      [ "repos|r=s"   => "Path to your repository directory"],
       [ "nocolor"     => "Do not colorize diagnostic messages" ],
-      [ "nocommit"    => "Do not commit changes to VCS" ],
-      [ "noinit"      => "Skip updating or pulling from VCS" ],
-      [ "notag"       => "Do not make tag after committing to VCS" ],
       [ "quiet|q"     => "Only report fatal errors"],
       [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
   );
@@ -32,30 +27,30 @@ sub global_opt_spec {
 #------------------------------------------------------------------------------
 
 sub usage_desc {
-    return '%c [global options] <command>';
+    return '%c [global options] <command> [command options]';
 }
 
 #------------------------------------------------------------------------------
 
-=method pinto( $command_options )
+=method pinto()
 
 Returns a reference to the L<Pinto> object.  If it does not already
-exist, one will be created using the global and command options.
+exist, one will be created using the global options.
 
 =cut
 
 sub pinto {
-    my ($self, $command_options) = @_;
-
-    require Pinto;
-    require Pinto::Config;
-    require Pinto::Logger;
+    my ($self) = @_;
 
     return $self->{pinto} ||= do {
+
         my %global_options = %{ $self->global_options() };
-        my $config = Pinto::Config->new(%global_options, %{$command_options});
-        my $logger = Pinto::Logger->new(config => $config);
-        my $pinto  = Pinto->new(config => $config, logger => $logger);
+
+        my $repos = $global_options{repos}
+            or $self->usage_error('Must specify a repository');
+
+        require Pinto;
+        my $pinto  = Pinto->new(%global_options);
     };
 }
 

@@ -15,16 +15,14 @@ use Pinto::Store;
 use Pinto::ActionBatch;
 use Pinto::IndexManager;
 
-use Pinto::TestLogger;
-use Pinto::TestConfig;
 use Pinto::TestAction;
 
 #------------------------------------------------------------------------------
 # Ugh, this is a lot of setup.
 
 my $repos  = File::Temp::tempdir(CLEANUP => 1);
-my $config = Pinto::TestConfig->new(repos => $repos);
-my $logger = Pinto::TestLogger->new(config => $config, out => \my $buffer);
+my $config = Pinto::Config->new(repos => $repos);
+my $logger = Pinto::Logger->new(verbose => 3, out => \my $buffer);
 my %config_and_logger = (config => $config, logger => $logger);
 
 my $idxmgr = Pinto::IndexManager->new(%config_and_logger);
@@ -48,17 +46,20 @@ if ($pid) {
     # parent
     sleep 10; # Let the child get started
     print "Starting: $$\n";
-    throws_ok{ $batch->enqueue($competitor)->run() }
+    $batch->enqueue($competitor);
+    throws_ok{ $batch->run() }
       qr/Unable to lock/, 'Repository is locked by sleeper';
 
     wait; # Let the child finish
-    lives_ok { $batch->enqueue($competitor)->run() }
+    $batch->enqueue($competitor);
+    lives_ok { $batch->run() }
       'Got lock after the sleeper died';
 }
 else {
     # child
     print "Starting: $$\n";
-    $batch->enqueue($sleeper)->run();
+    $batch->enqueue($sleeper);
+    $batch->run();
     exit 0;
 }
 

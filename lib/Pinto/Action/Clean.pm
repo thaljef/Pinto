@@ -29,7 +29,7 @@ override execute => sub {
     File::Find::find($wanted, $search_dir);
     return 0 if not @removed;
 
-    $self->add_message( "Removed unindexed distribution $_" ) for @removed;
+    $self->add_message( "Removed distribution $_" ) for @removed;
 
     return 1;
 };

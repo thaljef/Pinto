@@ -3,13 +3,15 @@ package Pinto::ActionBatch;
 # ABSTRACT: Runs a series of actions
 
 use Moose;
-use Moose::Autobox;
 
 use Carp;
 use Try::Tiny;
 use Path::Class;
 
 use Pinto::Locker;
+
+use Pinto::Types qw(Dir);
+use MooseX::Types::Moose qw(Str Bool);
 
 #-----------------------------------------------------------------------------
 
@@ -18,16 +20,16 @@ use Pinto::Locker;
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has 'store' => (
+has config    => (
+    is        => 'ro',
+    isa       => 'Pinto::Config',
+    required => 1,
+);
+
+has store    => (
     is       => 'ro',
     isa      => 'Pinto::Store',
     required => 1
-);
-
-has actions => (
-    is       => 'ro',
-    isa      => 'ArrayRef[Pinto::Action]',
-    default  => sub { [] },
 );
 
 has idxmgr => (
@@ -36,11 +38,26 @@ has idxmgr => (
     required => 1,
 );
 
+has actions => (
+    is       => 'ro',
+    isa      => 'ArrayRef[Pinto::Action]',
+    traits   => [ 'Array' ],
+    default  => sub { [] },
+    handles  => {enqueue => 'push', dequeue => 'shift'},
+);
+
 has message => (
     is       => 'ro',
-    isa      => 'Str',
-    writer   => '_set_message',
+    isa      => Str,
+    traits   => [ 'String' ],
+    handles  => {append_message => 'append'},
     default  => '',
+);
+
+has nocommit => (
+    is       => 'ro',
+    isa      => Bool,
+    default  => 0,
 );
 
 has _locker  => (
@@ -63,29 +80,12 @@ with qw( Pinto::Role::Loggable
 sub _build__locker {
     my ($self) = @_;
 
-    return Pinto::Locker->new( config => $self->config(),
+    return Pinto::Locker->new( repos  => $self->config->repos(),
                                logger => $self->logger() );
 }
 
 #-----------------------------------------------------------------------------
 # Public methods
-
-=method enqueue($some_action)
-
-Adds C<$some_action> to the end of the queue of L<Pinto::Action>s that will be
-run.  Returns a reference to this C<ActionBatch>.
-
-=cut
-
-sub enqueue {
-    my ($self, @actions) = @_;
-
-    $self->actions()->push( @actions );
-
-    return $self;
-}
-
-#-----------------------------------------------------------------------------
 
 =method run()
 
@@ -114,7 +114,7 @@ sub _run_actions {
 
 
     my $changes_were_made;
-    while ( my $action = $self->actions->shift() ) {
+    while ( my $action = $self->dequeue() ) {
         $changes_were_made += $self->_run_one_action($action);
     }
 
@@ -123,15 +123,13 @@ sub _run_actions {
 
     $self->idxmgr->write_indexes();
 
-    return $self if $self->config->nocommit();
+    return $self if $self->nocommit();
 
     if ( $self->store->isa('Pinto::Store::VCS') ) {
         my $modules_dir = $self->config->repos->subdir('modules');
         $self->store->mark_path_as_modified($modules_dir)
     }
 
-    my $batch_message = $self->message();
-    $self->logger->debug($batch_message);
     $self->store->finalize(message => $batch_message);
 
     return $self;
@@ -144,31 +142,17 @@ sub _run_one_action {
 
     my $changes_were_made = 0;
 
-    try {
-        $changes_were_made += $action->execute();
-        my @messages = $action->messages->flatten();
-        $self->_append_messages(@messages);
+    try   { $changes_were_made += $action->execute() }
+    catch { $self->logger->whine($_) };
+
+    for my $msg ( $action->messages() ) {
+        $self->message() and $self->append_message("\n\n");
+        $self->append_message($msg);
     }
-    catch {
-        $self->logger->whine($_);
-    };
 
     return $changes_were_made;
 }
 
-
-#-----------------------------------------------------------------------------
-
-sub _append_messages {
-    my ($self, @messages) = @_;
-
-    my $current_message = $self->message();
-    $current_message .= "\n\n" if $current_message;
-    my $new_message = join "\n\n", @messages;
-    $self->_set_message($new_message);
-
-    return $self;
-}
 
 #-----------------------------------------------------------------------------
 

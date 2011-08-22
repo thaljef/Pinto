@@ -79,7 +79,7 @@ sub finalize {
     my ($self, %args) = @_;
 
     my $message = $args{message} || 'Finalizing the store';
-    $self->logger->info($message);
+    $self->logger->debug($message);
 
     return $self;
 }

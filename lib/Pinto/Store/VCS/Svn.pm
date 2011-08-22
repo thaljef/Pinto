@@ -48,11 +48,11 @@ override add => sub {
     # the file into place for us (if needed).
     super();
 
-    # Now search the file path backwards until we find the first
-    # parent directory that is an svn working copy.  The directory
-    # or file that is immediately below that directory is the one
-    # we should schedule for addition.  Subversion will recursively
-    # add any directories and files below that point for us.
+    # Now search the path backwards until we find the first parent
+    # directory that is an svn working copy.  The directory or file
+    # that is immediately below that directory is the one we should
+    # schedule for addition.  Subversion will recursively add any
+    # directories and files below that point for us.
 
     my $path = $args{file};
     my $original_path = $path;
@@ -87,6 +87,7 @@ override remove => sub {
 
 override finalize => sub {
     my ($self, %args) = @_;
+    super();
 
     my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
 
@@ -97,8 +98,8 @@ override finalize => sub {
     $self->logger->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
-    $self->_make_tag() if $self->config->svn_tag()
-                          and not $self->config->notag();
+    $self->_make_tag() if $self->config->svn_tag();
+
     return 1;
 };
 

@@ -17,6 +17,7 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# Attributes
 
 has package  => (
     is       => 'ro',
@@ -24,33 +25,29 @@ has package  => (
     required => 1,
 );
 
-
 has author => (
     is         => 'ro',
     isa        => AuthorID,
     coerce     => 1,
-    lazy_build => 1,
+    required   => 1,
 );
-
-#------------------------------------------------------------------------------
-
-sub _build_author { return shift()->config->author() }
 
 #------------------------------------------------------------------------------
 
 override execute => sub {
     my ($self) = @_;
 
-    my $pkg    = $self->package();
-    my $author = $self->author();
-    my $idxmgr = $self->idxmgr();
+    my $pkg     = $self->package();
+    my $author  = $self->author();
+    my $idxmgr  = $self->idxmgr();
+    my $cleanup = not $self->config->nocleanup();
 
     my $dist = $idxmgr->remove_local_package(package => $pkg, author => $author);
     $self->logger->whine("Package $pkg is not in the local index") and return 0 if not $dist;
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
 
     my $file = $dist->path( $self->config->repos() );
-    $self->config->nocleanup() || $self->store->remove( file => $file );
+    $self->store->remove( file => $file ) if $cleanup;
 
     $self->add_message( Pinto::Util::removed_dist_message( $dist ) );
 

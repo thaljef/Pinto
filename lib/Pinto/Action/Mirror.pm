@@ -4,6 +4,8 @@ package Pinto::Action::Mirror;
 
 use Moose;
 
+use MooseX::Types::Moose qw(Bool);
+
 use URI;
 use Try::Tiny;
 
@@ -18,6 +20,15 @@ extends 'Pinto::Action';
 # VERSION
 
 #------------------------------------------------------------------------------
+# Moose Attributes
+
+has force => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+#------------------------------------------------------------------------------
 # Moose Roles
 
 with qw(Pinto::Role::UserAgent);
@@ -28,8 +39,8 @@ sub execute {
     my ($self) = @_;
 
     my $idxmgr  = $self->idxmgr();
-    my $idx_changes = $idxmgr->update_mirror_index();
-    return 0 if not $idx_changes and not $self->config->force();
+    my $idx_changes = $idxmgr->update_mirror_index( force => $self->force() );
+    return 0 if not $idx_changes and not $self->force();
 
     my $dist_changes = 0;
     for my $dist ( $idxmgr->dists_to_mirror() ) {
