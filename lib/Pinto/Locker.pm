@@ -8,7 +8,7 @@ use Carp;
 use Path::Class;
 use LockFile::Simple;
 
-use Pinto::Types qw(Dir);
+use Pinto::Types 0.017 qw(Dir);
 
 use namespace::autoclean;
 

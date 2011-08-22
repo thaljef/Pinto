@@ -9,7 +9,7 @@ use File::Temp;
 
 use Pinto::Util;
 use Pinto::Distribution;
-use Pinto::Types qw(StrOrFileOrURI);
+use Pinto::Types 0.017 qw(StrOrFileOrURI);
 
 extends 'Pinto::Action';
 

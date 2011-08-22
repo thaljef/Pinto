@@ -6,7 +6,7 @@ use Moose;
 use Moose::Autobox;
 
 use Pinto::Util;
-use Pinto::Types qw(IO);
+use Pinto::Types 0.017 qw(IO);
 
 extends 'Pinto::Action';
 

@@ -6,7 +6,7 @@ use Moose::Role;
 
 use Carp;
 use English qw(-no_match_vars);
-use Pinto::Types qw(AuthorID);
+use Pinto::Types 0.017 qw(AuthorID);
 
 #------------------------------------------------------------------------------
 

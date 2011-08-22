@@ -14,7 +14,7 @@ use Path::Class qw();
 
 use Pinto::Util;
 use Pinto::Package;
-use Pinto::Types qw(AuthorID File);
+use Pinto::Types 0.017 qw(AuthorID File);
 
 
 use overload ('""' => 'to_string');

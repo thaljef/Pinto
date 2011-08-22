@@ -10,7 +10,7 @@ use Path::Class;
 
 use Pinto::Locker;
 
-use Pinto::Types qw(Dir);
+use Pinto::Types 0.017 qw(Dir);
 use MooseX::Types::Moose qw(Str Bool);
 
 #-----------------------------------------------------------------------------

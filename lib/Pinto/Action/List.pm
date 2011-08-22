@@ -3,7 +3,7 @@ package Pinto::Action::List;
 # ABSTRACT: An abstract action for listing packages in a repository
 
 use Moose;
-use Pinto::Types qw(IO);
+use Pinto::Types 0.017 qw(IO);
 
 extends 'Pinto::Action';
 

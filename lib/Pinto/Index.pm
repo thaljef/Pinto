@@ -8,7 +8,7 @@ use Moose;
 use Moose::Autobox;
 
 use MooseX::Types::Moose qw(HashRef);
-use Pinto::Types qw(File);
+use Pinto::Types 0.017 qw(File);
 
 use Carp;
 use PerlIO::gzip;
