@@ -26,13 +26,13 @@ __END__
 =head1 TYPICAL USAGE
 
   # Create an empty repository
-  $> pinto-admin --repos=/some/dir create
+  pinto-admin --repos=/some/dir create
 
   # Add your own distribution to the repository
-  $> pinto-admin --repos=/some/dir add /path/to/Foo-Bar-1.2.tar.gz
+  pinto-admin --repos=/some/dir add /path/to/Foo-Bar-1.2.tar.gz
 
   # Then install stuff from your repository
-  $> cpanm --mirror-only --mirror file:///some/dir Foo::Bar
+  cpanm --mirror-only --mirror file:///some/dir Foo::Bar
 
 =head1 DESCRIPTION
 
@@ -42,10 +42,10 @@ and/or mirror foreign distributions from another repository (such as
 L<http://cpan.perl.org>).  You can also put patched versions of
 foreign distributions in your repository.
 
-You can then point L<cpanm> to your Pinto repository, then build and
-install your distributions (and their dependencies).  B<NOTE:> At this
-time, only L<cpanm> will work properly with a Pinto repository.  But
-support for L<cpan> and L<cpanp> is coming real soon!
+You can then point L<cpanm> to your Pinto repository and install your
+distributions (with their dependencies).  B<NOTE:> At this time, only
+L<cpanm> will work properly with a Pinto repository.  But support for
+L<cpan> and L<cpanp> is coming real soon!
 
 =head1 OPTIONS
 
@@ -57,8 +57,8 @@ for that C<COMMAND>.
 
 =item  --repos=/path/to/your/repository
 
-Specifies the path to the root directory of your repository.  This
-option is mandatory for all commands.
+Specifies the path to the root directory of your repository.  This is
+mandatory for all commands.
 
 =item --nocolor
 
@@ -78,8 +78,10 @@ times for greater effect.
 
 =head1 COMMANDS
 
-The following commands are available.  Say C<pinto-admin help COMMAND>
-to display a list of sub-options available for that C<COMMAND>.
+The following commands are available.  To display a list of
+sub-options available for any command, you can say:
+
+  pinto-admin help COMMAND.
 
 =over 4
 
@@ -112,9 +114,10 @@ if it does.
 
 =item list
 
-Lists all the packages and distributions that are currently indexed in
-your remote repository.  This is basically just the contents of the
-F<02packages.details.txt.gz> file.
+Lists packages and distributions that are currently indexed in your
+remote repository.  You can see all packages (the default) only
+locally added packages, only foreign packages, or only local packages
+that conflict with a foreign package.
 
 =item remove Some::Package
 
