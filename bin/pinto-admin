@@ -250,5 +250,13 @@ use the same C<author> parameter.
 
 =back
 
+=head1 SEE ALSO
+
+L<Pinto::Manual> for broad information about using the Pinto tools.
+
+L<pinto-server> to allow remote access to your Pinto repository.
+
+L<pinto-remote> to interact with a remote Pinto repository.
+
 =cut
 
