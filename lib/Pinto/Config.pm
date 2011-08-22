@@ -32,6 +32,7 @@ has source  => (
     key       => 'source',
     default   => 'http://cpan.perl.org',
     coerce    => 1,
+    documentation => 'URL of a CPAN mirror (or Pinto repository) where foreign dists will be pulled from',
 );
 
 
@@ -40,6 +41,7 @@ has nocleanup => (
     isa       => Bool,
     key       => 'nocleanup',
     default   => 0,
+    documentation => 'If true, then Pinto will not delete older distributions when newer versions are added',
 );
 
 
@@ -48,6 +50,7 @@ has noinit   => (
     isa      => Bool,
     key      => 'noinit',
     default  => 0,
+    documentation => 'If true, then Pinto will not update/pull the repository from VCS before each action',
 );
 
 
@@ -56,6 +59,7 @@ has store => (
     isa       => Str,
     key       => 'store',
     default   => 'Pinto::Store',
+    documentation => 'Name of the class that will handle storage of your repository',
 );
 
 
