@@ -34,7 +34,7 @@ sub execute {
         if -e file($repos, qw(modules 02packages.details.txt.gz));
 
 
-    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->new_action_batch( %{$opts}, nolock => 1 );
     $self->pinto->add_action('Create', %{$opts});
     my $ok = $self->pinto->run_actions();
     return $ok ? 0 : 1;

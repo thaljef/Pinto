@@ -60,6 +60,12 @@ has nocommit => (
     default  => 0,
 );
 
+has nolock => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
 has _locker  => (
     is       => 'ro',
     isa      => 'Pinto::Locker',
@@ -96,9 +102,9 @@ Runs all the actions in this Batch.  Returns a reference to this C<ActionBatch>.
 sub run {
     my ($self) = @_;
 
-    $self->_locker->lock();
+    $self->_locker->lock() unless $self->nolock();
     $self->_run_actions();
-    $self->_locker->unlock();
+    $self->_locker->unlock() unless $self->nolock();
 
     return $self;
 }
@@ -127,7 +133,7 @@ sub _run_actions {
 
     if ( $self->store->isa('Pinto::Store::VCS') ) {
         my $modules_dir = $self->config->repos->subdir('modules');
-        $self->store->mark_path_as_modified($modules_dir)
+        $self->store->mark_path_as_modified($modules_dir);
     }
 
     $self->store->finalize( message => $self->message() );
