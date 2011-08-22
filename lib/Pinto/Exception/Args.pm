@@ -2,6 +2,9 @@ package Pinto::Exception::Args;
 
 # ABSTRACT: Exception classes used by Pinto
 
+use strict;
+use warnings;
+
 #-----------------------------------------------------------------------------
 
 # VERSION

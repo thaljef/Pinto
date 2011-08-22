@@ -63,6 +63,8 @@ sub fetch {
     else{
       throw_io "$url failed with status: " . $result->code();
     }
+
+    return 1;  # Should probably never get here
 }
 
 #------------------------------------------------------------------------------

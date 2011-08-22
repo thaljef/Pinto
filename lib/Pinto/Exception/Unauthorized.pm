@@ -2,6 +2,9 @@ package Pinto::Exception::Unauthorized;
 
 # ABSTRACT: Exception class used by Pinto
 
+use strict;
+use warnings;
+
 #-----------------------------------------------------------------------------
 
 # VERSION

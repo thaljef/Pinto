@@ -23,7 +23,7 @@ has author => (
 
 #------------------------------------------------------------------------------
 
-sub _build_author {
+sub _build_author {                                  ## no critic (FinalReturn)
 
     # Look at typical environment variables
     for my $var ( qw(USERNAME USER LOGNAME) ) {

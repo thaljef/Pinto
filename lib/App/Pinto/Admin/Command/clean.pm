@@ -5,6 +5,8 @@ package App::Pinto::Admin::Command::clean;
 use strict;
 use warnings;
 
+use IO::Interactive;
+
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -29,7 +31,7 @@ sub execute {
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Clean', %{$opts});
 
-    $self->prompt_for_confirmation() if -t STDIN;
+    $self->prompt_for_confirmation() if IO::Interactive::is_interactive();
 
     my $ok = $self->pinto->run_actions();
     return $ok ? 0 : 1;

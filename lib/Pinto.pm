@@ -150,6 +150,10 @@ __PACKAGE__->meta->make_immutable();
 
 __END__
 
+=pod
+
+=for stopwords PASSed
+
 =head1 SYNOPSIS
 
 There is nothing for you to see here. Instead, please look at one or

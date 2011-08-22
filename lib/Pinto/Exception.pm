@@ -2,6 +2,9 @@ package Pinto::Exception;
 
 # ABSTRACT: Base class for Pinto exceptions
 
+use strict;
+use warnings;
+
 #-----------------------------------------------------------------------------
 
 # VERSION

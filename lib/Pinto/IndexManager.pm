@@ -341,6 +341,8 @@ sub _distribution_check {
         my $msg = "The same distribution already exists at $location";
         Pinto::Exception::DuplicateDist->throw($msg);
     }
+
+    return 1;  # should never get here
 }
 
 #------------------------------------------------------------------------------

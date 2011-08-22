@@ -141,7 +141,7 @@ sub add {
 Removes the specified C<file> (as a L<Path::Class::File>) from this
 Store.  The path to C<file> is presumed to be somewhere beneath the
 root directory of this Store.  Any empty directories above C<file>
-will also be removed.  Throws an excpetion on failure.  Returns a
+will also be removed.  Throws an exception on failure.  Returns a
 reference to this Store.
 
 =cut
