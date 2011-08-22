@@ -112,8 +112,8 @@ sub _run_actions {
         unless $self->store->is_initialized()
            and $self->config->noinit();
 
+    my $changes_were_made = 0;
 
-    my $changes_were_made;
     while ( my $action = $self->dequeue() ) {
         $changes_were_made += $self->_run_one_action($action);
     }
@@ -142,6 +142,7 @@ sub _run_one_action {
 
     my $changes_were_made = 0;
 
+    # TODO: maybe accumulate exceptions in $self?
     try   { $changes_were_made += $action->execute() }
     catch { $self->logger->whine($_) };
 

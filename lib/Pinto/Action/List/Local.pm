@@ -1,11 +1,10 @@
-package Pinto::Action::List;
+package Pinto::Action::List::Local;
 
-# ABSTRACT: An abstract action for listing packages in a repository
+# ABSTRACT: Action that lists only the local packages in a repository
 
 use Moose;
-use Pinto::Types qw(IO);
 
-extends 'Pinto::Action';
+extends 'Pinto::Action::List';
 
 use namespace::autoclean;
 
@@ -15,18 +14,14 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-has out => (
-    is      => 'ro',
-    isa     => IO,
-    coerce  => 1,
-    default => sub { [fileno(STDOUT), '>'] },
-);
-
-#------------------------------------------------------------------------------
-
 override execute => sub {
     my ($self) = @_;
-    die 'Abstract method!';
+
+    for my $package ( $self->idxmgr()->local_packages() ) {
+        print { $self->out() } $package->to_index_string();
+    }
+
+    return 0;
 };
 
 #------------------------------------------------------------------------------

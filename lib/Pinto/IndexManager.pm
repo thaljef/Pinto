@@ -155,7 +155,51 @@ sub all_packages {
     my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
 
     return $self->master_index->packages->values->sort($sorter)->flatten();
-  }
+}
+
+
+#------------------------------------------------------------------------------
+
+sub local_packages {
+    my ($self) = @_;
+
+    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+
+    return $self->local_index->packages->values->sort($sorter)->flatten();
+}
+
+
+#------------------------------------------------------------------------------
+
+sub foreign_packages {
+    my ($self) = @_;
+
+    my $foreigners = [];
+    for my $package ( $self->master_index->packages->values->flatten() ) {
+        my $name = $package->name();
+        $foreigners->push($package) if not $self->local_index->packages->at($name);
+    }
+
+    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+    return $foreigners->sort($sorter)->flatten();
+
+}
+
+
+#------------------------------------------------------------------------------
+
+sub conflict_packages {
+    my ($self) = @_;
+
+    my $conflicts = [];
+    for my $local_package ( $self->local_index->packages->values->flatten() ) {
+        my $name = $local_package->name();
+        $conflicts->push($local_package) if $self->mirror_index->packages->at($name);
+    }
+
+    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
+    return $conflicts->sort($sorter)->flatten();
+}
 
 #------------------------------------------------------------------------------
 

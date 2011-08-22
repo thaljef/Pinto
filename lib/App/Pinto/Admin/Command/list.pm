@@ -5,6 +5,9 @@ package App::Pinto::Admin::Command::list;
 use strict;
 use warnings;
 
+use Readonly;
+use List::MoreUtils qw(none);
+
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -15,12 +18,16 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
+Readonly my @LIST_TYPES => qw(local foreign conflicts all);
+Readonly my $LIST_TYPES_STRING => join ' | ', sort @LIST_TYPES;
+Readonly my $DEFAULT_LIST_TYPE => 'all';
+
+#------------------------------------------------------------------------------
+
 sub opt_spec {
+
     return (
-        [ 'all'       => 'List both foreign and local dists (default)'],
-        [ 'conflicts' => 'List conflicts between local and foreign dists' ],
-        [ 'foreign'   => 'List only the foreign dists'],
-        [ 'local'     => 'List only the local dists'],
+        [ 'type=s'  => "One of: ( $LIST_TYPES_STRING )"],
     );
 }
 
@@ -28,7 +35,12 @@ sub opt_spec {
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
+
     $self->usage_error('Arguments are not allowed') if @{ $args };
+
+    $opts->{type} ||= $DEFAULT_LIST_TYPE;
+    $self->usage_error('Invalid type') if none { $opts->{type} eq $_ } @LIST_TYPES;
+
     return 1;
 }
 
@@ -38,7 +50,8 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     $self->pinto->new_action_batch( %{$opts} );
-    $self->pinto->add_action('List', %{$opts});
+    my $list_class = 'List::' . ucfirst $opts->{type};
+    $self->pinto->add_action($list_class, %{$opts});
     my $ok = $self->pinto->run_actions();
     return $ok ? 0 : 1;
 

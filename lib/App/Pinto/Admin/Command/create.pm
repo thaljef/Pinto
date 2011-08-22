@@ -33,8 +33,6 @@ sub execute {
     die "A repository already exists at $repos\n"
         if -e file($repos, qw(modules 02packages.details.txt.gz));
 
-    eval { $repos->mkpath() }
-      or die "Unable to make repository at $repos: $@\n";
 
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Create', %{$opts});

@@ -15,12 +15,6 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
-sub opt_spec {
-    return ();
-}
-
-#------------------------------------------------------------------------------
-
 sub validate_args {
     my ($self, $opts, $args) = @_;
     $self->usage_error('Arguments are not allowed') if @{ $args };
