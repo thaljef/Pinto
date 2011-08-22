@@ -4,9 +4,12 @@ package Pinto::Action::Add;
 
 use Moose;
 
+use Path::Class;
+use File::Temp;
+
 use Pinto::Util;
 use Pinto::Distribution;
-use Pinto::Types qw(File AuthorID);
+use Pinto::Types qw(StrOrFileOrURI);
 
 extends 'Pinto::Action';
 
@@ -21,9 +24,8 @@ use namespace::autoclean;
 
 has dist => (
     is       => 'ro',
-    isa      => File,
+    isa      => StrOrFileOrURI,
     required => 1,
-    coerce   => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -40,10 +42,12 @@ override execute => sub {
     my $repos     = $self->config->repos();
     my $cleanup   = not $self->config->nocleanup();
     my $author    = $self->author();
-    my $dist_file = $self->dist();
+    my $dist      = $self->dist();
 
     # TODO: Consider moving Distribution construction to the index manager
+    my $dist_file = _is_url($dist) ? $self->_dist_from_url($dist) : Path::Class::file($dist);
     my $added   = Pinto::Distribution->new_from_file(file => $dist_file, author => $author);
+
     my @removed = $self->idxmgr->add_local_distribution(dist => $added, file => $dist_file);
     $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
 

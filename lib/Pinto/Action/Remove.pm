@@ -6,7 +6,6 @@ use Moose;
 use MooseX::Types::Moose qw( Str );
 
 use Pinto::Util;
-use Pinto::Types qw(AuthorID);
 
 extends 'Pinto::Action';
 
