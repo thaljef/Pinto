@@ -4,8 +4,6 @@ In no particular order...
 
 =over 4
 
-=item Command line switch to specify additional commit message at command line.
-
 =item Command line switch Specify alternative tag name.
 
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
@@ -31,17 +29,8 @@ the development/deployment cycle. ++
 =item Add support for cpan[1] clients.  For this I think we just need
 to produce minimal version of the authors and modules index files. ++
 
-=item Re-think the pinto-admin command line interface.  Should we
-just make all the options global, instead of having options for
-each subcommand?
-
-=item Add feature for listing just the locally added packages. ++
-
 =item Generate a RECENT file.  This could just contain the files
 added in the last action (if any).
-
-=item Add feature for listing local packages that are outdated
-(i.e. there is a newer mirrored version). ++
 
 =item Implement Pinto::Store::Git.
 
