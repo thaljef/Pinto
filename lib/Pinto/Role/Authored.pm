@@ -4,9 +4,9 @@ package Pinto::Role::Authored;
 
 use Moose::Role;
 
-use Carp;
 use English qw(-no_match_vars);
 use Pinto::Types 0.017 qw(AuthorID);
+use Pinto::Exception::NoAuthor;
 
 #------------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ sub _build_author {
     }
 
     # Otherwise, we are hosed!
-    croak 'Unable to determine your user name';
+    Pinto::Exception::NoAuthor->throw( 'Unable to determine your user name' );
 
 }
 

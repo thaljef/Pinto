@@ -5,12 +5,14 @@ package Pinto::IndexManager;
 use Moose;
 use Moose::Autobox;
 
-use Carp;
 use Path::Class;
 use File::Compare;
 
 use Pinto::Util;
 use Pinto::Index;
+use Pinto::Exception::Unauthorized;
+use Pinto::Exception::DuplicateDist;
+use Pinto::Exception::IllegalDist;
 
 use namespace::autoclean;
 
@@ -233,8 +235,10 @@ sub remove_local_package {
     my $author  = $args{author};
 
     my $orig_author = $self->local_author_of(package => $package);
-    croak "Only author $orig_author can remove $package"
-        if defined $orig_author and $author ne $orig_author;
+    if (defined $orig_author and $author ne $orig_author) {
+        my $msg = "Only author $orig_author can remove $package";
+        Pinto::Exception::Unauthorized->throw($msg);
+    }
 
     my $local_dist = ( $self->local_index->remove($package) )[0];
     return if not $local_dist;
@@ -296,10 +300,12 @@ sub add_local_distribution {
 
     for my $pkg ( @packages ) {
 
-        if ( my $orig_author = $self->local_author_of(package => $pkg) ) {
+        my $orig_author = $self->local_author_of(package => $pkg);
+        next if not $orig_author;
 
-            croak "Only author $orig_author can update $pkg"
-                if $orig_author ne $dist->author();
+        if ( $orig_author ne $dist->author() ) {
+            my $msg = "Only author $orig_author can update $pkg";
+            Pinto::Exception::Unauthorized->throw($msg);
         }
     }
 
@@ -327,12 +333,14 @@ sub _distribution_check {
     # accordingly.  A different dist warrants a loud warning.  But the
     # same dist only needs a whimper.
 
-    croak "A different distribution already exists as $location"
-        if not $is_same;
-
-    croak "Repository already contains the same distribution at $location"
-        if $is_same;
-
+    if (not $is_same) {
+        my $msg = "A different distribution already exists as $location";
+        Pinto::Exception::IllegalDist->throw($msg);
+    }
+    else {
+        my $msg = "The same distribution already exists at $location";
+        Pinto::Exception::DuplicateDist->throw($msg);
+    }
 }
 
 #------------------------------------------------------------------------------

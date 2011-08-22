@@ -4,7 +4,6 @@ package Pinto::ActionBatch;
 
 use Moose;
 
-use Carp;
 use Try::Tiny;
 use Path::Class;
 

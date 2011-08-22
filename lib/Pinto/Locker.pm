@@ -4,10 +4,10 @@ package Pinto::Locker;
 
 use Moose;
 
-use Carp;
 use Path::Class;
 use LockFile::Simple;
 
+use Pinto::Exception::Lock qw(throw_lock);
 use Pinto::Types 0.017 qw(Dir);
 
 use namespace::autoclean;
@@ -79,7 +79,7 @@ sub lock {                                             ## no critic (Homonym)
     my $repos = $self->repos();
 
     my $lock = $self->_lockmgr->lock( $repos . '/' )
-        or croak 'Unable to lock the repository.  Please try later.';
+        or throw_lock 'Unable to lock the repository -- please try later';
 
     $self->logger->debug("Process $$ got the lock on $repos");
     $self->_lock($lock);
@@ -99,7 +99,7 @@ get to work.
 sub unlock {
     my ($self) = @_;
 
-    $self->_lock->release() or croak "Unable to unlock repository";
+    $self->_lock->release() or throw_lock 'Unable to unlock repository';
 
     my $repos = $self->repos();
     $self->logger->debug("Process $$ released the lock on $repos");

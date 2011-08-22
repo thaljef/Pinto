@@ -4,9 +4,10 @@ package Pinto::Role::UserAgent;
 
 use Moose::Role;
 
-use Carp;
 use Path::Class;
 use LWP::UserAgent;
+
+use Pinto::Exception::IO qw(throw_io);
 
 use namespace::autoclean;
 
@@ -60,7 +61,7 @@ sub fetch {
         return 0;
     }
     else{
-      croak "$url failed with status: " . $result->code();
+      throw_io "$url failed with status: " . $result->code();
     }
 }
 

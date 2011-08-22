@@ -4,13 +4,15 @@ package Pinto;
 
 use Moose;
 
-use Carp;
 use Class::Load;
 
 use Pinto::Config;
 use Pinto::Logger;
 use Pinto::ActionBatch;
 use Pinto::IndexManager;
+
+use Pinto::Exception::Loader qw(throw_load);
+use Pinto::Exception::Args qw(throw_args);
 
 use namespace::autoclean;
 
@@ -83,7 +85,7 @@ sub _build__store {
     my $store_class = $self->config->store();
 
     eval { Class::Load::load_class( $store_class ); 1 }
-        or croak "Unable to load store class $store_class: $@";
+        or throw_load "Unable to load store class $store_class: $@";
 
     return $store_class->new( config => $self->config(),
                               logger => $self->logger() );
@@ -114,7 +116,7 @@ sub add_action {
     my $action_class = "Pinto::Action::$action_name";
 
     eval { Class::Load::load_class($action_class); 1 }
-        or croak "Unable to load action class $action_class: $@";
+        or throw_load "Unable to load action class $action_class: $@";
 
     my $action =  $action_class->new( config => $self->config(),
                                       logger => $self->logger(),
@@ -133,7 +135,7 @@ sub run_actions {
     my ($self) = @_;
 
     my $action_batch = $self->_action_batch()
-      or croak 'You must create an action batch first';
+      or throw_args 'You must create an action batch first';
 
     return $self->_action_batch->run();
 }

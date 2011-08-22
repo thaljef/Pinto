@@ -111,7 +111,7 @@ sub whine {
     my ($self, $message) = @_;
 
     chomp $message;
-    $message = _colorize($message, 'bold yellow') unless $self->nocolor();
+    $message = _colorize("$message", 'bold yellow') unless $self->nocolor();
     $self->_logit($message) if $self->verbose() >= $LEVEL_WARN;
 
     return 1;
@@ -129,7 +129,7 @@ sub fatal {
     my ($self, $message) = @_;
 
     chomp $message;
-    $message = _colorize($message, 'bold red') unless $self->nocolor();
+    $message = _colorize("$message", 'bold red') unless $self->nocolor();
 
     die "$message\n";                     ## no critic (RequireCarping)
 }

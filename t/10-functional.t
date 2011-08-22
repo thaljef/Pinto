@@ -50,7 +50,7 @@ index_package_exists_ok('Bar', 'AUTHOR', 'v4.9.1');
 $pinto->add_action('Add', dist => $dist_file, author => 'AUTHOR');
 $pinto->run_actions();
 
-like($buffer, qr/already contains/, 'Cannot add same dist twice');
+like($buffer, qr/same distribution already exists/, 'Cannot add same dist twice');
 
 $pinto->add_action('Add', dist => $dist_file, author => 'CHAUCEY');
 $pinto->run_actions();

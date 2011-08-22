@@ -4,8 +4,10 @@ package Pinto::Store;
 
 use Moose;
 
-use Carp;
 use File::Copy;
+
+use Pinto::Exception::Args qw(throw_args);
+use Pinto::Exception::IO qw(throw_io);
 
 use namespace::autoclean;
 
@@ -94,7 +96,8 @@ The path to C<file> is presumed to be somewhere beneath the root
 directory of this Store.  If the optional C<source> is given (also as
 a L<Path::Class::File>), then that C<source> is first copied to
 C<file>.  If C<source> is not specified, then the C<file> must already
-exist.  Croaks on failure.  Returns a reference to this Store.
+exist.  Throws an exception on failure.  Returns a reference to this
+Store.
 
 =cut
 
@@ -104,10 +107,10 @@ sub add {
     my $file   = $args{file};
     my $source = $args{source};
 
-    croak "$file does not exist and no source was specified"
+    throw_args "$file does not exist and no source was specified"
         if not -e $file and not defined $source;
 
-    croak "$source is not a file"
+    throw_args "$source is not a file"
         if $source and $source->is_dir();
 
     if ($source) {
@@ -125,7 +128,7 @@ sub add {
         # We're going to be kind and accommodate the old versions.
 
         File::Copy::copy("$source", "$file")
-            or croak "Failed to copy $source to $file: $!";
+            or throw_io "Failed to copy $source to $file: $!";
     }
 
     return $self;
@@ -138,8 +141,8 @@ sub add {
 Removes the specified C<file> (as a L<Path::Class::File>) from this
 Store.  The path to C<file> is presumed to be somewhere beneath the
 root directory of this Store.  Any empty directories above C<file>
-will also be removed.  Croaks on failure.  Returns a reference to this
-Store.
+will also be removed.  Throws an excpetion on failure.  Returns a
+reference to this Store.
 
 =cut
 
@@ -150,10 +153,10 @@ sub remove {
 
     return $self if not -e $file;
 
-    croak "$file is not a file" if -d $file;
+    throw_args "$file is not a file" if -d $file;
 
     $self->logger->info("Removing file $file");
-    $file->remove() or croak "Failed to remove $file: $!";
+    $file->remove() or throw_io "Failed to remove $file: $!";
 
     while (my $dir = $file->parent()) {
         last if $dir->children();
