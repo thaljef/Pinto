@@ -1,6 +1,19 @@
 >> {{$NEXT}}
 
-    * Revised documentation
+    * Interface Changes:
+
+    pinto-admin[1] is now zero-conf (at least, by default).  However,
+    you must now specify the --repos for every command.  Also, some of
+    the options for pinto-admin have been removed for safety, and are
+    now in the repository-specific configuration file (see below).
+    This helps to deter you from doing things that contradict the
+    usual behavior of your repository.
+
+    Each Pinto repository now has its own configuration file, which
+    governs its basic behavior.  The configuration file is generated
+    with default values when you run the "create" command.  This
+    allows you set up multiple repositories, each with a different
+    behavior and VCS store.
 
     * Enhancements:
 
@@ -10,7 +23,16 @@
     the output from a find[1] or dzil[1] command.
 
     You can also specify arguments to the "add" command as URLs,
-    and Pinto will fetch them for you.
+    and Pinto will fetch them for you. (Suggested by Tim Bunce).
+
+    The "list" command now accepts a --type option, which will show
+    you either all packages, only local packages, only foreign
+    packages, or only local packages that block a foreign package.
+    (suggested by George Hartzell and Meg Green).
+
+    The "add", "remove", and "mirror" actions now accept a --message
+    option, which will be prepended to the VCS commit log that Pinto
+    generates (suggested by Jan Vogel).
 
     Added "nocolor" command line option.
 
