@@ -52,8 +52,8 @@ sub execute {
     $self->pinto->new_action_batch( %{$opts} );
     my $list_class = 'List::' . ucfirst $opts->{type};
     $self->pinto->add_action($list_class, %{$opts});
-    my $ok = $self->pinto->run_actions();
-    return $ok ? 0 : 1;
+    my $result = $self->pinto->run_actions();
+    return $result->is_success() ? 0 : 1;
 
 }
 

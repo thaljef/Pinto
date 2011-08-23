@@ -6,6 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw( Str );
 
 use Pinto::Util;
+use Pinto::Exception;
 
 extends 'Pinto::Action';
 
@@ -39,8 +40,9 @@ override execute => sub {
     my $idxmgr  = $self->idxmgr();
     my $cleanup = not $self->config->nocleanup();
 
-    my $dist = $idxmgr->remove_local_package(package => $pkg, author => $author);
-    $self->logger->whine("Package $pkg is not in the local index") and return 0 if not $dist;
+    my $dist = $idxmgr->remove_local_package(package => $pkg, author => $author)
+        or Pinto::Exception->throw("Package $pkg is not in the local index");
+
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
 
     my $file = $dist->path( $self->config->repos() );

@@ -33,8 +33,8 @@ sub execute {
 
     $self->prompt_for_confirmation() if IO::Interactive::is_interactive();
 
-    my $ok = $self->pinto->run_actions();
-    return $ok ? 0 : 1;
+    my $result = $self->pinto->run_actions();
+    return $result->is_success() ? 0 : 1;
 }
 
 #------------------------------------------------------------------------------

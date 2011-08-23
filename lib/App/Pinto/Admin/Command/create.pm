@@ -36,8 +36,8 @@ sub execute {
 
     $self->pinto->new_action_batch( %{$opts}, nolock => 1 );
     $self->pinto->add_action('Create', %{$opts});
-    my $ok = $self->pinto->run_actions();
-    return $ok ? 0 : 1;
+    my $result = $self->pinto->run_actions();
+    return $result->is_success() ? 0 : 1;
 }
 
 #------------------------------------------------------------------------------

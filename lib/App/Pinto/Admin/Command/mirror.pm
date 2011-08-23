@@ -40,8 +40,8 @@ sub execute {
 
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Mirror', %{$opts});
-    my $ok = $self->pinto->run_actions();
-    return $ok ? 0 : 1;
+    my $result = $self->pinto->run_actions();
+    return $result->is_success() ? 0 : 1;
 }
 
 #------------------------------------------------------------------------------

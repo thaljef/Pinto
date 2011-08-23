@@ -37,6 +37,16 @@ has messages => (
     auto_deref => 1,
 );
 
+has exceptions => (
+    is         => 'ro',
+    isa        => 'ArrayRef[Pinto::Exception]',
+    traits     => [ 'Array' ],
+    default    => sub{ [] },
+    init_arg   => undef,
+    handles    => {add_exception => 'push'},
+    auto_deref => 1,
+);
+
 #------------------------------------------------------------------------------
 # Roles
 

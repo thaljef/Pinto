@@ -8,6 +8,7 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Locker;
+use Pinto::BatchResult;
 
 use Pinto::Types 0.017 qw(Dir);
 use MooseX::Types::Moose qw(Str Bool);
@@ -73,6 +74,13 @@ has _locker  => (
     lazy     => 1,
 );
 
+has _result => (
+    is       => 'ro',
+    isa      => 'Pinto::BatchResult',
+    builder  => '_build__result',
+    init_arg => undef,
+);
+
 #-----------------------------------------------------------------------------
 # Moose roles
 
@@ -90,6 +98,16 @@ sub _build__locker {
 }
 
 #-----------------------------------------------------------------------------
+# TODO: I don't like having the result as an attribute.  I would prefer
+# to keep it transient, so that it doesn't survive beyond each run().
+
+sub _build__result {
+    my ($self) = @_;
+
+    return Pinto::BatchResult->new();
+}
+
+#-----------------------------------------------------------------------------
 # Public methods
 
 =method run()
@@ -101,11 +119,17 @@ Runs all the actions in this Batch.  Returns a reference to this C<ActionBatch>.
 sub run {
     my ($self) = @_;
 
-    $self->_locker->lock() unless $self->nolock();
-    $self->_run_actions();
-    $self->_locker->unlock() unless $self->nolock();
+    try {
+        $self->_locker->lock() unless $self->nolock();
+        $self->_run_actions();
+        $self->_locker->unlock() unless $self->nolock();
+    }
+    catch {
+        $self->logger->whine($_);
+        $self->_result->add_exception($_);
+    };
 
-    return $self;
+    return $self->_result();
 }
 
 #-----------------------------------------------------------------------------
@@ -117,14 +141,12 @@ sub _run_actions {
         unless $self->store->is_initialized()
            and $self->config->noinit();
 
-    my $changes_were_made = 0;
-
     while ( my $action = $self->dequeue() ) {
-        $changes_were_made += $self->_run_one_action($action);
+        $self->_run_one_action($action);
     }
 
     $self->logger->debug('No changes were made') and return $self
-      unless $changes_were_made;
+      unless $self->_result->changes_made();
 
     $self->idxmgr->write_indexes();
 
@@ -145,18 +167,26 @@ sub _run_actions {
 sub _run_one_action {
     my ($self, $action) = @_;
 
-    my $changes_were_made = 0;
-
-    # TODO: maybe accumulate exceptions in $self?
-    try   { $changes_were_made += $action->execute() }
-    catch { $self->logger->whine($_) };
+    try   {
+        my $changes = $action->execute();
+        $self->_result->made_changes() if $changes;
+    }
+    catch {
+        # Collect unhandled exceptions
+        $self->logger->whine($_);
+        $self->_result->add_exception($_);
+    }
+    finally {
+        # Collect handled exceptions
+        $self->_result->add_exception($_) for $action->exceptions();
+    };
 
     for my $msg ( $action->messages() ) {
         $self->message() and $self->append_message("\n\n");
         $self->append_message($msg);
     }
 
-    return $changes_were_made;
+    return $self;
 }
 
 

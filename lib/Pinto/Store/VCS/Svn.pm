@@ -98,7 +98,7 @@ override finalize => sub {
     $self->logger->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
-    $self->_make_tag() if $self->config->svn_tag();
+    #$self->_make_tag() if $self->config->svn_tag();
 
     return 1;
 };

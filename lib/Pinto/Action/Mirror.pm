@@ -44,8 +44,13 @@ sub execute {
 
     my $dist_changes = 0;
     for my $dist ( $idxmgr->dists_to_mirror() ) {
-        try   { $dist_changes += $self->_do_mirror($dist) }
-        catch { $self->logger->whine("Download of $dist failed: $_") };
+        try   {
+            $dist_changes += $self->_do_mirror($dist);
+        }
+        catch {
+            $self->add_exception($_);
+            $self->logger->whine("Download of $dist failed: $_");
+        };
     }
 
     return 0 if not ($idx_changes + $dist_changes);
