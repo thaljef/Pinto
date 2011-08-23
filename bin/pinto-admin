@@ -227,6 +227,9 @@ packages from your repository will always get B<your latest> version of
 C<Foo>.  But they'll never be able to get C<Bar>, because doing so
 would leave them with the older C<Foo>.
 
+However, you can disable this behavior with the C<noclobber>
+configuration parameter.
+
 =item You can never add a distribution with the same name twice.
 
 Most distribution-building tools will put some kind of version number
