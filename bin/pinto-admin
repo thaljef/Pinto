@@ -182,6 +182,16 @@ then you can still get older distributions in the usual way:
 
   $> cpanm A/AU/AUTHOR/Older-Dist-1.2.tar gz
 
+=item noclobber = 0|1
+
+Normally, L<Pinto> favors removing "old" distributions when new ones
+are added (see L<"BEHAVIOR">).  But if C<noclobber> is true, L<Pinto>
+will not remove (from the index) every package in an existing
+distribution whenever you add a distribution that contains one or more
+of the packges that were in the existing distribution.  Setting this
+to true make Pinto behave more like PAUSE.  TODO: explain this better!
+
+
 =item store = CLASS_NAME
 
 The name of the class that will handle storage of your Pinto
