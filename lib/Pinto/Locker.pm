@@ -78,7 +78,7 @@ sub lock {                                             ## no critic (Homonym)
 
     my $repos = $self->repos();
 
-    my $lock = $self->_lockmgr->lock( $repos . '/' )
+    my $lock = $self->_lockmgr->lock( $repos->file('')->stringify() )
         or throw_lock 'Unable to lock the repository -- please try later';
 
     $self->logger->debug("Process $$ got the lock on $repos");
