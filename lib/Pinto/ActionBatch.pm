@@ -152,7 +152,7 @@ sub _run_actions {
         $self->_run_one_action($action);
     }
 
-    $self->logger->debug('No changes were made') and return $self
+    $self->logger->info('No changes were made') and return $self
       unless $self->_result->changes_made();
 
     $self->idxmgr->write_indexes();
