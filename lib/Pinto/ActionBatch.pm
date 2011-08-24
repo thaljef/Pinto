@@ -112,7 +112,7 @@ sub _build__result {
 
 =method run()
 
-Runs all the actions in this Batch.  Returns a reference to this C<ActionBatch>.
+Runs all the actions in this Batch.  Returns a L<BatchResult>.
 
 =cut
 
@@ -122,11 +122,14 @@ sub run {
     try {
         $self->_locker->lock() unless $self->nolock();
         $self->_run_actions();
-        $self->_locker->unlock() unless $self->nolock();
     }
     catch {
         $self->logger->whine($_);
         $self->_result->add_exception($_);
+    }
+    finally {
+        # TODO: do we first need to check if it actually is locked?
+        $self->_locker->unlock() unless $self->nolock();
     };
 
     return $self->_result();
