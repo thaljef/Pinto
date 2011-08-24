@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Test::More (tests => 2);
-use Test::Exception;
 
 use File::Temp;
 use Path::Class;
@@ -47,13 +46,13 @@ if ($pid) {
     sleep 10; # Let the child get started
     print "Starting: $$\n";
     $batch->enqueue($competitor);
-    throws_ok{ $batch->run() }
-      qr/Unable to lock/, 'Repository is locked by sleeper';
+    $batch->run();
+    like($buffer, qr/Unable to lock/, 'Repository is locked by sleeper');
 
     wait; # Let the child finish
     $batch->enqueue($competitor);
-    lives_ok { $batch->run() }
-      'Got lock after the sleeper died';
+    $batch->run();
+    like($buffer, qr/got the lock/, 'Got lock after the sleeper died');
 }
 else {
     # child
