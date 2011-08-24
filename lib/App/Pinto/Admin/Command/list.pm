@@ -27,7 +27,8 @@ Readonly my $DEFAULT_LIST_TYPE => 'all';
 sub opt_spec {
 
     return (
-        [ 'type=s'  => "One of: ( $LIST_TYPES_STRING )"],
+        [ 'noinit'  => 'Do not pull/update from VCS' ],
+        [ 'type=s'  => "One of: ( $LIST_TYPES_STRING )" ],
     );
 }
 

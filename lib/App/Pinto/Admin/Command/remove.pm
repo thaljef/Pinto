@@ -20,9 +20,10 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
     return (
         [ 'author=s'  => 'Your (alphanumeric) author ID' ],
-        [ 'message=s' => 'Prepend a message to the VCS log'],
-        [ 'nocommit'  => 'Do not commit changes to VCS'],
-# TODO       [ 'notag'     => 'Do not create any tag in VCS'],
+        [ 'message=s' => 'Prepend a message to the VCS log' ],
+        [ 'nocommit'  => 'Do not commit changes to VCS' ],
+        [ 'noinit'    => 'Do not pull/update from VCS' ],
+# TODO       [ 'notag'     => 'Do not create any tag in VCS' ],
 # TODO       [ 'tag=s'     => 'Specify an alternate tag name' ],
     );
 }

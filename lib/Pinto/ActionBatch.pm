@@ -55,6 +55,12 @@ has message => (
     default  => '',
 );
 
+has noinit => (
+    is       => 'ro',
+    isa      => Bool,
+    default  => 0,
+);
+
 has nocommit => (
     is       => 'ro',
     isa      => Bool,
@@ -140,13 +146,7 @@ sub run {
 sub _run_actions {
     my ($self) = @_;
 
-    # TODO: I'm not sure we is_initialized() is really necessary.  But
-    # we probably do need to make sure that the repos actually is a
-    # repository.
-
-    $self->store->initialize()
-        unless $self->store->is_initialized()
-           and $self->config->noinit();
+    $self->store->initialize() unless $self->->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_one_action($action);

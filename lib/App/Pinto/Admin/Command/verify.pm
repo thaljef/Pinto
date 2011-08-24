@@ -15,6 +15,13 @@ use base 'App::Pinto::Admin::Command';
 
 #-----------------------------------------------------------------------------
 
+sub opt_spec {
+    return (
+        [ 'noinit'    => 'Do not pull/update from VCS' ],
+    );
+}
+
+#-----------------------------------------------------------------------------
 
 sub validate_args {
     my ($self, $opt, $args) = @_;
