@@ -7,8 +7,8 @@ use warnings;
 
 use Carp qw(carp croak);
 use List::MoreUtils qw(firstidx);
-use Proc::Reliable;
 use Path::Class;
+use IPC::Run;
 
 #--------------------------------------------------------------------------
 
@@ -256,9 +256,7 @@ sub _svn {
     my $croak   = defined $args{croak} ? $args{croak} : 1;
 
     unshift @{$command}, 'svn';
-    my $proc = Proc::Reliable->new();
-    $proc->run($command);
-    my $ok = not $proc->status();
+    my $ok = not IPC::Run::run($command, \my($in), $buffer, $buffer);
 
     if ($croak and not $ok) {
 
@@ -268,10 +266,9 @@ sub _svn {
         }
 
         my $command_string = join ' ', @{ $command };
-        croak "Command failed: $command_string\n" . $proc->stdout();
+        croak "Command failed: $command_string\n" . ${ $buffer };
     }
 
-    ${ $buffer } = $proc->stdout();
     return $ok;
 }
 
