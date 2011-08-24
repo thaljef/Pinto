@@ -58,7 +58,10 @@ sub made_changes {
 sub to_string {
     my ($self) = @_;
 
-    return join "\n", map { "$_" } $self->exceptions();
+    my $string = join "\n", map { "$_" } $self->exceptions();
+    $string .= "\n" unless $string =~ m/\n $/x;
+
+    return $string;
 }
 
 #-----------------------------------------------------------------------------
