@@ -1,15 +1,19 @@
 {{$NEXT}}
 
-     * Bug Fix:
+     * Bug Fixes:
 
-     The 'add' and 'remove' commands for pinto-admin were
-     not reading arguments from STDIN properly.
+     The 'add' and 'remove' commands for pinto-admin were not reading
+     arguments from STDIN properly.
+
+     All svn commands would fail when running under pinto-server.
+     This was due to some strage behavior in IPC::Run that I can't
+     explain.
 
 0.018     2011-08-24 01:45:21 America/Los_Angeles
 
-    Now using IPC::Run to handle external commands (like svn).
-    IPC::Run seems to behave better when running in a server
-    environment like pinto-server (via Dancer).
+     Now using IPC::Run to handle external commands (like svn).
+     IPC::Run seems to behave better when running in a server
+     environment like pinto-server (via Dancer).
 
 0.017     2011-08-24 00:50:09 America/Los_Angeles
 
