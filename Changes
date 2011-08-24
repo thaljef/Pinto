@@ -1,4 +1,4 @@
->> {{$NEXT}}
+{{$NEXT}}
 
     * Interface Changes:
 
@@ -92,7 +92,7 @@
     modules have been pulled out into a separate distribtuion,
     which will be released to CPAN shortly.
 
->> 0.011     2011-08-14 21:11:47 America/Los_Angeles
+0.011     2011-08-14 21:11:47 America/Los_Angeles
 
     * Bug Fixes:
 
@@ -100,14 +100,14 @@
     which did not handle Path::Class objects properly.  Thank you,
     CPAN Testers!
 
->> 0.010     2011-08-14 13:29:23 America/Los_Angeles
+0.010     2011-08-14 13:29:23 America/Los_Angeles
 
     * Bug Fixes:
 
     Fixed test failures that I introduced by renaming some classes in
     the last release.
 
->> 0.009     2011-08-12 17:50:28 America/Los_Angeles
+0.009     2011-08-12 17:50:28 America/Los_Angeles
 
     * Interface changes:
 
@@ -135,7 +135,7 @@
     guts of Pinto are all private (for now), so you shouldn't really
     care.
 
->> 0.008     2011-08-09 14:47:02 America/Los_Angeles
+0.008     2011-08-09 14:47:02 America/Los_Angeles
 
     * Interface changes:
 
@@ -154,7 +154,7 @@
     improve performance and readability of the code.  The Pinto API is
     still considered alpha, and subject to change.
 
->> 0.007     2011-08-04 08:04:27 America/Los_Angeles
+0.007     2011-08-04 08:04:27 America/Los_Angeles
 
     * Interface Changes:
 
@@ -176,16 +176,16 @@
     
     Edited documenation for pinto[1]
      
->> 0.006     2011-08-04 00:52:22 America/Los_Angeles
+0.006     2011-08-04 00:52:22 America/Los_Angeles
 
     More documentation edits.  No code changes.
 
->> 0.005     2011-08-04 00:43:34 America/Los_Angeles
+0.005     2011-08-04 00:43:34 America/Los_Angeles
 
     Brought the documentation for pinto[1] up to date with the 
     actual API.
 
->> 0.004     2011-08-04 00:23:23 America/Los_Angeles
+0.004     2011-08-04 00:23:23 America/Los_Angeles
 
     Default log level is now 1 (info).
 
@@ -193,17 +193,17 @@
 
     Improved some log messages.
 
->> 0.003     2011-08-03 22:59:10 America/Los_Angeles
+0.003     2011-08-03 22:59:10 America/Los_Angeles
 
     Major overhaul of internals.  But the pinto[1] command line
     interface is mostly the same.
 
->> 0.002     2011-07-26 17:20:46 America/Los_Angeles
+0.002     2011-07-26 17:20:46 America/Los_Angeles
 
     Corrected default path to the Pinto configuration file.
 
     Expanded POD for pinto[1]
 
->> 0.001     2011-07-26 14:17:06 America/Los_Angeles
+0.001     2011-07-26 14:17:06 America/Los_Angeles
 
     Initial release.
