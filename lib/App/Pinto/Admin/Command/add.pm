@@ -33,7 +33,7 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    die "Nothing to do\n" if not @args;
+    return 0 if not @args;
 
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Add', %{$opts}, dist => $_) for @args;
