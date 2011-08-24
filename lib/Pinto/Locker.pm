@@ -78,6 +78,8 @@ sub lock {                                             ## no critic (Homonym)
 
     my $repos = $self->repos();
 
+    # TODO: make sure the lock directory actually exists!
+
     my $lock = $self->_lockmgr->lock( $repos->file('')->stringify() )
         or throw_lock 'Unable to lock the repository -- please try later';
 
