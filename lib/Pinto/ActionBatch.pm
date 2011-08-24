@@ -192,7 +192,7 @@ sub _run_one_action {
     };
 
     for my $msg ( $action->messages() ) {
-        $self->message() and $self->append_message("\n\n");
+        $self->append_message("\n\n") if length $self->message();
         $self->append_message($msg);
     }
 
