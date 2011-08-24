@@ -129,7 +129,6 @@ sub run {
         $self->_result->add_exception($_);
     }
     finally {
-        # TODO: do we first need to check if it actually is locked?
         $self->_locker->unlock() unless $self->nolock();
     };
 
