@@ -160,6 +160,8 @@ sub _run_actions {
     return $self if $self->nocommit();
 
     if ( $self->store->isa('Pinto::Store::VCS') ) {
+        # TODO: make the module dir an attribute of something.
+        # Maybe on Config, or Pinto itself?
         my $modules_dir = $self->config->repos->subdir('modules');
         $self->store->mark_path_as_modified($modules_dir);
     }
