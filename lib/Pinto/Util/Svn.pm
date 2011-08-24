@@ -256,7 +256,7 @@ sub _svn {
     my $croak   = defined $args{croak} ? $args{croak} : 1;
 
     unshift @{$command}, 'svn';
-    my $ok = not IPC::Run::run($command, \my($in), $buffer, $buffer);
+    my $ok = IPC::Run::run($command, \my($in), $buffer, $buffer);
 
     if ($croak and not $ok) {
 
