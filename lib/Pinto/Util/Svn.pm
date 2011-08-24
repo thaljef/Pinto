@@ -258,6 +258,11 @@ sub _svn {
     unshift @{$command}, 'svn';
     my $ok = IPC::Run::run($command, \my($in), $buffer, $buffer);
 
+    # HACK: IPC::Run flips the return value when it thinks it is not
+    # connected to an interactive terminal.  So when running in
+    # pinto-server, we have to flip it back to get the right answer.
+    $ok = not $ok if not -t STDIN;  ## no critic InteractiveTest
+
     if ($croak and not $ok) {
 
         # Truncate the '-m MESSAGE' arguments, for readability
