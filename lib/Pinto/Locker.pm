@@ -29,6 +29,7 @@ has repos => (
 has _lock => (
     is         => 'rw',
     isa        => 'LockFile::Lock',
+    predicate  => '_has_lock',
     init_arg   => undef,
 );
 
@@ -100,6 +101,8 @@ get to work.
 
 sub unlock {
     my ($self) = @_;
+
+    return $self if not $self->_has_lock();
 
     $self->_lock->release() or throw_lock 'Unable to unlock repository';
 
