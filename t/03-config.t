@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 12);
+use Test::More (tests => 11);
 use Test::Exception;
 
 use Path::Class;
@@ -51,8 +51,6 @@ use Pinto::Config;
     my $home = dir( File::HomeDir->my_home() );
     is($cfg->repos(), $home->file('nowhere'), 'Expanded ~/ to home directory');
 
-    throws_ok { Pinto::Config->new()->repos() }
-        qr/is required at constructor/, 'repos parameter is required';
 }
 
 
