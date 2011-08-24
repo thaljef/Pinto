@@ -46,7 +46,7 @@ sub pinto {
 
         my %global_options = %{ $self->global_options() };
 
-        my $repos = $global_options{repos}
+        $global_options{repos}
             or $self->usage_error('Must specify a repository');
 
         require Pinto;
