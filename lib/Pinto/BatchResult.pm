@@ -6,6 +6,8 @@ use Moose;
 
 use MooseX::Types::Moose qw(Bool ArrayRef);
 
+use overload ('""' => 'to_string');
+
 #-----------------------------------------------------------------------------
 
 # VERSION
@@ -49,6 +51,14 @@ sub made_changes {
     $self->_set_changes_made(1);
 
     return $self;
+}
+
+#-----------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+
+    return join "\n", map { "$_" } $self->exceptions();
 }
 
 #-----------------------------------------------------------------------------

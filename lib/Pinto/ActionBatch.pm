@@ -38,6 +38,7 @@ has idxmgr => (
     required => 1,
 );
 
+# TODO: make private?
 has actions => (
     is       => 'ro',
     isa      => 'ArrayRef[Pinto::Action]',
