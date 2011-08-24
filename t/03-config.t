@@ -16,15 +16,11 @@ use Pinto::Config;
 #------------------------------------------------------------------------------
 
 {
-    no warnings 'redefine';
-    local *Pinto::Config::_build_config_file = sub{};
-
     my %default_cases = (
         repos     => 'nowhere',
         source    => 'http://cpan.perl.org',
         store     => 'Pinto::Store',
         nocleanup => 0,
-        noinit    => 0,
     );
 
     my $cfg = Pinto::Config->new(repos => 'nowhere');
@@ -36,9 +32,8 @@ use Pinto::Config;
    my %custom_cases = (
         repos     => 'nowhere',
         source    => 'http://cpan.pair.com',
-        store     => 'Pinto::Store::Git',
+        store     => 'Pinto::Store::VCS::Git',
         nocleanup => 1,
-        noinit    => 1,
     );
 
     $cfg = Pinto::Config->new(%custom_cases);

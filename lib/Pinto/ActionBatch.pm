@@ -146,7 +146,7 @@ sub run {
 sub _run_actions {
     my ($self) = @_;
 
-    $self->store->initialize() unless $self->->noinit();
+    $self->store->initialize() unless $self->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_one_action($action);
