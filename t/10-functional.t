@@ -4,14 +4,11 @@ use strict;
 use warnings;
 
 use Test::File;
-use Test::Warn;
-use Test::Exception;
 use Test::More (tests => 17);
 
 use File::Temp;
 use Path::Class;
 use FindBin qw($Bin);
-use lib dir($Bin, 'lib')->stringify();
 
 use Pinto;
 use Pinto::Util;
@@ -19,8 +16,7 @@ use Pinto::Util;
 #------------------------------------------------------------------------------
 
 my $repos     = dir( File::Temp::tempdir(CLEANUP => 1) );
-my $logger    = Pinto::Logger->new(out => \my $buffer);
-my $pinto     = Pinto->new(logger => $logger, repos => $repos);
+my $pinto     = Pinto->new(out => \my $buffer, repos => $repos);
 my $dist_file = file($Bin, qw(data Bar Bar-0.001.tar.gz));
 
 #------------------------------------------------------------------------------
@@ -68,7 +64,7 @@ like($buffer, qr/does not exist/, 'Cannot add nonexistant dist');
 $pinto->add_action('Remove', package => 'None::Such', author => 'AUTHOR');
 $pinto->run_actions();
 
-like($buffer, qr/is not in the local index/, 'Removing bogus package emits warning');
+like($buffer, qr/is not in the local index/, 'Removing bogus package throws exception');
 
 $pinto->add_action('Remove', package => 'Bar', author => 'CHAUCEY');
 $pinto->run_actions();
