@@ -23,7 +23,7 @@ use MooseX::Types::Moose qw(Str Bool);
 has config    => (
     is        => 'ro',
     isa       => 'Pinto::Config',
-    required => 1,
+    required  => 1,
 );
 
 has store    => (
@@ -36,15 +36,6 @@ has idxmgr => (
     is       => 'ro',
     isa      => 'Pinto::IndexManager',
     required => 1,
-);
-
-# TODO: make private?
-has actions => (
-    is       => 'ro',
-    isa      => 'ArrayRef[Pinto::Action]',
-    traits   => [ 'Array' ],
-    default  => sub { [] },
-    handles  => {enqueue => 'push', dequeue => 'shift'},
 );
 
 has message => (
@@ -61,10 +52,28 @@ has nocommit => (
     default  => 0,
 );
 
+has noinit   => (
+    is       => 'ro',
+    isa      => Bool,
+    builder  => '_build_noinit',
+    lazy     => 1,
+);
+
 has nolock => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
+);
+
+#-----------------------------------------------------------------------------
+# Private attributes
+
+has _actions => (
+    is       => 'ro',
+    isa      => 'ArrayRef[Pinto::Action]',
+    traits   => [ 'Array' ],
+    default  => sub { [] },
+    handles  => {enqueue => 'push', dequeue => 'shift'},
 );
 
 has _locker  => (
@@ -109,6 +118,14 @@ sub _build__result {
 }
 
 #-----------------------------------------------------------------------------
+
+sub _build_noinit {
+    my ($self) = @_;
+
+    return $self->config->noinit();
+}
+
+#-----------------------------------------------------------------------------
 # Public methods
 
 =method run()
@@ -140,7 +157,7 @@ sub run {
 sub _run_actions {
     my ($self) = @_;
 
-    $self->store->initialize() unless $self->config->noinit();
+    $self->store->initialize() unless $self->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_one_action($action);
