@@ -19,6 +19,8 @@ sub execute {
 
     $self->idxmgr->rebuild_master_index();
 
+    $self->add_message('Rebuilt the index');
+
     return 1;
 }
 
