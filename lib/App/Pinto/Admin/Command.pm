@@ -5,6 +5,8 @@ package App::Pinto::Admin::Command;
 use strict;
 use warnings;
 
+use Pod::Usage qw(pod2usage);
+
 #-----------------------------------------------------------------------------
 
 use App::Cmd::Setup -command;
@@ -29,7 +31,9 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    die "RTFM!\n" if $opts->{man};
+    $self->show_manual_and_exit() if $opts->{man};
+
+    return 1;
 }
 
 #-----------------------------------------------------------------------------
@@ -45,6 +49,20 @@ Returns the Pinto object for this command.  Basically an alias for
 sub pinto {
     my ($self) = @_;
     return $self->app->pinto();
+}
+
+#-----------------------------------------------------------------------------
+
+sub show_manual_and_exit {
+    my ($self) = @_;
+    my $class = ref $self;
+    (my $relative_path = $class) =~ s< :: ></>xmsg;
+    $relative_path .= '.pm';
+
+    my $absolute_path = $INC{$relative_path};
+    die "No manual available for $class" if not $absolute_path;
+
+    pod2usage(-verbose => 2, -input => $absolute_path, -exitval => 0);
 }
 
 #-----------------------------------------------------------------------------
