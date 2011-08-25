@@ -4,6 +4,8 @@ package Pinto::Action::Nop;
 
 use Moose;
 
+use MooseX::Types::Moose qw(Int);
+
 extends 'Pinto::Action';
 
 use namespace::autoclean;
