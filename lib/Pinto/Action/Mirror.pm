@@ -1,6 +1,6 @@
 package Pinto::Action::Mirror;
 
-# ABSTRACT: An action to mirror a remote repository into your local one
+# ABSTRACT: An action to mirror another repository into yours
 
 use Moose;
 
