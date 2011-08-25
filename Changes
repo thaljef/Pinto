@@ -1,10 +1,18 @@
 {{$NEXT}}
 
-     * Interface changes
+     * Enhancements:
 
-     The "noinit" parameter has been removed from the repository's
-     configuration file and is now only available on the command
-     line.
+     Added the "rebuild" command, which reconstructs the master
+     index from the current local and mirrored indexes.  This
+     is useful if your master index somehow gets screwed.  Note
+     this is not the same as actually re-indexing the distributions
+     (that's a feature I might add later).
+
+     All commands for pinto-admin[1] now support a --man option,
+     which shows you the full documentation for a commmand.  But
+     at this point, I haven't written the documentation for all
+     the commands.
+    
 
 0.019     2011-08-24 04:09:41 America/Los_Angeles
 
