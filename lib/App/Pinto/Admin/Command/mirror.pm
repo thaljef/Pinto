@@ -24,8 +24,8 @@ sub opt_spec {
         [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'  => 'Do not commit changes to VCS' ],
         [ 'noinit'    => 'Do not pull/update from VCS' ],
-# TODO       [ 'notag'     => 'Do not create any tag in VCS' ],
-# TODO       [ 'tag=s'     => 'Specify an alternate tag name' ],
+        [ 'notag'     => 'Do not create any tag in VCS' ],
+        [ 'tag=s'     => 'Specify an alternate tag name' ],
     );
 }
 

@@ -17,16 +17,6 @@ use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
-override is_initialized => sub {
-    my ($self) = @_;
-
-    # TODO: maybe check last revision # against repos?
-    return -e $self->config->repos->file('.svn');
-};
-
-#-------------------------------------------------------------------------------
-
-
 override initialize => sub {
     my ($self) = @_;
 
@@ -85,7 +75,7 @@ override remove => sub {
 
 #-------------------------------------------------------------------------------
 
-override finalize => sub {
+override commit => sub {
     my ($self, %args) = @_;
     super();
 
@@ -98,20 +88,18 @@ override finalize => sub {
     $self->logger->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
-    #$self->_make_tag() if $self->config->svn_tag();
-
     return 1;
 };
 
 #-------------------------------------------------------------------------------
 
-sub _make_tag {
-    my ($self) = @_;
+override tag => sub {
+    my ($self, %args) = @_;
 
     my $now = time;
 
     my $trunk = $self->config->svn_trunk();
-    my $tag   = time2str( $self->config->svn_tag(), $now );
+    my $tag   = time2str( ($args{tag} || $self->config->svn_tag()), $now );
 
     my $as_of = time2str('%C', $now);
     my $message  = "Tagging Pinto repository as of $as_of.";
@@ -120,7 +108,7 @@ sub _make_tag {
     Pinto::Util::Svn::svn_tag(from => $trunk, to => $tag, message => $message);
 
     return 1;
-}
+};
 
 #-------------------------------------------------------------------------------
 

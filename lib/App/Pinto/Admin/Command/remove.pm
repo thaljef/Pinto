@@ -26,8 +26,8 @@ sub opt_spec {
         [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'  => 'Do not commit changes to VCS' ],
         [ 'noinit'    => 'Do not pull/update from VCS' ],
-# TODO       [ 'notag'     => 'Do not create any tag in VCS' ],
-# TODO       [ 'tag=s'     => 'Specify an alternate tag name' ],
+        [ 'notag'     => 'Do not create any tag in VCS' ],
+        [ 'tag=s'     => 'Specify an alternate tag name' ],
     );
 }
 
@@ -38,8 +38,15 @@ sub usage_desc {
 
     my ($command) = $self->command_names();
 
-    return "%c [global options] $command [command options] PACKAGE";
+ my $usage =  <<"END_USAGE";
+%c --repos=PATH $command [OPTIONS] PACKAGE1 [PACKAGE2 ...]
+%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGES
+END_USAGE
+
+    chomp $usage;
+    return $usage;
 }
+
 
 #------------------------------------------------------------------------------
 

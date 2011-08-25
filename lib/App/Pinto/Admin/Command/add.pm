@@ -26,9 +26,26 @@ sub opt_spec {
         [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'  => 'Do not commit changes to VCS' ],
         [ 'noinit'    => 'Do not pull/update from VCS' ],
-# TODO       [ 'notag'     => 'Do not create any tag in VCS'],
-# TODO       [ 'tag=s'     => 'Specify an alternate tag name' ],
+        [ 'notag'     => 'Do not create any tag in VCS'],
+        [ 'tag=s'     => 'Specify an alternate tag name' ],
     );
+}
+
+#------------------------------------------------------------------------------
+
+sub usage_desc {
+    my ($self) = @_;
+
+    my ($command) = $self->command_names();
+
+    my $usage =  <<"END_USAGE";
+%c --repos=PATH $command [OPTIONS] FILE1 [FILE2 ...]
+%c --repos=PATH $command [OPTIONS] URL1 [URL2 ...]
+%c --repos=PATH $command [OPTIONS] < LIST_OF_FILES_OR_URLS
+END_USAGE
+
+    chomp $usage;
+    return $usage;
 }
 
 #------------------------------------------------------------------------------

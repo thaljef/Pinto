@@ -12,6 +12,12 @@
      which shows you the full documentation for a commmand.  But
      at this point, I haven't written the documentation for all
      the commands.
+
+     Several of the commands for pinto-admin[1] now support a --tag
+     option that allows you to specify an alternative tag.  The
+     semantics of the tag will depend on which type of VCS you are
+     using.  Likewise, you can now specify --notag to disable
+     tagging completely.
     
 
 0.019     2011-08-24 04:09:41 America/Los_Angeles

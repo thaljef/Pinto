@@ -65,6 +65,18 @@ has nolock => (
     default => 0,
 );
 
+has notag => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+has tag => (
+    is      => 'ro',
+    isa     => Str,
+    default => '',
+);
+
 #-----------------------------------------------------------------------------
 # Private attributes
 
@@ -125,6 +137,7 @@ sub _build_noinit {
     return $self->config->noinit();
 }
 
+
 #-----------------------------------------------------------------------------
 # Public methods
 
@@ -177,7 +190,9 @@ sub _run_actions {
         $self->store->mark_path_as_modified($modules_dir);
     }
 
-    $self->store->finalize( message => $self->message() );
+    $self->store->commit( message => $self->message() );
+
+    $self->store->tag( tag => $self->tag() ) unless $self->notag();
 
     return $self;
 }
