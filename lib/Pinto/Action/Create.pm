@@ -23,6 +23,9 @@ with qw(Pinto::Role::PathMaker);
 sub execute {
     my ($self) = @_;
 
+    # TODO: need to generate mirror index here too, or at least make
+    # sure it gets added to the store when we do generate it.
+
     # Write indexes
     my $master_index_file = $self->idxmgr->master_index->write->file();
     my $local_index_file  = $self->idxmgr->local_index->write->file();
