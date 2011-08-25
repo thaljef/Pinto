@@ -16,11 +16,10 @@ use App::Cmd::Setup -app;
 sub global_opt_spec {
 
   return (
-
-      [ "repos|r=s"   => "Path to your repository directory"],
-      [ "nocolor"     => "Do not colorize diagnostic messages" ],
-      [ "quiet|q"     => "Only report fatal errors"],
-      [ "verbose|v+"  => "More diagnostic output (repeatable)" ],
+      [ 'repos|r=s'   => 'Path to your repository directory' ],
+      [ 'nocolor'     => 'Do not colorize diagnostic messages' ],
+      [ 'quiet|q'     => 'Only report fatal errors' ],
+      [ 'verbose|v+'  => 'More diagnostic output (repeatable)' ],
   );
 }
 

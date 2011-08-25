@@ -15,6 +15,25 @@ use App::Cmd::Setup -command;
 
 #-----------------------------------------------------------------------------
 
+sub opt_spec {
+    my ( $self, $app ) = @_;
+
+    return (
+
+        [ 'man' => 'Show manual for this command' ],
+    );
+}
+
+#-----------------------------------------------------------------------------
+
+sub validate_args {
+    my ($self, $opts, $args) = @_;
+
+    die "RTFM!\n" if $opts->{man};
+}
+
+#-----------------------------------------------------------------------------
+
 =method pinto()
 
 Returns the Pinto object for this command.  Basically an alias for

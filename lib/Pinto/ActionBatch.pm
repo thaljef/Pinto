@@ -55,12 +55,6 @@ has message => (
     default  => '',
 );
 
-has noinit => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => 0,
-);
-
 has nocommit => (
     is       => 'ro',
     isa      => Bool,
@@ -146,7 +140,7 @@ sub run {
 sub _run_actions {
     my ($self) = @_;
 
-    $self->store->initialize() unless $self->noinit();
+    $self->store->initialize() unless $self->config->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_one_action($action);

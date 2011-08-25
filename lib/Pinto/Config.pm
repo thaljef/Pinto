@@ -54,6 +54,15 @@ has noclobber => (
 );
 
 
+has noinit => (
+    is       => 'ro',
+    isa      => Bool,
+    key      => 'noinit',
+    default  => 0,
+    documentation => 'If true, then Pinto will not pull/update from VCS before each operation',
+);
+
+
 has store => (
     is        => 'ro',
     isa       => Str,

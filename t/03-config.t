@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 9);
+use Test::More (tests => 11);
 use Test::Exception;
 
 use Path::Class;
@@ -21,6 +21,7 @@ use Pinto::Config;
         source    => 'http://cpan.perl.org',
         store     => 'Pinto::Store',
         nocleanup => 0,
+        noinit    => 0,
     );
 
     my $cfg = Pinto::Config->new(repos => 'nowhere');
@@ -34,6 +35,7 @@ use Pinto::Config;
         source    => 'http://cpan.pair.com',
         store     => 'Pinto::Store::VCS::Git',
         nocleanup => 1,
+        noinit    => 1,
     );
 
     $cfg = Pinto::Config->new(%custom_cases);

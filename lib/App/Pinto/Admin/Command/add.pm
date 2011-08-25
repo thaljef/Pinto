@@ -18,7 +18,10 @@ use base 'App::Pinto::Admin::Command';
 #-----------------------------------------------------------------------------
 
 sub opt_spec {
-    return (
+    my ($self, $app) = @_;
+
+    return ( $self->SUPER::opt_spec(),
+
         [ 'author=s'  => 'Your (alphanumeric) author ID' ],
         [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'  => 'Do not commit changes to VCS' ],
@@ -39,6 +42,7 @@ sub execute {
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Add', %{$opts}, dist => $_) for @args;
     my $result = $self->pinto->run_actions();
+
     return $result->is_success() ? 0 : 1;
 }
 

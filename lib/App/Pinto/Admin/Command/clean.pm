@@ -18,7 +18,10 @@ use base 'App::Pinto::Admin::Command';
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    return (
+    my ($self, $app) = @_;
+
+    return ( $self->SUPER::opt_spec(),
+
         [ 'noinit'    => 'Do not pull/update from VCS' ],
     );
 }
@@ -27,7 +30,11 @@ sub opt_spec {
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
+
+    $self->SUPER::validate_args($opts, $args);
+
     $self->usage_error('Arguments are not allowed') if @{ $args };
+
     return 1;
 }
 

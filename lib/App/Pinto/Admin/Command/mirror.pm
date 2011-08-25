@@ -16,7 +16,10 @@ use base 'App::Pinto::Admin::Command';
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    return (
+    my ($self, $app) = @_;
+
+    return ( $self->SUPER::opt_spec(),
+
         [ 'force' => 'Force action, even if indexes appear unchanged' ],
         [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'  => 'Do not commit changes to VCS' ],
@@ -30,7 +33,11 @@ sub opt_spec {
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
+
+    $self->SUPER::validate_args($opts, $args);
+
     $self->usage_error('Arguments are not allowed') if @{ $args };
+
     return 1;
 }
 

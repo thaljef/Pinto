@@ -19,7 +19,11 @@ use base 'App::Pinto::Admin::Command';
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
+
+    $self->SUPER::validate_args($opts, $args);
+
     $self->usage_error('Arguments are not allowed') if @{ $args };
+
     return 1;
 }
 
