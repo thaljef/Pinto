@@ -14,10 +14,19 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
+has sleep => (
+    is      => 'ro',
+    isa     => Int,
+    default => 0,
+);
+
+#------------------------------------------------------------------------------
+
 override execute => sub {
     my ($self) = @_;
 
     $self->idxmgr->load_indexes();
+    sleep $self->sleep();
 
     return 0;
 };
