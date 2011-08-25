@@ -7,32 +7,15 @@ use Test::More (tests => 2);
 
 use File::Temp;
 use Path::Class;
-use FindBin qw($Bin);
-use lib dir($Bin, 'lib')->stringify();
 
-use Pinto::Store;
-use Pinto::ActionBatch;
-use Pinto::IndexManager;
-
-use Pinto::TestAction;
+use Pinto;
 
 #------------------------------------------------------------------------------
-# Ugh, this is a lot of setup.
 
+my $buffer = '';
 my $repos  = File::Temp::tempdir(CLEANUP => 1);
-my $config = Pinto::Config->new(repos => $repos);
-my $logger = Pinto::Logger->new(verbose => 3, out => \my $buffer);
-my %config_and_logger = (config => $config, logger => $logger);
-
-my $idxmgr = Pinto::IndexManager->new(%config_and_logger);
-my $store  = Pinto::Store->new(%config_and_logger);
-my %store_and_idxmgr = (store => $store, idxmgr => $idxmgr);
-
-my %all_of_it = (%config_and_logger, %store_and_idxmgr);
-my $batch   = Pinto::ActionBatch->new(%all_of_it);
-
-my $sleeper     = Pinto::TestAction->new( %all_of_it, callback => sub {sleep 70} );
-my $competitor  = Pinto::TestAction->new( %all_of_it );
+my $pinto  = Pinto->new(repos => $repos, out => \$buffer, verbose => 2);
+$pinto->new_action_batch();
 
 #------------------------------------------------------------------------------
 # Finally, we can do a test now..
@@ -45,20 +28,20 @@ if ($pid) {
     # parent
     sleep 10; # Let the child get started
     print "Starting: $$\n";
-    $batch->enqueue($competitor);
-    $batch->run();
+    $pinto->add_action('Nop');
+    $pinto->run_actions();
     like($buffer, qr/Unable to lock/, 'Repository is locked by sleeper');
 
     wait; # Let the child finish
-    $batch->enqueue($competitor);
-    $batch->run();
+    $pinto->add_action('Nop');
+    $pinto->run_actions();
     like($buffer, qr/got the lock/, 'Got lock after the sleeper died');
 }
 else {
     # child
     print "Starting: $$\n";
-    $batch->enqueue($sleeper);
-    $batch->run();
+    $pinto->add_action('Nop', sleep => 70);
+    $pinto->run_actions();
     exit 0;
 }
 

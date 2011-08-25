@@ -27,7 +27,6 @@ has sleep => (
 override execute => sub {
     my ($self) = @_;
 
-    $self->idxmgr->load_indexes();
     sleep $self->sleep();
 
     return 0;
