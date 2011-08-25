@@ -205,6 +205,17 @@ sub conflict_packages {
 
 #------------------------------------------------------------------------------
 
+sub load_indexes {
+    my ($self) = @_;
+
+    $self->local_index->load();
+    $self->master_index->load();
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub write_indexes {
     my ($self) = @_;
 
