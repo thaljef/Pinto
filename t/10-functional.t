@@ -17,7 +17,8 @@ use Pinto::Util;
 
 my $repos     = dir( File::Temp::tempdir(CLEANUP => 1) );
 my $pinto     = Pinto->new(out => \my $buffer, repos => $repos);
-my $dist_file = file($Bin, qw(data Bar Bar-0.001.tar.gz));
+my $auth_dir  = dir( $Bin, qw(data fakes authors id L LO LOCAL) );
+my $dist_file = $auth_dir->file('Foo-Bar-Baz-0.03.tar.gz');
 
 #------------------------------------------------------------------------------
 # Creation...
@@ -36,14 +37,14 @@ repos_file_exists_ok( [qw(authors 01mailrc.txt.gz)] );
 # Addition...
 
 # Make sure we have clean slate
-index_package_not_exists_ok( 'Bar' );
+index_package_not_exists_ok( 'Foo::Bar::Baz' );
 repos_dist_not_exists_ok( 'AUTHOR', $dist_file->basename() );
 
 $pinto->add_action('Add', dist => $dist_file, author => 'AUTHOR');
 $pinto->run_actions();
 
 repos_dist_exists_ok( 'AUTHOR', $dist_file->basename() );
-index_package_exists_ok('Bar', 'AUTHOR', 'v4.9.1');
+index_package_exists_ok('Foo::Bar::Baz', 'AUTHOR', '0.03');
 
 #----
 
@@ -70,16 +71,16 @@ $pinto->run_actions();
 
 like($buffer, qr/is not in the local index/, 'Removing bogus package throws exception');
 
-$pinto->add_action('Remove', package => 'Bar', author => 'CHAUCEY');
+$pinto->add_action('Remove', package => 'Foo::Bar::Baz', author => 'CHAUCEY');
 $pinto->run_actions();
 
 like($buffer, qr/Only author AUTHOR can remove/, 'Cannot remove package owned by another author');
 
-$pinto->add_action('Remove', package => 'Bar', author => 'AUTHOR' );
+$pinto->add_action('Remove', package => 'Foo::Bar::Baz', author => 'AUTHOR' );
 $pinto->run_actions();
 
 repos_dist_not_exists_ok( 'AUTHOR', $dist_file->basename() );
-index_package_not_exists_ok( 'Bar' );
+index_package_not_exists_ok( 'Foo::Bar::Baz' );
 
 # Adding again, with different author...
 $pinto->add_action('Add', dist => $dist_file, author => 'CHAUCEY');
@@ -87,7 +88,7 @@ $pinto->run_actions();
 
 repos_dist_exists_ok( 'CHAUCEY', $dist_file->basename() );
 
-index_package_exists_ok('Bar', 'CHAUCEY', 'v4.9.1');
+index_package_exists_ok('Foo::Bar::Baz', 'CHAUCEY', '0.03');
 
 #------------------------------------------------------------------------------
 # TODO: Refactor these into a Test::* class for testing the repos
@@ -128,7 +129,6 @@ sub index_package_exists_ok {
     is($pkg->version(), $version, 'Package has correct version');
     return 1;
 }
-
 
 sub index_package_not_exists_ok {
     my ($name) = @_;
