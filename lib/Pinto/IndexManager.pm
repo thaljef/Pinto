@@ -113,8 +113,9 @@ sub __build_index {
     my $repos = $self->config->repos();
     my $index_file = Path::Class::file($repos, 'modules', $args{file});
 
-    return Pinto::Index->new( logger => $self->logger(),
-                              file   => $index_file );
+    return Pinto::Index->new( noclobber => $self->config->noclobber(),
+                              logger    => $self->logger(),
+                              file      => $index_file );
 }
 
 #------------------------------------------------------------------------------

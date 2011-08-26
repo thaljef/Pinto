@@ -7,7 +7,7 @@ use autodie;
 use Moose;
 use Moose::Autobox;
 
-use MooseX::Types::Moose qw(HashRef);
+use MooseX::Types::Moose qw(HashRef Bool);
 use Pinto::Types 0.017 qw(File);
 
 use Carp;
@@ -45,11 +45,17 @@ has distributions => (
     lazy_build  => 1,
 );
 
-has 'file' => (
+has file  => (
     is        => 'ro',
     isa       => File,
     predicate => 'has_file',
     coerce    => 1,
+);
+
+has noclobber => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -162,13 +168,15 @@ sub _write_header {
         ? ($self->file->basename(), 'file://' . $self->file->as_foreign('Unix') )
         : ('UNKNOWN', 'UNKNOWN');
 
+    my $version = $Pinto::Index::VERSION || 'UNKNOWN VERSION';
+
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $file
 URL:          $url
 Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
-Written-By:   Pinto::Index 0.01
+Written-By:   Pinto::Index $version
 Line-Count:   @{[ $self->package_count() ]}
 Last-Updated: @{[ scalar localtime() ]}
 
@@ -197,7 +205,8 @@ sub _write_packages {
 sub add {
     my ($self, @packages) = @_;
 
-    my @removed_dists = $self->remove( @packages );
+    my @removed_dists;
+    @removed_dists = $self->remove( @packages ) unless $self->noclobber();
 
     for my $package (@packages) {
 
