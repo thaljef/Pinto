@@ -46,8 +46,7 @@ sub execute {
     push @created_files,
         $self->_write_modlist(),
           $self->idxmgr->master_index->write->file(),
-            $self->idxmgr->local_index->write->file(),
-              $self->idxmgr->mirror_index->write->file();
+            $self->idxmgr->local_index->write->file();
 
     # Create authors dir
     my $authors_dir = $self->config->authors_dir();

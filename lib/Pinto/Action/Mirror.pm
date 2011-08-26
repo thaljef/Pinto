@@ -40,6 +40,7 @@ sub execute {
 
     my $idxmgr  = $self->idxmgr();
     my $idx_changes = $idxmgr->update_mirror_index( force => $self->force() );
+    $self->store->add(file => $idxmgr->mirror_index->file());
     return 0 if not $idx_changes and not $self->force();
 
     my $dist_changes = 0;

@@ -1,27 +1,27 @@
-# CHECKSUMS file written on Fri Aug 26 22:06:55 2011 GMT by CPAN::Checksums (v2.06)
+# CHECKSUMS file written on Fri Aug 26 23:48:41 2011 GMT by CPAN::Checksums (v2.06)
 $cksum = {
   'Foo-Bar-Baz-0.03.tar.gz' => {
-    'md5' => 'fb3baa46e49ba3a04c118a7491b031e9',
-    'md5-ungz' => 'b4021dfca021b8296ed36d13d118d8dc',
+    'md5' => '95878f3008112e377489ad3e388212b2',
+    'md5-ungz' => 'd3ebb8c05e10887a7852e0bcd9a7b075',
     'mtime' => '2011-08-26',
-    'sha256' => '203c54dd1393bf352f27f79573f8ab44a8b7c3597c4286d29ea6b7c5a090cfc7',
-    'sha256-ungz' => 'dfc1b9fa28474320248213b9074724f6a6bda89423b21666ba0535f23db20a55',
-    'size' => 661
+    'sha256' => '8f83d19f2d54b4fed70cb35bbb08c0b5b7109b335658f985cbbee7b041d58c2a',
+    'sha256-ungz' => '69c93ca5f1c1a2fd6ed961d2b7089dcb554e9995812408e5efcd00d5612760fc',
+    'size' => 665
   },
-  'FooAndBar-0.01.tar.gz' => {
-    'md5' => '511c1f584fd7a4a2b51b854387834610',
-    'md5-ungz' => '1c8e724e5e94e35558e1ddd7f5d5dcd6',
+  'FooAndBar-0.02.tar.gz' => {
+    'md5' => 'fd226410fc457b77571280c6fe4dbd85',
+    'md5-ungz' => '98089ad0be6d2df17bd204ec7d35b4d7',
     'mtime' => '2011-08-26',
-    'sha256' => '92b098b65e2983e3f792270aa8abe8c1275a05edac6f2310be5674001c251f1e',
-    'sha256-ungz' => 'b02742539b5cf4d2177565b01e9bcdef3b2ea177eef72d5f1d02bd6e7d3009f9',
-    'size' => 682
+    'sha256' => '7a04670df3b4bf92536042d474da28997f4c2ebbf0122240647968a4b12c510b',
+    'sha256-ungz' => 'a32ad4c1ace846ed705461c7c50efc136c8f522c0058ab2a442e9115ac5194d8',
+    'size' => 680
   },
-  'FooOnly-0.02.tar.gz' => {
-    'md5' => '06af50e1317500d4e665d8efebf9742d',
-    'md5-ungz' => 'f637233779c37b265f915c5076534771',
+  'FooOnly-0.01.tar.gz' => {
+    'md5' => 'b3e8647cbc263e924f10c80afca7ec79',
+    'md5-ungz' => 'd978bc2208dff65e401df2da79a41e8b',
     'mtime' => '2011-08-26',
-    'sha256' => '254d04ab4a64bcd8c10e1475d4e8f0db94bd6ac614413d85f7e22f84873d7a6c',
-    'sha256-ungz' => '0228872e6aa4be95b95dd1ac2cf7855cfc7eda55dbec660cf1279ccb122be155',
-    'size' => 636
+    'sha256' => '1db857e363b5b9f3ee0e552a7510c1aae4ab8fe61e0b299ea26947f2f84ee6f1',
+    'sha256-ungz' => 'f0211b637d505fdcb52fb753357a6cd021d9882d2d151b611151e002dde1e0e9',
+    'size' => 637
   }
 };
