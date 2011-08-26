@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::File;
-use Test::More (tests => 17);
+use Test::More (tests => 21);
 
 use File::Temp;
 use Path::Class;
@@ -25,8 +25,12 @@ my $dist_file = file($Bin, qw(data Bar Bar-0.001.tar.gz));
 $pinto->new_action_batch();
 
 $pinto->add_action('Create')->run_actions();
+repos_file_exists_ok( [qw(config pinto.ini)] );
 repos_file_exists_ok( [qw(modules 02packages.details.txt.gz)] );
 repos_file_exists_ok( [qw(modules 02packages.details.local.txt.gz)] );
+repos_file_exists_ok( [qw(modules 02packages.details.mirror.txt.gz)] );
+repos_file_exists_ok( [qw(modules 03modlist.data.gz)] );
+repos_file_exists_ok( [qw(authors 01mailrc.txt.gz)] );
 
 #------------------------------------------------------------------------------
 # Addition...
