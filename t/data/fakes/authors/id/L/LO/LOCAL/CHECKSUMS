@@ -1,0 +1,27 @@
+# CHECKSUMS file written on Fri Aug 26 22:06:55 2011 GMT by CPAN::Checksums (v2.06)
+$cksum = {
+  'Foo-Bar-Baz-0.03.tar.gz' => {
+    'md5' => 'fb3baa46e49ba3a04c118a7491b031e9',
+    'md5-ungz' => 'b4021dfca021b8296ed36d13d118d8dc',
+    'mtime' => '2011-08-26',
+    'sha256' => '203c54dd1393bf352f27f79573f8ab44a8b7c3597c4286d29ea6b7c5a090cfc7',
+    'sha256-ungz' => 'dfc1b9fa28474320248213b9074724f6a6bda89423b21666ba0535f23db20a55',
+    'size' => 661
+  },
+  'FooAndBar-0.01.tar.gz' => {
+    'md5' => '511c1f584fd7a4a2b51b854387834610',
+    'md5-ungz' => '1c8e724e5e94e35558e1ddd7f5d5dcd6',
+    'mtime' => '2011-08-26',
+    'sha256' => '92b098b65e2983e3f792270aa8abe8c1275a05edac6f2310be5674001c251f1e',
+    'sha256-ungz' => 'b02742539b5cf4d2177565b01e9bcdef3b2ea177eef72d5f1d02bd6e7d3009f9',
+    'size' => 682
+  },
+  'FooOnly-0.02.tar.gz' => {
+    'md5' => '06af50e1317500d4e665d8efebf9742d',
+    'md5-ungz' => 'f637233779c37b265f915c5076534771',
+    'mtime' => '2011-08-26',
+    'sha256' => '254d04ab4a64bcd8c10e1475d4e8f0db94bd6ac614413d85f7e22f84873d7a6c',
+    'sha256-ungz' => '0228872e6aa4be95b95dd1ac2cf7855cfc7eda55dbec660cf1279ccb122be155',
+    'size' => 636
+  }
+};
