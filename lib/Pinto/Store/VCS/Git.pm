@@ -30,7 +30,7 @@ override commit => sub {
 
 override tag => sub {
     croak __PACKAGE__ . 'is not implemented yet';
-    # git commit and push
+    # git tag
 };
 
 #-------------------------------------------------------------------------------
