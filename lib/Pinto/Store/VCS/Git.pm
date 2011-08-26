@@ -14,13 +14,6 @@ extends 'Pinto::Store::VCS';
 
 #-------------------------------------------------------------------------------
 
-override is_initialized => sub {
-    croak __PACKAGE__ . ' is not implemented yet';
-    # -e .git
-};
-
-#-------------------------------------------------------------------------------
-
 override initialize => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git clone or git pull
@@ -28,7 +21,14 @@ override initialize => sub {
 
 #-------------------------------------------------------------------------------
 
-override finalize => sub {
+override commit => sub {
+    croak __PACKAGE__ . 'is not implemented yet';
+    # git commit and push
+};
+
+#-------------------------------------------------------------------------------
+
+override tag => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git commit and push
 };
