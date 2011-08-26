@@ -28,6 +28,16 @@ sub opt_spec {
 
 #-----------------------------------------------------------------------------
 
+sub usage_desc {
+    my ($self) = @_;
+
+    my ($command) = $self->command_names();
+
+    return '%c --repos=PATH $command [OPTIONS] [ARGS]'
+}
+
+#-----------------------------------------------------------------------------
+
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
