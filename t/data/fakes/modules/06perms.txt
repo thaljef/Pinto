@@ -4,9 +4,10 @@ Description:  Package names found in directory $CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
 Written-By:   CPAN::Faker version 0.007
-Line-Count:   3
-Last-Updated: Fri Aug 26 23:48:41 2011 GMT
+Line-Count:   4
+Last-Updated: Sat Aug 27 18:05:06 2011 GMT
 
 Bar,LOCAL,f
+Baz,LOCAL,f
 Foo,LOCAL,f
 Foo::Bar::Baz,LOCAL,f

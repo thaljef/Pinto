@@ -1,27 +1,35 @@
-# CHECKSUMS file written on Fri Aug 26 23:48:41 2011 GMT by CPAN::Checksums (v2.06)
+# CHECKSUMS file written on Sat Aug 27 18:05:06 2011 GMT by CPAN::Checksums (v2.06)
 $cksum = {
+  'BarAndBaz-0.04.tar.gz' => {
+    'md5' => '0ff283f926822cd1a55de0badbddb722',
+    'md5-ungz' => 'f89feb82bfa272e58d04a5d79cb9f8c1',
+    'mtime' => '2011-08-27',
+    'sha256' => 'ecaf9b2f9091d2152cb100139662fc2e3b92c0a1fbc14fb8d70c2cc794f6311a',
+    'sha256-ungz' => '2ace9d3735c25d2dc433a21083e1f98c40eac126100ae92979dc8e4f81d22a76',
+    'size' => 670
+  },
   'Foo-Bar-Baz-0.03.tar.gz' => {
-    'md5' => '95878f3008112e377489ad3e388212b2',
-    'md5-ungz' => 'd3ebb8c05e10887a7852e0bcd9a7b075',
-    'mtime' => '2011-08-26',
-    'sha256' => '8f83d19f2d54b4fed70cb35bbb08c0b5b7109b335658f985cbbee7b041d58c2a',
-    'sha256-ungz' => '69c93ca5f1c1a2fd6ed961d2b7089dcb554e9995812408e5efcd00d5612760fc',
-    'size' => 665
+    'md5' => 'c9433b5c2c425fff13c29ed951c6d888',
+    'md5-ungz' => 'c0e83cf9dccbb32d554f6864a5927631',
+    'mtime' => '2011-08-27',
+    'sha256' => '8f61ffec813c9b468bed9ea953ed38312b65ad8845ca7da4d4d44badd770d180',
+    'sha256-ungz' => '389f65d7890ad330d7eb2f87ab2557e9c978268a20023e0baa239a7eee509e35',
+    'size' => 660
   },
   'FooAndBar-0.02.tar.gz' => {
-    'md5' => 'fd226410fc457b77571280c6fe4dbd85',
-    'md5-ungz' => '98089ad0be6d2df17bd204ec7d35b4d7',
-    'mtime' => '2011-08-26',
-    'sha256' => '7a04670df3b4bf92536042d474da28997f4c2ebbf0122240647968a4b12c510b',
-    'sha256-ungz' => 'a32ad4c1ace846ed705461c7c50efc136c8f522c0058ab2a442e9115ac5194d8',
-    'size' => 680
+    'md5' => '334facb9fc4cbc645fe78e3ae394ef8b',
+    'md5-ungz' => 'd2d1047ce9c2f449c4bc32702df9631c',
+    'mtime' => '2011-08-27',
+    'sha256' => '1fdaca7d3d83f1826afac717a553b1b4c482a29e32838f2c8769f4f63cb8daf9',
+    'sha256-ungz' => 'd4c010fd7ac750f94f0fcc3519921d76471d53f1588daf1c4e6d74c24807e057',
+    'size' => 672
   },
   'FooOnly-0.01.tar.gz' => {
-    'md5' => 'b3e8647cbc263e924f10c80afca7ec79',
-    'md5-ungz' => 'd978bc2208dff65e401df2da79a41e8b',
-    'mtime' => '2011-08-26',
-    'sha256' => '1db857e363b5b9f3ee0e552a7510c1aae4ab8fe61e0b299ea26947f2f84ee6f1',
-    'sha256-ungz' => 'f0211b637d505fdcb52fb753357a6cd021d9882d2d151b611151e002dde1e0e9',
-    'size' => 637
+    'md5' => '3158941a496b84e6e498a483866a53f9',
+    'md5-ungz' => '7682a8af0a927c7232a9d2f8ef004cc2',
+    'mtime' => '2011-08-27',
+    'sha256' => 'ef850f6319e35ed35d377637a7e6dd0fc3d015068b31cb705df124a689555fe3',
+    'sha256-ungz' => '12a3f543630d3e32671b01a6e21b97c50baab0a79ea0c09dfd24a5131000d2f0',
+    'size' => 639
   }
 };

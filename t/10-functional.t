@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::File;
-use Test::More (tests => 32);
+use Test::More (tests => 37);
 
 use File::Temp;
 use Path::Class;
@@ -60,7 +60,7 @@ $pinto->run_actions();
 like($buffer, qr/same distribution already exists/, 'Cannot add same dist twice');
 
 $pinto->new_action_batch();
-$pinto->add_action('Add', dist => $dist_file, author => 'CHAUCEY');
+$pinto->add_action('Add', dist => $dist_file, author => 'CHAUCER');
 $pinto->run_actions();
 
 like($buffer, qr/Only author AUTHOR can update/, 'Cannot add package owned by another author');
@@ -81,7 +81,7 @@ $pinto->run_actions();
 like($buffer, qr/is not in the local index/, 'Removing bogus package throws exception');
 
 $pinto->new_action_batch();
-$pinto->add_action('Remove', package => 'Foo', author => 'CHAUCEY');
+$pinto->add_action('Remove', package => 'Foo', author => 'CHAUCER');
 $pinto->run_actions();
 
 like($buffer, qr/Only author AUTHOR can remove/, 'Cannot remove package owned by another author');
@@ -90,16 +90,16 @@ $pinto->new_action_batch();
 $pinto->add_action('Remove', package => 'Foo', author => 'AUTHOR' );
 $pinto->run_actions();
 
-$t->dist_not_exists_ok( 'AUTHOR', $dist_file->basename() );
+$t->dist_not_exists_ok( 'AUTHOR', $dist_base );
 $t->package_not_indexed_ok( 'Foo' );
 
 # Adding again, with different author...
 $pinto->new_action_batch();
-$pinto->add_action('Add', dist => $dist_file, author => 'CHAUCEY');
+$pinto->add_action('Add', dist => $dist_file, author => 'CHAUCER');
 $pinto->run_actions();
 
-$t->dist_exists_ok( 'CHAUCEY', $dist_file->basename() );
-$t->package_indexed_ok('Foo', 'CHAUCEY', '0.01');
+$t->dist_exists_ok( 'CHAUCER', $dist_base );
+$t->package_indexed_ok('Foo', 'CHAUCER', '0.01');
 
 #------------------------------------------------------------------------------
 # Mirroring...
@@ -109,13 +109,10 @@ $pinto->add_action('Mirror', force => 1);
 $pinto->run_actions();
 
 $t->dist_exists_ok( 'LOCAL', 'Foo-Bar-Baz-0.03.tar.gz' );
-$t->dist_not_exists_ok( 'LOCAL', 'FooAndBar-0.02.tar.gz' );
-$t->dist_not_exists_ok( 'LOCAL', 'FooOnly-0.01.tar.gz' );
+$t->dist_exists_ok( 'LOCAL', 'BarAndBaz-0.04.tar.gz' );
+$t->dist_not_exists_ok( 'LOCAL', 'FooOnly-0.01' );
 
 $t->package_indexed_ok( 'Foo::Bar::Baz', 'LOCAL', '0.03' );
-$t->package_indexed_ok( 'Foo', 'CHAUCEY', '0.01' );
-$t->package_not_indexed_ok( 'Bar' );
-
-#------------------------------------------------------------------------------
-# Noclobber...
-
+$t->package_indexed_ok( 'Bar', 'LOCAL', '0.04', );
+$t->package_indexed_ok( 'Baz', 'LOCAL', '0.04', );
+$t->package_indexed_ok( 'Foo', 'CHAUCER', '0.01' );

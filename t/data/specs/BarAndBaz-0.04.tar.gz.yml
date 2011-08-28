@@ -1,7 +1,7 @@
 ---
-name: FooAndBar
-version: 0.02
-abstract: the FooAndBar dist
+name: BarAndBaz
+version: 0.04
+abstract: the BarAndBaz dist
 author:
   - SUZY <SUZY@cpan.local>
 generated_by: Module::Faker version 
@@ -10,9 +10,9 @@ meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.3.html
   version: 1.3
 provides:
-  Foo:
-    file: lib/Foo.pm
-    version: 0.02
   Bar:
     file: lib/Bar.pm
-    version: 0.02
+    version: 0.04
+  Baz:
+    file: lib/Baz.pm
+    version: 0.04
