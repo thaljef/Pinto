@@ -69,12 +69,10 @@ sub show_manual_and_exit {
     (my $relative_path = $class) =~ s< :: ></>xmsg;
     $relative_path .= '.pm';
 
-    my $absolute_path = $INC{$relative_path};
-    die "No manual available for $class" if not $absolute_path;  ## no critic qw(Carping)
+    my $absolute_path = $INC{$relative_path}
+      or die "No manual available for $class";  ## no critic qw(Carping)
 
     pod2usage(-verbose => 2, -input => $absolute_path, -exitval => 0);
-
-    return 1;
 }
 
 #-----------------------------------------------------------------------------
