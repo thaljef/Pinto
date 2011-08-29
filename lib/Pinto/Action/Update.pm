@@ -1,6 +1,6 @@
 package Pinto::Action::Update;
 
-# ABSTRACT: An action to pull all the latests dists into your repository
+# ABSTRACT: An action to pull all the latest distributions into your repository
 
 use Moose;
 
