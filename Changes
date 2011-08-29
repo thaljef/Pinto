@@ -5,6 +5,10 @@
      The "mirror" command is now called "update".  I feel this is
      more accurately reflects what is going on, since a Pinto
      repository isn't really a "mirror" of anything.
+   
+     * Bug Fixes:
+
+     Fixed some bugs in the VCS tagging logic.
 
 0.020     2011-08-28 20:40:43 America/Los_Angeles
 
