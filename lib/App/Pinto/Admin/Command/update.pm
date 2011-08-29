@@ -1,4 +1,4 @@
-package App::Pinto::Admin::Command::update
+package App::Pinto::Admin::Command::update;
 
 # ABSTRACT: get all the latest distributions from another repository
 
