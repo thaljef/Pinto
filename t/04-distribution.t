@@ -32,20 +32,20 @@ is("$dist", $dist->location(), 'Stringification returns location of dist');
 #-----------------------------------------------------------------------------
 # Constructing from a dist file...
 
-my $dist_file = file( $Bin, qw(data Bar Bar-0.001.tar.gz) );
-$dist = Pinto::Distribution->new_from_file(author => 'FOO', file => $dist_file);
+my $dist_file = file( $Bin, qw(data fakes authors id L LO LOCAL FooOnly-0.01.tar.gz) );
+$dist = Pinto::Distribution->new_from_file(author => 'AUTHOR', file => $dist_file);
 
-is($dist->version(), '0.001', 'Dist version from file');
-is($dist->name(), 'Bar', 'Dist name from file');
-is($dist->author(), 'FOO', 'Dist author from file');
-is($dist->location(), 'F/FO/FOO/Bar-0.001.tar.gz', 'Dist name from file');
+is($dist->version(), '0.01', 'Dist version from file');
+is($dist->name(), 'FooOnly', 'Dist name from file');
+is($dist->author(), 'AUTHOR', 'Dist author from file');
+is($dist->location(), 'A/AU/AUTHOR/FooOnly-0.01.tar.gz', 'Dist name from file');
 
 my @packages = @{ $dist->packages() };
 is(scalar @packages, 1, 'Dist had one package');
 
 my $pkg = $packages[0];
-is($pkg->name(), 'Bar', 'Extracted package name');
-is($pkg->version(), 'v4.9.1', 'Extracted package version');
+is($pkg->name(), 'Foo', 'Extracted package name');
+is($pkg->version(), '0.01', 'Extracted package version');
 
 throws_ok { Pinto::Distribution->new_from_file() }
           qr/Must specify a file/, 'No arguments';
