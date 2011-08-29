@@ -37,7 +37,6 @@ sub execute {
     $self->config->write_config_file( file => $config_file );
     push @created_files, $config_file;
 
-    $DB::single = 1;
     # Create modules dir
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);

@@ -34,6 +34,8 @@ sub validate_args {
     $self->SUPER::validate_args($opts, $args);
 
     $self->usage_error('Arguments are not allowed') if @{ $args };
+
+    return 1;
 }
 
 #------------------------------------------------------------------------------
