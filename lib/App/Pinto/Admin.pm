@@ -1,6 +1,6 @@
 package App::Pinto::Admin;
 
-# ABSTRACT: Command-line driver for Pinto
+# ABSTRACT: Command-line driver for pinto-admin
 
 use strict;
 use warnings;
