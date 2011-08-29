@@ -122,21 +122,22 @@ __END__
 
 =head1 SYNOPSIS
 
-Add this to your Pinto configuration (usually in F<~/.pinto/config.ini>):
+Add this to your Pinto configuration file, which is located at
+F<config/pinto.ini> inside your repository:
 
   ; other global params up here...
 
-  store   = Pinto::Store::VCS::Svn
+  store = Pinto::Store::VCS::Svn
 
   [Pinto::Store::VCS::Svn]
 
-  ; Required.  URL of repository location where the mainline version will live
+  ; Required.  URL of location where the mainline version will live
   trunk = http://my-repository/trunk/PINTO
 
   ; Optional.  URL of location where trunk will be copied
   tag   = http://my-repository/tags/PINTO-%Y%m%d.%H%M%S
 
-And then run L<pinto> as you normally would.
+And then run L<pinto-admin> or L<pinto-server> as you normally would.
 
 =head1 DESCRIPTION
 
@@ -146,50 +147,49 @@ repository inside Subversion.
 =head1 CONFIGURATION
 
 These configuration parameters are in addition to those provided by
-L<Pinto>.  All configuration parameters should go in your L<pinto>
-config file, which is usually located in F<~/.pinto/config.ini>.
+L<Pinto> itself.  All configuration parameters should go in the
+repository configuration file, which is located at F<config/pinto.ini>
+within the repository directory.
 
 =over 4
 
 =item trunk
 
 (Required) The URL to the location in Subversion where you want the
-trunk (i.e. mainline) branch of your Pinto repository.  If this
-location does not exist, it will be created for you.  Each time you
-run L<pinto>, the changes to your repository will be committed to this
-branch.
+trunk (i.e. mainline branch) of your Pinto repository.  Each time you
+run L<pinto>, the changes to your repository will be committed to the
+trunk.
 
 =item tag
 
-(Optional) The URL of the location in your Subversion repository where
-you want to create a tag of the CPAN mirror.  When L<pinto> commits
-changes to the C<trunk>, that URL will be tagged (i.e. copied)
-to the C<tag>. If you do not specify C<tag> then no
-tag is made.
+(Optional) The URL of the location in Subversion where you want to
+create a tag of your Pinto repository.  When L<Pinto> commits changes
+to the C<trunk>, that URL will be tagged (i.e. copied) to the
+C<tag>. If you do not specify C<tag> then no tag is made.
 
 In most situations, you'll want to keep multiple tags that represent
-the state of CPAN at a various points in time.  The typical practice
+the state of your repository at a various points in time.  A common practice
 is to put a date stamp in the name of your tag.  Therefore, you can
 embed any of the L<Date::Format> conversion specifications in your
 URL and they will be expanded when the tag is constructed.
 
-For example, if you had this in your F<~/.pinto/config.ini>:
+For example, if you had this in your repository configuration:
 
- tag = http://my-company/svn/tags/PINTO-%y.%m.%d
+  tag = http://my-company/svn/tags/PINTO-%y.%m.%d
 
-and ran C<pinto mirror> on June 17, 2011, then it would produce a tag
+and ran C<pinto-admin update> on June 17, 2011, then it would produce a tag
 at this URL:
 
- http://my-company/svn/tags/PINTO-11.06.17
+  http://my-company/svn/tags/PINTO-11.06.17
 
 Be sure to choose a date stamp with sufficient resolution for your
-needs.  If you are only going to run L<pinto> once a month, then you
+needs.  If you are only going to update once a month, then you
 probably only need a year and month to distinguish your tag.  But if
 you are going to run it several times a day, then you'll need day,
 hours and minutes (and possibly seconds) too.
 
 And if you don't put any date stamp in your C<tag> at all, then you're
-basically limited to running L<pinto> only once, because you can't
+basically limited to running C<pinto-admin update> just once, because you can't
 make the same tag more than once (unless you remove the previous tag
 by some other means).
 
