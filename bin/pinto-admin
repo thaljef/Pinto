@@ -38,9 +38,9 @@ __END__
 
 C<pinto-admin> is a command line utility for creating and managing a
 Pinto repository.  The repository can contain your own distributions
-and/or mirror foreign distributions from another repository (such as
-L<http://cpan.perl.org>).  You can also put patched versions of
-foreign distributions in your repository.
+and/or foreign distributions from another repository (such as a CPAN
+mirror like L<http://cpan.perl.org>).  You can also put patched
+versions of foreign distributions in your repository.
 
 You can then point L<cpanm> to your Pinto repository and install your
 distributions (with their dependencies).  B<NOTE:> At this time, only
@@ -93,9 +93,9 @@ will mask the foreign packages with the same name.  See the
 L<"BEHAVIOR"> section for more information about how local
 distributions interact with foreign ones.
 
-Note that you can also pipe arguments to this command over STDIN.  In
-that case, blank lines and lines that look like comments will be
-ignored.
+You can also pipe arguments to this command over STDIN.  In that case,
+blank lines and lines that look like comments (i.e. starting with "#"
+or ';') will be ignored.
 
 =item clean
 
@@ -108,11 +108,11 @@ back is to manually add them again (or rollback, if using VCS).
 
 =item create
 
-Creates a new, empty repository at the configured directory.  The
-directory does not need to already exist, and you'll get a warning
-if it does.
+Creates a new, empty repository at the specified directory.  If the
+directory already exists, then it must be empty.  Otherwise L<Pinto>
+will refuse to create the repository.
 
-=item list
+=item list  [ --type (all | local | foreign | conflicts) ]
 
 Lists packages and distributions that are currently indexed in your
 remote repository.  You can see all packages (the default) only
@@ -128,11 +128,11 @@ cannot remove packages in foreign distributions that were pulled in
 from a remote source (however you can mask them by adding your own
 versions).
 
-Note that you can also pipe arguments to this command over STDIN.  In
-that case, blank lines and lines that look like comments will be
-ignored.
+You can also pipe arguments to this command over STDIN.  In that case,
+blank lines and lines that look like comments (i.e. starting with "#"
+or ";") will be ignored.
 
-=item mirror
+=item update
 
 Fills your repository with the distributions that contain the latest
 version of all packages in the C<source> repository.  I call these
@@ -210,8 +210,7 @@ There are certain rules that govern how a Pinto repository behaves.
 These rules are intended to ensure that clients installing
 distributions from your repository will always get the B<right ones>,
 regardless of what happens on the public CPAN or what order they
-install things.  Also, the rules attempt to make Pinto behave somewhat
-like PAUSE does.
+install things.
 
 =over 4
 
