@@ -96,6 +96,9 @@ override commit => sub {
 override tag => sub {
     my ($self, %args) = @_;
 
+    # HACK: I don't like this -- I'm not sure who should decide when to tag
+    return 1 if not defined ( $args{tag} or $self->config->svn_tag() );
+
     my $now = time;
 
     my $trunk = $self->config->svn_trunk();
