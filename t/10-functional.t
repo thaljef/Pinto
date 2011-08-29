@@ -102,10 +102,10 @@ $t->dist_exists_ok( 'CHAUCER', $dist_base );
 $t->package_indexed_ok('Foo', 'CHAUCER', '0.01');
 
 #------------------------------------------------------------------------------
-# Mirroring...
+# Updating...
 
 $pinto->new_action_batch();
-$pinto->add_action('Mirror', force => 1);
+$pinto->add_action('Update', force => 1);
 $pinto->run_actions();
 
 $t->dist_exists_ok( 'LOCAL', 'Foo-Bar-Baz-0.03.tar.gz' );
