@@ -8,6 +8,8 @@ use warnings;
 use Readonly;
 use List::MoreUtils qw(none);
 
+use Pinto::Constants qw(:list);
+
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -18,9 +20,7 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
-Readonly my @LIST_TYPES => qw(local foreign conflicts all);
-Readonly my $LIST_TYPES_STRING => join ' | ', sort @LIST_TYPES;
-Readonly my $DEFAULT_LIST_TYPE => 'all';
+
 
 #------------------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ sub opt_spec {
     return ( $self->SUPER::opt_spec(),
 
         [ 'noinit'  => 'Do not pull/update from VCS' ],
-        [ 'type=s'  => "One of: ( $LIST_TYPES_STRING )" ],
+        [ 'type=s'  => "One of: ( $PINTO_LIST_TYPES_STRING )" ],
     );
 }
 
@@ -43,8 +43,8 @@ sub validate_args {
 
     $self->usage_error('Arguments are not allowed') if @{ $args };
 
-    $opts->{type} ||= $DEFAULT_LIST_TYPE;
-    $self->usage_error('Invalid type') if none { $opts->{type} eq $_ } @LIST_TYPES;
+    $opts->{type} ||= $PINTO_DEFAULT_LIST_TYPE;
+    $self->usage_error('Invalid type') if none { $opts->{type} eq $_ } @PINTO_LIST_TYPES;
 
     return 1;
 }
