@@ -1,6 +1,6 @@
-package Pinto::Action::Mirror;
+package Pinto::Action::Update;
 
-# ABSTRACT: An action to mirror another repository into yours
+# ABSTRACT: An action to pull all the latests dists into your repository
 
 use Moose;
 

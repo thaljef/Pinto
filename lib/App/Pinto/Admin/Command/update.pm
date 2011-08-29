@@ -1,6 +1,6 @@
-package App::Pinto::Admin::Command::mirror;
+package App::Pinto::Admin::Command::update
 
-# ABSTRACT: get all the latest distributions from a remote repository
+# ABSTRACT: get all the latest distributions from another repository
 
 use strict;
 use warnings;
@@ -20,7 +20,7 @@ sub opt_spec {
 
     return ( $self->SUPER::opt_spec(),
 
-        [ 'force' => 'Force action, even if indexes appear unchanged' ],
+        [ 'force'     => 'Force action, even if indexes appear unchanged' ],
         [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'  => 'Do not commit changes to VCS' ],
         [ 'noinit'    => 'Do not pull/update from VCS' ],
