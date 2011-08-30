@@ -23,6 +23,9 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
     my ($self, $app) = @_;
 
+    # TODO: Use the "one_of" feature of Getopt::Long::Descriptive to
+    # define and validate the different types of lists.
+
     return ( $self->SUPER::opt_spec(),
 
         [ 'noinit'  => 'Do not pull/update from VCS' ],
