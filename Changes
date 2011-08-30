@@ -2,7 +2,7 @@
 
      * Interface Changes:
 
-     The "mirror" command is now called "update".  I feel this is
+     The "mirror" command is now called "update".  I feel this
      more accurately reflects what is going on, since a Pinto
      repository isn't really a "mirror" of anything.
    
