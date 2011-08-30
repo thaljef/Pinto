@@ -20,17 +20,13 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
-
-
-#------------------------------------------------------------------------------
-
 sub opt_spec {
     my ($self, $app) = @_;
 
     return ( $self->SUPER::opt_spec(),
 
         [ 'noinit'  => 'Do not pull/update from VCS' ],
-        [ 'type=s'  => "One of: ( $PINTO_LIST_TYPES_STRING )" ],
+        [ 'type:s'  => "One of: ( $PINTO_LIST_TYPES_STRING )" ],
     );
 }
 
