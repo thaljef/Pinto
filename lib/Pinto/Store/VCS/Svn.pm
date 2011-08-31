@@ -133,40 +133,24 @@ __END__
 
 =head1 SYNOPSIS
 
-If you B<do not> already have a Pinto repository on disk somewhere:
+  # Create Pinto a repository if you don't already have one
+  $> pinto-admin --repos=~/tmp/PINTO create
 
-  # Create location in Subversion
-  $> svn mkdir --parents http://my.company.com/svn/trunk/PINTO
-
-  # Checkout working copy of that location
-  $> svn co http://my.company.com/svn/trunk/PINTO /my/PINTO
-
-  # Create Pinto repository in that working copy
-  $> pinto-admin --repos=/my/PINTO create
-
-  # Edit Pinto configuration ay /my/PINTO/config/pinto.ini
+  # Edit Pinto configuration ay ~/tmp/PINTO/config/pinto.ini
   store = Pinto::Store::VCS::Svn
 
-  # Commit changes
-  $> svn commit -m 'New Pinto repository' /my/PINTO
-
-If you B<do> already have a Pinto repository on disk somewhere:
-
-  # Import existing Pinto repository into Subversion
-  $> svn import /path/to/existing/pinto/repository http://my.company.com/svn/trunk/PINTO
+  # Import Pinto repository into Subversion
+  $> svn import ~/tmp/PINTO http://my.company.com/svn/trunk/PINTO
 
   # Checkout working copy of the Pinto repository
-  $> svn co http://my.company.com/svn/trunk/PINTO /my/PINTO
+  $> svn co http://my.company.com/svn/trunk/PINTO ~/srv/PINTO
 
-  # Edit Pinto configuration at /my/PINTO/config/pinto.ini
-  store = Pinto::Store::VCS::Svn
-
-  # Commit changes
-  $> svn commit -m 'Configure Pinto to use Subversion' /my/PINTO
+  # You may now destroy the old non-versioned Pinto repository
+  $> rm -rf ~/tmp/PINTO
 
 Now run L<pinto-admin> or L<pinto-server> as you normally would,
-setting the C<--repos> option to the path of the working copy
-(F</my/PINTO> in the example above).
+setting the C<--repos> to the path of the working copy (which would be
+F<~/srv/PINTO> in the example above).
 
 =head1 DESCRIPTION
 
