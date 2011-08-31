@@ -6,6 +6,11 @@
      than package names.  You must specify the full name of the
      distribution, including version number and extension.
 
+     * Other Good Stuff:
+
+     Wrote the manuals for each of the pinto-admin commands.
+     Say `pinto-admin COMMAND --man` to see them.
+
 0.022     2011-08-31 01:31:04 America/Los_Angeles
 
      * Interface Changes:

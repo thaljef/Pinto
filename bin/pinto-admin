@@ -50,11 +50,9 @@ distributions (with their dependencies).  B<NOTE:> At this time, only
 L<cpanm> will work properly with a Pinto repository.  But support for
 L<cpan> and L<cpanp> is coming real soon!
 
-=head1 OPTIONS
+=head1 GLOBAL OPTIONS
 
-The following global options are available for all commands.  Say
-C<pinto-admin help COMMAND> to display a list of sub-options available
-for that C<COMMAND>.
+The following options are available for all commands.
 
 =over 4
 
@@ -81,85 +79,19 @@ times for greater effect.
 
 =head1 COMMANDS
 
-The following commands are available.  To display a list of
-sub-options available for any command, you can say:
+L<pinto-admin> supports several commands that perform various operations
+on your repository, or report information about your repository.  To
+get a listing of all the available commands:
 
-  pinto-admin help COMMAND.
+  $> pinto-admin commands
 
-=over 4
+Each command has its own options and arguments.  To get a brief summary:
 
-=item add path/to/Some-Distribution-1.2.tar.gz
+  $> pinto-admin help COMMAND
 
-Adds the given distribution to the Pinto repository.  I call these
-"local distributions".  Any packages contained in that distribution
-will mask the foreign packages with the same name.  See the
-L<"BEHAVIOR"> section for more information about how local
-distributions interact with foreign ones.
+To see the complete manual for a command:
 
-You can also pipe arguments to this command over STDIN.  In that case,
-blank lines and lines that look like comments (i.e. starting with "#"
-or ';') will be ignored.
-
-=item clean
-
-Deletes any distribution in the repository that is not currently in
-the master index.  This usually happens automatically, unless you've
-set the C<nocleanup> parameter.  If you had set C<nocleanup>, beware
-that running the C<clean> command will make it impossible to install
-older distributions from your repository, and the only way to get them
-back is to manually add them again (or rollback, if using VCS).
-
-=item create
-
-Creates a new, empty repository at the specified directory.  If the
-directory already exists, then it must be empty.  Otherwise L<Pinto>
-will refuse to create the repository.
-
-=item list  [ --type (all | local | foreign | conflicts) ]
-
-Lists packages and distributions that are currently indexed in your
-remote repository.  You can see all packages (the default) only
-locally added packages, only foreign packages, or only local packages
-that conflict with a foreign package.
-
-=item remove Some-Distribution-1.0.tar.gz
-
-Removes the local distribution with the given name.  You must specify
-the complete distribution name, including version number and
-extension.  The precise identity of the distribution that will be
-removed depends on who you are.  So if you are C<JOE> and you ask to
-remove C<Foo-1.0.tar.gz> then you are really asking to remove
-F<J/JO/JOE/Foo-1.0.tar.gz>.  To remove a distribution that was added
-by another author, use the C<--author> parameter to change who you
-are.  Or you can just explicitly specify the full identity of the
-distribution.  So the following two examples are equivalent:
-
-  $> pinto-admin --repos=/some/dir remove --author SUSAN Foo-1.0.tar.gz
-  $> pinto-admin --repos=/some/dir remove S/SU/SUSAN/Foo-1.0.tar.gz
-
-You cannot remove foreign distributions that were pulled in from
-another repository using the C<update> command (however you can mask
-them by adding your own versions).
-
-You can also pipe arguments to this command over STDIN.  In that case,
-blank lines and lines that look like comments (i.e. starting with "#"
-or ";") will be ignored.
-
-=item update
-
-Fills your repository with the distributions that contain the latest
-version of all packages in the C<source> repository.  I call these
-"foreign" distributions.  See the L<"BEHAVIOR"> section for more
-information about how local distributions interact with foreign ones.
-
-=item verify
-
-Reports any distributions that are listed in your index but not
-actually present in the repository.  This is usually a sign that
-something has gone wrong.
-
-=back
-
+  $> pinto-admin COMMAND --man
 
 =head1 CONFIGURATION
 
