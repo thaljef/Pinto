@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::File;
-use Test::More (tests => 37);
+use Test::More (tests => 40);
 
 use File::Temp;
 use Path::Class;
@@ -91,6 +91,9 @@ $pinto->add_action('Remove', package => 'Foo', author => 'AUTHOR' );
 $pinto->run_actions();
 
 $t->dist_not_exists_ok( 'AUTHOR', $dist_base );
+$t->path_not_exists_ok( [qw( authors id A AU AUTHOR )] );
+$t->path_not_exists_ok( [qw( authors id A AU )] );
+$t->path_not_exists_ok( [qw( authors id A )] );
 $t->package_not_indexed_ok( 'Foo' );
 
 # Adding again, with different author...
