@@ -103,7 +103,7 @@ has store => (
     isa       => Str,
     key       => 'store',
     default   => 'Pinto::Store',
-    documentation => 'Name of the class that will handle storage of your repository',
+    documentation => 'Name of class that handles storage of your repository',
 );
 
 #------------------------------------------------------------------------------
