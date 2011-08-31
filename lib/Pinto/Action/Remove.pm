@@ -1,6 +1,6 @@
 package Pinto::Action::Remove;
 
-# ABSTRACT: An action to remove packages from the repository
+# ABSTRACT: An action to remove one local distribution from the repository
 
 use Moose;
 use MooseX::Types::Moose qw( Str );
@@ -40,9 +40,13 @@ override execute => sub {
     my $idxmgr     = $self->idxmgr();
     my $cleanup    = not $self->config->nocleanup();
 
+    # If the $dist_name looks like a precise location (i.e. it has
+    # slashes), then use it as such.  But if not, then use the author
+    # attribute to construct the precise location.
     my $location = $dist_name =~ m{/}mx ?
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
+    # TODO: throw a more specialized exception.
     my $dist = $idxmgr->remove_local_distribution_at(location => $location)
         or Pinto::Exception->throw("Distribution $location is not in the local index");
 

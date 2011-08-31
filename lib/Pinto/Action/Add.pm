@@ -1,6 +1,6 @@
 package Pinto::Action::Add;
 
-# ABSTRACT: An action to add one distribution to the repository
+# ABSTRACT: An action to add one local distribution to the repository
 
 use Moose;
 
