@@ -66,7 +66,7 @@ has nocleanup => (
     isa       => Bool,
     key       => 'nocleanup',
     default   => 0,
-    documentation => 'Do not delete older distributions when they become outdated',
+    documentation => 'Do not delete distributions when they become outdated',
 );
 
 
@@ -94,7 +94,7 @@ has source  => (
     key       => 'source',
     default   => 'http://cpan.perl.org',
     coerce    => 1,
-    documentation => 'URL of repository where foreign dists will be come from',
+    documentation => 'URL of repository where foreign dists will come from',
 );
 
 
