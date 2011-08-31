@@ -39,8 +39,11 @@ sub execute {
     my ($self) = @_;
 
     my $idxmgr  = $self->idxmgr();
+    my $idx_file = $idxmgr->mirror_index->file();
+    my $idx_already_exists = -e $idx_file;  # HACK!
+
     my $idx_changes = $idxmgr->update_mirror_index( force => $self->force() );
-    $self->store->add(file => $idxmgr->mirror_index->file());
+    $self->store->add(file => $idx_file) if not $idx_already_exists;
     return 0 if not $idx_changes and not $self->force();
 
     my $dist_changes = 0;
