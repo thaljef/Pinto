@@ -1,5 +1,21 @@
 {{$NEXT}}
 
+     * Interface Changes:
+
+     You no longer need to specify the Subversion trunk in your
+     pinto.ini (if you were using Pinto::Store::VCS::Svn).  The
+     location of your Pinto repository in subversion is implicit in
+     the `svn info` of the working copy.  Secondly, the "create"
+     action no longer takes care of making a location in Subversion
+     for you.  So you now have to do a little more work to setup Pinto
+     with Subversion.  See the POD in Pinto::Store::VCS::Svn for
+     step-by-step instructions.
+
+     You can no longer specify a VCS tag in your pinto.ini.  Making
+     a tag after every commit doesn't make sense.  So now, a tag
+     is only made if you explicitly set a --tag on the command line.
+     Likewise, the --notag command line switch has been removed,
+     since the absence of a --tag is equivalent to --notag.
 
      * Bug Fixes:
 

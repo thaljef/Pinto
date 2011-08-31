@@ -34,8 +34,8 @@ sub execute {
 
     # HACK...I want to do this before checking out from VCS
     my $repos = $self->pinto->config->repos();
-    die "A repository already exists at $repos\n"
-        if -e file($repos, qw(modules 02packages.details.txt.gz));
+    die "Directory $repos is not empty\n"
+        if -e $repos and $repos->children();
 
 
     $self->pinto->new_action_batch( %{$opts}, nolock => 1 );

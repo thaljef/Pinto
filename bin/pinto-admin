@@ -23,16 +23,19 @@ __END__
 
   pinto-admin --repos=/path/to/repos [global options] COMMAND [command options] [ARGS]
 
-=head1 TYPICAL USAGE
+=head1 BASIC USAGE
 
   # Create an empty repository
   pinto-admin --repos=/some/dir create
 
   # Add your own distribution to the repository
-  pinto-admin --repos=/some/dir add /path/to/Foo-Bar-1.2.tar.gz
+  pinto-admin --repos=/some/dir add Foo-Bar-1.2.tar.gz
 
-  # Then install stuff from your repository
+  # Then install stuff, forcing everything to come from your repository
   cpanm --mirror-only --mirror file:///some/dir Foo::Bar
+
+  # Or install stuff, falling back to a CPAN for missing dependencies
+  cpanm --mirror file:///some/dir Foo::Bar
 
 =head1 DESCRIPTION
 
@@ -169,7 +172,7 @@ semi-colon (;).
 The URL of a repository that you would like L<Pinto> to pull foreign
 distributions from.  This could be a public CPAN mirror, or another
 Pinto repository.  Defaults to L<http://cpan.perl.org>.  This
-parameter is only relevant to the C<mirror> command.
+parameter is only relevant to the C<update> command.
 
 =item nocleanup = 0|1
 
@@ -199,8 +202,8 @@ repository.  The default is L<Pinto::Store>, which simply stores your
 repository on the local file system.  Alternatives Stores like
 L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> will also
 store your repository inside a version control system (VCS).  See the
-documentation for each of those modules for additional configuration
-settings.
+documentation for each of those modules for information on setting up
+L<Pinto> with a VCS.
 
 =back
 
@@ -217,7 +220,7 @@ install things.
 =item A local package always masks a foreign package, and all other
 packages that are in the same distribution with the foreign package.
 
-This is important, so pay attention.  If you C<mirror> or C<add> a
+This is important, so pay attention.  If you C<update> or C<add> a
 distribution that contains both C<Foo> and C<Bar> packages, and you
 C<add> another distribution that contains just the C<Foo> package,
 then both the C<Foo> and C<Bar> packages from the prior distribution

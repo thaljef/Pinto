@@ -26,17 +26,20 @@ has config    => (
     required  => 1,
 );
 
+
 has store    => (
     is       => 'ro',
     isa      => 'Pinto::Store',
     required => 1
 );
 
+
 has idxmgr => (
     is       => 'ro',
     isa      => 'Pinto::IndexManager',
     required => 1,
 );
+
 
 has message => (
     is       => 'ro',
@@ -46,11 +49,13 @@ has message => (
     default  => '',
 );
 
+
 has nocommit => (
     is       => 'ro',
     isa      => Bool,
     default  => 0,
 );
+
 
 has noinit   => (
     is       => 'ro',
@@ -59,22 +64,18 @@ has noinit   => (
     lazy     => 1,
 );
 
+
 has nolock => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
 );
 
-has notag => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
 
 has tag => (
-    is      => 'ro',
-    isa     => Str,
-    default => '',
+    is        => 'ro',
+    isa       => Str,
+    predicate => 'has_tag',
 );
 
 #-----------------------------------------------------------------------------
@@ -88,6 +89,7 @@ has _actions => (
     handles  => {enqueue => 'push', dequeue => 'shift'},
 );
 
+
 has _locker  => (
     is       => 'ro',
     isa      => 'Pinto::Locker',
@@ -95,6 +97,7 @@ has _locker  => (
     init_arg =>  undef,
     lazy     => 1,
 );
+
 
 has _result => (
     is       => 'ro',
@@ -184,15 +187,14 @@ sub _run_actions {
     return $self if $self->nocommit();
 
     if ( $self->store->isa('Pinto::Store::VCS') ) {
-        # TODO: make the module dir an attribute of something.
-        # Maybe on Config, or Pinto itself?
-        my $modules_dir = $self->config->repos->subdir('modules');
+
+        my $modules_dir = $self->config->modules_dir();
         $self->store->mark_path_as_modified($modules_dir);
+
+        $self->store->commit( message => $self->message() );
+
+        $self->store->tag( tag => $self->tag() ) if $self->has_tag();
     }
-
-    $self->store->commit( message => $self->message() );
-
-    $self->store->tag( tag => $self->tag() ) unless $self->notag();
 
     return $self;
 }

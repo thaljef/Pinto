@@ -5,6 +5,7 @@ package Pinto::Store::VCS::Svn;
 use Moose;
 
 use Pinto::Util::Svn;
+use Pinto::Types qw(URI);
 use Date::Format qw(time2str);
 
 extends 'Pinto::Store::VCS';
@@ -17,14 +18,24 @@ use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
+has svn_location => (
+    is       => 'ro',
+    isa      => URI,
+    init_arg => undef,
+    default  => sub { Pinto::Util::Svn::location( path => $_[0]->config->repos() ) },
+    coerce   => 1,
+    lazy     => 1,
+);
+
+
+#-------------------------------------------------------------------------------
+
 override initialize => sub {
     my ($self) = @_;
 
     my $repos = $self->config->repos();
-    my $trunk = $self->config->svn_trunk();
-
-    $self->logger->info("Checking out (or updating) working copy");
-    Pinto::Util::Svn::svn_checkout(url => $trunk, to => $repos);
+    $self->logger->info('Updating working copy');
+    Pinto::Util::Svn::svn_update(dir => $repos);
 
     return 1;
 };
@@ -96,19 +107,16 @@ override commit => sub {
 override tag => sub {
     my ($self, %args) = @_;
 
-    # HACK: I don't like this -- I'm not sure who should decide when to tag
-    return 1 if not defined ( $args{tag} or $self->config->svn_tag() );
-
     my $now = time;
 
-    my $trunk = $self->config->svn_trunk();
-    my $tag   = time2str( ($args{tag} || $self->config->svn_tag()), $now );
+    my $origin = $self->svn_location();
+    my $tag    = time2str( $args{tag}, $now );
 
-    my $as_of = time2str('%C', $now);
-    my $message  = "Tagging Pinto repository as of $as_of.";
+    my $as_of   = time2str('%C', $now);
+    my $message = "Tagging Pinto repository as of $as_of.";
 
     $self->logger->info("Making tag");
-    Pinto::Util::Svn::svn_tag(from => $trunk, to => $tag, message => $message);
+    Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $message);
 
     return 1;
 };
@@ -125,78 +133,47 @@ __END__
 
 =head1 SYNOPSIS
 
-Add this to your Pinto configuration file, which is located at
-F<config/pinto.ini> inside your repository:
+If you B<do not> already have a Pinto repository on disk somewhere:
 
-  ; other global params up here...
+  # Create location in Subversion
+  $> svn mkdir --parents http://my.company.com/svn/trunk/PINTO
 
+  # Checkout working copy of that location
+  $> svn co http://my.company.com/svn/trunk/PINTO /my/PINTO
+
+  # Create Pinto repository in that working copy
+  $> pinto-admin --repos=/my/PINTO create
+
+  # Edit Pinto configuration ay /my/PINTO/config/pinto.ini
   store = Pinto::Store::VCS::Svn
 
-  [Pinto::Store::VCS::Svn]
+  # Commit changes
+  $> svn commit -m 'New Pinto repository' /my/PINTO
 
-  ; Required.  URL of location where the mainline version will live
-  trunk = http://my-repository/trunk/PINTO
+If you B<do> already have a Pinto repository on disk somewhere:
 
-  ; Optional.  URL of location where trunk will be copied
-  tag   = http://my-repository/tags/PINTO-%Y%m%d.%H%M%S
+  # Import existing Pinto repository into Subversion
+  $> svn import /path/to/existing/pinto/repository http://my.company.com/svn/trunk/PINTO
 
-And then run L<pinto-admin> or L<pinto-server> as you normally would.
+  # Checkout working copy of the Pinto repository
+  $> svn co http://my.company.com/svn/trunk/PINTO /my/PINTO
+
+  # Edit Pinto configuration at /my/PINTO/config/pinto.ini
+  store = Pinto::Store::VCS::Svn
+
+  # Commit changes
+  $> svn commit -m 'Configure Pinto to use Subversion' /my/PINTO
+
+Now run L<pinto-admin> or L<pinto-server> as you normally would,
+setting the C<--repos> option to the path of the working copy
+(F</my/PINTO> in the example above).
 
 =head1 DESCRIPTION
 
 L<Pinto::Store::VCS::Svn> is a back-end for L<Pinto> that stores the
-repository inside Subversion.
-
-=head1 CONFIGURATION
-
-These configuration parameters are in addition to those provided by
-L<Pinto> itself.  All configuration parameters should go in the
-repository configuration file, which is located at F<config/pinto.ini>
-within the repository directory.
-
-=over 4
-
-=item trunk
-
-(Required) The URL to the location in Subversion where you want the
-trunk (i.e. mainline branch) of your Pinto repository.  Each time you
-run L<pinto>, the changes to your repository will be committed to the
-trunk.
-
-=item tag
-
-(Optional) The URL of the location in Subversion where you want to
-create a tag of your Pinto repository.  When L<Pinto> commits changes
-to the C<trunk>, that URL will be tagged (i.e. copied) to the
-C<tag>. If you do not specify C<tag> then no tag is made.
-
-In most situations, you'll want to keep multiple tags that represent
-the state of your repository at a various points in time.  A common practice
-is to put a date stamp in the name of your tag.  Therefore, you can
-embed any of the L<Date::Format> conversion specifications in your
-URL and they will be expanded when the tag is constructed.
-
-For example, if you had this in your repository configuration:
-
-  tag = http://my-company/svn/tags/PINTO-%y.%m.%d
-
-and ran C<pinto-admin update> on June 17, 2011, then it would produce a tag
-at this URL:
-
-  http://my-company/svn/tags/PINTO-11.06.17
-
-Be sure to choose a date stamp with sufficient resolution for your
-needs.  If you are only going to update once a month, then you
-probably only need a year and month to distinguish your tag.  But if
-you are going to run it several times a day, then you'll need day,
-hours and minutes (and possibly seconds) too.
-
-And if you don't put any date stamp in your C<tag> at all, then you're
-basically limited to running C<pinto-admin update> just once, because you can't
-make the same tag more than once (unless you remove the previous tag
-by some other means).
-
-=back
+repository inside Subversion.  Before configuring Pinto to use this
+Store, you must first create a location within Subversion for L<Pinto>
+to use (see L</"SYNOPSIS"> above).
 
 =head1 CAVEATS
 

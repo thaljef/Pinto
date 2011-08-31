@@ -20,9 +20,13 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
     my ($self, $app) = @_;
 
+    # TODO: add option to prompt before cleaning each dist
+
     return ( $self->SUPER::opt_spec(),
 
+        [ 'message=s' => 'Prepend a message to the VCS log' ],
         [ 'noinit'    => 'Do not pull/update from VCS' ],
+        [ 'tag=s'     => 'Specify a VCS tag name' ]
     );
 }
 

@@ -66,7 +66,7 @@ has nocleanup => (
     isa       => Bool,
     key       => 'nocleanup',
     default   => 0,
-    documentation => 'If true, then Pinto will not delete older distributions when newer versions are added',
+    documentation => 'Do not delete older distributions when they become outdated',
 );
 
 
@@ -75,7 +75,7 @@ has noclobber => (
     isa       => Bool,
     key       => 'noclobber',
     default   => 0,
-    documentation => 'If true, then Pinto will not clobber existing packages when adding new ones',
+    documentation => 'Do not clobber existing packages when adding new ones',
 );
 
 
@@ -84,7 +84,7 @@ has noinit => (
     isa      => Bool,
     key      => 'noinit',
     default  => 0,
-    documentation => 'If true, then Pinto will not pull/update from VCS before each operation',
+    documentation => 'Do not pull/update from VCS before each operation',
 );
 
 
@@ -94,7 +94,7 @@ has source  => (
     key       => 'source',
     default   => 'http://cpan.perl.org',
     coerce    => 1,
-    documentation => 'URL of a CPAN mirror (or Pinto repository) where foreign dists will be pulled from',
+    documentation => 'URL of repository where foreign dists will be come from',
 );
 
 
@@ -104,24 +104,6 @@ has store => (
     key       => 'store',
     default   => 'Pinto::Store',
     documentation => 'Name of the class that will handle storage of your repository',
-);
-
-# TODO: Consider moving VCS-related config to a separate Config class.
-
-has svn_trunk => (
-    is        => 'ro',
-    isa       => Str,
-    key       => 'trunk',
-    section   => 'Pinto::Store::VCS::Svn',
-);
-
-
-has svn_tag => (
-    is        => 'ro',
-    isa       => Str,
-    key       => 'tag',
-    section   => 'Pinto::Store::VCS::Svn',
-    default   => '',
 );
 
 #------------------------------------------------------------------------------
