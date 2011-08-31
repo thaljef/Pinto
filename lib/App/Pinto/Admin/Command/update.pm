@@ -20,11 +20,11 @@ sub opt_spec {
 
     return ( $self->SUPER::opt_spec(),
 
-        [ 'force'     => 'Force action, even if indexes appear unchanged' ],
-        [ 'message=s' => 'Prepend a message to the VCS log' ],
-        [ 'nocommit'  => 'Do not commit changes to VCS' ],
-        [ 'noinit'    => 'Do not pull/update from VCS' ],
-        [ 'tag=s'     => 'Specify a VCS tag name' ],
+        [ 'force'       => 'Force action, even if indexes appear unchanged' ],
+        [ 'message|m=s' => 'Prepend a message to the VCS log' ],
+        [ 'nocommit'    => 'Do not commit changes to VCS' ],
+        [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
 

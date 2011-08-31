@@ -24,9 +24,9 @@ sub opt_spec {
 
     return ( $self->SUPER::opt_spec(),
 
-        [ 'message=s' => 'Prepend a message to the VCS log' ],
-        [ 'noinit'    => 'Do not pull/update from VCS' ],
-        [ 'tag=s'     => 'Specify a VCS tag name' ]
+        [ 'message|m=s' => 'Prepend a message to the VCS log' ],
+        [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'tag=s'       => 'Specify a VCS tag name' ]
     );
 }
 

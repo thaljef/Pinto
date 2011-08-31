@@ -22,11 +22,11 @@ sub opt_spec {
 
     return ( $self->SUPER::opt_spec(),
 
-        [ 'author=s'  => 'Your (alphanumeric) author ID' ],
-        [ 'message=s' => 'Prepend a message to the VCS log' ],
-        [ 'nocommit'  => 'Do not commit changes to VCS' ],
-        [ 'noinit'    => 'Do not pull/update from VCS' ],
-        [ 'tag=s'     => 'Specify a VCS tag name' ],
+        [ 'author=s'    => 'Your (alphanumeric) author ID' ],
+        [ 'message|m=s' => 'Prepend a message to the VCS log' ],
+        [ 'nocommit'    => 'Do not commit changes to VCS' ],
+        [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
 
