@@ -38,9 +38,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] FILE1 [FILE2 ...]
-%c --repos=PATH $command [OPTIONS] URL1 [URL2 ...]
-%c --repos=PATH $command [OPTIONS] < LIST_OF_FILES_OR_URLS
+%c --repos=PATH $command [OPTIONS] DISTRIBUTION_FILE_OR_URL1 [DISTRIBUTION_FILE_OR_URL2 ...]
+%c --repos=PATH $command [OPTIONS] < LIST_OF_DISTRIBUTION_FILES_OR_URLS
 END_USAGE
 
     chomp $usage;
@@ -56,7 +55,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_action_batch( %{$opts} );
-    $self->pinto->add_action('Add', %{$opts}, dist => $_) for @args;
+    $self->pinto->add_action('Add', %{$opts}, dist_file => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;

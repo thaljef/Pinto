@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More (tests => 10);
+use Test::More (tests => 12);
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -35,7 +35,7 @@ is($index->package_count(), 2,
    'Added two packages at the same time');
 
 #-----------------------------------------------------------------------------
-# Removing...
+# Removing by package...
 
 $index->remove( 'Bar' );
 is($index->package_count(), 0,
@@ -46,6 +46,19 @@ is($index->find(package=>'Baz'), undef,
    'Package Baz is removed');
 
 #-----------------------------------------------------------------------------
+# Removing by dist...
+
+
+$index->add( mkpkg(['Bar', 'Baz']) );
+is($index->package_count(), 2,
+   'Added two packages at the same time');
+
+$index->remove_dist('C/CH/CHAUCER/Bar-1.0.tar.gz');
+is($index->package_count(), 0,
+   'Both packages are gone now');
+
+
+#-----------------------------------------------------------------------------
 # Merging...
 
 $index->clear();
@@ -53,7 +66,7 @@ $index->add( mkpkg(['Eenie', 'Meenie']) );
 $index->add( mkpkg(['Meenie', 'Moe'], undef, '2.0') );
 
 is($index->find(package=>'Meenie')->version(), '2.0',
-    'Incument package replaced with mine');
+    'Incumbent package replaced with mine');
 
 is($index->find(package=>'Eenie'), undef,
     'Extra incumbent packages are gone');

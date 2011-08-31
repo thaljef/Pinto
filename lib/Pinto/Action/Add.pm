@@ -22,7 +22,7 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Attrbutes
 
-has dist => (
+has dist_file => (
     is       => 'ro',
     isa      => StrOrFileOrURI,
     required => 1,
@@ -42,11 +42,11 @@ override execute => sub {
     my $repos     = $self->config->repos();
     my $cleanup   = not $self->config->nocleanup();
     my $author    = $self->author();
-    my $dist      = $self->dist();
+    my $dist_file = $self->dist_file();
 
     # TODO: Consider moving Distribution construction to the index manager
-    my $dist_file = _is_url($dist) ? $self->_dist_from_url($dist) : Path::Class::file($dist);
-    my $added   = Pinto::Distribution->new_from_file(file => $dist_file, author => $author);
+    $dist_file = _is_url($dist_file) ? $self->_dist_from_url($dist_file) : file($dist_file);
+    my $added = Pinto::Distribution->new_from_file(file => $dist_file, author => $author);
 
     my @removed = $self->idxmgr->add_local_distribution(dist => $added, file => $dist_file);
     $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
@@ -63,17 +63,19 @@ override execute => sub {
 #------------------------------------------------------------------------------
 
 sub _is_url {
-    my ($string) = @_;
+    my ($it) = @_;
 
-    return $string =~ m/^ (?: http|ftp|file|) : /x;
+    return 1 if eval { $it->isa('URI') };
+    return 0 if eval { $it->isa('Path::Class::File') };
+    return $it =~ m/^ (?: http|ftp|file|) : /x;
 }
 
 #------------------------------------------------------------------------------
 
 sub _dist_from_url {
-    my ($self, $dist) = @_;
+    my ($self, $dist_url) = @_;
 
-    my $url = URI->new($dist)->canonical();
+    my $url = URI->new($dist_url)->canonical();
     my $path = Path::Class::file( $url->path() );
     return $path if $url->scheme() eq 'file';
 

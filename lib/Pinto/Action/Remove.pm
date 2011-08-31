@@ -19,7 +19,7 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Attributes
 
-has package  => (
+has dist_name  => (
     is       => 'ro',
     isa      => Str,
     required => 1,
@@ -35,13 +35,16 @@ with qw( Pinto::Role::Authored );
 override execute => sub {
     my ($self) = @_;
 
-    my $pkg     = $self->package();
-    my $author  = $self->author();
-    my $idxmgr  = $self->idxmgr();
-    my $cleanup = not $self->config->nocleanup();
+    my $dist_name  = $self->dist_name();
+    my $author     = $self->author();
+    my $idxmgr     = $self->idxmgr();
+    my $cleanup    = not $self->config->nocleanup();
 
-    my $dist = $idxmgr->remove_local_package(package => $pkg, author => $author)
-        or Pinto::Exception->throw("Package $pkg is not in the local index");
+    my $location = $dist_name =~ m{/}mx ?
+      $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
+
+    my $dist = $idxmgr->remove_local_distribution_at(location => $location)
+        or Pinto::Exception->throw("Distribution $location is not in the local index");
 
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
 

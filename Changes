@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+     * Interface Changes:
+
+     The "remove" operation now works on distribution names, rather
+     than package names.  You must specify the full name of the
+     distribution, including version number and extension.
+
 0.022     2011-08-31 01:31:04 America/Los_Angeles
 
      * Interface Changes:

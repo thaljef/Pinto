@@ -40,9 +40,12 @@ has author   => (
 
 has packages => (
     is         => 'ro',
+    traits     => [ 'Array' ],
     isa        => 'ArrayRef[Pinto::Package]',
     default    => sub { [] },
     init_arg   => undef,
+    handles    => {add_packages => 'push'},
+    auto_deref => 1,
 );
 
 has _info => (
@@ -156,17 +159,6 @@ sub _extract_packages {
     }
 
     $self->add_packages(@packages);
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-# TODO: Consider using a "native trait" for this.
-
-sub add_packages {
-    my ($self, @packages) = @_;
-
-    $self->packages->push(@packages);
-
     return $self;
 }
 

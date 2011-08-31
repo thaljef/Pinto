@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::remove;
 
-# ABSTRACT: remove your own packages from the repository
+# ABSTRACT: remove local distributions from the repository
 
 use strict;
 use warnings;
@@ -38,8 +38,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
  my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] PACKAGE1 [PACKAGE2 ...]
-%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGES
+%c --repos=PATH $command [OPTIONS] DISTRIBUTION_NAME1 [DISTRIBUTION_NAME2 ...]
+%c --repos=PATH $command [OPTIONS] < LIST_OF_DISTRIBUTION_NAMES
 END_USAGE
 
     chomp $usage;
@@ -56,7 +56,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_action_batch( %{$opts} );
-    $self->pinto->add_action('Remove', %{$opts}, package => $_) for @args;
+    $self->pinto->add_action('Remove', %{$opts}, dist_name => $_) for @args;
     my $result = $self->pinto->run_actions();
     return $result->is_success() ? 0 : 1;
 }
