@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::verify;
 
-# ABSTRACT: verify that all the indexed distributions are present
+# ABSTRACT: report distributions that are missing
 
 use strict;
 use warnings;
