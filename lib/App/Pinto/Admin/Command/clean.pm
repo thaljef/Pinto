@@ -61,13 +61,14 @@ sub prompt_for_confirmation {
     my ($self) = @_;
 
     print <<'END_MESSAGE';
-Cleaning the repository will remove all distributions that is not in
+Cleaning the repository will remove all distributions that are not in
 the current index.  As a result, it will become impossible to install
 older versions of distributions from your repository.
 
 Once cleaned, the only way to get those distributions back in your
-repository is to roll back your VCS (if applicable), or manually fetch
-them from CPAN (if they can be found) and add them to your repository.
+repository is to roll back your VCS (if applicable), or locate the
+original distribution files and use the "add" command to put them
+into to your repository again.
 
 END_MESSAGE
 
