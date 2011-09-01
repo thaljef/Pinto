@@ -1,9 +1,11 @@
 package App::Pinto::Admin;
 
-# ABSTRACT: Command-line driver for pinto-admin
+# ABSTRACT: Command-line driver for Pinto::Admin
 
 use strict;
 use warnings;
+
+use Class::Load qw();
 
 use App::Cmd::Setup -app;
 
@@ -25,16 +27,10 @@ sub global_opt_spec {
 
 #------------------------------------------------------------------------------
 
-sub usage_desc {
-    return '%c [global options] <command> [command options]';
-}
-
-#------------------------------------------------------------------------------
-
 =method pinto()
 
-Returns a reference to the L<Pinto> object.  If it does not already
-exist, one will be created using the global options.
+Returns a reference to a L<Pinto> object that has been constructed for
+this application.
 
 =cut
 
@@ -42,28 +38,23 @@ sub pinto {
     my ($self) = @_;
 
     return $self->{pinto} ||= do {
-
         my %global_options = %{ $self->global_options() };
 
         $global_options{repos}
-            or $self->usage_error('Must specify a repository');
+            or $self->usage_error('Must specify a repository directory');
 
-        require Pinto;
-        my $pinto  = Pinto->new(%global_options);
+        my $pinto_class = $self->pinto_class();
+        Class::Load::load_class($pinto_class);
+        my $pinto = $pinto_class->new(%global_options);
     };
 }
+
+#------------------------------------------------------------------------------
+
+sub pinto_class { return 'Pinto' }
 
 #------------------------------------------------------------------------------
 
 1;
 
 __END__
-
-=pod
-
-=head1 DESCRIPTION
-
-There is nothing to see here.  You probably should look at the
-documentation for L<pinto> instead.
-
-=cut

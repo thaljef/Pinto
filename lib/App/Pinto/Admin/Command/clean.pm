@@ -22,8 +22,7 @@ sub opt_spec {
 
     # TODO: add option to prompt before cleaning each dist
 
-    return ( $self->SUPER::opt_spec(),
-
+    return (
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
@@ -36,8 +35,6 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->SUPER::validate_args($opts, $args);
-
     $self->usage_error('Arguments are not allowed') if @{ $args };
 
     return 1;
@@ -48,12 +45,13 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
+    $self->prompt_for_confirmation()
+        if IO::Interactive::is_interactive();
+
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Clean', %{$opts});
-
-    $self->prompt_for_confirmation() if IO::Interactive::is_interactive();
-
     my $result = $self->pinto->run_actions();
+
     return $result->is_success() ? 0 : 1;
 }
 
@@ -75,7 +73,7 @@ END_MESSAGE
 
     my $answer = '';
 
-    until ($answer =~ m/[yn]/ix) {
+    until ($answer =~ m/^[yn]$/ix) {
         print "Are you sure you want to proceed? [Y/N]: ";
         chomp( $answer = uc <STDIN> );
     }

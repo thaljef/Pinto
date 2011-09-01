@@ -17,11 +17,14 @@ use base 'App::Pinto::Admin::Command';
 
 #-----------------------------------------------------------------------------
 
+sub command_names { return qw( add inject ) }
+
+#-----------------------------------------------------------------------------
+
 sub opt_spec {
     my ($self, $app) = @_;
 
-    return ( $self->SUPER::opt_spec(),
-
+    return (
         [ 'author=s'    => 'Your (alphanumeric) author ID' ],
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],

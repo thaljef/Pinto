@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::create;
 
-# ABSTRACT: create an empty repository
+# ABSTRACT: create a new empty repository
 
 use strict;
 use warnings;
@@ -17,10 +17,12 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
+sub command_names { return qw( create new ) }
+
+#------------------------------------------------------------------------------
+
 sub validate_args {
     my ($self, $opts, $args) = @_;
-
-    $self->SUPER::validate_args($opts, $args);
 
     $self->usage_error('Arguments are not allowed') if @{ $args };
 
@@ -32,15 +34,15 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    # HACK...I want to do this before checking out from VCS
+    # HACK...do this before checking out VCS
     my $repos = $self->pinto->config->repos();
     die "Directory $repos is not empty\n"
         if -e $repos and $repos->children();
 
-
     $self->pinto->new_action_batch( %{$opts}, nolock => 1 );
     $self->pinto->add_action('Create', %{$opts});
     my $result = $self->pinto->run_actions();
+
     return $result->is_success() ? 0 : 1;
 }
 

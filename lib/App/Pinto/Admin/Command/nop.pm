@@ -20,7 +20,7 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
     my ($self, $app) = @_;
 
-    return ( $self->SUPER::opt_spec(),
+    return (
         [ 'noinit'  => 'Do not pull/update from VCS' ],
         [ 'sleep=i' => 'seconds to sleep before exiting' ],
     );
@@ -30,8 +30,6 @@ sub opt_spec {
 
 sub validate_args {
     my ($self, $opts, $args) = @_;
-
-    $self->SUPER::validate_args($opts, $args);
 
     $self->usage_error('Arguments are not allowed') if @{ $args };
 
@@ -46,6 +44,7 @@ sub execute {
     $self->pinto->new_action_batch( %{$opts} );
     $self->pinto->add_action('Nop', %{$opts} );
     my $result = $self->pinto->run_actions();
+
     return $result->is_success() ? 0 : 1;
 }
 
