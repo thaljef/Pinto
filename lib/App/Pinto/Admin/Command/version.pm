@@ -31,11 +31,11 @@ sub execute {
     my $pinto_class = $self->app->pinto_class();
     Class::Load::load_class( $pinto_class );
     my $pinto_version = $pinto_class->VERSION();
-    printf "$pinto_class: $pinto_version\n";
+    printf "$pinto_class $pinto_version\n";
 
     my $app_class = ref $self->app();
     my $app_version = $self->app->VERSION();
-    printf "$app_class: $app_version\n";
+    printf "$app_class $app_version\n";
 
     return 0;
 }
