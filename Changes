@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.024     2011-09-01 15:23:48 America/Los_Angeles
+
      Added a "version" command to pinto-admin
 
      General code refactoring
