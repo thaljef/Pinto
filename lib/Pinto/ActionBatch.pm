@@ -20,13 +20,6 @@ use MooseX::Types::Moose qw(Str Bool);
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has config    => (
-    is        => 'ro',
-    isa       => 'Pinto::Config',
-    required  => 1,
-);
-
-
 has store    => (
     is       => 'ro',
     isa      => 'Pinto::Store',
