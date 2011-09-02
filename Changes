@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+     Fixed bug where Pinto might blow up with 'too many args'
+     error the first time you update from a CPAN mirror.
+
 0.024     2011-09-01 15:23:48 America/Los_Angeles
 
      Added a "version" command to pinto-admin
