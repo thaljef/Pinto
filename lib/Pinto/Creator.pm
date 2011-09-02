@@ -1,6 +1,6 @@
-package Pinto::Action::Create;
+package Pinto::Creator;
 
-# ABSTRACT: An action to create a new repository
+# ABSTRACT: Creates new Pinto repositories
 
 use Moose;
 
@@ -9,7 +9,9 @@ use autodie;
 use PerlIO::gzip;
 use Path::Class;
 
-extends 'Pinto::Action';
+use Pinto::Logger;
+use Pinto::Config;
+use Pinto::IndexManager;
 
 use namespace::autoclean;
 
@@ -19,48 +21,79 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::PathMaker);
+with qw( Pinto::Role::Loggable
+         Pinto::Role::Configurable
+         Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------
 
-sub execute {
+has idxmgr => (
+    is          => 'ro',
+    isa         => 'Pinto::IndexManager',
+    init_arg    => undef,
+    lazy_build  => 1,
+);
+
+#------------------------------------------------------------------------------
+# Construction
+
+sub BUILDARGS {
+    my ($class, %args) = @_;
+
+    $args{logger} ||= Pinto::Logger->new( %args );
+    $args{config} ||= Pinto::Config->new( %args );
+
+    return \%args;
+}
+
+#------------------------------------------------------------------------------
+# Builders
+
+sub _build_idxmgr {
     my ($self) = @_;
 
-    my @created_files = ();
+    return Pinto::IndexManager->new( config => $self->config(),
+                                     logger => $self->logger() );
+}
+
+#------------------------------------------------------------------------------
+
+sub create {
+    my ($self) = @_;
+
+    # Sanity checks
+    my $repos = $self->config->repos();
+    $self->logger->fatal("Directory $repos is not empty")
+      if -e $repos and $repos->children();
+
+    # Create repos directory
+    $self->mkpath($repos);
 
     # Create config dir
-    my $config_dir = $self->config->config_dir();;
+    my $config_dir = $self->config->config_dir();
     $self->mkpath($config_dir);
 
     # Write config file
     my $config_file = $config_dir->file( $self->config->basename() );
     $self->config->write_config_file( file => $config_file );
-    push @created_files, $config_file;
 
     # Create modules dir
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);
 
     # Write module indexes
-    push @created_files,
-        $self->_write_modlist(),
-          $self->idxmgr->master_index->write->file(),
-            $self->idxmgr->local_index->write->file();
+    $self->_write_modlist();
+    $self->idxmgr->master_index->write->file();
+    $self->idxmgr->local_index->write->file();
 
     # Create authors dir
     my $authors_dir = $self->config->authors_dir();
     $self->mkpath($authors_dir);
 
     # Write authors index
-    push @created_files, $self->_write_mailrc();
+    $self->_write_mailrc();
 
-
-    # Add new files to the store
-    $self->store->add(file => $_) for @created_files;
-
-    $self->add_message('Created a new Pinto repository');
-
-    return 1;
+    return $self;
 }
 
 #------------------------------------------------------------------------------

@@ -5,7 +5,7 @@ package App::Pinto::Admin::Command::create;
 use strict;
 use warnings;
 
-use Path::Class;
+use Pinto::Creator;
 
 #-----------------------------------------------------------------------------
 
@@ -34,16 +34,14 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    # HACK...do this before checking out VCS
-    my $repos = $self->pinto->config->repos();
-    die "Directory $repos is not empty\n"
-        if -e $repos and $repos->children();
+    $DB::single = 1;
 
-    $self->pinto->new_action_batch( %{$opts}, nolock => 1 );
-    $self->pinto->add_action('Create', %{$opts});
-    my $result = $self->pinto->run_actions();
+    my $repos = $self->app->global_options()->{repos}
+        or die 'Must specify a repository directory';
 
-    return $result->is_success() ? 0 : 1;
+    my $creator = Pinto::Creator->new( repos => $repos );
+    $creator->create();
+    return 0;
 }
 
 #------------------------------------------------------------------------------

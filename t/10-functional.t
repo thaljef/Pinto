@@ -12,6 +12,7 @@ use FindBin qw($Bin);
 use lib dir($Bin, 'lib')->stringify();
 
 use Pinto;
+use Pinto::Creator;
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------
@@ -28,8 +29,9 @@ my $t         = Pinto::Tester->new(pinto => $pinto);
 #------------------------------------------------------------------------------
 # Creation...
 
-$pinto->new_action_batch();
-$pinto->add_action('Create')->run_actions();
+my $creator = Pinto::Creator->new( repos => $repos );
+$creator->create();
+
 $t->path_exists_ok( [qw(config pinto.ini)] );
 $t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
 $t->path_exists_ok( [qw(modules 02packages.details.local.txt.gz)] );

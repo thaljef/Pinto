@@ -17,9 +17,9 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# Required attributes
+# Roles
 
-requires 'logger';
+with qw(Pinto::Role::Loggable);
 
 #------------------------------------------------------------------------------
 
