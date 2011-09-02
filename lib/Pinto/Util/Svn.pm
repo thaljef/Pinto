@@ -86,7 +86,9 @@ sub svn_commit {
     my $message  = $args{message} || 'NO MESSAGE GIVEN';
 
     my @paths = ref $paths eq 'ARRAY' ? @{ $paths } : ($paths);
-    return _svn(command => [qw(commit -m), $message, @paths] );
+    my @args  = @paths < 128 ? @paths : ('--targets', _make_targets_file($paths));
+
+    return _svn(command => [qw(commit -m), $message, @args] );
 }
 
 #--------------------------------------------------------------------------
@@ -141,6 +143,20 @@ sub _all_scheduled_for_deletion {
     }
 
     return 1;
+}
+
+#--------------------------------------------------------------------------
+
+sub _make_targets_file {
+    my ($args) = @_;
+
+    my $tempdir = File::Temp::tempdir(CLEANUP => 1);
+    my $file    = dir( $tempdir )->file('args');
+    my $fh      = $file->openw();
+    print {$fh} "$_\n" for @{$args};
+    close $fh;
+
+    return $file;
 }
 
 #--------------------------------------------------------------------------
