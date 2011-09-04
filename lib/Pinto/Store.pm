@@ -19,9 +19,8 @@ use namespace::autoclean;
 # Moose roles
 
 with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
-
-with qw( Pinto::Role::PathMaker );
+         Pinto::Role::Loggable
+         Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------
 # Methods
