@@ -1,9 +1,10 @@
-package Pinto::Package;
+package Pinto::Schema::Result::Package;
 
 # ABSTRACT: Represents a single record in the 02packages.details.txt file
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use DBIx::Class::MooseColumns;
 
 use overload ('""' => 'to_string');
 
@@ -12,12 +13,24 @@ use overload ('""' => 'to_string');
 # VERSION
 
 #------------------------------------------------------------------------------
-# Moose attributes
 
-has 'name'   => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
+extends 'DBIx::Class::Core';
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->table('packages');
+
+#------------------------------------------------------------------------------
+
+has id         => (
+
+);
+
+has name       => (
+    is         => 'ro',
+    isa        => Str,
+    required   => 1,
+    add_column => { data_type => 'text'},
 );
 
 
@@ -25,6 +38,7 @@ has 'version' => (
     is        => 'ro',
     isa       => Str,
     required  => 1,
+    add_column => { data_type => 'text'  },
 );
 
 
@@ -33,6 +47,12 @@ has 'dist'    => (
     isa       => 'Pinto::Distribution',
     required  => 1,
 );
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->set_primary_key('id');
+__PACKAGE__->add_unique_constraint('name_idx' => ['name']);
+__PACKAGE__->belongs_to('name_idx' => ['name']);
 
 #------------------------------------------------------------------------------
 
@@ -71,7 +91,7 @@ sub to_index_string {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
 #------------------------------------------------------------------------------
 
