@@ -48,7 +48,7 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     my $repos = $self->app->global_options()->{repos}
-        or die 'Must specify a repository directory';
+        or die 'Must specify a repository directory';    ## no critic qw(Carp)
 
     my $creator = Pinto::Creator->new( repos => $repos );
     $creator->create( %{$opts} );

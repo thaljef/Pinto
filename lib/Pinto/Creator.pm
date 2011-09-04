@@ -55,7 +55,6 @@ sub create {
     $self->mkpath($config_dir);
 
     # Write config file
-    $DB::single = 1;
     my $config_file = $config_dir->file( $self->config->basename() );
     $self->config->write_config_file( file => $config_file, values => \%args );
 
