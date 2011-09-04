@@ -60,7 +60,7 @@ sub execute {
     return 0 if not ($idx_changes + $dist_changes);
 
     my $source = $self->config->source();
-    $self->add_message("Mirrored $dist_changes distributions from $source");
+    $self->add_message("Updated $dist_changes distributions from $source");
 
     return 1;
 }
