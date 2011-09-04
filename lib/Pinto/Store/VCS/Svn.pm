@@ -6,7 +6,7 @@ use Moose;
 
 use Pinto::Util::Svn;
 use Pinto::Types qw(URI);
-use Date::Format qw(time2str);
+use DateTime;
 
 extends 'Pinto::Store::VCS';
 
@@ -103,20 +103,19 @@ override commit => sub {
 };
 
 #-------------------------------------------------------------------------------
+# TODO: allow users to specify a tag template.
 
 override tag => sub {
     my ($self, %args) = @_;
 
-    my $now = time;
-
+    my $tag    = $args{tag};
     my $origin = $self->svn_location();
-    my $tag    = time2str( $args{tag}, $now );
 
-    my $as_of   = time2str('%C', $now);
-    my $message = "Tagging Pinto repository as of $as_of.";
+    $self->logger->info("Tagging at $tag");
 
-    $self->logger->info("Making tag");
-    Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $message);
+    my $now = DateTime->now();
+    my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();
+    Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $msg);
 
     return 1;
 };
@@ -133,10 +132,10 @@ __END__
 
 =head1 SYNOPSIS
 
-  # Create Pinto a repository if you don't already have one
-  $> pinto-admin --repos=~/tmp/PINTO create
+  # If you don't already have a Pinto repository, create one
+  $> pinto-admin --repos=~/tmp/PINTO create --store=Pinto::Store::VCS::Svn
 
-  # Edit Pinto configuration ay ~/tmp/PINTO/config/pinto.ini
+  # If you do alreay have a repository, edit its config (at confg/pinto.ini)
   store = Pinto::Store::VCS::Svn
 
   # Import Pinto repository into Subversion

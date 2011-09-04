@@ -186,6 +186,7 @@ sub _run_actions {
 
         $self->store->commit( message => $self->message() );
 
+        # TODO: Expand date placeholders in tag
         $self->store->tag( tag => $self->tag() ) if $self->has_tag();
     }
 
