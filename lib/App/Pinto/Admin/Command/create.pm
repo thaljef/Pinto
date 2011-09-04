@@ -17,6 +17,19 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
+sub opt_sepc {
+    my ($self, $app) = @_;
+
+    return (
+        [ 'nocleanup' => 'Do not delete distributions when they become outdated' ],
+        [ 'noinit'    => 'Do not pull/update from VCS before each operation' ],
+        [ 'store=s'   => 'Name of class that handles storage of your repository' ],
+        [ 'source=s'  => 'URL of repository where foreign dists will come from' ],
+    );
+}
+
+#------------------------------------------------------------------------------
+
 sub command_names { return qw( create new ) }
 
 #------------------------------------------------------------------------------
@@ -34,13 +47,11 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $DB::single = 1;
-
     my $repos = $self->app->global_options()->{repos}
         or die 'Must specify a repository directory';
 
     my $creator = Pinto::Creator->new( repos => $repos );
-    $creator->create();
+    $creator->create( %{$opts} );
     return 0;
 }
 
@@ -50,20 +61,19 @@ sub execute {
 
 __END__
 
+=pod
+
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir create
+  pinto-admin --repos=/some/dir create [OPTIONS]
 
 =head1 DESCRIPTION
 
 This command creates a new, empty repository.  If the target directory
 does not exist, it will be created for you.  If it does already exist,
 then it must be empty.  The new repository will contain empty index
-files and the default configuration.
-
-If you are going to be using a VCS-based Store for your repository,
-then the creation process is a little more complicated.  See the
-documentation of your chosen Store class for details.
+files.  You can set the configuration parameters of the new repository
+using the command line options listed below.
 
 =head1 COMMAND ARGUMENTS
 
@@ -71,6 +81,48 @@ None.
 
 =head1 COMMAND OPTIONS
 
-None.
+=over 4
+
+=item --nocleanup
+
+Prevents L<Pinto> from deleting outdated distributions from your
+repository when newer ones are added.  Remember that outdated
+distributions are NEVER listed in the index.  But if you set this
+option, then you'll be able to install outdated distributions using
+the full distribution identity, like this:
+
+  $> cpanm A/AU/AUTHOR/Some-Dist-2.4.tar.gz
+
+If C<--nocleanup> is set, your repository could significantly grow in
+size over time.  At any time, you may run the C<clean> command to
+remove outdated distributions, irrespective of the C<--nocleanup>
+parameter.
+
+=item --noinit
+
+Prevents L<Pinto> from pulling/updating the repository from the VCS
+before all operations.  This is only relevant if you are using a
+VCS-based storage mechanism.  This can speed up operations
+considerably, but should only be used if you *know* that your working
+copy is up-to-date and you are going to be the only actor touching the
+Pinto repository within the VCS.
+
+=item --store
+
+The name of the class that will handle storage for your repository.
+The default is L<Pinto::Store> which just stores files on the local
+dist.  But you can also use a VCS-based store, such as
+L<Pinto::Store::VCS::Svn> or L<Pinto::Store::VCS::Git>.  Each Store
+has its own idiosyncrasies, so check the documentation of your Store
+for specific details on its usage.
+
+=item --source
+
+The URL of the repository where foreign distributions will be pulled
+from.  This is usually a CPAN mirror, and it defaults to
+L<http://cpan.perl.org>.  But it could also be a L<CPAN::Mini> mirror,
+or another L<Pinto> repository.
+
+=back
 
 =cut

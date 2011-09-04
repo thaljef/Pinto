@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::File;
-use Test::More (tests => 39);
+use Test::More (tests => 34);
 
 use File::Temp;
 use Path::Class;
@@ -24,19 +24,14 @@ my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
 my $dist_name = 'FooOnly-0.01.tar.gz';
 my $dist_file = $auth_dir->file($dist_name);
 
-my $pinto     = Pinto->new(out => \my $buffer, repos => $repos, source => $source, verbose => 3);
-my $t         = Pinto::Tester->new(pinto => $pinto);
 #------------------------------------------------------------------------------
 # Creation...
 
 my $creator = Pinto::Creator->new( repos => $repos );
 $creator->create();
 
-$t->path_exists_ok( [qw(config pinto.ini)] );
-$t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
-$t->path_exists_ok( [qw(modules 02packages.details.local.txt.gz)] );
-$t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
-$t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
+my $pinto     = Pinto->new(out => \my $buffer, repos => $repos, source => $source, verbose => 3);
+my $t         = Pinto::Tester->new(pinto => $pinto);
 
 #------------------------------------------------------------------------------
 # Addition...
