@@ -25,7 +25,7 @@ __PACKAGE__->table("distribution");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 name
+=head2 location
 
   data_type: 'text'
   is_nullable: 0
@@ -51,7 +51,7 @@ __PACKAGE__->table("distribution");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "name",
+  "location",
   { data_type => "text", is_nullable => 0 },
   "author",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -95,8 +95,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 17:03:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Y8JReoPTxxh4E+xseJYZiw
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 17:17:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aBfsGzomFS+5Su1tGLn4aA
 
 #-------------------------------------------------------------------------------
 

@@ -39,7 +39,7 @@ __PACKAGE__->table("package");
 
   data_type: 'integer'
   is_foreign_key: 1
-  is_nullable: 1
+  is_nullable: 0
 
 =cut
 
@@ -51,7 +51,7 @@ __PACKAGE__->add_columns(
   "version",
   { data_type => "text", is_nullable => 0 },
   "distribution",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("id");
 
@@ -69,17 +69,12 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { id => "distribution" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "CASCADE",
-  },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 17:03:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EuTRdG3SyHHfpX0wB5J/wA
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 17:17:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bARA2fRCwGmodamGS0vx4A
 
 #------------------------------------------------------------------------------
 
