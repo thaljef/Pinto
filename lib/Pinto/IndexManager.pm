@@ -75,11 +75,8 @@ has 'master_index'  => (
 # Roles
 
 with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
-
-# HACK: I'm not sure why the required method isn't found
-# when I load all my roles at once.
-with qw( Pinto::Role::UserAgent );
+         Pinto::Role::Loggable
+         Pinto::Role::UserAgent );
 
 #------------------------------------------------------------------------------
 # Builders

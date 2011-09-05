@@ -1,6 +1,6 @@
 package Pinto::Creator;
 
-# ABSTRACT: Creates new Pinto repositories
+# ABSTRACT: Creates a new Pinto repository
 
 use Moose;
 
@@ -26,15 +26,6 @@ with qw( Pinto::Role::Loggable
          Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------
-
-has idxmgr => (
-    is          => 'ro',
-    isa         => 'Pinto::IndexManager',
-    init_arg    => undef,
-    lazy_build  => 1,
-);
-
-#------------------------------------------------------------------------------
 # Construction
 
 sub BUILDARGS {
@@ -47,19 +38,9 @@ sub BUILDARGS {
 }
 
 #------------------------------------------------------------------------------
-# Builders
-
-sub _build_idxmgr {
-    my ($self) = @_;
-
-    return Pinto::IndexManager->new( config => $self->config(),
-                                     logger => $self->logger() );
-}
-
-#------------------------------------------------------------------------------
 
 sub create {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
     # Sanity checks
     my $repos = $self->config->repos();
@@ -75,17 +56,24 @@ sub create {
 
     # Write config file
     my $config_file = $config_dir->file( $self->config->basename() );
-    $self->config->write_config_file( file => $config_file );
+    $self->config->write_config_file( file => $config_file, values => \%args );
 
     # Create modules dir
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);
 
-    # Write module indexes
+
+    # Write indexes
+    my $idxmgr = Pinto::IndexManager->new( config => $self->config(),
+                                           logger => $self->logger() );
+
+
+    $idxmgr->master_index->write->file();
+    $idxmgr->local_index->write->file();
+    $idxmgr->create_db();
+
+    # Write modlist
     $self->_write_modlist();
-    $self->idxmgr->create_db();
-    $self->idxmgr->master_index->write->file();
-    $self->idxmgr->local_index->write->file();
 
     # Create authors dir
     my $authors_dir = $self->config->authors_dir();

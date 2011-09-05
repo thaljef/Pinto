@@ -25,12 +25,11 @@ has _ua => (
     init_arg => undef,
 );
 
-requires 'logger';
-
 #------------------------------------------------------------------------------
 # Roles
 
-with qw(Pinto::Role::PathMaker);
+with qw( Pinto::Role::PathMaker
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
