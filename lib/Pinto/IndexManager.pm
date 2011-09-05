@@ -5,6 +5,7 @@ package Pinto::IndexManager;
 use Moose;
 use Moose::Autobox;
 
+use DBI;
 use Path::Class;
 use File::Compare;
 
@@ -116,6 +117,56 @@ sub __build_index {
     return Pinto::Index->new( noclobber => $self->config->noclobber(),
                               logger    => $self->logger(),
                               file      => $index_file );
+}
+
+#------------------------------------------------------------------------------
+
+sub create_db {
+  my ($self) = @_;
+
+  my $db_dir = $self->config->repos->subdir('db');
+  $self->mkpath($db_dir);
+
+  my $db_file = $db_dir->file('pinto.db');
+  my $dbh = DBI->connect("DBI:SQLite(RaiseError=>1):$db_file");
+
+  $dbh->do( creation_sql() );
+
+  return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub creation_sql {
+
+return <<'END_SQL';
+DROP TABLE IF EXISTS distribution;
+CREATE TABLE distribution (
+       id INTEGER PRIMARY KEY,
+       location TEXT NOT NULL,
+       author INTEGER NOT NULL,
+       is_local INTEGER NOT NULL,
+       source TEXT NOT NULL,
+       FOREIGN KEY(author) REFERENCES author(id)
+);
+
+DROP TABLE IF EXISTS package;
+CREATE TABLE package (
+       id INTEGER PRIMARY KEY,
+       name TEXT NOT NULL,
+       version TEXT NOT NULL,
+       distribution INTEGER NOT NULL,
+       FOREIGN KEY(distribution) REFERENCES distribution(id)
+);
+
+DROP TABLE IF EXISTS author;
+CREATE TABLE author (
+       id INTEGER PRIMARY KEY,
+       name TEXT,
+       email TEXT
+);
+END_SQL
+
 }
 
 #------------------------------------------------------------------------------

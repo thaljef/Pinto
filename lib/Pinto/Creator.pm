@@ -83,6 +83,7 @@ sub create {
 
     # Write module indexes
     $self->_write_modlist();
+    $self->idxmgr->create_db();
     $self->idxmgr->master_index->write->file();
     $self->idxmgr->local_index->write->file();
 
