@@ -1,10 +1,104 @@
-package Pinto::Distribution;
+package Pinto::Schema::Result::Distribution;
 
-# ABSTRACT: Represents a Perl distribution
+# Created by DBIx::Class::Schema::Loader
+# DO NOT MODIFY THE FIRST PART OF THIS FILE
 
-use Moose;
-use MooseX::Types::Moose qw(Str);
-use Moose::Autobox;
+use strict;
+use warnings;
+
+use base 'DBIx::Class::Core';
+
+
+=head1 NAME
+
+Pinto::Schema::Result::Distribution
+
+=cut
+
+__PACKAGE__->table("distribution");
+
+=head1 ACCESSORS
+
+=head2 id
+
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+
+=head2 name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 author
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 is_local
+
+  data_type: 'integer'
+  is_nullable: 0
+
+=head2 source
+
+  data_type: 'text'
+  is_nullable: 0
+
+=cut
+
+__PACKAGE__->add_columns(
+  "id",
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+  "name",
+  { data_type => "text", is_nullable => 0 },
+  "author",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "is_local",
+  { data_type => "integer", is_nullable => 0 },
+  "source",
+  { data_type => "text", is_nullable => 0 },
+);
+__PACKAGE__->set_primary_key("id");
+
+=head1 RELATIONS
+
+=head2 author
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Author>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "author",
+  "Pinto::Schema::Result::Author",
+  { id => "author" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+=head2 packages
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Package>
+
+=cut
+
+__PACKAGE__->has_many(
+  "packages",
+  "Pinto::Schema::Result::Package",
+  { "foreign.distribution" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 17:03:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Y8JReoPTxxh4E+xseJYZiw
+
+#-------------------------------------------------------------------------------
 
 use URI;
 use Dist::Metadata 0.920; # supports .zip
@@ -13,78 +107,10 @@ use Path::Class qw();
 
 use Pinto::Util;
 use Pinto::Package;
-use Pinto::Types 0.017 qw(AuthorID File);
 use Pinto::Exception::Args qw(throw_args);
 use Pinto::Exception::IO qw(throw_io);
 
 use overload ('""' => 'to_string');
-
-#------------------------------------------------------------------------------
-
-# VERSION
-
-#------------------------------------------------------------------------------
-
-has location => (
-    is         => 'ro',
-    isa        => Str,
-    required   => 1,
-);
-
-has author   => (
-    is         => 'ro',
-    isa        => AuthorID,
-    coerce     => 1,
-    lazy_build => 1,
-);
-
-has packages => (
-    is         => 'ro',
-    traits     => [ 'Array' ],
-    isa        => 'ArrayRef[Pinto::Package]',
-    default    => sub { [] },
-    init_arg   => undef,
-    handles    => {add_packages => 'push'},
-    auto_deref => 1,
-);
-
-has _info => (
-    is         => 'ro',
-    isa        => 'CPAN::DistnameInfo',
-    init_arg   => undef,
-    lazy_build => 1,
-    handles    => {
-        name       => 'dist',
-        version    => 'version',
-    },
-);
-
-has _path => (
-    is         => 'ro',
-    isa        => File,
-    init_arg   => undef,
-    lazy_build => 1,
-);
-
-#------------------------------------------------------------------------------
-
-sub _build__info {
-    my ($self) = @_;
-
-    return CPAN::DistnameInfo->new($self->location);
-}
-
-sub _build__path {
-    my ($self) = @_;
-
-    return Path::Class::file( split '/', $self->location() );
-}
-
-sub _build_author {
-    my ($self) = @_;
-
-    return $self->_info->cpanid();
-}
 
 #------------------------------------------------------------------------------
 
@@ -171,9 +197,6 @@ sub to_string {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
-
-#------------------------------------------------------------------------------
 1;
 
 __END__
