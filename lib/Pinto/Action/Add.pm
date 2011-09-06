@@ -8,7 +8,6 @@ use Path::Class;
 use File::Temp;
 
 use Pinto::Util;
-use Pinto::Distribution;
 use Pinto::Types 0.017 qw(StrOrFileOrURI);
 
 extends 'Pinto::Action';
@@ -44,11 +43,8 @@ override execute => sub {
     my $author    = $self->author();
     my $dist_file = $self->dist_file();
 
-    # TODO: Consider moving Distribution construction to the index manager
     $dist_file = _is_url($dist_file) ? $self->_dist_from_url($dist_file) : file($dist_file);
-    my $added = Pinto::Distribution->new_from_file(file => $dist_file, author => $author);
-
-    my @removed = $self->idxmgr->add_local_distribution(dist => $added, file => $dist_file);
+    my ($added, @removed) = $self->idxmgr->add_local_distribution(file => $dist_file, author => $author);
     $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
 
     $self->store->add( file => $added->path($repos), source => $dist_file );

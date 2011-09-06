@@ -68,6 +68,7 @@ sub create {
                                            logger => $self->logger() );
 
 
+    $DB::single = 1;
     $idxmgr->master_index->write->file();
     $idxmgr->local_index->write->file();
     $idxmgr->create_db();

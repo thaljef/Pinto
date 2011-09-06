@@ -61,7 +61,7 @@ has noinit   => (
 has nolock => (
     is      => 'ro',
     isa     => Bool,
-    default => 0,
+    default => 1,
 );
 
 

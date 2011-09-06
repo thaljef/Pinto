@@ -9,11 +9,18 @@ use DBI;
 use Path::Class;
 use File::Compare;
 
+use Dist::Metadata 0.920; # supports .zip
+
 use Pinto::Util;
 use Pinto::Index;
+
+use Pinto::Exception::Args qw(throw_args);
+use Pinto::Exception::IO qw(throw_io);
 use Pinto::Exception::Unauthorized;
 use Pinto::Exception::DuplicateDist;
 use Pinto::Exception::IllegalDist;
+
+use Pinto::Schema;
 
 use namespace::autoclean;
 
@@ -71,6 +78,13 @@ has 'master_index'  => (
     lazy            => 1,
 );
 
+has schema => (
+    is          => 'ro',
+    isa         => 'DBIx::Class::Schema',
+    init_arg    => undef,
+    lazy_build  => 1,
+);
+
 #------------------------------------------------------------------------------
 # Roles
 
@@ -118,6 +132,17 @@ sub __build_index {
 
 #------------------------------------------------------------------------------
 
+sub _build_schema {
+  my ($self) = @_;
+
+  my $dbi_config = {RaiseError =>1};
+  my $db = $self->config->repos->subdir('db')->file('pinto.db')->absolute();
+  return Pinto::Schema->connect("dbi:SQLite:dbname=$db");
+
+}
+
+#------------------------------------------------------------------------------
+
 sub create_db {
   my ($self) = @_;
 
@@ -125,9 +150,10 @@ sub create_db {
   $self->mkpath($db_dir);
 
   my $db_file = $db_dir->file('pinto.db');
-  my $dbh = DBI->connect("DBI:SQLite(RaiseError=>1):$db_file");
+  my $dbh = DBI->connect("dbi:SQLite:$db_file", undef, undef, {RaiseError =>1})
+    or die $DBI::errstr;
 
-  $dbh->do( creation_sql() );
+  $dbh->do( $_ ) or die $DBI::errstr for creation_sql();
 
   return 1;
 }
@@ -136,33 +162,26 @@ sub create_db {
 
 sub creation_sql {
 
-return <<'END_SQL';
-DROP TABLE IF EXISTS distribution;
-CREATE TABLE distribution (
-       id INTEGER PRIMARY KEY,
-       location TEXT NOT NULL,
-       author INTEGER NOT NULL,
-       is_local INTEGER NOT NULL,
-       source TEXT NOT NULL,
-       FOREIGN KEY(author) REFERENCES author(id)
-);
+return (
 
-DROP TABLE IF EXISTS package;
-CREATE TABLE package (
-       id INTEGER PRIMARY KEY,
-       name TEXT NOT NULL,
+'DROP TABLE IF EXISTS distribution;',
+
+'CREATE TABLE distribution (
+       location TEXT PRIMARY KEY,
+       author TEXT NOT NULL,
+       origin TEXT NOT NULL
+);',
+
+'DROP TABLE IF EXISTS package;',
+
+'CREATE TABLE package (
+       name TEXT PRIMARY KEY,
        version TEXT NOT NULL,
-       distribution INTEGER NOT NULL,
-       FOREIGN KEY(distribution) REFERENCES distribution(id)
-);
+       distribution TEXT NOT NULL,
+       FOREIGN KEY(distribution) REFERENCES distribution(location)
+);',
 
-DROP TABLE IF EXISTS author;
-CREATE TABLE author (
-       id INTEGER PRIMARY KEY,
-       name TEXT,
-       email TEXT
 );
-END_SQL
 
 }
 
@@ -307,20 +326,6 @@ sub remove_local_distribution_at {
 
 #------------------------------------------------------------------------------
 
-sub local_author_of {
-    my ($self, %args) = @_;
-
-    my $package = $args{package};
-    $package = $package->name() if eval {$package->isa('Pinto::Package')};
-
-    my $pkg = $self->local_index->packages->at($package);
-
-    return if not $pkg;
-    return $pkg->dist->author();
-}
-
-#------------------------------------------------------------------------------
-
 sub add_mirrored_distribution {
     my ($self, %args) = @_;
 
@@ -343,60 +348,71 @@ sub add_mirrored_distribution {
 sub add_local_distribution {
     my ($self, %args) = @_;
 
-    my $dist = $args{dist};
-    my $file = $args{file};
+    my $file   = $args{file};
+    my $author = $args{author};
 
-    $self->_distribution_check($dist, $file);
+    $self->_distribution_check(%args);
 
-    my @packages = $dist->packages->flatten();
+    my $basename   = $file->basename();
+    my $author_dir = Pinto::Util::author_dir($author);
+    my $location   = $author_dir->file($basename)->as_foreign('Unix');
 
-    for my $pkg ( @packages ) {
+    my $added_dist = $self->schema->resultset('Distribution')->create(
+        { location => $location, author => $author, origin => 'LOCAL'} );
 
-        my $orig_author = $self->local_author_of(package => $pkg);
-        next if not $orig_author;
-
-        if ( $orig_author ne $dist->author() ) {
-            my $msg = "Only author $orig_author can update $pkg";
-            Pinto::Exception::Unauthorized->throw($msg);
-        }
+    my @outdated_packages;
+    my @outdated_dists;
+    for my $new_pkg ( $self->_extract_packages(file => $file) ) {
+      if ( my $old_pkg = $self->schema->resultset('Package')->find( { name => $new_package->{name} } ) ) {
+        push @outdated_dists, $old_pkg->distribution();
+        push @outdated if $old_pkg;
+        $old_pkg->delete();
+      }
+      $self->schema->resultset('Package')->create( { %{ $package }, distribution => $dist->location->stringify() } );
     }
 
-    my @removed_dists = $self->local_index->add(@packages);
-    $self->rebuild_master_index();
+    $_->delete() if $_->package_count == 0 for @outdated_dists
+    return $dist;
+}
 
-    return @removed_dists;
+#------------------------------------------------------------------------------
 
+sub _extract_packages {
+    my ($self, %args) = @_;
+
+    my $file = $args{file};
+
+    my $distmeta = Dist::Metadata->new(file => $file->stringify());
+    my $provides = $distmeta->package_versions();
+    throw_io "$file contains no packages" if not %{ $provides };
+
+    my @packages = ();
+    for my $package_name (sort keys %{ $provides }) {
+        my $version = $provides->{$package_name} || 'undef';
+        push @packages, { name => $package_name, version => $version };
+    }
+
+    return @packages;
 }
 
 #------------------------------------------------------------------------------
 
 sub _distribution_check {
-    my ($self, $new_dist, $new_file) = @_;
+    my ($self, %args) = @_;
+    my $file   = $args{file};
+    my $author = $args{author};
 
-    my $location = $new_dist->location();
-    my $existing_dist = $self->master_index->distributions->at($location);
-    return 1 if not $existing_dist;
+    my $basename   = $file->basename();
+    my $author_dir = Pinto::Util::author_dir($author);
+    my $location   = $author_dir->file($basename)->as_foreign('Unix');
 
-    my $existing_path = $existing_dist->path( $self->config->repos() );
-    return 1 if not -e $existing_path;
+    $self->schema->resultset('Distribution')->find( {location => $location} )
+      && Pinto::Exception::DuplicateDist->throw("$location is already indexed");
 
-    my $is_same = !compare($existing_path, $new_file);
-
-    # TODO: One of these situations is a lot more important than the
-    # other, so we need to trap the exceptions and handle them
-    # accordingly.  A different dist warrants a loud warning.  But the
-    # same dist only needs a whimper.
-
-    if (not $is_same) {
-        my $msg = "A different distribution already exists as $location";
-        Pinto::Exception::IllegalDist->throw($msg);
-    }
-    else {
-        my $msg = "The same distribution already exists at $location";
-        Pinto::Exception::DuplicateDist->throw($msg);
-    }
-
-    return 1;  # should never get here
+    # TODO: return 1 if not indexed
+    #       return 0 if indexed, but not on disk
+    #       throw    if indexed, and same file exists on disk
+    #       throw    if indexed, and different file exists on disk
 }
 
 #------------------------------------------------------------------------------
