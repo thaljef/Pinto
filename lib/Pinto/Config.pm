@@ -7,7 +7,7 @@ use Moose;
 use MooseX::Configuration;
 
 use MooseX::Types::Moose qw(Str Bool Int);
-use Pinto::Types 0.017 qw(URI Dir);
+use Pinto::Types 0.017 qw(URI Dir File);
 
 use namespace::autoclean;
 
