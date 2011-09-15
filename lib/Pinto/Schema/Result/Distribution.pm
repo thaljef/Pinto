@@ -62,12 +62,12 @@ __PACKAGE__->has_many(
   "packages",
   "Pinto::Schema::Result::Package",
   { "foreign.distribution" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 10:43:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UyQb9rM/zDBj8i/52Q3EGA
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 12:22:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IuzTyO7Zsjpl6jp27u33CQ
 
 #-------------------------------------------------------------------------------
 
