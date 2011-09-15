@@ -44,6 +44,24 @@ has modules_dir => (
 );
 
 
+has db_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->repos->subdir('db') },
+    lazy      => 1,
+);
+
+
+has db_file => (
+    is        => 'ro',
+    isa       => File,
+    init_arg  => undef,
+    default   => sub { return $_[0]->db_dir->file('pinto.db') },
+    lazy      => 1,
+);
+
+
 has config_dir => (
     is        => 'ro',
     isa       => Dir,
