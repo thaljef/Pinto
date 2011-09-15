@@ -182,16 +182,16 @@ sub add_mirrored_distribution {
 
 #------------------------------------------------------------------------------
 
-sub remove_local_distribution {
+sub remove_distribution {
     my ($self, %args) = @_;
 
-    my $location = $args{location};
-
-    my $where = {location => $location, origin => 'LOCAL'};
-    my $dist = $self->schema->resultset('Distribution')->find( $where );
+    my $where = {location => $args{location} };
+    my $dist  = $self->schema->resultset('Distribution')->find( $where );
     return if not $dist;
 
+    $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
     $dist->delete();
+
     return $dist;
 }
 
