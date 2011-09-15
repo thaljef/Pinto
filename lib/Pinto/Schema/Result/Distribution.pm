@@ -19,12 +19,13 @@ __PACKAGE__->table("distribution");
 
 =head1 ACCESSORS
 
-=head2 location
+=head2 id
 
-  data_type: 'text'
+  data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
 
-=head2 author
+=head2 location
 
   data_type: 'text'
   is_nullable: 0
@@ -37,14 +38,15 @@ __PACKAGE__->table("distribution");
 =cut
 
 __PACKAGE__->add_columns(
+  "id",
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "location",
-  { data_type => "text", is_nullable => 0 },
-  "author",
   { data_type => "text", is_nullable => 0 },
   "origin",
   { data_type => "text", is_nullable => 0 },
 );
-__PACKAGE__->set_primary_key("location");
+__PACKAGE__->set_primary_key("id");
+__PACKAGE__->add_unique_constraint("location_unique", ["location"]);
 
 =head1 RELATIONS
 
@@ -59,13 +61,13 @@ Related object: L<Pinto::Schema::Result::Package>
 __PACKAGE__->has_many(
   "packages",
   "Pinto::Schema::Result::Package",
-  { "foreign.distribution" => "self.location" },
+  { "foreign.distribution" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 22:58:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wDNjpsVneb94bjZehQcYGQ
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 10:43:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UyQb9rM/zDBj8i/52Q3EGA
 
 #-------------------------------------------------------------------------------
 
@@ -97,7 +99,7 @@ sub url {
 sub package_count {
     my ($self) = @_;
 
-    return length @{ $self->packages() };
+    return scalar $self->packages();
 }
 
 #------------------------------------------------------------------------------

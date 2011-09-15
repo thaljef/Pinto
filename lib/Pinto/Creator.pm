@@ -67,11 +67,8 @@ sub create {
     my $idxmgr = Pinto::IndexManager->new( config => $self->config(),
                                            logger => $self->logger() );
 
-
-    $DB::single = 1;
-    $idxmgr->master_index->write->file();
-    $idxmgr->local_index->write->file();
     $idxmgr->create_db();
+    $idxmgr->write_index();
 
     # Write modlist
     $self->_write_modlist();

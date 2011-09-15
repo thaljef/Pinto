@@ -1,25 +1,13 @@
-DROP TABLE IF EXISTS distribution;
 CREATE TABLE distribution (
-       id INTEGER PRIMARY KEY,
-       location TEXT NOT NULL,
-       author INTEGER NOT NULL,
-       is_local INTEGER NOT NULL,
-       source TEXT NOT NULL,
-       FOREIGN KEY(author) REFERENCES author(id)     
+       id INTEGER PRIMARY KEY NOT NULL,
+       location TEXT NOT NULL UNIQUE,
+       origin TEXT NOT NULL
 );
 
-DROP TABLE IF EXISTS package;
 CREATE TABLE package (
-       id INTEGER PRIMARY KEY,
+       id INTEGER PRIMARY KEY NOT NULL,
        name TEXT NOT NULL,
        version TEXT NOT NULL,
-       distribution INTEGER NOT NULL,
-       FOREIGN KEY(distribution) REFERENCES distribution(id)
-);
-
-DROP TABLE IF EXISTS author;
-CREATE TABLE author (
-       id INTEGER PRIMARY KEY,
-       name TEXT,
-       email TEXT
+       distribution INTEGER,
+       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
 );

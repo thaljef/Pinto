@@ -5,7 +5,6 @@ package Pinto::IndexManager;
 use Moose;
 use Moose::Autobox;
 
-use DBI;
 use Path::Class;
 use File::Compare;
 
@@ -29,54 +28,7 @@ use namespace::autoclean;
 # VERSION
 
 #-----------------------------------------------------------------------------
-
-=attr mirror_index
-
-Returns the L<Pinto::Index> that represents our copy of the
-F<02packages> file from a CPAN mirror (or possibly another Pinto
-repository).  This index will include the latest versions of all the
-packages on the mirror.
-
-=cut
-
-has 'mirror_index' => (
-    is             => 'ro',
-    isa            => 'Pinto::Index',
-    builder        => '__build_mirror_index',
-    init_arg       => undef,
-    lazy           => 1,
-);
-
-=attr local_index
-
-Returns the L<Pinto::Index> that represents the F<02packages> file for
-your local packages.  This index will include only those packages that
-you've locally added to the repository.
-
-=cut
-
-has 'local_index'   => (
-    is              => 'ro',
-    isa             => 'Pinto::Index',
-    builder         => '__build_local_index',
-    init_arg        => undef,
-    lazy            => 1,
-);
-
-=attr master_index
-
-Returns the L<Pinto::Index> that is the logical combination of
-packages from both the mirror and local indexes.
-
-=cut
-
-has 'master_index'  => (
-    is              => 'ro',
-    isa             => 'Pinto::Index',
-    builder         => '__build_master_index',
-    init_arg        => undef,
-    lazy            => 1,
-);
+# Attributes
 
 has schema => (
     is          => 'ro',
@@ -85,7 +37,7 @@ has schema => (
     lazy_build  => 1,
 );
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 # Roles
 
 with qw( Pinto::Role::Configurable
@@ -93,51 +45,13 @@ with qw( Pinto::Role::Configurable
          Pinto::Role::UserAgent );
 
 #------------------------------------------------------------------------------
-# Builders
-
-sub __build_mirror_index {
-    my ($self) = @_;
-
-    return $self->__build_index(file => '02packages.details.mirror.txt.gz');
-}
-
-#------------------------------------------------------------------------------
-
-sub __build_local_index {
-    my ($self) = @_;
-
-    return $self->__build_index(file => '02packages.details.local.txt.gz');
-}
-
-#------------------------------------------------------------------------------
-
-sub __build_master_index {
-    my ($self) = @_;
-
-    return $self->__build_index(file => '02packages.details.txt.gz');
-}
-
-#------------------------------------------------------------------------------
-
-sub __build_index {
-    my ($self, %args) = @_;
-
-    my $repos = $self->config->repos();
-    my $index_file = Path::Class::file($repos, 'modules', $args{file});
-
-    return Pinto::Index->new( noclobber => $self->config->noclobber(),
-                              logger    => $self->logger(),
-                              file      => $index_file );
-}
-
-#------------------------------------------------------------------------------
 
 sub _build_schema {
   my ($self) = @_;
 
-  my $dbi_config = {RaiseError =>1};
-  my $db = $self->config->repos->subdir('db')->file('pinto.db')->absolute();
-  return Pinto::Schema->connect("dbi:SQLite:dbname=$db");
+  my $db_file = $self->config->db_file();
+
+  return Pinto::Schema->connect("dbi:SQLite:dbname=$db_file");
 
 }
 
@@ -146,43 +60,10 @@ sub _build_schema {
 sub create_db {
   my ($self) = @_;
 
-  my $db_dir = $self->config->repos->subdir('db');
-  $self->mkpath($db_dir);
-
-  my $db_file = $db_dir->file('pinto.db');
-  my $dbh = DBI->connect("dbi:SQLite:$db_file", undef, undef, {RaiseError =>1})
-    or die $DBI::errstr;
-
-  $dbh->do( $_ ) or die $DBI::errstr for creation_sql();
+  $self->mkpath( $self->config->db_dir() );
+  $self->schema->deploy();
 
   return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub creation_sql {
-
-return (
-
-'DROP TABLE IF EXISTS distribution;',
-
-'CREATE TABLE distribution (
-       location TEXT PRIMARY KEY,
-       author TEXT NOT NULL,
-       origin TEXT NOT NULL
-);',
-
-'DROP TABLE IF EXISTS package;',
-
-'CREATE TABLE package (
-       name TEXT PRIMARY KEY,
-       version TEXT NOT NULL,
-       distribution TEXT NOT NULL,
-       FOREIGN KEY(distribution) REFERENCES distribution(location)
-);',
-
-);
-
 }
 
 #------------------------------------------------------------------------------
@@ -238,7 +119,6 @@ sub local_packages {
     return $self->local_index->packages->values->sort($sorter)->flatten();
 }
 
-
 #------------------------------------------------------------------------------
 
 sub foreign_packages {
@@ -273,55 +153,12 @@ sub conflict_packages {
 
 #------------------------------------------------------------------------------
 
-sub load_indexes {
+sub write_index {
     my ($self) = @_;
 
-    $self->local_index->load();
-    $self->master_index->load();
+    # TODO!
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub write_indexes {
-    my ($self) = @_;
-
-    $self->local_index->write();
-    $self->master_index->write();
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub rebuild_master_index {
-    my ($self) = @_;
-
-    $self->master_index->clear();
-    $self->master_index->add( $self->mirror_index->packages->values->flatten() );
-    $self->master_index->add( $self->local_index->packages->values->flatten() );
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub remove_local_distribution_at {
-    my ($self, %args) = @_;
-
-    my $location = $args{location};
-
-    my $dist = $self->local_index->distributions->at($location);
-    return if not $dist;
-
-    $self->local_index->remove_dist($dist);
-    $self->logger->debug("Removed $dist from local index");
-
-    $self->master_index->remove_dist($dist);
-    $self->logger->debug("Removed $dist from master index");
-
-    return $dist;
 }
 
 #------------------------------------------------------------------------------
@@ -345,33 +182,53 @@ sub add_mirrored_distribution {
 
 #------------------------------------------------------------------------------
 
+sub remove_local_distribution {
+    my ($self, %args) = @_;
+
+    my $location = $args{location};
+
+    my $where = {location => $location, origin => 'LOCAL'};
+    my $dist = $self->schema->resultset('Distribution')->find( $where );
+    return if not $dist;
+
+    $dist->delete();
+    return $dist;
+}
+
+#------------------------------------------------------------------------------
+
 sub add_local_distribution {
     my ($self, %args) = @_;
 
     my $file   = $args{file};
     my $author = $args{author};
 
-    $self->_distribution_check(%args);
-
     my $basename   = $file->basename();
     my $author_dir = Pinto::Util::author_dir($author);
     my $location   = $author_dir->file($basename)->as_foreign('Unix');
 
-    my $added_dist = $self->schema->resultset('Distribution')->create(
-        { location => $location, author => $author, origin => 'LOCAL'} );
+    my @packages = $self->_extract_packages(file => $file) ;
+    $self->logger->info(sprintf "Adding $location with %i packages", scalar @packages);
 
-    my @outdated_packages;
-    my @outdated_dists;
-    for my $new_pkg ( $self->_extract_packages(file => $file) ) {
-      if ( my $old_pkg = $self->schema->resultset('Package')->find( { name => $new_package->{name} } ) ) {
-        push @outdated_dists, $old_pkg->distribution();
-        push @outdated if $old_pkg;
-        $old_pkg->delete();
-      }
-      $self->schema->resultset('Package')->create( { %{ $package }, distribution => $dist->location->stringify() } );
+    # Create new dist
+    my $dist = $self->schema->resultset('Distribution')->create(
+        { location => $location, origin => 'LOCAL'} );
+
+
+    for my $pkg ( $self->_extract_packages(file => $file) ) {
+
+      # Delete old local package
+      my $attrs = { join => 'distribution'};
+      my $where = { name => $pkg->{name}, 'distribution.origin' => 'LOCAL'};
+      my $rs = $self->schema->resultset('Package')->search($where, $attrs);
+      $rs->delete() if $rs;
+
+      # Create new local package
+      $self->schema->resultset('Package')->create(
+          { %{ $pkg }, distribution => $dist->id() } );
+
     }
 
-    $_->delete() if $_->package_count == 0 for @outdated_dists
     return $dist;
 }
 

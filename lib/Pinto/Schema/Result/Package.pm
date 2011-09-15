@@ -19,6 +19,12 @@ __PACKAGE__->table("package");
 
 =head1 ACCESSORS
 
+=head2 id
+
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+
 =head2 name
 
   data_type: 'text'
@@ -31,21 +37,23 @@ __PACKAGE__->table("package");
 
 =head2 distribution
 
-  data_type: 'text'
+  data_type: 'integer'
   is_foreign_key: 1
-  is_nullable: 0
+  is_nullable: 1
 
 =cut
 
 __PACKAGE__->add_columns(
+  "id",
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
   "version",
   { data_type => "text", is_nullable => 0 },
   "distribution",
-  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
 );
-__PACKAGE__->set_primary_key("name");
+__PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
@@ -60,13 +68,18 @@ Related object: L<Pinto::Schema::Result::Distribution>
 __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
-  { location => "distribution" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+  { id => "distribution" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "CASCADE",
+    on_update     => "CASCADE",
+  },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-04 22:58:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kxromeGJCjqQmviqV//Ebg
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 10:43:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ubHxoeiYZ4F6/GpvC82hFA
 
 #------------------------------------------------------------------------------
 

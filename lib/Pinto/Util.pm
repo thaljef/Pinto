@@ -48,6 +48,7 @@ is part of the internals of a version control system (e.g. Git, Subversion).
 
 sub is_source_control_file {
     my ($file) = @_;
+
     return exists $SCM_FILES{$file};
 }
 
@@ -55,6 +56,7 @@ sub is_source_control_file {
 
 sub added_dist_message {
     my ($distribution) = @_;
+
     return _dist_message($distribution, 'Added');
 }
 
@@ -62,6 +64,7 @@ sub added_dist_message {
 
 sub removed_dist_message {
     my ($distribution) = @_;
+
     return _dist_message($distribution, 'Removed');
 }
 
@@ -69,8 +72,9 @@ sub removed_dist_message {
 
 sub _dist_message {
     my ($dist, $action) = @_;
-    my @packages = @{ $dist->packages() };
-    my @items = sort map { $_->name() . ' ' . $_->version() } @packages;
+
+    my @items = sort map { $_->name() . ' ' . $_->version() } $dist->packages();
+
     return "$action distribution $dist providing:\n    " . join "\n    ", @items;
 }
 

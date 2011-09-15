@@ -47,7 +47,7 @@ override execute => sub {
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
     # TODO: throw a more specialized exception.
-    my $dist = $idxmgr->remove_local_distribution_at(location => $location)
+    my $dist = $idxmgr->remove_local_distribution(location => $location)
         or Pinto::Exception->throw("Distribution $location is not in the local index");
 
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());

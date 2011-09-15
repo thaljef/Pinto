@@ -39,19 +39,13 @@ override execute => sub {
     my ($self) = @_;
 
     my $repos     = $self->config->repos();
-    my $cleanup   = not $self->config->nocleanup();
     my $author    = $self->author();
-    my $dist_file = $self->dist_file();
+    my $archive   = $self->dist_file();
 
-    $dist_file = _is_url($dist_file) ? $self->_dist_from_url($dist_file) : file($dist_file);
-    my ($added, @removed) = $self->idxmgr->add_local_distribution(file => $dist_file, author => $author);
-    $self->logger->info(sprintf "Adding $added with %i packages", $added->package_count());
-
-    $self->store->add( file => $added->path($repos), source => $dist_file );
-    $cleanup && $self->store->remove( file => $_->path($repos) ) for @removed;
-
-    $self->add_message( Pinto::Util::added_dist_message($added) );
-    $self->add_message( Pinto::Util::removed_dist_message($_) ) for @removed;
+    $archive = _is_url($archive) ? $self->_dist_from_url($archive) : file($archive);
+    my $dist = $self->idxmgr->add_local_distribution(file => $archive, author => $author);
+    $self->store->add( file => $dist->path($repos), source => $archive );
+    $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     return 1;
 };
@@ -84,7 +78,7 @@ sub _dist_from_url {
     return Path::Class::file($tempfile);
 }
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable();
 

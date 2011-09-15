@@ -175,7 +175,7 @@ sub _run_actions {
     $self->logger->info('No changes were made') and return $self
       unless $self->_result->changes_made();
 
-    $self->idxmgr->write_indexes();
+    $self->idxmgr->write_index();
 
     return $self if $self->nocommit();
 
