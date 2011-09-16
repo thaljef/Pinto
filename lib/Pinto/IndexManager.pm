@@ -10,6 +10,8 @@ use File::Compare;
 
 use Dist::Metadata 0.920; # supports .zip
 
+use CPAN::PackageDetails;
+
 use Pinto::Util;
 use Pinto::Index;
 
@@ -68,34 +70,45 @@ sub create_db {
 
 #------------------------------------------------------------------------------
 
-sub update_mirror_index {
+sub load_foreign_index {
     my ($self, %args) = @_;
 
-    my $repos  = $self->config->repos();
+    # TODO: support "force";
+
     my $source = $self->config->source();
-    my $force  = $args{force};
+    my $temp_dir = File::Temp->newdir();
+    my $index_url = URI->new("$source/modules/02packages.details.txt.gz");
+    my $index_temp_file = file($temp_dir, '02packages.details.txt.gz');
+    $self->fetch(url => $index_url, to => $index_temp_file);
 
-    my $remote_url = URI->new("$source/modules/02packages.details.txt.gz");
-    my $repos_file = file($repos, 'modules', '02packages.details.mirror.txt.gz');
-    my $has_changed = $self->fetch(url => $remote_url, to => $repos_file);
-    $self->logger->info("Index from $source is up to date") unless $has_changed or $force;
-    $self->mirror_index->reload() if $has_changed or $force;
+    $self->logger->info("Loading foreign index file from $index_url");
+    my $details = CPAN::PackageDetails->read( "$index_temp_file" );
+    my ($records) = $details->entries->as_unique_sorted_list();
 
-    return $has_changed;
-}
+    my %dists;
+    $dists{$_->path()}->{$_->package_name()} = $_->version() for @{$records};
 
-#------------------------------------------------------------------------------
 
-sub dists_to_mirror {
-    my ($self) = @_;
+    $DB::single = 1;
+    foreach my $location ( sort keys %dists ) {
 
-    my $temp_index = Pinto::Index->new( logger => $self->logger() );
-    $temp_index->add( $self->mirror_index->packages->values->flatten() );
-    $temp_index->remove( $self->local_index->packages->values->flatten() );
+      next if $self->schema->resultset('Distribution')->find( {location => $location} );
+      $self->logger->info("Loading index data for $location");
+      my $dist = $self->schema->resultset('Distribution')->create(
+          { location => $location,
+            origin   => $source,
+          }
+      );
 
-    my $sorter = sub { $_[0]->location() cmp $_[1]->location() };
-
-    return $temp_index->distributions->values->sort($sorter)->flatten();
+      foreach my $package (keys %{ $dists{$location} } ) {
+        my $pkg = $self->schema->resultset('Package')->create(
+          { name         => $package,
+            version      => $dists{$location}->{$package},
+            distribution => $dist->id(),
+          }
+        );
+      }
+    }
 }
 
 #------------------------------------------------------------------------------
@@ -103,9 +116,7 @@ sub dists_to_mirror {
 sub all_packages {
     my ($self) = @_;
 
-    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
-
-    return $self->master_index->packages->values->sort($sorter)->flatten();
+    return $self->schema->resultset('Package')->all();
 }
 
 
@@ -114,9 +125,7 @@ sub all_packages {
 sub local_packages {
     my ($self) = @_;
 
-    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
-
-    return $self->local_index->packages->values->sort($sorter)->flatten();
+    return $self->schema->resultset('Package')->locals();
 }
 
 #------------------------------------------------------------------------------
@@ -124,31 +133,23 @@ sub local_packages {
 sub foreign_packages {
     my ($self) = @_;
 
-    my $foreigners = [];
-    for my $package ( $self->master_index->packages->values->flatten() ) {
-        my $name = $package->name();
-        $foreigners->push($package) if not $self->local_index->packages->at($name);
-    }
-
-    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
-    return $foreigners->sort($sorter)->flatten();
-
+    return $self->schema->resultset('Package')->foreigners();
 }
-
 
 #------------------------------------------------------------------------------
 
-sub conflict_packages {
+sub foreign_distributions {
     my ($self) = @_;
 
-    my $conflicts = [];
-    for my $local_package ( $self->local_index->packages->values->flatten() ) {
-        my $name = $local_package->name();
-        $conflicts->push($local_package) if $self->mirror_index->packages->at($name);
-    }
+    return $self->schema->resultset('Distribution')->foreigners();
+}
 
-    my $sorter = sub { $_[0]->name() cmp $_[1]->name() };
-    return $conflicts->sort($sorter)->flatten();
+#------------------------------------------------------------------------------
+
+sub blocked_packages {
+    my ($self) = @_;
+
+    return $self->schema->resultset('Package')->blocked();
 }
 
 #------------------------------------------------------------------------------
@@ -156,28 +157,18 @@ sub conflict_packages {
 sub write_index {
     my ($self) = @_;
 
-    # TODO!
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub add_mirrored_distribution {
-    my ($self, %args) = @_;
-
-    my $dist = $args{dist};
-
-    # Don't add a distribution that already exists in the index.
-    if ( $self->master_index->distributions->at($dist->location) ) {
-        $self->logger->debug("$dist is already in the index");
-        return;
+    my $details = CPAN::PackageDetails->new();
+    my $index_pkg_rs = $self->schema->resultset('Package')->indexed();
+    while ( my $pkg = $index_pkg_rs->next() ) {
+        $details->add_entry(
+            package_name => $pkg->name(),
+            version      => $pkg->version(),
+            path         => $pkg->distribution->location(),
+        );
     }
 
-    my @packages = $dist->packages->flatten();
-    my @removed_dists = $self->master_index->add( @packages );
-
-    return @removed_dists;
+    my $details_file = $self->config->modules_dir->file('02packages.details.txt.gz');
+    $details->write_file($details_file);
 }
 
 #------------------------------------------------------------------------------
@@ -221,7 +212,7 @@ sub add_local_distribution {
       my $attrs = { join => 'distribution'};
       my $where = { name => $pkg->{name}, 'distribution.origin' => 'LOCAL'};
       my $rs = $self->schema->resultset('Package')->search($where, $attrs);
-      $rs->delete() if $rs;
+      $rs->delete_all() if $rs;
 
       # Create new local package
       $self->schema->resultset('Package')->create(

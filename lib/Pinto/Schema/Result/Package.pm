@@ -54,6 +54,10 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("id");
+__PACKAGE__->add_unique_constraint(
+  "name_version_distribution_unique",
+  ["name", "version", "distribution"],
+);
 
 =head1 RELATIONS
 
@@ -78,8 +82,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 10:43:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ubHxoeiYZ4F6/GpvC82hFA
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 14:39:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ONTQ/VjZ8qt+3/h7vkhA8Q
 
 #------------------------------------------------------------------------------
 
@@ -108,12 +112,12 @@ to an F<02packages.details.txt> file.
 sub to_index_string {
     my ($self) = @_;
 
-    my $fw = 38 - length $self->version();
-    $fw = length $self->name() if $fw < length $self->name();
+    my $width = 38 - length $self->version();
+    $width = length $self->name() if $width < length $self->name();
 
-    return sprintf "%-${fw}s %s  %s\n", $self->name(),
-                                        $self->version(),
-                                        $self->dist->location();
+    return sprintf "%-${width}s %s  %s\n", $self->name(),
+                                           $self->version(),
+                                           $self->distribution->location();
 }
 
 #-------------------------------------------------------------------------------

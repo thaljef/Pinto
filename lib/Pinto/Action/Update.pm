@@ -39,15 +39,14 @@ sub execute {
     my ($self) = @_;
 
     my $idxmgr  = $self->idxmgr();
-    my $idx_file = $idxmgr->mirror_index->file();
-    my $idx_already_exists = -e $idx_file;  # HACK!
+    my $idx_changes = $idxmgr->load_foreign_index();
 
-    my $idx_changes = $idxmgr->update_mirror_index( force => $self->force() );
-    $self->store->add(file => $idx_file) if not $idx_already_exists;
-    return 0 if not $idx_changes and not $self->force();
+    $DB::single = 1;
+    my $foreigners = $idxmgr->foreign_distributions();
+    return 0 if not $foreigners;
 
     my $dist_changes = 0;
-    for my $dist ( $idxmgr->dists_to_mirror() ) {
+    while (my $dist = $foreigners->next() ) {
         try   {
             $dist_changes += $self->_do_mirror($dist);
         }
@@ -72,7 +71,6 @@ sub _do_mirror {
 
     my $repos   = $self->config->repos();
     my $source  = $self->config->source();
-    my $cleanup = !$self->config->nocleanup();
 
     my $url = $dist->url($source);
     my $destination = $dist->path($repos);
@@ -80,9 +78,6 @@ sub _do_mirror {
 
     $self->fetch(url => $url, to => $destination) or return 0;
     $self->store->add(file => $destination);
-
-    my @removed = $self->idxmgr->add_mirrored_distribution(dist => $dist);
-    $cleanup && $self->store->remove(file => $_->path($repos)) for @removed;
 
     return 1;
 }

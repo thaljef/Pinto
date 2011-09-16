@@ -17,7 +17,8 @@ use namespace::autoclean;
 override execute => sub {
     my ($self) = @_;
 
-    for my $package ( $self->idxmgr()->all_packages() ) {
+    my $rs = $self->idxmgr()->all_packages();
+    while( my $package = $rs->next() ) {
         print { $self->out() } $package->to_index_string();
     }
 
