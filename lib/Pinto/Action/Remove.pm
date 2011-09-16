@@ -37,8 +37,7 @@ override execute => sub {
 
     my $dist_name  = $self->dist_name();
     my $author     = $self->author();
-    my $idxmgr     = $self->idxmgr();
-    my $cleanup    = not $self->config->nocleanup();
+    my $cleanup    = !$self->config->nocleanup();
 
     # If the $dist_name looks like a precise location (i.e. it has
     # slashes), then use it as such.  But if not, then use the author
@@ -47,8 +46,11 @@ override execute => sub {
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
     # TODO: throw a more specialized exception.
-    my $dist = $idxmgr->remove_distribution(location => $location)
+    my $dist = $self->schema->get_distribution($location)
         or Pinto::Exception->throw("Distribution $location is not in the index");
+
+    $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
+    $dist->delete();
 
     my $file = $dist->path( $self->config->repos() );
     $self->store->remove( file => $file ) if $cleanup;

@@ -15,9 +15,9 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Attributes
 
-has idxmgr => (
+has schema => (
     is       => 'ro',
-    isa      => 'Pinto::IndexManager',
+    isa      => 'Pinto::Schema',
     required => 1,
 );
 

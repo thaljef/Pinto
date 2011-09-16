@@ -27,9 +27,9 @@ has store    => (
 );
 
 
-has idxmgr => (
+has schema => (
     is       => 'ro',
-    isa      => 'Pinto::IndexManager',
+    isa      => 'Pinto::Schema',
     required => 1,
 );
 
@@ -175,7 +175,8 @@ sub _run_actions {
     $self->logger->info('No changes were made') and return $self
       unless $self->_result->changes_made();
 
-    $self->idxmgr->write_index();
+    my $index_file = $self->config->modules_dir->file('02packages.details.txt.gz');
+    $self->schema->write_index($index_file);
 
     return $self if $self->nocommit();
 

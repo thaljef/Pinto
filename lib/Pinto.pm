@@ -32,16 +32,16 @@ has _action_batch => (
 
 #------------------------------------------------------------------------------
 
-has _idxmgr => (
+has schema => (
     is          => 'ro',
-    isa         => 'Pinto::IndexManager',
+    isa         => 'Pinto::Schema',
     init_arg    => undef,
     lazy_build  => 1,
 );
 
 #------------------------------------------------------------------------------
 
-has _store => (
+has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
     init_arg   => undef,
@@ -70,16 +70,17 @@ sub BUILDARGS {
 #------------------------------------------------------------------------------
 # Builders
 
-sub _build__idxmgr {
+sub _build_schema {
     my ($self) = @_;
 
-    return Pinto::IndexManager->new( config => $self->config(),
-                                     logger => $self->logger() );
+    my $db_file = $self->config->db_file();
+
+    return Pinto::Schema->connect("dbi:SQLite:dbname=$db_file");
 }
 
 #------------------------------------------------------------------------------
 
-sub _build__store {
+sub _build_store {
     my ($self) = @_;
 
     my $store_class = $self->config->store();
@@ -99,8 +100,8 @@ sub new_action_batch {
 
     my $batch = Pinto::ActionBatch->new( config => $self->config(),
                                          logger => $self->logger(),
-                                         store  => $self->_store(),
-                                         idxmgr => $self->_idxmgr(),
+                                         store  => $self->store(),
+                                         schema => $self->schema(),
                                          %args );
 
    $self->_set_action_batch( $batch );
@@ -120,8 +121,8 @@ sub add_action {
 
     my $action =  $action_class->new( config => $self->config(),
                                       logger => $self->logger(),
-                                      idxmgr => $self->_idxmgr(),
-                                      store  => $self->_store(),
+                                      schema => $self->schema(),
+                                      store  => $self->store(),
                                       %args );
 
     $self->_action_batch->enqueue($action);

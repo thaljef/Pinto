@@ -6,11 +6,11 @@ use Moose;
 
 use Path::Class;
 use File::Temp;
+use Dist::Metadata 0.920; # supports .zip
 
 use Pinto::Util;
 use Pinto::Types 0.017 qw(StrOrFileOrURI);
-
-extends 'Pinto::Action';
+use Pinto::Exception::IO qw(throw_io);
 
 use namespace::autoclean;
 
@@ -19,9 +19,14 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
 # Attrbutes
 
-has dist_file => (
+has archive => (
     is       => 'ro',
     isa      => StrOrFileOrURI,
     required => 1,
@@ -39,16 +44,59 @@ override execute => sub {
     my ($self) = @_;
 
     my $repos     = $self->config->repos();
-    my $author    = $self->author();
-    my $archive   = $self->dist_file();
+    my $archive   = $self->archive();
 
     $archive = _is_url($archive) ? $self->_dist_from_url($archive) : file($archive);
-    my $dist = $self->idxmgr->add_local_distribution(file => $archive, author => $author);
+    my $dist = $self->_add_to_schema($archive);
+
     $self->store->add( file => $dist->path($repos), source => $archive );
     $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     return 1;
 };
+
+#------------------------------------------------------------------------------
+
+sub _add_to_schema {
+    my ($self, $archive) = @_;
+
+    my $basename   = $archive->basename();
+    my $author_dir = Pinto::Util::author_dir($self->author());
+    my $location   = $author_dir->file($basename)->as_foreign('Unix');
+    my @packages   = $self->_extract_packages($archive);
+
+    $self->logger->info(sprintf "Adding $location with %i packages", scalar @packages);
+
+    # Create new dist
+    my $dist = $self->schema->resultset('Distribution')->create(
+        { location => $location, origin => 'LOCAL'} );
+
+    # Create new packages
+    for my $pkg ( @packages ) {
+      $self->schema->resultset('Package')->create(
+          { %{ $pkg }, distribution => $dist->id() } );
+    }
+
+    return $dist;
+  }
+
+#------------------------------------------------------------------------------
+
+sub _extract_packages {
+    my ($self, $archive) = @_;
+
+    my $distmeta = Dist::Metadata->new(file => $archive->stringify());
+    my $provides = $distmeta->package_versions();
+    throw_io "$archive contains no packages" if not %{ $provides };
+
+    my @packages = ();
+    for my $package_name (sort keys %{ $provides }) {
+        my $version = $provides->{$package_name} || 'undef';
+        push @packages, { name => $package_name, version => $version };
+    }
+
+    return @packages;
+}
 
 #------------------------------------------------------------------------------
 

@@ -17,7 +17,8 @@ use namespace::autoclean;
 override execute => sub {
     my ($self) = @_;
 
-    for my $package ( $self->idxmgr->conflict_packages() ) {
+    my $rs = $self->schema->blocked_packages();
+    while ( my $package = $rs->next() ) {
         print { $self->out() } $package->to_index_string();
     }
 

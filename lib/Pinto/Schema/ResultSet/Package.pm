@@ -13,7 +13,7 @@ use base qw( DBIx::Class::ResultSet );
 
 #-------------------------------------------------------------------------------
 
-sub all {
+sub every {
     my ($self) = @_;
 
     my $attrs = { order_by => { -asc => 'name' } };

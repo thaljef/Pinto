@@ -58,7 +58,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_action_batch( %{$opts} );
-    $self->pinto->add_action('Add', %{$opts}, dist_file => $_) for @args;
+    $self->pinto->add_action('Add', %{$opts}, archive => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;

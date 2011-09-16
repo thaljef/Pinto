@@ -63,12 +63,14 @@ sub create {
     $self->mkpath($modules_dir);
 
 
-    # Write indexes
-    my $idxmgr = Pinto::IndexManager->new( config => $self->config(),
-                                           logger => $self->logger() );
+    # Create database
+    $self->mkpath( $self->config->db_dir() );
+    my $db_file = $self->config->db_file();
+    my $schema = Pinto::Schema->connect("dbi:SQLite:dbname=$db_file");
+    $schema->deploy();
 
-    $idxmgr->create_db();
-    $idxmgr->write_index();
+    # Write package index
+    $schema->write_index();
 
     # Write modlist
     $self->_write_modlist();
