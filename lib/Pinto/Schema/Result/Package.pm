@@ -19,7 +19,7 @@ __PACKAGE__->table("package");
 
 =head1 ACCESSORS
 
-=head2 id
+=head2 package_id
 
   data_type: 'integer'
   is_auto_increment: 1
@@ -35,6 +35,11 @@ __PACKAGE__->table("package");
   data_type: 'text'
   is_nullable: 0
 
+=head2 version_numeric
+
+  data_type: 'real'
+  is_nullable: 0
+
 =head2 distribution
 
   data_type: 'integer'
@@ -44,16 +49,18 @@ __PACKAGE__->table("package");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
+  "package_id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
   "version",
   { data_type => "text", is_nullable => 0 },
+  "version_numeric",
+  { data_type => "real", is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
 );
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("package_id");
 __PACKAGE__->add_unique_constraint(
   "name_version_distribution_unique",
   ["name", "version", "distribution"],
@@ -72,7 +79,7 @@ Related object: L<Pinto::Schema::Result::Distribution>
 __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
-  { id => "distribution" },
+  { distribution_id => "distribution" },
   {
     is_deferrable => 1,
     join_type     => "LEFT",
@@ -82,8 +89,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 14:39:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ONTQ/VjZ8qt+3/h7vkhA8Q
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-17 23:28:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BNhxA8CIEG2724q0bKkpDQ
 
 #------------------------------------------------------------------------------
 

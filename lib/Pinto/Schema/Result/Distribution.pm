@@ -19,7 +19,7 @@ __PACKAGE__->table("distribution");
 
 =head1 ACCESSORS
 
-=head2 id
+=head2 distribution_id
 
   data_type: 'integer'
   is_auto_increment: 1
@@ -38,14 +38,14 @@ __PACKAGE__->table("distribution");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
+  "distribution_id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "location",
   { data_type => "text", is_nullable => 0 },
   "origin",
   { data_type => "text", is_nullable => 0 },
 );
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->set_primary_key("distribution_id");
 __PACKAGE__->add_unique_constraint("location_unique", ["location"]);
 
 =head1 RELATIONS
@@ -61,13 +61,13 @@ Related object: L<Pinto::Schema::Result::Package>
 __PACKAGE__->has_many(
   "packages",
   "Pinto::Schema::Result::Package",
-  { "foreign.distribution" => "self.id" },
+  { "foreign.distribution" => "self.distribution_id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-15 12:22:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IuzTyO7Zsjpl6jp27u33CQ
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-17 23:28:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+/UjvFdWs61JtUME9ySBSg
 
 #-------------------------------------------------------------------------------
 

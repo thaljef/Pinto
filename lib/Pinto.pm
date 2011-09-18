@@ -8,8 +8,8 @@ use Class::Load;
 
 use Pinto::Config;
 use Pinto::Logger;
+use Pinto::Schema;
 use Pinto::ActionBatch;
-use Pinto::IndexManager;
 
 use Pinto::Exception::Loader qw(throw_load);
 use Pinto::Exception::Args qw(throw_args);

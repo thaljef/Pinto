@@ -45,6 +45,22 @@ sub foreigners {
 
 #-------------------------------------------------------------------------------
 
+sub latest {
+    my ($self) = @_;
+
+    my $locals_rs      = $self->locals();
+    my $subquery_where = { name  => { '=' => \'me.name'  } };
+    my $subquery_attrs = { alias => 'me2' };
+
+    my $subquery = $locals_rs->search($subquery_where, $subquery_attrs)
+        ->get_column('version_numeric')->max_rs->as_query();
+
+    return  $locals_rs->search( { version_numeric => { '=' => $subquery } } );
+
+}
+
+#-------------------------------------------------------------------------------
+
 sub indexed {
     my ($self) = @_;
 

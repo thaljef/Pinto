@@ -15,7 +15,15 @@ __PACKAGE__->load_namespaces;
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hiBSzrLxcuMQ+7BAWzFFSw
 #-------------------------------------------------------------------------------
 
+# ABSTRACT:
+
 use CPAN::PackageDetails;
+
+#-------------------------------------------------------------------------------
+
+# VERSION
+
+#-------------------------------------------------------------------------------
 
 sub get_package {
     my ($self, $package) = @_;
@@ -28,7 +36,10 @@ sub get_package {
 sub get_indexed_package {
     my ($self, $package) = @_;
 
-   return $self->resultset('Package')->indexed->find( {name => $package} );
+    my $attrs = { prefetch => 'distribution' };
+    my $where = { name => $package };
+
+    return $self->resultset('Package')->indexed->find( $where, $attrs );
 }
 
 
@@ -37,7 +48,10 @@ sub get_indexed_package {
 sub get_distribution {
     my ($self, $dist) = @_;
 
-    return $self->resultset('Distribution')->find( {location => $dist} );
+    my $attrs = { prefetch => 'packages' };
+    my $where = { location => $dist };
+
+    return $self->resultset('Distribution')->find( $where, $attrs );
 }
 
 #-------------------------------------------------------------------------------
@@ -46,7 +60,7 @@ sub write_index {
     my ($self, $index_file) = @_;
 
     my $details = CPAN::PackageDetails->new();
-    my $index_rs = $self->resultset('Package')->indexed();
+    my $index_rs = $self->resultset('Package')->latest();
 
     while ( my $pkg = $index_rs->next() ) {
         $details->add_entry(
@@ -84,7 +98,7 @@ sub load_foreign_index {
     foreach my $location ( sort keys %dists ) {
 
       next if $self->resultset('Distribution')->find( {location => $location} );
-      $self->logger->info("Loading index data for $location");
+      $self->logger->debug("Loading index data for $location");
       my $dist = $self->resultset('Distribution')->create(
           { location => $location,
             origin   => $source,
@@ -92,10 +106,13 @@ sub load_foreign_index {
       );
 
       foreach my $package (keys %{ $dists{$location} } ) {
+        my $version = $dists{$location}->{$package};
+        my $version_numeric = version->parse($version)->numify();
         my $pkg = $self->resultset('Package')->create(
-          { name         => $package,
-            version      => $dists{$location}->{$package},
-            distribution => $dist->id(),
+          { name            => $package,
+            version         => $version,
+            version_numeric => $version_numeric,
+            distribution    => $dist->id(),
           }
         );
       }
@@ -128,18 +145,26 @@ sub foreign_packages {
 
 #------------------------------------------------------------------------------
 
-sub foreign_distributions {
-    my ($self) = @_;
-
-    return $self->resultset('Distribution')->foreigners();
-}
-
-#------------------------------------------------------------------------------
-
 sub blocked_packages {
     my ($self) = @_;
 
     return $self->resultset('Package')->blocked();
+}
+
+#------------------------------------------------------------------------------
+
+sub blocking_packages {
+    my ($self) = @_;
+
+    return $self->resultset('Package')->blocking();
+}
+
+#------------------------------------------------------------------------------
+
+sub foreign_distributions {
+    my ($self) = @_;
+
+    return $self->resultset('Distribution')->foreigners();
 }
 
 #------------------------------------------------------------------------------

@@ -11,7 +11,7 @@ use Path::Class;
 
 use Pinto::Logger;
 use Pinto::Config;
-use Pinto::IndexManager;
+use Pinto::Schema;
 
 use namespace::autoclean;
 
@@ -62,7 +62,6 @@ sub create {
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);
 
-
     # Create database
     $self->mkpath( $self->config->db_dir() );
     my $db_file = $self->config->db_file();
@@ -70,7 +69,8 @@ sub create {
     $schema->deploy();
 
     # Write package index
-    $schema->write_index();
+    my $index_file = $self->config->modules_dir->file('02packages.details.txt.gz');
+    $schema->write_index($index_file);
 
     # Write modlist
     $self->_write_modlist();

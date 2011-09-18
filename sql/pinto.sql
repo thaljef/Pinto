@@ -1,15 +1,16 @@
 CREATE TABLE distribution (
-       id INTEGER PRIMARY KEY NOT NULL,
+       distribution_id INTEGER PRIMARY KEY NOT NULL,
        location TEXT NOT NULL,
        origin TEXT NOT NULL
 );
 
 CREATE TABLE package (
-       id INTEGER PRIMARY KEY NOT NULL,
+       package_id INTEGER PRIMARY KEY NOT NULL,
        name TEXT NOT NULL,
        version TEXT NOT NULL,
+       version_numeric REAL NOT NULL,
        distribution INTEGER,
-       FOREIGN KEY(distribution) REFERENCES distribution(id)
+       FOREIGN KEY(distribution) REFERENCES distribution(distribution_id)
 );
 
 CREATE UNIQUE INDEX distribution_idx ON distribution(location);
