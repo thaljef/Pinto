@@ -49,7 +49,7 @@ sub get_distribution {
     my ($self, $dist) = @_;
 
     my $attrs = { prefetch => 'packages' };
-    my $where = { location => $dist };
+    my $where = { path => $dist };
 
     return $self->resultset('Distribution')->find( $where, $attrs );
 }
@@ -66,7 +66,7 @@ sub write_index {
         $details->add_entry(
             package_name => $pkg->name(),
             version      => $pkg->version(),
-            path         => $pkg->distribution->location(),
+            path         => $pkg->distribution->path(),
         );
     }
 
@@ -95,18 +95,18 @@ sub load_foreign_index {
 
 
     $DB::single = 1;
-    foreach my $location ( sort keys %dists ) {
+    foreach my $path ( sort keys %dists ) {
 
-      next if $self->resultset('Distribution')->find( {location => $location} );
-      $self->logger->debug("Loading index data for $location");
+      next if $self->resultset('Distribution')->find( {path => $path} );
+      $self->logger->debug("Loading index data for $path");
       my $dist = $self->resultset('Distribution')->create(
-          { location => $location,
+          { path => $path,
             origin   => $source,
           }
       );
 
-      foreach my $package (keys %{ $dists{$location} } ) {
-        my $version = $dists{$location}->{$package};
+      foreach my $package (keys %{ $dists{$path} } ) {
+        my $version = $dists{$path}->{$package};
         my $version_numeric = version->parse($version)->numify();
         my $pkg = $self->resultset('Package')->create(
           { name            => $package,

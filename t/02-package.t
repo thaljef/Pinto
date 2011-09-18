@@ -12,7 +12,7 @@ use Pinto::Distribution;
 
 #------------------------------------------------------------------------------
 
-my $dist = Pinto::Distribution->new( location => 'C/CH/CHAUCER/Foo-1.2.tar.gz');
+my $dist = Pinto::Distribution->new( path => 'C/CH/CHAUCER/Foo-1.2.tar.gz');
 my $pkg = Pinto::Package->new( name => 'Foo', version => '2.4', dist => $dist );
 
 is($pkg->name(), 'Foo', 'name attribute');

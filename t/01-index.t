@@ -86,7 +86,7 @@ sub mkpkg {
     $author  ||= 'CHAUCER';
 
     my $authdir = Pinto::Util::author_dir($author);
-    my $dist = Pinto::Distribution->new(location => "$authdir/$file");
+    my $dist = Pinto::Distribution->new(path => "$authdir/$file");
 
     for my $pkg_name ( @{ $pkg_names } ) {
       my $pkg = Pinto::Package->new( name    => $pkg_name,

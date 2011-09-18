@@ -124,7 +124,7 @@ sub to_index_string {
 
     return sprintf "%-${width}s %s  %s\n", $self->name(),
                                            $self->version(),
-                                           $self->distribution->location();
+                                           $self->distribution->path();
 }
 
 #-------------------------------------------------------------------------------

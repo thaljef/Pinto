@@ -39,15 +39,15 @@ override execute => sub {
     my $author     = $self->author();
     my $cleanup    = !$self->config->nocleanup();
 
-    # If the $dist_name looks like a precise location (i.e. it has
+    # If the $dist_name looks like a precise path (i.e. it has
     # slashes), then use it as such.  But if not, then use the author
-    # attribute to construct the precise location.
-    my $location = $dist_name =~ m{/}mx ?
+    # attribute to construct the precise path.
+    my $path = $dist_name =~ m{/}mx ?
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
     # TODO: throw a more specialized exception.
-    my $dist = $self->db->get_distribution($location)
-        or Pinto::Exception->throw("Distribution $location is not in the index");
+    my $dist = $self->db->get_distribution($path)
+        or Pinto::Exception->throw("Distribution $path is not in the index");
 
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
     $dist->delete();

@@ -49,11 +49,11 @@ sub _make_callback {
         return if not -f $File::Find::name;
 
         my $file = file($File::Find::name);
-        my $location  = $file->relative($search_dir)->as_foreign('Unix');
-        return if $self->idxmgr->master_index->distributions->{$location};
+        my $path  = $file->relative($search_dir)->as_foreign('Unix');
+        return if $self->idxmgr->master_index->distributions->{$path};
 
         $self->store->remove(file => $file);
-        push @{ $deleted }, $location;
+        push @{ $deleted }, $path;
     };
 }
 

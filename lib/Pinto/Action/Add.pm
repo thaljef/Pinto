@@ -62,14 +62,14 @@ sub _add_to_schema {
 
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($self->author());
-    my $location   = $author_dir->file($basename)->as_foreign('Unix');
+    my $path   = $author_dir->file($basename)->as_foreign('Unix');
     my @packages   = $self->_extract_packages($archive);
 
-    $self->logger->info(sprintf "Adding $location with %i packages", scalar @packages);
+    $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
 
     # Create new dist
     my $dist = $self->db->schema->resultset('Distribution')->create(
-        { location => $location, origin => 'LOCAL'} );
+        { path => $path, origin => 'LOCAL'} );
 
     # Create new packages
     for my $pkg ( @packages ) {

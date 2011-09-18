@@ -32,7 +32,7 @@ sub execute {
 
     my $repos   = $self->config()->repos();
     my $dists   = $self->idxmgr->master_index->distributions->values();
-    my $sorter  = sub {$_[0]->location() cmp $_[1]->location};
+    my $sorter  = sub {$_[0]->path() cmp $_[1]->path};
 
     for my $dist ( $dists->sort( $sorter )->flatten() ) {
         my $file = $dist->path($repos);

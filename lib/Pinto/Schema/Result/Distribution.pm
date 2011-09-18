@@ -25,7 +25,7 @@ __PACKAGE__->table("distribution");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 location
+=head2 path
 
   data_type: 'text'
   is_nullable: 0
@@ -40,13 +40,13 @@ __PACKAGE__->table("distribution");
 __PACKAGE__->add_columns(
   "distribution_id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "location",
+  "path",
   { data_type => "text", is_nullable => 0 },
   "origin",
   { data_type => "text", is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("distribution_id");
-__PACKAGE__->add_unique_constraint("location_unique", ["location"]);
+__PACKAGE__->add_unique_constraint("path_unique", ["path"]);
 
 =head1 RELATIONS
 
@@ -66,8 +66,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-17 23:28:29
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+/UjvFdWs61JtUME9ySBSg
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-18 01:20:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5FGF6HitBy/iY67FoILI4Q
 
 #-------------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ use overload ('""' => 'to_string');
 
 #------------------------------------------------------------------------------
 
-sub path {
+sub physical_path {
     my ($self, @base) = @_;
 
     my @parts = split '/', $self->location();
@@ -91,7 +91,7 @@ sub path {
 sub url {
     my ($self, $base) = @_;
 
-    return URI->new( "$base/authors/id/" . $self->location() )->canonical();
+    return URI->new( "$base/authors/id/" . $self->path() )->canonical();
 }
 
 #------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ sub package_count {
 sub to_string {
     my ($self) = @_;
 
-    return $self->location();
+    return $self->path();
 }
 
 #------------------------------------------------------------------------------
