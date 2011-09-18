@@ -27,9 +27,9 @@ has store    => (
 );
 
 
-has schema => (
+has db => (
     is       => 'ro',
-    isa      => 'Pinto::Schema',
+    isa      => 'Pinto::Database',
     required => 1,
 );
 
@@ -176,7 +176,7 @@ sub _run_actions {
       unless $self->_result->changes_made();
 
     my $index_file = $self->config->modules_dir->file('02packages.details.txt.gz');
-    $self->schema->write_index($index_file);
+    $self->db->write_index($index_file);
 
     return $self if $self->nocommit();
 

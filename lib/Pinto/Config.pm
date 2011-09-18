@@ -44,6 +44,15 @@ has modules_dir => (
 );
 
 
+has packages_details_file => (
+    is        => 'ro',
+    isa       => File,
+    init_arg  => undef,
+    default   => sub { return $_[0]->modules_dir->file('02packages.details.txt.gz') },
+    lazy      => 1,
+);
+
+
 has db_dir => (
     is        => 'ro',
     isa       => Dir,

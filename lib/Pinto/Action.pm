@@ -15,9 +15,9 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Attributes
 
-has schema => (
+has db => (
     is       => 'ro',
-    isa      => 'Pinto::Schema',
+    isa      => 'Pinto::Database',
     required => 1,
 );
 

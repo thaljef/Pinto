@@ -68,13 +68,13 @@ sub _add_to_schema {
     $self->logger->info(sprintf "Adding $location with %i packages", scalar @packages);
 
     # Create new dist
-    my $dist = $self->schema->resultset('Distribution')->create(
+    my $dist = $self->db->schema->resultset('Distribution')->create(
         { location => $location, origin => 'LOCAL'} );
 
     # Create new packages
     for my $pkg ( @packages ) {
       my $version_numeric = version->parse($pkg->{version})->numify();
-      $self->schema->resultset('Package')->create(
+      $self->db->schema->resultset('Package')->create(
           { %{ $pkg }, version_numeric => $version_numeric, distribution => $dist->id() } );
     }
 

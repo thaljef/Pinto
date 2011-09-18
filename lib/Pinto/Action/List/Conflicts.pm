@@ -17,7 +17,7 @@ use namespace::autoclean;
 override execute => sub {
     my ($self) = @_;
 
-    my $rs = $self->schema->blocked_packages();
+    my $rs = $self->db->blocked_packages();
     while ( my $package = $rs->next() ) {
         print { $self->out() } $package->to_index_string();
     }

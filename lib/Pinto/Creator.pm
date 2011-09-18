@@ -11,7 +11,7 @@ use Path::Class;
 
 use Pinto::Logger;
 use Pinto::Config;
-use Pinto::Schema;
+use Pinto::Database;
 
 use namespace::autoclean;
 
@@ -63,14 +63,12 @@ sub create {
     $self->mkpath($modules_dir);
 
     # Create database
-    $self->mkpath( $self->config->db_dir() );
-    my $db_file = $self->config->db_file();
-    my $schema = Pinto::Schema->connect("dbi:SQLite:dbname=$db_file");
-    $schema->deploy();
+    my $db = Pinto::Database->new( config => $self->config(),
+                                   logger => $self->logger() );
+    $db->deploy();
 
     # Write package index
-    my $index_file = $self->config->modules_dir->file('02packages.details.txt.gz');
-    $schema->write_index($index_file);
+    $db->write_index();
 
     # Write modlist
     $self->_write_modlist();

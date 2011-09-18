@@ -17,7 +17,7 @@ use namespace::autoclean;
 override execute => sub {
     my ($self) = @_;
 
-    my $rs = $self->schema->local_packages();
+    my $rs = $self->db->local_packages();
     while (my $package = $rs->next() ) {
         print { $self->out() } $package->to_index_string();
     }

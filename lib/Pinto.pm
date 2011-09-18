@@ -8,7 +8,7 @@ use Class::Load;
 
 use Pinto::Config;
 use Pinto::Logger;
-use Pinto::Schema;
+use Pinto::Database;
 use Pinto::ActionBatch;
 
 use Pinto::Exception::Loader qw(throw_load);
@@ -32,9 +32,9 @@ has _action_batch => (
 
 #------------------------------------------------------------------------------
 
-has schema => (
+has db => (
     is          => 'ro',
-    isa         => 'Pinto::Schema',
+    isa         => 'Pinto::Database',
     init_arg    => undef,
     lazy_build  => 1,
 );
@@ -70,12 +70,11 @@ sub BUILDARGS {
 #------------------------------------------------------------------------------
 # Builders
 
-sub _build_schema {
+sub _build_db {
     my ($self) = @_;
 
-    my $db_file = $self->config->db_file();
-
-    return Pinto::Schema->connect("dbi:SQLite:dbname=$db_file");
+    return Pinto::Database->new( config => $self->config(),
+                                 logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------
@@ -101,7 +100,7 @@ sub new_action_batch {
     my $batch = Pinto::ActionBatch->new( config => $self->config(),
                                          logger => $self->logger(),
                                          store  => $self->store(),
-                                         schema => $self->schema(),
+                                         db     => $self->db(),
                                          %args );
 
    $self->_set_action_batch( $batch );
@@ -121,8 +120,8 @@ sub add_action {
 
     my $action =  $action_class->new( config => $self->config(),
                                       logger => $self->logger(),
-                                      schema => $self->schema(),
                                       store  => $self->store(),
+                                      db     => $self->db(),
                                       %args );
 
     $self->_action_batch->enqueue($action);

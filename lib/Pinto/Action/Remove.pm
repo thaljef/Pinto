@@ -46,7 +46,7 @@ override execute => sub {
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
     # TODO: throw a more specialized exception.
-    my $dist = $self->schema->get_distribution($location)
+    my $dist = $self->db->get_distribution($location)
         or Pinto::Exception->throw("Distribution $location is not in the index");
 
     $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
