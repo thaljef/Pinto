@@ -45,27 +45,22 @@ sub foreigners {
 
 #-------------------------------------------------------------------------------
 
-sub latest {
-    my ($self) = @_;
-
-    my $locals_rs      = $self->locals();
-    my $subquery_where = { name  => { '=' => \'me.name'  } };
-    my $subquery_attrs = { alias => 'me2' };
-
-    my $subquery = $locals_rs->search($subquery_where, $subquery_attrs)
-        ->get_column('version_numeric')->max_rs->as_query();
-
-    return  $locals_rs->search( { version_numeric => { '=' => $subquery } } );
-
-}
-
-#-------------------------------------------------------------------------------
-
 sub indexed {
     my ($self) = @_;
 
     my $local_pkg_names = $self->locals()->get_column('name')->as_query();
     my $where = { -or => [ -and => [ origin => {'!=' => 'LOCAL'}, name => {-not_in => $local_pkg_names} ], origin => 'LOCAL' ] };
+    my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
+
+    return $self->latest->search($where, $attrs);
+}
+
+#-------------------------------------------------------------------------------
+
+sub latest {
+    my ($self) = @_;
+
+    my $where = { is_latest => 1 };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);

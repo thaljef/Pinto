@@ -44,6 +44,11 @@ __PACKAGE__->table("package");
 
   data_type: 'integer'
   is_foreign_key: 1
+  is_nullable: 0
+
+=head2 is_latest
+
+  data_type: 'boolean'
   is_nullable: 1
 
 =cut
@@ -58,13 +63,13 @@ __PACKAGE__->add_columns(
   "version_numeric",
   { data_type => "real", is_nullable => 0 },
   "distribution",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "is_latest",
+  { data_type => "boolean", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("package_id");
-__PACKAGE__->add_unique_constraint(
-  "name_version_distribution_unique",
-  ["name", "version", "distribution"],
-);
+__PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
+__PACKAGE__->add_unique_constraint("name_distribution_unique", ["name", "distribution"]);
 
 =head1 RELATIONS
 
@@ -80,17 +85,12 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { distribution_id => "distribution" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "CASCADE",
-  },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-17 23:28:29
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BNhxA8CIEG2724q0bKkpDQ
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 11:34:50
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3WIsudBfZJO6mKNHu/sHdA
 
 #------------------------------------------------------------------------------
 

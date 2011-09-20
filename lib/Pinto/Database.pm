@@ -58,32 +58,85 @@ sub get_packages {
 sub get_latest_package {
     my ($self, $package) = @_;
 
-    my $where = { name => $package };
+    my $where = { name => $package, is_latest => 1 };
 
-    return $self->schema->resultset('Package')->latest->find($where);
+    # TODO: assert we only get one record here
+    return $self->schema->resultset('Package')->first($where);
 }
-
-#-------------------------------------------------------------------------------
-
-sub get_indexed_package {
-    my ($self, $package) = @_;
-
-    my $attrs = { prefetch => 'distribution' };
-    my $where = { name => $package };
-
-    return $self->schema->resultset('Package')->indexed->find( $where, $attrs );
-}
-
 
 #-------------------------------------------------------------------------------
 
 sub get_distribution {
-    my ($self, $dist) = @_;
+    my ($self, $path) = @_;
 
     my $attrs = { prefetch => 'packages' };
-    my $where = { path => $dist };
+    my $where = { path => $path };
 
-    return $self->schema->resultset('Distribution')->find( $where, $attrs );
+    # TODO: assert we only get one record here!
+    return $self->schema->resultset('Distribution')->search( $where, $attrs )->first();
+}
+
+#-------------------------------------------------------------------------------
+
+sub add_dist {
+    my ($self, $dist) = @_;
+
+    return $self->schema->resultset('Distribution')->create( $dist );
+}
+
+#-------------------------------------------------------------------------------
+
+sub add_package {
+    my ($self, $pkg) = @_;
+
+    my $latest = $self->get_latest_package($pkg->{name});
+    if ($latest and $pkg->{version_numeric} > $latest->version_numeric()) {
+        $pkg->{is_latest} = 1;
+        $latest->is_latest(undef);
+        $latest->update();
+    }
+    elsif (not defined $latest) {
+        $pkg->{is_latest} = 1;
+    }
+
+    return $self->schema->resultset('Package')->create( $pkg );
+}
+
+#-------------------------------------------------------------------------------
+
+sub remove_distribution {
+    my ($self, $dist) = @_;
+
+    $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
+    $self->remove_package($_) for $dist->packages();
+    $dist->delete();
+
+    return;
+}
+
+#-------------------------------------------------------------------------------
+
+sub remove_package {
+    my ($self, $pkg) = @_;
+
+    my $name       = $pkg->name();
+    my $was_latest = $pkg->is_latest();
+
+    $pkg->delete();
+
+    my $package_rs     = $self->get_packages($name);
+    my $subquery_where = { name  => { '=' => \'me.name'  } };
+    my $subquery_attrs = { alias => 'me2' };
+
+    my $subquery = $package_rs->search($subquery_where, $subquery_attrs)
+        ->get_column('version_numeric')->max_rs->as_query();
+
+    if (my $latest = $package_rs->single( { version_numeric => { '=' => $subquery } } )) {
+        $latest->is_latest(1);
+        $latest->update();
+    }
+
+    return;
 }
 
 #-------------------------------------------------------------------------------

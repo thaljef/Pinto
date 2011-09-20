@@ -62,12 +62,12 @@ __PACKAGE__->has_many(
   "packages",
   "Pinto::Schema::Result::Package",
   { "foreign.distribution" => "self.distribution_id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-18 01:20:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5FGF6HitBy/iY67FoILI4Q
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 12:34:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4wZo2UeX6KJQ2AMaxNMZFg
 
 #-------------------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ use overload ('""' => 'to_string');
 sub physical_path {
     my ($self, @base) = @_;
 
-    my @parts = split '/', $self->location();
+    my @parts = split '/', $self->path();
 
     return Path::Class::file(@base, qw(authors id), @parts);
 }

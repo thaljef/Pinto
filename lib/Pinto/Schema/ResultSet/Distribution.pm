@@ -5,6 +5,8 @@ package Pinto::Schema::ResultSet::Distribution;
 use strict;
 use warnings;
 
+use List::MoreUtils qw(none);
+
 use base qw( DBIx::Class::ResultSet );
 
 #-------------------------------------------------------------------------------
@@ -38,10 +40,17 @@ sub locals {
 sub outdated {
     my ($self) = @_;
 
-    my $where = { origin => 'LOCAL' };
-    my $attrs = { order_by => {-asc => 'path'} };
+    my $attrs = { prefetch => 'packages', order_by => {-asc => 'path'} };
+    my $rs = $self->search(undef, $attrs);
 
-    return $self->search($where, $attrs);
+    my @outdated;
+    while (my $dist = $rs->next()) {
+        push @outdated, $dist if none { $_->is_latest() } $dist->packages();
+    }
+
+    my $new_rs = $self->result_source->resultset;
+    $new_rs->set_cache(\@outdated);
+    return $new_rs;
 }
 
 #-------------------------------------------------------------------------------

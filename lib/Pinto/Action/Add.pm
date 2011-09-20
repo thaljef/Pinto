@@ -47,9 +47,9 @@ override execute => sub {
     my $archive   = $self->archive();
 
     $archive = _is_url($archive) ? $self->_dist_from_url($archive) : file($archive);
-    my $dist = $self->_add_to_schema($archive);
+    my $dist = $self->_process_archive($archive);
 
-    $self->store->add( file => $dist->path($repos), source => $archive );
+    $self->store->add( file => $dist->physical_path($repos), source => $archive );
     $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     return 1;
@@ -57,25 +57,21 @@ override execute => sub {
 
 #------------------------------------------------------------------------------
 
-sub _add_to_schema {
+sub _process_archive {
     my ($self, $archive) = @_;
 
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($self->author());
-    my $path   = $author_dir->file($basename)->as_foreign('Unix');
+    my $path       = $author_dir->file($basename)->as_foreign('Unix');
     my @packages   = $self->_extract_packages($archive);
 
     $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
 
-    # Create new dist
-    my $dist = $self->db->schema->resultset('Distribution')->create(
-        { path => $path, origin => 'LOCAL'} );
+    my $dist = $self->db->add_dist( { path => $path, origin => 'LOCAL'} );
 
-    # Create new packages
     for my $pkg ( @packages ) {
-      my $version_numeric = version->parse($pkg->{version})->numify();
-      $self->db->schema->resultset('Package')->create(
-          { %{ $pkg }, version_numeric => $version_numeric, distribution => $dist->id() } );
+        $pkg->{distribution} = $dist->id();
+        $self->db->add_package( $pkg );
     }
 
     return $dist;
@@ -91,9 +87,12 @@ sub _extract_packages {
     throw_io "$archive contains no packages" if not %{ $provides };
 
     my @packages = ();
-    for my $package_name (sort keys %{ $provides }) {
-        my $version = $provides->{$package_name} || 'undef';
-        push @packages, { name => $package_name, version => $version };
+    for my $name (sort keys %{ $provides }) {
+        my $version = $provides->{$name} || 'undef';
+        my $version_numeric = version->parse($version)->numify();
+        push @packages, { name            => $name,
+                          version         => $version,
+                          version_numeric => $version_numeric };
     }
 
     return @packages;
@@ -106,7 +105,7 @@ sub _is_url {
 
     return 1 if eval { $it->isa('URI') };
     return 0 if eval { $it->isa('Path::Class::File') };
-    return $it =~ m/^ (?: http|ftp|file|) : /x;
+    return $it =~ m/^ (?: http|ftp|file) : /x;
 }
 
 #------------------------------------------------------------------------------

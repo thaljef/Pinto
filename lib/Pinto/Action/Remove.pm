@@ -39,22 +39,16 @@ override execute => sub {
     my $author     = $self->author();
     my $cleanup    = !$self->config->nocleanup();
 
-    # If the $dist_name looks like a precise path (i.e. it has
-    # slashes), then use it as such.  But if not, then use the author
-    # attribute to construct the precise path.
     my $path = $dist_name =~ m{/}mx ?
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
-    # TODO: throw a more specialized exception.
     my $dist = $self->db->get_distribution($path)
-        or Pinto::Exception->throw("Distribution $path is not in the index");
+      or Pinto::Exception->throw("No such distribution: $path");
 
-    $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
-    $dist->delete();
+    my $file = $dist->physical_path( $self->config->repos() );
 
-    my $file = $dist->path( $self->config->repos() );
+    $self->db->remove_distribution($dist);
     $self->store->remove( file => $file ) if $cleanup;
-
     $self->add_message( Pinto::Util::removed_dist_message( $dist ) );
 
     return 1;
