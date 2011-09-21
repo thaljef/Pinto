@@ -68,6 +68,24 @@ sub fetch {
 
 #------------------------------------------------------------------------------
 
+sub fetch_temporary {
+    my ($self, %args) = @_;
+
+    my $url  = URI->new($args{url})->canonical();
+    my $path = Path::Class::file( $url->path() );
+    return $path if $url->scheme() eq 'file';
+
+    my $base     = $path->basename();
+    my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
+    my $tempfile = Path::Class::file($tempdir, $base);
+
+    $self->fetch(url => $url, to => $tempfile);
+
+    return Path::Class::file($tempfile);
+}
+
+#------------------------------------------------------------------------------
+
 sub _build_ua {
     my ($self) = @_;
 

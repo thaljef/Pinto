@@ -5,8 +5,10 @@ package Pinto::Database;
 use Moose;
 
 use Path::Class;
+
 use Pinto::Schema;
-use CPAN::PackageDetails;
+use Pinto::IndexLoader;
+use Pinto::IndexWriter;
 
 use namespace::autoclean;
 
@@ -54,6 +56,16 @@ sub get_all_packages {
     return $self->schema->resultset('Package')->search($where || {}, $attrs);
 }
 
+#-------------------------------------------------------------------------------
+
+sub get_all_indexed_packages {
+    my ($self) = @_;
+
+    my $where = { should_index => 1 };
+    my $attrs = { prefetch => 'distribution', order_by => 'name' };
+
+    return $self->schema->resultset('Package')->search($where, $attrs);
+}
 #-------------------------------------------------------------------------------
 
 sub get_packages_with_name {
@@ -157,46 +169,26 @@ sub remove_package {
 sub write_index {
     my ($self) = @_;
 
-    my $details = CPAN::PackageDetails->new();
-    my $indexed_rs = $self->schema->resultset('Package')->indexed();
-
-    while ( my $pkg = $indexed_rs->next() ) {
-        $details->add_entry(
-            package_name => $pkg->name(),
-            version      => $pkg->version(),
-            path         => $pkg->distribution->path(),
-        );
-    }
+    my $writer = Pinto::IndexWriter->new( logger => $self->logger(),
+                                          db     => $self );
 
     my $index_file = $self->config->packages_details_file();
-    $details->write_file($index_file);
+    $writer->write(file => $index_file);
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
 
 sub load_index {
-    my ($self, $source, $index_file) = @_;
+    my ($self, $repos_url) = @_;
 
-    $self->logger->info("Loading index from $index_file");
-    my $details = CPAN::PackageDetails->read( "$index_file" );
-    my ($records) = $details->entries->as_unique_sorted_list();
+    my $loader = Pinto::IndexLoader->new( logger => $self->logger(),
+                                          db     => $self );
 
-    my %dists;
-    $dists{$_->path()}->{$_->package_name()} = $_->version() for @{$records};
+    $loader->load(from => $repos_url);
 
-
-    foreach my $path ( sort keys %dists ) {
-
-      next if $self->schema->resultset('Distribution')->find( {path => $path} );
-      my $dist = $self->add_distribution( {path => $path, origin => $source} );
-
-      foreach my $package (keys %{ $dists{$path} } ) {
-        my $version = $dists{$path}->{$package};
-        $self->add_package( { name            => $package,
-                              version         => $version,
-                              distribution    => $dist->id() } );
-      }
-    }
+    return $self;
 }
 
 #------------------------------------------------------------------------------

@@ -43,15 +43,17 @@ with qw( Pinto::Role::UserAgent
 override execute => sub {
     my ($self) = @_;
 
-    my $repos     = $self->config->repos();
-    my $archive   = $self->archive();
+    my $repos   = $self->config->repos();
+    my $archive = $self->archive();
 
-    $archive = _is_url($archive) ? $self->_dist_from_url($archive) : file($archive);
+    $archive = Pinto::Util::is_url($archive) ?
+        $self->fetch_temporary(url => $archive) : file($archive);
+
     throw_io "Archive $archive does not exist"  if not -e $archive;
     throw_io "Archive $archive is not readable" if not -r $archive;
 
     my $dist = $self->_process_archive($archive);
-    $self->store->add( file => $dist->physical_path($repos), source => $archive );
+    $self->store->add(file => $dist->physical_path($repos), source => $archive);
     $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     return 1;
@@ -81,7 +83,7 @@ sub _process_archive {
     }
 
     $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
-    my $dist = $self->db->add_distribution( { path => $path, origin => 'LOCAL'} );
+    my $dist = $self->db->add_distribution( {path => $path, origin => 'LOCAL'} );
 
     for my $pkg ( @packages ) {
         $pkg->{distribution} = $dist->id();
@@ -109,34 +111,6 @@ sub _extract_packages {
     }
 
     return @packages;
-}
-
-#------------------------------------------------------------------------------
-
-sub _is_url {
-    my ($it) = @_;
-
-    return 1 if eval { $it->isa('URI') };
-    return 0 if eval { $it->isa('Path::Class::File') };
-    return $it =~ m/^ (?: http|ftp|file) : /x;
-}
-
-#------------------------------------------------------------------------------
-
-sub _dist_from_url {
-    my ($self, $dist_url) = @_;
-
-    my $url = URI->new($dist_url)->canonical();
-    my $path = Path::Class::file( $url->path() );
-    return $path if $url->scheme() eq 'file';
-
-    my $base     = $path->basename();
-    my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
-    my $tempfile = Path::Class::file($tempdir, $base);
-
-    $self->fetch(url => $url, to => $tempfile);
-
-    return Path::Class::file($tempfile);
 }
 
 #-----------------------------------------------------------------------------

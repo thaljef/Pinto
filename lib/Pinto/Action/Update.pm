@@ -6,11 +6,7 @@ use Moose;
 
 use MooseX::Types::Moose qw(Bool);
 
-use URI;
 use Try::Tiny;
-use Path::Class;
-
-use Pinto::Util;
 
 use namespace::autoclean;
 
@@ -40,12 +36,7 @@ sub execute {
     my ($self) = @_;
 
     my $source = $self->config->source();
-    my $temp_dir = File::Temp->newdir();
-    my $index_url = URI->new("$source/modules/02packages.details.txt.gz");
-    my $index_temp_file = file($temp_dir, '02packages.details.txt.gz');
-
-    $self->fetch(url => $index_url, to => $index_temp_file);
-    $self->db->load_index($source, $index_temp_file);
+    $self->db->load_index($source);
 
     my $changes = 0;
     my $foreigners = $self->db->foreign_distributions();

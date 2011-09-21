@@ -41,6 +41,22 @@ sub author_dir {                                  ## no critic (ArgUnpacking)
 
 #-------------------------------------------------------------------------------
 
+=func is_url($it)
+
+Returns true if C<$it> is a L<URI> or looks like a URL.
+
+=cut
+
+sub is_url {
+    my ($it) = @_;
+
+    return 1 if eval { $it->isa('URI') };
+    return 0 if eval { $it->isa('Path::Class::File') };
+    return $it =~ m/^ (?: http|ftp|file) : /x;
+}
+
+#-------------------------------------------------------------------------------
+
 =func is_source_control_file($path)
 
 Given a path (which may be a file or directory), returns true if that path
