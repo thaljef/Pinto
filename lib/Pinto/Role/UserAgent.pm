@@ -91,7 +91,7 @@ sub fetch_temporary {
 sub _fetch {
     my ($self, $url, $to) = @_;
 
-    $self->logger->info("Fetching $url");
+    $self->info("Fetching $url");
     my $result = $self->_ua->mirror($url, $to);
 
     if ($result->is_success()) {

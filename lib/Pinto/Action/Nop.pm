@@ -28,7 +28,7 @@ override execute => sub {
     my ($self) = @_;
 
     if ( my $sleep = $self->sleep() ) {
-        $self->logger->debug("Process $$ sleeping for $sleep seconds");
+        $self->debug("Process $$ sleeping for $sleep seconds");
         sleep $self->sleep();
     }
 

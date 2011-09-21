@@ -44,7 +44,7 @@ sub create {
 
     # Sanity checks
     my $repos = $self->config->repos();
-    $self->logger->fatal("Directory $repos is not empty")
+    $self->fatal("Directory $repos is not empty")
       if -e $repos and $repos->children();
 
     # Create repos directory

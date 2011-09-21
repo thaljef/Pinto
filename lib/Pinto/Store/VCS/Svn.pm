@@ -34,7 +34,7 @@ override initialize => sub {
     my ($self) = @_;
 
     my $repos = $self->config->repos();
-    $self->logger->info('Updating working copy');
+    $self->info('Updating working copy');
     Pinto::Util::Svn::svn_update(dir => $repos);
 
     return 1;
@@ -62,7 +62,7 @@ override add => sub {
         $path = $path->parent();
     }
 
-    $self->logger->info("Scheduling $original_path for addition");
+    $self->info("Scheduling $original_path for addition");
     Pinto::Util::Svn::svn_add(path => $path);
     $self->mark_path_as_added($path);
 
@@ -77,7 +77,7 @@ override remove => sub {
     my $file  = $args{file};
     return $self if not -e $file;
 
-    $self->logger->info("Scheduling $file for removal");
+    $self->info("Scheduling $file for removal");
     my $removed = Pinto::Util::Svn::svn_remove(path => $file);
     $self->mark_path_as_removed($removed);
 
@@ -96,7 +96,7 @@ override commit => sub {
                   $self->removed_paths(),
                   $self->modified_paths() ];
 
-    $self->logger->info("Committing changes");
+    $self->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
     return 1;
@@ -111,7 +111,7 @@ override tag => sub {
     my $tag    = $args{tag};
     my $origin = $self->svn_location();
 
-    $self->logger->info("Tagging at $tag");
+    $self->info("Tagging at $tag");
 
     my $now = DateTime->now();
     my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();

@@ -39,7 +39,7 @@ already there.  Returns a reference to this Store.
 sub initialize {
     my ($self) = @_;
 
-    $self->logger->debug('Initializing the store');
+    $self->debug('Initializing the store');
     my $repos = $self->config->repos();
     $self->mkpath($repos);
 
@@ -63,7 +63,7 @@ sub commit {
     my ($self, %args) = @_;
 
     my $message = $args{message} || 'Committing the store';
-    $self->logger->debug($message);
+    $self->debug($message);
 
     return $self;
 }
@@ -116,7 +116,7 @@ sub add {
           $self->mkpath($parent);
         }
 
-        $self->logger->debug("Copying $source to $file");
+        $self->debug("Copying $source to $file");
 
         # NOTE: We have to force stringification of the arguments to
         # File::Copy, since older versions don't support Path::Class
@@ -152,12 +152,12 @@ sub remove {
 
     throw_args "$file is not a file" if -d $file;
 
-    $self->logger->info("Removing file $file");
+    $self->info("Removing file $file");
     $file->remove() or throw_io "Failed to remove $file: $!";
 
     while (my $dir = $file->parent()) {
         last if $dir->children();
-        $self->logger->debug("Removing empty directory $dir");
+        $self->debug("Removing empty directory $dir");
         $dir->remove();
         $file = $dir;
     }

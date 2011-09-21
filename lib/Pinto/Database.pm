@@ -145,7 +145,7 @@ sub add_package {
 sub remove_distribution {
     my ($self, $dist) = @_;
 
-    $self->logger->info(sprintf "Removing $dist with %i packages", $dist->package_count());
+    $self->info(sprintf "Removing $dist with %i packages", $dist->package_count());
     $self->remove_package($_) for $dist->packages();
     $dist->delete();
 

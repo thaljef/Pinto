@@ -41,7 +41,7 @@ sub load {
     my $index_url = "$from/modules/02packages.details.txt.gz";
     my $index_file = $self->fetch_temporary(url => $index_url);
 
-    $self->logger->info("Loading index from $index_file");
+    $self->info("Loading index from $index_file");
     open my $fh, '<:gzip', $index_file;
     my $dists = $self->_read($fh);
     close $fh;
@@ -51,12 +51,12 @@ sub load {
 
         next if $self->db->get_distribution_with_path($path);
 
-        $self->logger->debug("Distribution $path");
+        $self->debug("Distribution $path");
         my $attrs = {path => $path, origin => $from};
         my $dist  = $self->db->add_distribution($attrs);
 
         foreach my $pkg ( @{ $dists->{$path} } ) {
-            $self->logger->debug("Package $pkg->{name}");
+            $self->debug("Package $pkg->{name}");
             $pkg->{distribution} = $dist->id();
             $self->db->add_package($pkg);
         }

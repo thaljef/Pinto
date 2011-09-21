@@ -105,7 +105,7 @@ sub run {
         $self->_run_actions();
     }
     catch {
-        $self->logger->whine($_);
+        $self->whine($_);
         $self->_result->add_exception($_);
     };
 
@@ -123,7 +123,7 @@ sub _run_actions {
         $self->_run_one_action($action);
     }
 
-    $self->logger->info('No changes were made') and return $self
+    $self->info('No changes were made') and return $self
       unless $self->_result->changes_made();
 
     my $index_file = $self->config->modules_dir->file('02packages.details.txt.gz');
@@ -156,7 +156,7 @@ sub _run_one_action {
     }
     catch {
         # Collect unhandled exceptions
-        $self->logger->whine($_);
+        $self->whine($_);
         $self->_result->add_exception($_);
     }
     finally {

@@ -40,7 +40,7 @@ sub mkpath {
 
     return 0 if -e $path;
 
-    $self->logger->debug("Making directory $path");
+    $self->debug("Making directory $path");
 
     eval { $path->mkpath(); 1}
         or throw_io "Failed to make directory $path: $EVAL_ERROR";

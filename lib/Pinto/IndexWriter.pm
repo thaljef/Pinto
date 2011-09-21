@@ -42,7 +42,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
     my $file = $args{file};
-    $self->logger->info("Writing index at $file");
+    $self->info("Writing index at $file");
 
     open my $fh, '>:gzip', $file;
     $self->_write_header($fh, $file);

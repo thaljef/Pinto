@@ -46,8 +46,8 @@ with qw ( Pinto::Role::Configurable
 sub _build__lockmgr {
     my ($self) = @_;
 
-    my $wfunc = sub { $self->logger->debug(@_) };
-    my $efunc = sub { $self->logger->fatal(@_) };
+    my $wfunc = sub { $self->debug(@_) };
+    my $efunc = sub { $self->fatal(@_) };
 
     return LockFile::Simple->make( -autoclean => 1,
                                    -efunc     => $efunc,
@@ -81,7 +81,7 @@ sub lock {                                             ## no critic (Homonym)
     my $lock = $self->_lockmgr->lock( $repos->file('')->stringify() )
         or throw_lock 'Unable to lock the repository -- please try later';
 
-    $self->logger->debug("Process $$ got the lock on $repos");
+    $self->debug("Process $$ got the lock on $repos");
     $self->_lock($lock);
 
     return $self;
@@ -104,7 +104,7 @@ sub unlock {
     $self->_lock->release() or throw_lock 'Unable to unlock repository';
 
     my $repos = $self->config->repos();
-    $self->logger->debug("Process $$ released the lock on $repos");
+    $self->debug("Process $$ released the lock on $repos");
 
     return $self;
 }
