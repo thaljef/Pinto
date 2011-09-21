@@ -42,8 +42,8 @@ override execute => sub {
     my $path = $dist_name =~ m{/}mx ?
       $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
-    my $dist = $self->db->get_distribution($path)
-      or Pinto::Exception->throw("No such distribution: $path");
+    my $dist = $self->db->get_distribution_with_path($path)
+      or Pinto::Exception->throw("Distribution $path does not exist");
 
     my $file = $dist->physical_path( $self->config->repos() );
 

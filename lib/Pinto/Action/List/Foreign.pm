@@ -4,8 +4,6 @@ package Pinto::Action::List::Foreign;
 
 use Moose;
 
-extends 'Pinto::Action::List';
-
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -13,16 +11,18 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# ISA
 
-override execute => sub {
+extends 'Pinto::Action::List';
+
+#------------------------------------------------------------------------------
+
+override packages => sub {
     my ($self) = @_;
 
-    my $rs = $self->db->foreign_packages();
-    while (my $package = $rs->next() ) {
-        print { $self->out() } $package->to_index_string();
-    }
+    my $where = { is_local => 0, should_index => $self->indexed() };
 
-    return 0;
+    return $self->db->get_all_packages($where);
 };
 
 #------------------------------------------------------------------------------

@@ -44,7 +44,7 @@ sub execute {
     my $index_temp_file = file($temp_dir, '02packages.details.txt.gz');
 
     $self->fetch(url => $index_url, to => $index_temp_file);
-    $self->db->load_index($index_temp_file);
+    $self->db->load_index($source, $index_temp_file);
 
     my $changes = 0;
     my $foreigners = $self->db->foreign_distributions();

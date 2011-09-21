@@ -65,6 +65,10 @@ sub _process_archive {
     my $path       = $author_dir->file($basename)->as_foreign('Unix');
     my @packages   = $self->_extract_packages($archive);
 
+    if ( $self->db->get_distribution_with_path($path) ) {
+        Pinto::Exception->throw("Distribution $path already exists");
+    }
+
     $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
 
     my $dist = $self->db->add_distribution( { path => $path, origin => 'LOCAL'} );
@@ -90,7 +94,7 @@ sub _extract_packages {
     my @packages = ();
     for my $name (sort keys %{ $provides }) {
         my $version = $provides->{$name} || 'undef';
-        my $version_numeric = version->parse($version)->numify();
+        my $version_numeric = Pinto::Util::numify_version($version);
         push @packages, { name            => $name,
                           version         => $version,
                           version_numeric => $version_numeric };

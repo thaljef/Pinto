@@ -4,9 +4,9 @@ package Pinto::Database;
 
 use Moose;
 
-use version;
 use Path::Class;
 use Pinto::Schema;
+use CPAN::PackageDetails;
 
 use namespace::autoclean;
 
@@ -46,21 +46,31 @@ sub _build_schema {
 #-------------------------------------------------------------------------------
 # Convenience methods
 
-sub get_packages {
-    my ($self, $package) = @_;
+sub get_all_packages {
+    my ($self, $where) = @_;
 
     my $attrs = { prefetch => 'distribution' };
-    my $where = { name => $package };
+
+    return $self->schema->resultset('Package')->search($where || {}, $attrs);
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_packages_with_name {
+    my ($self, $package_name) = @_;
+
+    my $where = { name => $package_name };
+    my $attrs = { prefetch => 'distribution' };
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------
 
-sub get_latest_package {
-    my ($self, $package) = @_;
+sub get_latest_package_with_name {
+    my ($self, $package_name) = @_;
 
-    my $where = { name => $package };
+    my $where = { name => $package_name };
     my $attrs = { rows => 1, order_by => { -desc => [ qw(is_local version_numeric) ] }};
 
     return $self->schema->resultset('Package')->find($where, $attrs);
@@ -68,7 +78,7 @@ sub get_latest_package {
 
 #-------------------------------------------------------------------------------
 
-sub get_distribution {
+sub get_distribution_with_path {
     my ($self, $path) = @_;
 
     my $where = { path => $path };
@@ -89,18 +99,18 @@ sub add_distribution {
 sub add_package {
     my ($self, $pkg) = @_;
 
-    my $latest = $self->get_latest_package($pkg->{name});
-    if ($latest and $pkg->{version_numeric} > $latest->version_numeric()) {
-        $pkg->{should_index} = 1;
-        $latest->should_index(0);
-        $latest->update();
+    if ( my $latest = $self->get_latest_package_with_name($pkg->{name}) ) {
+
+        my $lvn = $latest->version_numeric();
+        if (     ($pkg->{version_numeric} >  $lvn)
+              or ($pkg->{version_numeric} == $lvn and $pkg->{is_local}) ) {
+
+            $pkg->{should_index} = 1;
+            $latest->should_index(0);
+            $latest->update();
+        }
     }
-    elsif ($latest and $pkg->{is_local} and $pkg->{version_numeric} == $latest->version_numeric()) {
-        $pkg->{should_index} = 1;
-        $latest->should_index(0);
-        $latest->update();
-    }
-    elsif (not defined $latest) {
+    else {
         $pkg->{should_index} = 1;
     }
 
@@ -128,7 +138,7 @@ sub remove_package {
     my $was_indexed = $pkg->should_index();
 
     $pkg->delete();
-    $self->get_latest_package($name)->update( {should_index => 1} ) if $was_indexed;
+    $self->get_latest_package_with_name($name)->update( {should_index => 1} ) if $was_indexed;
 
     return;
 }
@@ -156,7 +166,7 @@ sub write_index {
 #-------------------------------------------------------------------------------
 
 sub load_index {
-    my ($self, $index_file) = @_;
+    my ($self, $source, $index_file) = @_;
 
     $self->logger->info("Loading index from $index_file");
     my $details = CPAN::PackageDetails->read( "$index_file" );
@@ -166,45 +176,20 @@ sub load_index {
     $dists{$_->path()}->{$_->package_name()} = $_->version() for @{$records};
 
 
-    my @first_100 = (sort keys %dists)[1..100];
-    foreach my $path ( @first_100 ) {
+    foreach my $path ( sort keys %dists ) {
 
       next if $self->schema->resultset('Distribution')->find( {path => $path} );
       my $dist = $self->add_distribution( {path => $path, origin => $source} );
 
       foreach my $package (keys %{ $dists{$path} } ) {
         my $version = $dists{$path}->{$package};
-        my $version_numeric = version->parse($version)->numify();
+        my $version_numeric = Pinto::Util::numify_version($version);
         $self->add_package( { name            => $package,
                               version         => $version,
                               version_numeric => $version_numeric,
                               distribution    => $dist->id() } );
       }
     }
-}
-
-#-------------------------------------------------------------------------------
-
-sub all_packages {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Package')->every();
-}
-
-#-------------------------------------------------------------------------------
-
-sub local_packages {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Package')->locals();
-}
-
-#------------------------------------------------------------------------------
-
-sub foreign_packages {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Package')->foreigners();
 }
 
 #------------------------------------------------------------------------------
@@ -244,7 +229,6 @@ sub foreign_distributions {
 sub deploy {
     my ($self) = @_;
 
-    $DB::single = 1;
     $self->mkpath( $self->config->db_dir() );
     $self->schema->deploy();
 

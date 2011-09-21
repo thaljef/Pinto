@@ -31,8 +31,13 @@ sub opt_spec {
     # define and validate the different types of lists.
 
     return (
-        [ 'noinit'  => 'Do not pull/update from VCS' ],
-        [ 'type:s'  => "One of: ( $PINTO_LIST_TYPES_STRING )" ],
+        [ 'noinit'   => 'Do not pull/update from VCS' ],
+
+        [ 'type:s'   => "One of: ( $PINTO_LIST_TYPES_STRING )",
+                        {default => $PINTO_DEFAULT_LIST_TYPE} ],
+
+        [ 'indexed!' => 'Only list indexed packages (negatable)',
+                        {default => 1} ],
     );
 }
 
@@ -42,8 +47,6 @@ sub validate_args {
     my ($self, $opts, $args) = @_;
 
     $self->usage_error('Arguments are not allowed') if @{ $args };
-
-    $opts->{type} ||= $PINTO_DEFAULT_LIST_TYPE;
     $self->usage_error('Invalid type') if none { $opts->{type} eq $_ } @PINTO_LIST_TYPES;
 
     return 1;
@@ -55,7 +58,7 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     $self->pinto->new_action_batch( %{$opts} );
-    my $list_class = 'List::' . ucfirst $opts->{type};
+    my $list_class = 'List::' . ucfirst delete $opts->{type};
     $self->pinto->add_action($list_class, %{$opts});
     my $result = $self->pinto->run_actions();
 

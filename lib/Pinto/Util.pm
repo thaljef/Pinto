@@ -4,7 +4,9 @@ package Pinto::Util;
 
 use strict;
 use warnings;
+use version;
 
+use Try::Tiny;
 use Path::Class;
 use Readonly;
 
@@ -93,6 +95,18 @@ sub args_from_fh {
     }
 
     return @args;
+}
+
+#-------------------------------------------------------------------------------
+
+sub numify_version {
+    my ($version) = @_;
+
+    my $numeric_version;
+    try   { $numeric_version = version->parse($version)->numify() }
+    catch { Pinto::Exception->throw($_) };
+
+    return $numeric_version;
 }
 
 #-------------------------------------------------------------------------------
