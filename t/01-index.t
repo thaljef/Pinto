@@ -14,7 +14,7 @@ use Pinto::Package;
 #-----------------------------------------------------------------------------
 
 my $logger = Pinto::Logger->new();
-my $index = Pinto::Index->new(logger => $logger);
+my $index = Pinto::IndexWriter->new(logger => $logger);
 
 #-----------------------------------------------------------------------------
 # Adding...

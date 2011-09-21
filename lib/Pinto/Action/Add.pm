@@ -4,13 +4,16 @@ package Pinto::Action::Add;
 
 use Moose;
 
+use Try::Tiny;
 use Path::Class;
 use File::Temp;
 use Dist::Metadata 0.920; # supports .zip
 
 use Pinto::Util;
 use Pinto::Types 0.017 qw(StrOrFileOrURI);
-use Pinto::Exception::IO qw(throw_io);
+
+use Pinto::Exceptions qw(throw_io throw_empty_dist throw_dist_parse
+                         throw_dupe throw_unauthorized);
 
 use namespace::autoclean;
 
@@ -69,16 +72,15 @@ sub _process_archive {
     my $path       = $author_dir->file($basename)->as_foreign('Unix');
     my @packages   = $self->_extract_packages($archive);
 
-    if ( $self->db->get_distribution_with_path($path) ) {
-        Pinto::Exception->throw("Distribution $path already exists");
-    }
+    $self->db->get_distribution_with_path($path)
+      and throw_dupe "Distribution $path already exists";
 
     for my $pkg (@packages) {
         my $name = $pkg->{name};
         my $where = { is_local => 1, name => $name };
         my $incumbent = $self->db->get_all_packages($where)->first() or next;
         if ( (my $author = $incumbent->author() ) ne $self->author() ) {
-            Pinto::Exception->throw("Only author $author can update $name");
+            throw_unauthorized "Only author $author can update $name";
         }
     }
 
@@ -98,9 +100,17 @@ sub _process_archive {
 sub _extract_packages {
     my ($self, $archive) = @_;
 
-    my $distmeta = Dist::Metadata->new(file => $archive->stringify());
-    my $provides = $distmeta->package_versions();
-    throw_io "$archive contains no packages" if not %{ $provides };
+    my $provides;
+
+    try {
+        my $distmeta = Dist::Metadata->new(file => $archive->stringify());
+        $provides = $distmeta->package_versions();
+    }
+    catch {
+        throw_dist_parse "Unable to extract packages from $archive: $_";
+    };
+
+    throw_empty_dist "$archive contains no packages" if not %{ $provides };
 
     my @packages = ();
     for my $name (sort keys %{ $provides }) {

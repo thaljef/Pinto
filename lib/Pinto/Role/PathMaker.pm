@@ -7,8 +7,7 @@ use Moose::Role;
 use Path::Class;
 use English qw(-no_match_vars);
 
-use Pinto::Exception::IO qw(throw_io);
-use Pinto::Exception::Args qw(throw_args);
+use Pinto::Exceptions qw(throw_io throw_args);
 
 use namespace::autoclean;
 

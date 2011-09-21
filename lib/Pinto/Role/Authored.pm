@@ -6,7 +6,7 @@ use Moose::Role;
 
 use English qw(-no_match_vars);
 use Pinto::Types 0.017 qw(AuthorID);
-use Pinto::Exception::NoAuthor;
+use Pinto::Exceptions qw(throw_fatal);
 
 #------------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ sub _build_author {                                  ## no critic (FinalReturn)
     }
 
     # Otherwise, we are hosed!
-    Pinto::Exception::NoAuthor->throw( 'Unable to determine your user name' );
+    throw_fatal 'Unable to determine your user name';
 
 }
 

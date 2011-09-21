@@ -4,11 +4,13 @@ package Pinto::Database;
 
 use Moose;
 
+use Try::Tiny;
 use Path::Class;
 
 use Pinto::Schema;
 use Pinto::IndexLoader;
 use Pinto::IndexWriter;
+use Pinto::Exceptions qw(throw_db);
 
 use namespace::autoclean;
 
@@ -42,7 +44,11 @@ sub _build_schema {
     my $db_file = $self->config->db_file();
     my $dsn = "dbi:SQLite:$db_file";
 
-    return Pinto::Schema->connect($dsn);
+    my $connection;
+    try   { $connection = Pinto::Schema->connect($dsn) }
+    catch { throw_db "Database error: $_" };
+
+    return $connection;
 }
 
 #-------------------------------------------------------------------------------

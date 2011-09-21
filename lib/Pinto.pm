@@ -13,8 +13,7 @@ use Pinto::Locker;
 use Pinto::Database;
 use Pinto::ActionBatch;
 
-use Pinto::Exception::Loader qw(throw_load);
-use Pinto::Exception::Args qw(throw_args);
+use Pinto::Exceptions qw(throw_args throw_fatal);
 
 use namespace::autoclean;
 
@@ -96,7 +95,7 @@ sub _build_store {
     my $store_class = $self->config->store();
 
     eval { Class::Load::load_class( $store_class ); 1 }
-        or throw_load "Unable to load store class $store_class: $@";
+        or throw_fatal "Unable to load store class $store_class: $@";
 
     return $store_class->new( config => $self->config(),
                               logger => $self->logger() );
@@ -136,7 +135,7 @@ sub add_action {
     my $action_class = "Pinto::Action::$action_name";
 
     eval { Class::Load::load_class($action_class); 1 }
-        or throw_load "Unable to load action class $action_class: $@";
+        or throw_fatal "Unable to load action class $action_class: $@";
 
     my $action =  $action_class->new( config => $self->config(),
                                       logger => $self->logger(),

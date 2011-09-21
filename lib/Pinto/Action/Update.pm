@@ -42,13 +42,11 @@ sub execute {
     my $foreigners = $self->db->foreign_distributions();
 
     while (my $dist = $foreigners->next() ) {
-        try   {
-            $changes += $self->_do_mirror($dist);
+        try { $changes += $self->_do_mirror($dist) };
+        if (my $e = Pinto::Exception->caught()) {
+          $self->whine($e);
+          next;
         }
-        catch {
-            $self->add_exception($_);
-            $self->logger->whine("Download of $dist failed: $_");
-        };
     }
 
     return 0 if not $changes;

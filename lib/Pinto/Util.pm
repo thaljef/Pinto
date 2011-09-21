@@ -10,6 +10,8 @@ use Try::Tiny;
 use Path::Class;
 use Readonly;
 
+use Pinto::Exceptions qw(throw_version);
+
 use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
@@ -92,8 +94,9 @@ sub _dist_message {
     my ($dist, $action) = @_;
 
     my @items = sort map { $_->name() . ' ' . $_->version() } $dist->packages();
+    my $item_string = join "\n    ", @items;
 
-    return "$action distribution $dist providing:\n    " . join "\n    ", @items;
+    return "$action distribution $dist providing:\n    $item_string";
 }
 
 #-------------------------------------------------------------------------------
@@ -120,7 +123,7 @@ sub numify_version {
 
     my $numeric_version;
     try   { $numeric_version = version->parse($version)->numify() }
-    catch { Pinto::Exception->throw($_) };
+    catch { throw_version("Illegal version ($version): $_") };
 
     return $numeric_version;
 }

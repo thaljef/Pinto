@@ -7,7 +7,7 @@ use Moose::Role;
 use Path::Class;
 use LWP::UserAgent;
 
-use Pinto::Exception::IO qw(throw_io);
+use Pinto::Exceptions qw(throw_ua);
 
 use namespace::autoclean;
 
@@ -35,38 +35,40 @@ with qw( Pinto::Role::PathMaker
 
 =method fetch(url => 'http://someplace' to => 'some/path')
 
-Mirrors the file located at the C<url> to the file located at C<to>.
-If the intervening directories do not exist, they will be created for
-you.  Returns a true value if the file has changed, returns false if
-it has not changed.  Throws and exception if anything goes wrong.
+Fetches the file located at the C<url> to the file located at C<to>,
+if the file at C<url> is newer than the file at C<to>.  If the
+intervening directories do not exist, they will be created for you.
+Returns a true value if the file has changed, returns false if it has
+not changed.  Throws and exception if anything goes wrong.
 
 =cut
 
 sub fetch {
     my ($self, %args) = @_;
-    my $url = $args{url};
-    my $to  = $args{to};
 
-    $to = file($to) if not eval {$to->isa('Path::Class')};
+    my $url = URI->new($args{url})->canonical();
+    my $to  = eval {$args{to}->isa('Path::Class')} ? $args{to} : file($args{to});
+
     $self->mkpath( $to->parent() );
 
-    $self->logger->info("Fetching $url");
-    my $result = $self->_ua->mirror($url, $to);
+    my $return;
+    try   { $return = $self->_fetch($url, $to) }
+    catch { throw_ua($_) };
 
-    if ($result->is_success()) {
-        return 1;
-    }
-    elsif($result->code == 304) {
-        return 0;
-    }
-    else{
-      throw_io "$url failed with status: " . $result->code();
-    }
-
-    return 1;  # Should probably never get here
+    return $return;
 }
 
 #------------------------------------------------------------------------------
+
+=method fetch_temporary(url => 'http://someplace')
+
+Fetches the file located at the C<url> to a file in a temporary
+directory.  The file will have the same basename as the C<url>.
+Returns a L<Path::Class::File> that points to the new file.  Throws
+and exception if anything goes wrong.  Note the temporary directory
+and all its contents will be deleted when the process terminates.
+
+=cut
 
 sub fetch_temporary {
     my ($self, %args) = @_;
@@ -82,6 +84,27 @@ sub fetch_temporary {
     $self->fetch(url => $url, to => $tempfile);
 
     return Path::Class::file($tempfile);
+}
+
+#------------------------------------------------------------------------------
+
+sub _fetch {
+    my ($self, $url, $to) = @_;
+
+    $self->logger->info("Fetching $url");
+    my $result = $self->_ua->mirror($url, $to);
+
+    if ($result->is_success()) {
+        return 1;
+    }
+    elsif($result->code == 304) {
+        return 0;
+    }
+    else {
+        throw_ua( "Failed to fetch $url: " . $result->status_line() );
+    }
+
+    # Should never get here
 }
 
 #------------------------------------------------------------------------------

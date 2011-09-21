@@ -6,8 +6,7 @@ use Moose;
 
 use File::Copy;
 
-use Pinto::Exception::Args qw(throw_args);
-use Pinto::Exception::IO qw(throw_io);
+use Pinto::Exceptions qw(throw_io throw_args);
 
 use namespace::autoclean;
 
