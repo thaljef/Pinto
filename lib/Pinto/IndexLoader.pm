@@ -4,12 +4,11 @@ package Pinto::IndexLoader;
 
 use Moose;
 
-use autodie;
-
 use Path::Class;
 use PerlIO::gzip;
 
 use Pinto::Util;
+use Pinto::Exceptions qw(throw_io);
 
 use namespace::autoclean;
 
@@ -42,7 +41,7 @@ sub load {
     my $index_file = $self->fetch_temporary(url => $index_url);
 
     $self->info("Loading index from $index_file");
-    open my $fh, '<:gzip', $index_file;
+    open my $fh, '<:gzip', $index_file or throw_io "Cannot open $index_file: $!";
     my $dists = $self->_read($fh);
     close $fh;
 
