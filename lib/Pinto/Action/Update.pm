@@ -38,14 +38,17 @@ with qw(Pinto::Role::UserAgent);
 sub execute {
     my ($self) = @_;
 
-    my $idxmgr  = $self->idxmgr();
-    my $idx_changes = $idxmgr->load_foreign_index();
+    my $source = $self->config->source();
+    my $temp_dir = File::Temp->newdir();
+    my $index_url = URI->new("$source/modules/02packages.details.txt.gz");
+    my $index_temp_file = file($temp_dir, '02packages.details.txt.gz');
 
-    $DB::single = 1;
-    my $foreigners = $idxmgr->foreign_distributions();
-    return 0 if not $foreigners;
+    $self->fetch(url => $index_url, to => $index_temp_file);
+    $self->db->load_index($index_temp_file);
 
-    my $dist_changes = 0;
+    my $changes = 0;
+    my $foreigners = $self->db->foreign_distributions();
+
     while (my $dist = $foreigners->next() ) {
         try   {
             $dist_changes += $self->_do_mirror($dist);
@@ -56,10 +59,8 @@ sub execute {
         };
     }
 
-    return 0 if not ($idx_changes + $dist_changes);
-
-    my $source = $self->config->source();
-    $self->add_message("Updated $dist_changes distributions from $source");
+    return 0 if not $changes;
+    $self->add_message("Updated $changes distributions from $source");
 
     return 1;
 }
@@ -69,14 +70,10 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $repos   = $self->config->repos();
-    my $source  = $self->config->source();
-
-    my $url = $dist->url($source);
-    my $destination = $dist->path($repos);
+    my $destination = $dist->physical_path( $self->config->repos() );
     return 0 if -e $destination;
 
-    $self->fetch(url => $url, to => $destination) or return 0;
+    $self->fetch(url => $dist->url(), to => $destination) or return 0;
     $self->store->add(file => $destination);
 
     return 1;

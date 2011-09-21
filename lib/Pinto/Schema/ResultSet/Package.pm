@@ -48,19 +48,7 @@ sub foreigners {
 sub indexed {
     my ($self) = @_;
 
-    my $local_pkg_names = $self->locals()->get_column('name')->as_query();
-    my $where = { -or => [ -and => [ origin => {'!=' => 'LOCAL'}, name => {-not_in => $local_pkg_names} ], origin => 'LOCAL' ] };
-    my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
-
-    return $self->latest->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
-sub latest {
-    my ($self) = @_;
-
-    my $where = { is_latest => 1 };
+    my $where = { should_index => 1 };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);

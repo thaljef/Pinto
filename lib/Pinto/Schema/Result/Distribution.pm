@@ -33,7 +33,8 @@ __PACKAGE__->table("distribution");
 =head2 origin
 
   data_type: 'text'
-  is_nullable: 0
+  default_value: (empty string)
+  is_nullable: 1
 
 =cut
 
@@ -43,7 +44,7 @@ __PACKAGE__->add_columns(
   "path",
   { data_type => "text", is_nullable => 0 },
   "origin",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "text", default_value => "", is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("distribution_id");
 __PACKAGE__->add_unique_constraint("path_unique", ["path"]);
@@ -66,8 +67,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 12:34:47
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4wZo2UeX6KJQ2AMaxNMZFg
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 16:46:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Jv9/BGimvE4djtTGzw/lpA
 
 #-------------------------------------------------------------------------------
 
@@ -90,6 +91,8 @@ sub physical_path {
 
 sub url {
     my ($self, $base) = @_;
+
+    $base ||= $self->origin();
 
     return URI->new( "$base/authors/id/" . $self->path() )->canonical();
 }

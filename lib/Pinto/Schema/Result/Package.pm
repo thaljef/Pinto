@@ -46,9 +46,16 @@ __PACKAGE__->table("package");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 is_latest
+=head2 is_local
 
   data_type: 'boolean'
+  default_value: 0
+  is_nullable: 1
+
+=head2 should_index
+
+  data_type: 'boolean'
+  default_value: 0
   is_nullable: 1
 
 =cut
@@ -64,11 +71,13 @@ __PACKAGE__->add_columns(
   { data_type => "real", is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "is_latest",
-  { data_type => "boolean", is_nullable => 1 },
+  "is_local",
+  { data_type => "boolean", default_value => 0, is_nullable => 1 },
+  "should_index",
+  { data_type => "boolean", default_value => 0, is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("package_id");
-__PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
+__PACKAGE__->add_unique_constraint("name_should_index_unique", ["name", "should_index"]);
 __PACKAGE__->add_unique_constraint("name_distribution_unique", ["name", "distribution"]);
 
 =head1 RELATIONS
@@ -89,8 +98,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 11:34:50
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3WIsudBfZJO6mKNHu/sHdA
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 16:46:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5I9n/jPnHs1lWFjbuePr0g
 
 #------------------------------------------------------------------------------
 

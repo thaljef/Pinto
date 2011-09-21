@@ -67,9 +67,10 @@ sub _process_archive {
 
     $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
 
-    my $dist = $self->db->add_dist( { path => $path, origin => 'LOCAL'} );
+    my $dist = $self->db->add_distribution( { path => $path, origin => 'LOCAL'} );
 
     for my $pkg ( @packages ) {
+        $pkg->{is_local} = 1;
         $pkg->{distribution} = $dist->id();
         $self->db->add_package( $pkg );
     }

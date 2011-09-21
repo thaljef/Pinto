@@ -5,6 +5,7 @@ package Pinto::Database;
 use Moose;
 
 use version;
+use Path::Class;
 use Pinto::Schema;
 
 use namespace::autoclean;
@@ -28,7 +29,8 @@ has schema => (
 
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable
-         Pinto::Role::PathMaker );
+         Pinto::Role::PathMaker
+         Pinto::Role::UserAgent );
 
 #-------------------------------------------------------------------------------
 # Builders
@@ -58,10 +60,10 @@ sub get_packages {
 sub get_latest_package {
     my ($self, $package) = @_;
 
-    my $where = { name => $package, is_latest => 1 };
+    my $where = { name => $package };
+    my $attrs = { rows => 1, order_by => { -desc => [ qw(is_local version_numeric) ] }};
 
-    # TODO: assert we only get one record here
-    return $self->schema->resultset('Package')->first($where);
+    return $self->schema->resultset('Package')->find($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------
@@ -69,19 +71,17 @@ sub get_latest_package {
 sub get_distribution {
     my ($self, $path) = @_;
 
-    my $attrs = { prefetch => 'packages' };
     my $where = { path => $path };
 
-    # TODO: assert we only get one record here!
-    return $self->schema->resultset('Distribution')->search( $where, $attrs )->first();
+    return $self->schema->resultset('Distribution')->single($where);
 }
 
 #-------------------------------------------------------------------------------
 
-sub add_dist {
+sub add_distribution {
     my ($self, $dist) = @_;
 
-    return $self->schema->resultset('Distribution')->create( $dist );
+    return $self->schema->resultset('Distribution')->create($dist);
 }
 
 #-------------------------------------------------------------------------------
@@ -91,12 +91,17 @@ sub add_package {
 
     my $latest = $self->get_latest_package($pkg->{name});
     if ($latest and $pkg->{version_numeric} > $latest->version_numeric()) {
-        $pkg->{is_latest} = 1;
-        $latest->is_latest(undef);
+        $pkg->{should_index} = 1;
+        $latest->should_index(0);
+        $latest->update();
+    }
+    elsif ($latest and $pkg->{is_local} and $pkg->{version_numeric} == $latest->version_numeric()) {
+        $pkg->{should_index} = 1;
+        $latest->should_index(0);
         $latest->update();
     }
     elsif (not defined $latest) {
-        $pkg->{is_latest} = 1;
+        $pkg->{should_index} = 1;
     }
 
     return $self->schema->resultset('Package')->create( $pkg );
@@ -119,22 +124,11 @@ sub remove_distribution {
 sub remove_package {
     my ($self, $pkg) = @_;
 
-    my $name       = $pkg->name();
-    my $was_latest = $pkg->is_latest();
+    my $name        = $pkg->name();
+    my $was_indexed = $pkg->should_index();
 
     $pkg->delete();
-
-    my $package_rs     = $self->get_packages($name);
-    my $subquery_where = { name  => { '=' => \'me.name'  } };
-    my $subquery_attrs = { alias => 'me2' };
-
-    my $subquery = $package_rs->search($subquery_where, $subquery_attrs)
-        ->get_column('version_numeric')->max_rs->as_query();
-
-    if (my $latest = $package_rs->single( { version_numeric => { '=' => $subquery } } )) {
-        $latest->is_latest(1);
-        $latest->update();
-    }
+    $self->get_latest_package($name)->update( {should_index => 1} ) if $was_indexed;
 
     return;
 }
@@ -145,9 +139,9 @@ sub write_index {
     my ($self) = @_;
 
     my $details = CPAN::PackageDetails->new();
-    my $latest_rs = $self->schema->resultset('Package')->latest();
+    my $indexed_rs = $self->schema->resultset('Package')->indexed();
 
-    while ( my $pkg = $latest_rs->next() ) {
+    while ( my $pkg = $indexed_rs->next() ) {
         $details->add_entry(
             package_name => $pkg->name(),
             version      => $pkg->version(),
@@ -164,42 +158,27 @@ sub write_index {
 sub load_index {
     my ($self, $index_file) = @_;
 
-    # TODO: support "force";
-
-    my $source = $self->config->source();
-    my $temp_dir = File::Temp->newdir();
-    my $index_url = URI->new("$source/modules/02packages.details.txt.gz");
-    my $index_temp_file = file($temp_dir, '02packages.details.txt.gz');
-    $self->fetch(url => $index_url, to => $index_temp_file);
-
-    $self->logger->info("Loading foreign index file from $index_url");
-    my $details = CPAN::PackageDetails->read( "$index_temp_file" );
+    $self->logger->info("Loading index from $index_file");
+    my $details = CPAN::PackageDetails->read( "$index_file" );
     my ($records) = $details->entries->as_unique_sorted_list();
 
     my %dists;
     $dists{$_->path()}->{$_->package_name()} = $_->version() for @{$records};
 
 
-    foreach my $path ( sort keys %dists ) {
+    my @first_100 = (sort keys %dists)[1..100];
+    foreach my $path ( @first_100 ) {
 
       next if $self->schema->resultset('Distribution')->find( {path => $path} );
-      $self->logger->debug("Loading index data for $path");
-      my $dist = $self->schema->resultset('Distribution')->create(
-          { path => $path,
-            origin   => $source,
-          }
-      );
+      my $dist = $self->add_distribution( {path => $path, origin => $source} );
 
       foreach my $package (keys %{ $dists{$path} } ) {
         my $version = $dists{$path}->{$package};
         my $version_numeric = version->parse($version)->numify();
-        my $pkg = $self->schema->resultset('Package')->create(
-          { name            => $package,
-            version         => $version,
-            version_numeric => $version_numeric,
-            distribution    => $dist->id(),
-          }
-        );
+        $self->add_package( { name            => $package,
+                              version         => $version,
+                              version_numeric => $version_numeric,
+                              distribution    => $dist->id() } );
       }
     }
 }
