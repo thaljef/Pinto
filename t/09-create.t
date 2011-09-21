@@ -25,8 +25,8 @@ my $pinto = Pinto->new(repos => $default_repos);
 my $t = Pinto::Tester->new(pinto => $pinto);
 
 $t->path_exists_ok( [qw(config pinto.ini)] );
+$t->path_exists_ok( [qw(db pinto.db)] );
 $t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
-$t->path_exists_ok( [qw(modules 02packages.details.local.txt.gz)] );
 $t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
 $t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
 

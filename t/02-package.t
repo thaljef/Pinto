@@ -3,30 +3,16 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 5);
-use Test::Exception;
+use Test::More (tests => 3);
 
-use Pinto::Package;
-use Pinto::Distribution;
-
+use Pinto::Schema::Result::Package;
 
 #------------------------------------------------------------------------------
 
-my $dist = Pinto::Distribution->new( path => 'C/CH/CHAUCER/Foo-1.2.tar.gz');
-my $pkg = Pinto::Package->new( name => 'Foo', version => '2.4', dist => $dist );
+my $pkg = Pinto::Schema::Result::Package->new( {name => 'Foo', version => '2.001_02'} );
 
 is($pkg->name(), 'Foo', 'name attribute');
-is($pkg->version(), '2.4', 'version attribute');
-
-#------------------------------------------------------------------------------
-
-dies_ok { Pinto::Package->new( dist => $dist, version => '2.4' ) }
-  'name is required';
-
-dies_ok { Pinto::Package->new( dist => $dist, name => 'Foo' ) }
-  'version is required';
-
-dies_ok { Pinto::Package->new( name => 'Foo', version => '2.4' ) }
-  'dist is required';
+is($pkg->version(), '2.001_02', 'version attribute');
+is($pkg->version_numeric(), '2.001_020', 'version_numeric attribute');
 
 #------------------------------------------------------------------------------

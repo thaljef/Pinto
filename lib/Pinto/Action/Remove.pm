@@ -40,10 +40,10 @@ override execute => sub {
     my $cleanup    = !$self->config->nocleanup();
 
     my $path = $dist_name =~ m{/}mx ?
-      $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
+        $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
     my $dist = $self->db->get_distribution_with_path($path)
-      or Pinto::Exception->throw("Distribution $path does not exist");
+        or Pinto::Exception->throw("Distribution $path does not exist");
 
     my $file = $dist->physical_path( $self->config->repos() );
 

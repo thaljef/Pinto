@@ -86,12 +86,13 @@ sub dist_not_exists_ok {
 
 sub package_indexed_ok {
     my ($self, $name, $author, $version) = @_;
-    my $pkg = $self->pinto->_idxmgr->master_index->packages->{$name};
+    my $where = { name => $name, should_index => 1 };
+    my $pkg = $self->pinto->db->get_all_packages($where)->single();
     return $self->tb->ok(0, "Package $name is not indexed") if not $pkg;
 
-    my $dist = $pkg->dist();
+    my $dist = $pkg->distribution();
     $self->tb->ok($pkg, "Package $name is in the index");
-    $self->tb->is_eq($dist->author(), $author,  "Package $name has correct author");
+    $self->tb->is_eq($pkg->author(), $author,  "Package $name has correct author");
     $self->tb->is_eq($pkg->version(), $version, "Package $name has correct version");
     return 1;
 }
@@ -100,7 +101,8 @@ sub package_indexed_ok {
 
 sub package_not_indexed_ok {
     my ($self, $name) = @_;
-    my $pkg = $self->pinto->_idxmgr->master_index->packages->{$name};
+    my $where = { name => $name, should_index => 0 };
+    my $pkg = $self->pinto->db->get_all_packages($where)->single();
     return $self->tb->ok(0, "Package $name is indexed") if $pkg;
     return $self->tb->ok(1, "Package $name is not indexed" );
 }

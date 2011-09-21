@@ -5,9 +5,11 @@ package Pinto;
 use Moose;
 
 use Class::Load;
+use Try::Tiny;
 
 use Pinto::Config;
 use Pinto::Logger;
+use Pinto::Locker;
 use Pinto::Database;
 use Pinto::ActionBatch;
 
@@ -45,6 +47,15 @@ has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
     init_arg   => undef,
+    lazy_build => 1,
+);
+
+#------------------------------------------------------------------------------
+
+has locker  => (
+    is         => 'ro',
+    isa        => 'Pinto::Locker',
+    init_arg   =>  undef,
     lazy_build => 1,
 );
 
@@ -92,6 +103,15 @@ sub _build_store {
 }
 
 #------------------------------------------------------------------------------
+
+sub _build_locker {
+    my ($self) = @_;
+
+    return Pinto::Locker->new( config => $self->config(),
+                               logger => $self->logger() );
+}
+
+#------------------------------------------------------------------------------
 # Public methods
 
 sub new_action_batch {
@@ -135,9 +155,16 @@ sub run_actions {
     my ($self) = @_;
 
     my $action_batch = $self->_action_batch()
-      or throw_args 'You must create an action batch first';
+        or throw_args 'You must create an action batch first';
 
-    return $self->_action_batch->run();
+    $self->locker->lock();
+
+    my $r = $self->_action_batch->run();
+
+    $self->locker->unlock();
+
+    return $r;
+
 }
 
 #------------------------------------------------------------------------------

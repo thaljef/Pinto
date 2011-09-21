@@ -99,12 +99,17 @@ sub add_distribution {
 sub add_package {
     my ($self, $pkg) = @_;
 
-    if ( my $latest = $self->get_latest_package_with_name($pkg->{name}) ) {
+    if ( my $latest = $self->get_latest_package_with_name( $pkg->{name} ) ) {
 
-        my $lvn = $latest->version_numeric();
-        if (     ($pkg->{version_numeric} >  $lvn)
-              or ($pkg->{version_numeric} == $lvn and $pkg->{is_local}) ) {
-
+        if ( $pkg->{is_local} and not $latest->is_local() ) {
+            $pkg->{should_index} = 1;
+            $latest->should_index(0);
+            $latest->update();
+        }
+        elsif ( $latest->is_local() and not $pkg->{is_local} ) {
+            $pkg->{should_index} = 0;
+        }
+        elsif ( $pkg->{version_numeric} > $latest->version_numeric() ) {
             $pkg->{should_index} = 1;
             $latest->should_index(0);
             $latest->update();
@@ -114,7 +119,7 @@ sub add_package {
         $pkg->{should_index} = 1;
     }
 
-    return $self->schema->resultset('Package')->create( $pkg );
+   return $self->schema->resultset('Package')->create($pkg);
 }
 
 #-------------------------------------------------------------------------------
@@ -138,7 +143,11 @@ sub remove_package {
     my $was_indexed = $pkg->should_index();
 
     $pkg->delete();
-    $self->get_latest_package_with_name($name)->update( {should_index => 1} ) if $was_indexed;
+
+    if ($was_indexed) {
+        my $next_latest = $self->get_latest_package_with_name($name) or return;
+        $next_latest->update( {should_index => 1} );
+    }
 
     return;
 }
@@ -183,10 +192,8 @@ sub load_index {
 
       foreach my $package (keys %{ $dists{$path} } ) {
         my $version = $dists{$path}->{$package};
-        my $version_numeric = Pinto::Util::numify_version($version);
         $self->add_package( { name            => $package,
                               version         => $version,
-                              version_numeric => $version_numeric,
                               distribution    => $dist->id() } );
       }
     }

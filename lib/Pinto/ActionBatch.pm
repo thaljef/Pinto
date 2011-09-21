@@ -7,7 +7,6 @@ use Moose;
 use Try::Tiny;
 use Path::Class;
 
-use Pinto::Locker;
 use Pinto::BatchResult;
 
 use Pinto::Types 0.017 qw(Dir);
@@ -53,15 +52,8 @@ has nocommit => (
 has noinit   => (
     is       => 'ro',
     isa      => Bool,
-    builder  => '_build_noinit',
+    default  => sub { $_[0]->config->noinit() },
     lazy     => 1,
-);
-
-
-has nolock => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 1,
 );
 
 
@@ -80,22 +72,14 @@ has _actions => (
     traits   => [ 'Array' ],
     default  => sub { [] },
     handles  => {enqueue => 'push', dequeue => 'shift'},
-);
-
-
-has _locker  => (
-    is       => 'ro',
-    isa      => 'Pinto::Locker',
-    builder  => '_build__locker',
-    init_arg =>  undef,
-    lazy     => 1,
+    init_arg => undef,
 );
 
 
 has _result => (
     is       => 'ro',
     isa      => 'Pinto::BatchResult',
-    builder  => '_build__result',
+    default  => sub { Pinto::BatchResult->new() },
     init_arg => undef,
 );
 
@@ -104,35 +88,6 @@ has _result => (
 
 with qw( Pinto::Role::Loggable
          Pinto::Role::Configurable );
-
-#-----------------------------------------------------------------------------
-# Builders
-
-sub _build__locker {
-    my ($self) = @_;
-
-    return Pinto::Locker->new( repos  => $self->config->repos(),
-                               logger => $self->logger() );
-}
-
-#-----------------------------------------------------------------------------
-# TODO: I don't like having the result as an attribute.  I would prefer
-# to keep it transient, so that it doesn't survive beyond each run().
-
-sub _build__result {
-    my ($self) = @_;
-
-    return Pinto::BatchResult->new();
-}
-
-#-----------------------------------------------------------------------------
-
-sub _build_noinit {
-    my ($self) = @_;
-
-    return $self->config->noinit();
-}
-
 
 #-----------------------------------------------------------------------------
 # Public methods
@@ -147,15 +102,11 @@ sub run {
     my ($self) = @_;
 
     try {
-        $self->_locker->lock() unless $self->nolock();
         $self->_run_actions();
     }
     catch {
         $self->logger->whine($_);
         $self->_result->add_exception($_);
-    }
-    finally {
-        $self->_locker->unlock() unless $self->nolock();
     };
 
     return $self->_result();

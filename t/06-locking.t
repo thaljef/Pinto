@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 2);
+use Test::More (tests => 4);
+use Test::Exception;
 
 use File::Temp;
 use Path::Class;
@@ -29,13 +30,17 @@ if ($pid) {
     sleep 10; # Let the child get started
     print "Starting: $$\n";
     $pinto->add_action('Nop');
-    $pinto->run_actions();
-    like($buffer, qr/Unable to lock/, 'Repository is locked by sleeper');
 
-    wait; # Let the child finish
+    throws_ok { $pinto->run_actions() } qr/Unable to lock/,
+      'Repository is locked by sleeper';
+
+    my $kid = wait; # Let the child finish
+    is($kid, $pid, "reaped correct child");
+    is($?, 0, "child finished succesfully");
+
     $pinto->add_action('Nop');
-    $pinto->run_actions();
-    like($buffer, qr/got the lock/, 'Got lock after the sleeper died');
+    lives_ok { $pinto->run_actions() }
+      'Got lock after the sleeper died';
 }
 else {
     # child

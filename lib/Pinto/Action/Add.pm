@@ -47,8 +47,10 @@ override execute => sub {
     my $archive   = $self->archive();
 
     $archive = _is_url($archive) ? $self->_dist_from_url($archive) : file($archive);
-    my $dist = $self->_process_archive($archive);
+    throw_io "Archive $archive does not exist"  if not -e $archive;
+    throw_io "Archive $archive is not readable" if not -r $archive;
 
+    my $dist = $self->_process_archive($archive);
     $self->store->add( file => $dist->physical_path($repos), source => $archive );
     $self->add_message( Pinto::Util::added_dist_message($dist) );
 
@@ -69,12 +71,19 @@ sub _process_archive {
         Pinto::Exception->throw("Distribution $path already exists");
     }
 
-    $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
+    for my $pkg (@packages) {
+        my $name = $pkg->{name};
+        my $where = { is_local => 1, name => $name };
+        my $incumbent = $self->db->get_all_packages($where)->first() or next;
+        if ( (my $author = $incumbent->author() ) ne $self->author() ) {
+            Pinto::Exception->throw("Only author $author can update $name");
+        }
+    }
 
+    $self->logger->info(sprintf "Adding $path with %i packages", scalar @packages);
     my $dist = $self->db->add_distribution( { path => $path, origin => 'LOCAL'} );
 
     for my $pkg ( @packages ) {
-        $pkg->{is_local} = 1;
         $pkg->{distribution} = $dist->id();
         $self->db->add_package( $pkg );
     }
@@ -94,10 +103,9 @@ sub _extract_packages {
     my @packages = ();
     for my $name (sort keys %{ $provides }) {
         my $version = $provides->{$name} || 'undef';
-        my $version_numeric = Pinto::Util::numify_version($version);
         push @packages, { name            => $name,
                           version         => $version,
-                          version_numeric => $version_numeric };
+                          is_local        => 1 };
     }
 
     return @packages;

@@ -8,6 +8,7 @@ use MooseX::Types::Moose qw(Bool);
 
 use URI;
 use Try::Tiny;
+use Path::Class;
 
 use Pinto::Util;
 
@@ -51,7 +52,7 @@ sub execute {
 
     while (my $dist = $foreigners->next() ) {
         try   {
-            $dist_changes += $self->_do_mirror($dist);
+            $changes += $self->_do_mirror($dist);
         }
         catch {
             $self->add_exception($_);

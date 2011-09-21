@@ -19,13 +19,6 @@ use namespace::autoclean;
 #-----------------------------------------------------------------------------
 # Moose attributes
 
-has repos => (
-    is        => 'ro',
-    isa       => Dir,
-    coerce    => 1,
-    required  => 1,
-);
-
 has _lock => (
     is         => 'rw',
     isa        => 'LockFile::Lock',
@@ -44,7 +37,8 @@ has _lockmgr => (
 #-----------------------------------------------------------------------------
 # Moose roles
 
-with qw ( Pinto::Role::Loggable );
+with qw ( Pinto::Role::Configurable
+          Pinto::Role::Loggable );
 
 #-----------------------------------------------------------------------------
 # Builders
@@ -77,9 +71,12 @@ we patiently wait until we timeout, which is about 60 seconds.
 sub lock {                                             ## no critic (Homonym)
     my ($self) = @_;
 
-    my $repos = $self->repos();
+    my $repos = $self->config->repos();
 
-    # TODO: make sure the lock directory actually exists!
+    # If by chance, the directory we are trying to lock does not exist,
+    # then LockFile::Simple will wait (a while) until it does.  To
+    # avoid this extra delay, just make sure the directory exists now.
+    Pinto::Exception->throw("$repos does not exist") if not -e $repos;
 
     my $lock = $self->_lockmgr->lock( $repos->file('')->stringify() )
         or throw_lock 'Unable to lock the repository -- please try later';
@@ -106,7 +103,7 @@ sub unlock {
 
     $self->_lock->release() or throw_lock 'Unable to unlock repository';
 
-    my $repos = $self->repos();
+    my $repos = $self->config->repos();
     $self->logger->debug("Process $$ released the lock on $repos");
 
     return $self;
