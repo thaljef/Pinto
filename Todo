@@ -4,8 +4,6 @@ In no particular order...
 
 =over 4
 
-=item Command line switch Specify alternative tag name.
-
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
 CPAN::Mini::Visit.
 
@@ -15,11 +13,6 @@ CPAN::Mini::Visit.
 
 =item Standardize API, using named parameters except where it makes
 sense not to.
-
-=item Replace the IndexManager and Index classes with a proper
-database.  Look at CPANDB for example.  Estimate benefits for George.  ??
-
-=item Use proper exceptions, instead of just croaking.  ++
 
 =item Consider how we might mirror multiple repositories.
 
