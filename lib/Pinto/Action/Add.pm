@@ -79,14 +79,14 @@ sub _process_archive {
         my $where = { is_local => 1, name => $name };
         my $incumbent = $self->db->get_all_packages($where)->first() or next;
         if ( (my $author = $incumbent->author() ) ne $self->author() ) {
-            throw_error "Only author $author can update $name";
+            throw_error "Only author $author can update package $name";
         }
     }
 
     my $pkg_count = @packages;
     $self->info("Adding distribution $path providing $pkg_count packages");
-    my $dist = $self->db->add_distribution( {path => $path, origin => 'LOCAL'} );
-    $self->db->add_package_from_dist( $_, $dist ) for @packages;
+    my $dist = $self->db->add_distribution( {path => $path, is_local => 1} );
+    $self->db->add_package( { %{$_}, distribution => $dist->id() } ) for @packages;
 
     return $dist;
   }
@@ -115,8 +115,7 @@ sub _extract_packages {
 
         push @packages, { name            => $name,
                           version         => $version,
-                          version_numeric => $version_numeric,
-                          is_local        => 1 };
+                          version_numeric => $version_numeric };
     }
 
     return @packages;

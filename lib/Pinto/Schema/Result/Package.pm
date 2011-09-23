@@ -95,8 +95,39 @@ __PACKAGE__->belongs_to(
 
 #------------------------------------------------------------------------------
 
+use overload ( '<=>' => 'compare_version',
+               'cmp' => 'compare_name',
+               '""'  => 'to_string' );
+
+use Pinto::Util;
+
+use Exception::Class::TryCatch;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+
+sub new {
+    my ($class, $attrs) = @_;
+
+    $attrs->{version_numeric} =
+        eval { Pinto::Util::numify_version($attrs->{version}) };
+
+    if (catch my $e, ['Pinto::Exception::IllegalVersion']) {
+        warn "$attrs->{name}: $e. Forcing it to 0\n";
+        $attrs->{version_numeric} = 0;
+    }
+
+    return $class->SUPER::new($attrs);
+}
+
+#------------------------------------------------------------------------------
+
 sub author {
     my ($self) = @_;
+
     my $dist_path = $self->distribution->path();
 
     return (split '/', $dist_path)[2];
@@ -104,12 +135,30 @@ sub author {
 
 #------------------------------------------------------------------------------
 
-=method to_string()
+sub is_local {
+    my ($self) = @_;
 
-Returns this Package as a string containing the package name.  This is
-what you get when you evaluate and Package in double quotes.
+    return $self->distribution->is_local();
+}
 
-=cut
+#------------------------------------------------------------------------------
+
+sub is_devel {
+    my ($self) = @_;
+
+    return    $self->distribution->is_devel()
+           || Pinto::Util::is_devel_version( $self->version() );
+}
+
+#------------------------------------------------------------------------------
+
+sub path {
+    my ($self) = @_;
+
+    return $self->distribution->path();
+}
+
+#------------------------------------------------------------------------------
 
 sub to_string {
     my ($self) = @_;
@@ -119,22 +168,37 @@ sub to_string {
 
 #------------------------------------------------------------------------------
 
-=method to_index_string()
-
-Returns this Package object as a string that is suitable for writing
-to an F<02packages.details.txt> file.
-
-=cut
-
-sub to_index_string {
+sub to_long_string {
     my ($self) = @_;
+
+    my $indexed = $self->should_index() ? '*' : ' ';
+    my $local   = $self->is_local()     ? 'L' : 'F';
+    my $mature  = $self->is_devel()     ? 'D' : 'R';
 
     my $width = 38 - length $self->version();
     $width = length $self->name() if $width < length $self->name();
 
-    return sprintf "%-${width}s %s  %s\n", $self->name(),
-                                           $self->version(),
-                                           $self->distribution->path();
+    return sprintf "%s%s%s %-${width}s %s  %s\n",
+       $indexed, $local, $mature, $self->name(), $self->version(), $self->path();
+}
+
+#-------------------------------------------------------------------------------
+
+sub compare_version {
+    my ($self, $other, $swap) = @_;
+    ($other, $self) = ($self, $other) if $swap;
+
+    return    ( $self->is_local()        <=> $other->is_local()         )
+           || ( $self->version_numeric() <=> $other->version_numeric()  );
+}
+
+#-------------------------------------------------------------------------------
+
+sub compare_name {
+    my ($self, $other, $swap) = @_;
+    ($other, $self) = ($self, $other) if $swap;
+
+    return  $self->name() cmp $other->name();
 }
 
 #-------------------------------------------------------------------------------

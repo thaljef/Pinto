@@ -89,9 +89,21 @@ __PACKAGE__->has_many(
 #-------------------------------------------------------------------------------
 
 use URI;
-use Path::Class qw();
+use Path::Class;
+use CPAN::DistnameInfo;
 
 use overload ('""' => 'to_string');
+
+#------------------------------------------------------------------------------
+
+sub new {
+    my ($class, $attrs) = @_;
+
+    my $info = CPAN::DistnameInfo->new($attrs->{path});
+    $attrs->{is_devel} = 1 if $info->maturity() eq 'developer';
+
+    return $class->SUPER::new($attrs);
+}
 
 #------------------------------------------------------------------------------
 
@@ -104,13 +116,14 @@ sub physical_path {
 }
 
 #------------------------------------------------------------------------------
+# TODO: rename. maybe "origin_url"
 
 sub url {
     my ($self, $base) = @_;
 
     $base ||= $self->origin();
 
-    return URI->new( "$base/authors/id/" . $self->path() )->canonical();
+    return URI->new( $base, qw(authors id), $self->path() )->canonical();
 }
 
 #------------------------------------------------------------------------------

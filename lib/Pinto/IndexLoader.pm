@@ -55,8 +55,8 @@ sub load {
             next;
         }
 
-        my $dist = $self->_load_distribution(path => $path, origin => $from);
-        $self->_load_package(%{$_}, distribution => $dist->id()) for @{ $dists->{$path} };
+        my $dist = $self->db->add_distribution( {path => $path, origin => $from} );
+        $self->db->add_package( { %{$_}, distribution => $dist->id() } ) for @{ $dists->{$path} };
     }
 
     return $self;
@@ -84,34 +84,6 @@ sub _read {
     }
 
     return $data;
-}
-
-#------------------------------------------------------------------------------
-
-sub _load_distribution {
-    my ($self, %attrs)  = @_;
-
-    $self->debug("Loading distribution $attrs{path}");
-    my $dist  = $self->db->add_distribution(\%attrs);
-
-    return $dist;
-}
-
-#------------------------------------------------------------------------------
-
-sub _load_package {
-    my ($self, %attrs) = @_;
-
-    $self->debug("Loading package $attrs{name}");
-
-    $attrs{version_numeric} = eval { Pinto::Util::numify_version($attrs{version}) };
-
-    if (catch my $e, ['Pinto::Exception::IllegalVersion']) {
-        $self->whine("$attrs{name}: $e. Forcing it to 0");
-        $attrs{version_numeric} = 0;
-    }
-
-    my $package = $self->db->add_package(\%attrs);
 }
 
 #------------------------------------------------------------------------------

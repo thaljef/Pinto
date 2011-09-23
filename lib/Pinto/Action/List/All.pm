@@ -20,9 +20,7 @@ extends 'Pinto::Action::List';
 override packages => sub {
     my ($self) = @_;
 
-    my $where = { should_index => $self->indexed() };
-
-    return $self->db->get_all_packages($where);
+    return $self->db->get_all_packages();
 };
 
 

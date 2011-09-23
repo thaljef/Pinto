@@ -47,7 +47,7 @@ override execute => sub {
 
     my $rs = $self->packages();
     while( my $package = $rs->next() ) {
-        print { $self->out() } $package->to_index_string();
+        print { $self->out() } $package->to_long_string();
     }
 
     return 0;

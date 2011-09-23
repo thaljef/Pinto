@@ -129,6 +129,15 @@ sub numify_version {
 }
 
 #-------------------------------------------------------------------------------
+
+sub is_devel_version {
+    my ($version) = @_;
+
+    # See CPAN::DistnameInfo for a better regex
+    return $version =~ m/(_|-RC|-TRIAL)\d*$/;
+}
+
+#-------------------------------------------------------------------------------
 1;
 
 __END__

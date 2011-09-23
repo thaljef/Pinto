@@ -85,18 +85,6 @@ sub get_packages_with_name {
 
 #-------------------------------------------------------------------------------
 
-sub get_latest_package_with_name {
-    my ($self, $package_name) = @_;
-
-    my $where = { name => $package_name, 'distribution.is_devel' => 0 };
-    my $order = { -desc => [ qw(distribution.is_local version_numeric) ] }
-    my $attrs = { prefetch => 'distribution', rows => 1, order_by => $order };
-
-    return $self->schema->resultset('Package')->find($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
 sub get_distribution_with_path {
     my ($self, $path) = @_;
 
@@ -108,40 +96,34 @@ sub get_distribution_with_path {
 #-------------------------------------------------------------------------------
 
 sub add_distribution {
-    my ($self, $dist) = @_;
+    my ($self, $attrs) = @_;
 
-    return $self->schema->resultset('Distribution')->create($dist);
+    $self->debug("Loading distribution $attrs->{path}");
+
+    my $dist = $self->schema->resultset('Distribution')->create($attrs);
+
+    $self->whine("Developer distribution $dist will not be indexed") if $dist->is_devel();
+
+    return $dist;
 }
 
 #-------------------------------------------------------------------------------
 
-sub add_package_from_dist {
-    my ($self, $pkg, $dist) = @_;
+sub add_package {
+    my ($self, $attrs) = @_;
 
-    if ( $dist->is_devel() ) {
-            # Do nothing...we never index developer releases;
-    }
-    elsif ( my $latest = $self->get_latest_package_with_name( $pkg->{name} ) ) {
+    $self->debug("Loading package $attrs->{name}");
 
-        if ( $dist->is_local() and not $latest->distribution->is_local() ) {
-            $pkg->{should_index} = 1;
-            $latest->should_index(0);
-            $latest->update();
-        }
-        elsif ( $latest->is_local() and not $dist->is_local() ) {
-            $pkg->{should_index} = 0;
-        }
-        elsif ( $pkg->{version_numeric} > $latest->version_numeric() ) {
-            $pkg->{should_index} = 1;
-            $latest->should_index(0);
-            $latest->update();
-        }
-    }
-    else {
-        $pkg->{should_index} = 1;
+    my $pkg = $self->schema->resultset('Package')->create($attrs);
+
+    if ( $pkg->is_devel() && !$pkg->distribution->is_devel() ) {
+        my $vname = $pkg->name() . '-' . $pkg->version();
+        $self->whine("Developer package $vname will not be indexed");
     }
 
-   return $self->schema->resultset('Package')->create($pkg);
+    $self->mark_latest_package_for_indexing( $pkg->name() );
+
+    return $pkg;
 }
 
 #-------------------------------------------------------------------------------
@@ -165,13 +147,26 @@ sub remove_package {
     my $was_indexed = $pkg->should_index();
 
     $pkg->delete();
-
-    if ($was_indexed) {
-        my $next_latest = $self->get_latest_package_with_name($name) or return;
-        $next_latest->update( {should_index => 1} );
-    }
+    $self->mark_latest_package_for_indexing($name) if $was_indexed;
 
     return;
+}
+
+#-------------------------------------------------------------------------------
+
+sub mark_latest_package_for_indexing {
+    my ($self, $pkg_name) = @_;
+
+    my $sister_package_rs = $self->get_packages_with_name( $pkg_name );
+    my @non_devel_sisters = grep { not $_->is_devel() } $sister_package_rs->all();
+    return if not @non_devel_sisters;
+
+    my ($newest, @older) = reverse sort {$a <=> $b} @non_devel_sisters;
+
+    do { $_->should_index(0);      $_->update() } foreach @older;
+    $newest->should_index(1); $newest->update();
+
+    return $newest;
 }
 
 #-------------------------------------------------------------------------------
