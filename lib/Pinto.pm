@@ -155,6 +155,9 @@ sub run_actions {
     my $action_batch = $self->_action_batch()
         or throw_fatal 'You must create an action batch first';
 
+    # Divert any warnings to our logger
+    local $SIG{__WARN__} = sub { $self->whine(@_) };
+
     $self->locker->lock();
 
     my $r = $self->_action_batch->run();

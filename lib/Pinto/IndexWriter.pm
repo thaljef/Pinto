@@ -84,16 +84,11 @@ sub _write_packages {
     # during an Add or Remove action).  Therefore, we use
     # a cursor to get raw data and skip all the DBIC extras.
 
-    # TODO: Specify the precise columns to select in the
-    # query, to ensure we always get the right ones in the
-    # right order.  Otherwise, the order might change if the
-    # DBIC class definitions change in any way.
-
     my $indexed = $self->db->get_all_indexed_packages();
     my $cursor  = $indexed->cursor();
 
     while ( my @vals = $cursor->next() ) {
-        my ($name, $version, $path) = @vals[1,2,8];
+        my ($name, $version, $path) = @vals;
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;

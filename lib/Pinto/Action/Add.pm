@@ -110,7 +110,6 @@ sub _extract_packages {
         push @packages, { name => $name, version => $version };
     }
 
-    $DB::single = 1;
     return @packages;
 }
 

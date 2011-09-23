@@ -67,11 +67,13 @@ sub get_all_packages {
 sub get_all_indexed_packages {
     my ($self) = @_;
 
-    my $where = { should_index => 1 };
-    my $attrs = { prefetch => 'distribution', order_by => 'name' };
+    my $where  = { should_index => 1 };
+    my $select = [ qw(name version distribution.path) ];
+    my $attrs  = { select => $select, join => 'distribution', order_by => 'name' };
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }
+
 #-------------------------------------------------------------------------------
 
 sub get_packages_with_name {

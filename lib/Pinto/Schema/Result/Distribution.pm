@@ -123,7 +123,7 @@ sub url {
 
     $base ||= $self->origin();
 
-    return URI->new( $base, qw(authors id), $self->path() )->canonical();
+    return URI->new( "$base/authors/id/" . $self->path() )->canonical();
 }
 
 #------------------------------------------------------------------------------

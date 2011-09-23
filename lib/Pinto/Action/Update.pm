@@ -66,11 +66,12 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $destination = $dist->physical_path( $self->config->repos() );
-    return 0 if -e $destination;
+    my $dest = $dist->physical_path( $self->config->repos() );
 
-    $self->fetch(url => $dist->url(), to => $destination) or return 0;
-    $self->store->add(file => $destination);
+    $self->debug("Skipping $dest: already fetched") and return 0 if -e $dest;
+    $self->fetch(url => $dist->url(), to => $dest)   or return 0;
+
+    $self->store->add(file => $dest);
 
     return 1;
 }
