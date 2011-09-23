@@ -153,7 +153,7 @@ sub _do_vcs_stuff {
 
     if ( $self->has_tag() ) {
         my $now = DateTime->now();
-        my $tag = $now-strftime( $self->tag() );
+        my $tag = $now->strftime( $self->tag() );
         $self->store->tag( tag => $tag );
     }
 
