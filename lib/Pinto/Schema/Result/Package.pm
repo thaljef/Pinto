@@ -103,20 +103,6 @@ __PACKAGE__->belongs_to(
 
 #------------------------------------------------------------------------------
 
-use Pinto::Util;
-
-#------------------------------------------------------------------------------
-
-sub new {
-    my ($class, $args) = @_;
-
-    $args->{version_numeric} ||= Pinto::Util::numify_version($args->{version});
-
-    return $class->SUPER::new($args);
-}
-
-#------------------------------------------------------------------------------
-
 sub author {
     my ($self) = @_;
     my $dist_path = $self->distribution->path();

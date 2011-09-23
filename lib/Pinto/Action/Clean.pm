@@ -1,13 +1,8 @@
 package Pinto::Action::Clean;
 
-# ABSTRACT: An action to remove cruft from the repository
+# ABSTRACT: Remove all outdated distributions from the repository
 
 use Moose;
-
-use File::Find;
-use Path::Class;
-
-extends 'Pinto::Action';
 
 use namespace::autoclean;
 
@@ -16,46 +11,32 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
+# Methods
 
 override execute => sub {
     my ($self) = @_;
 
-    my $repos      = $self->config()->repos();
-    my $search_dir = Path::Class::dir($repos, qw(authors id));
-    return 0 if not -e $search_dir;
+    my $outdated = $self->db->get_all_outdated_distributions();
+    my $removed  = 0;
 
-    my @removed = ();
-    my $wanted = $self->_make_callback($search_dir, \@removed);
-    File::Find::find($wanted, $search_dir);
-    return 0 if not @removed;
+    while ( my $dist = $outdated->next() ) {
+        my $path = $dist->path();
+        my $file = $dist->physical_path( $self->config->repos() );
 
-    $self->add_message( "Removed distribution $_" ) for @removed;
-
-    return 1;
-};
-
-#------------------------------------------------------------------------------
-
-sub _make_callback {
-    my ($self, $search_dir, $deleted) = @_;
-
-    return sub {
-
-        if ( Pinto::Util::is_source_control_file($_) ) {
-            $File::Find::prune = 1;
-            return;
-        }
-
-        return if not -f $File::Find::name;
-
-        my $file = file($File::Find::name);
-        my $path  = $file->relative($search_dir)->as_foreign('Unix');
-        return if $self->idxmgr->master_index->distributions->{$path};
-
+        $self->db->remove_distribution($dist);
         $self->store->remove(file => $file);
-        push @{ $deleted }, $path;
-    };
-}
+
+        $self->add_message( "Removed distribution $path" );
+        $removed++;
+    }
+
+    return $removed;
+};
 
 #------------------------------------------------------------------------------
 

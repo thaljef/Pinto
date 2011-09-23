@@ -5,7 +5,6 @@ package Pinto;
 use Moose;
 
 use Class::Load;
-use Try::Tiny;
 
 use Pinto::Config;
 use Pinto::Logger;
@@ -13,7 +12,7 @@ use Pinto::Locker;
 use Pinto::Database;
 use Pinto::ActionBatch;
 
-use Pinto::Exceptions qw(throw_args throw_fatal);
+use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
 
@@ -154,7 +153,7 @@ sub run_actions {
     my ($self) = @_;
 
     my $action_batch = $self->_action_batch()
-        or throw_args 'You must create an action batch first';
+        or throw_fatal 'You must create an action batch first';
 
     $self->locker->lock();
 

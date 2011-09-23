@@ -5,7 +5,7 @@ package Pinto::Logger;
 use Moose;
 
 use MooseX::Types::Moose qw(Int Bool);
-use Pinto::Types  0.017 qw(IO);
+use Pinto::Types 0.017 qw(IO);
 
 use Readonly;
 use Term::ANSIColor 2.02;
@@ -17,12 +17,19 @@ use namespace::autoclean;
 # VERSION
 
 #-----------------------------------------------------------------------------
+
+Readonly my $LEVEL_QUIET => -1;
+Readonly my $LEVEL_WARN  =>  0;
+Readonly my $LEVEL_INFO  =>  1;
+Readonly my $LEVEL_DEBUG =>  2;
+
+#-----------------------------------------------------------------------------
 # Moose attributes
 
 has verbose  => (
     is       => 'ro',
     isa      => Int,
-    default  => 0,
+    default  => $LEVEL_WARN,
 );
 
 has out => (
@@ -37,13 +44,6 @@ has nocolor => (
     isa      => Bool,
     default  => 0,
 );
-
-#-----------------------------------------------------------------------------
-
-Readonly my $LEVEL_QUIET => -2;
-Readonly my $LEVEL_WARN  => -1;
-Readonly my $LEVEL_INFO  =>  0;
-Readonly my $LEVEL_DEBUG =>  1;
 
 #-----------------------------------------------------------------------------
 

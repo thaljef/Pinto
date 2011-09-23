@@ -44,12 +44,13 @@ sub outdated {
     my $rs = $self->search(undef, $attrs);
 
     my @outdated;
-    while (my $dist = $rs->next()) {
+    while ( my $dist = $rs->next() ) {
         push @outdated, $dist if none { $_->should_index() } $dist->packages();
     }
 
-    my $new_rs = $self->result_source->resultset;
+    my $new_rs = $self->result_source->resultset();
     $new_rs->set_cache(\@outdated);
+
     return $new_rs;
 }
 

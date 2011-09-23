@@ -1,10 +1,8 @@
 package Pinto::Action::Rebuild;
 
-# ABSTRACT: An action to rebuild the master index of the repository
+# ABSTRACT: Rebuild the index file for the repository
 
 use Moose;
-
-extends 'Pinto::Action';
 
 use namespace::autoclean;
 
@@ -14,12 +12,17 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
+extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
+
 sub execute {
     my ($self) = @_;
 
-    $self->idxmgr->rebuild_master_index();
-
     $self->add_message('Rebuilt the index');
+
+    # Return 1 to signal changes, thus causing
+    # Pinto to regenerate the index for us.
 
     return 1;
 }

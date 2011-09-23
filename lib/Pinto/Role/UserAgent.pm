@@ -7,7 +7,7 @@ use Moose::Role;
 use Path::Class;
 use LWP::UserAgent;
 
-use Pinto::Exceptions qw(throw_ua);
+use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
 
@@ -50,12 +50,9 @@ sub fetch {
     my $to  = eval {$args{to}->isa('Path::Class')} ? $args{to} : file($args{to});
 
     $self->mkpath( $to->parent() );
+    my $has_changed = $self->_fetch($url, $to);
 
-    my $return;
-    try   { $return = $self->_fetch($url, $to) }
-    catch { throw_ua($_) };
-
-    return $return;
+    return $has_changed;
 }
 
 #------------------------------------------------------------------------------
@@ -92,16 +89,17 @@ sub _fetch {
     my ($self, $url, $to) = @_;
 
     $self->info("Fetching $url");
-    my $result = $self->_ua->mirror($url, $to);
+
+    my $result = eval { $self->_ua->mirror($url, $to) } or throw_fatal $@;
 
     if ($result->is_success()) {
         return 1;
     }
-    elsif($result->code == 304) {
+    elsif ($result->code() == 304) {
         return 0;
     }
     else {
-        throw_ua( "Failed to fetch $url: " . $result->status_line() );
+        throw_error "Failed to fetch $url: " . $result->status_line();
     }
 
     # Should never get here

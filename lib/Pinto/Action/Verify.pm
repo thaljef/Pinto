@@ -1,14 +1,12 @@
 package Pinto::Action::Verify;
 
-# ABSTRACT: An action to verify all files are present in the repository
+# ABSTRACT: Verify all distributions are present in the repository
 
 use Moose;
 use Moose::Autobox;
 
 use Pinto::Util;
 use Pinto::Types 0.017 qw(IO);
-
-extends 'Pinto::Action';
 
 use namespace::autoclean;
 
@@ -17,6 +15,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
+# Attributes
 
 has out => (
     is       => 'ro',
@@ -26,16 +30,16 @@ has out => (
 );
 
 #------------------------------------------------------------------------------
+# Methods
 
 sub execute {
     my ($self) = @_;
 
-    my $repos   = $self->config()->repos();
-    my $dists   = $self->idxmgr->master_index->distributions->values();
-    my $sorter  = sub {$_[0]->path() cmp $_[1]->path};
+    my $repos = $self->config()->repos();
+    my $rs    = $self->db->get_all_distributions();
 
-    for my $dist ( $dists->sort( $sorter )->flatten() ) {
-        my $file = $dist->path($repos);
+    while ( my $dist = $rs->next() ) {
+        my $file = $dist->physical_path($repos);
         print { $self->out } "Missing distribution $file\n" if not -e $file;
     }
 

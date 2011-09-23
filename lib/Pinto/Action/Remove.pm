@@ -1,12 +1,12 @@
 package Pinto::Action::Remove;
 
-# ABSTRACT: An action to remove one local distribution from the repository
+# ABSTRACT: Remove one distribution from the repository
 
 use Moose;
 use MooseX::Types::Moose qw( Str );
 
 use Pinto::Util;
-use Pinto::Exceptions qw(throw_nodist);
+use Pinto::Exceptions qw(throw_error);
 
 extends 'Pinto::Action';
 
@@ -43,7 +43,7 @@ override execute => sub {
         $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
 
     my $dist = $self->db->get_distribution_with_path($path)
-        or throw_nodist "Distribution $path does not exist";
+        or throw_error "Distribution $path does not exist";
 
     my $file = $dist->physical_path( $self->config->repos() );
 

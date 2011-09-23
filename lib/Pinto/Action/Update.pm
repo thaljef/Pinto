@@ -1,20 +1,23 @@
 package Pinto::Action::Update;
 
-# ABSTRACT: An action to pull all the latest distributions into your repository
+# ABSTRACT: Pull all the latest distributions into your repository
 
 use Moose;
 
 use MooseX::Types::Moose qw(Bool);
 
-use Try::Tiny;
+use Exception::Class::TryCatch;
 
 use namespace::autoclean;
-
-extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 # Moose Attributes
@@ -38,19 +41,22 @@ sub execute {
     my $source = $self->config->source();
     $self->db->load_index($source);
 
-    my $changes = 0;
-    my $foreigners = $self->db->foreign_distributions();
+    my $count = 0;
+    my $foreigners = $self->db->get_all_foreign_distributions();
 
-    while (my $dist = $foreigners->next() ) {
-        try { $changes += $self->_do_mirror($dist) };
-        if (my $e = Pinto::Exception->caught()) {
-          $self->whine($e);
-          next;
+    while ( my $dist = $foreigners->next() ) {
+
+        eval { $count += $self->_do_mirror($dist) };
+
+        if ( catch my $e, ['Pinto::Exception'] ) {
+            $self->add_exception($e);
+            $self->whine($e);
+            next;
         }
     }
 
-    return 0 if not $changes;
-    $self->add_message("Updated $changes distributions from $source");
+    return 0 if not $count;
+    $self->add_message("Updated $count distributions from $source");
 
     return 1;
 }

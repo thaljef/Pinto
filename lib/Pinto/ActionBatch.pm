@@ -4,8 +4,9 @@ package Pinto::ActionBatch;
 
 use Moose;
 
-use Try::Tiny;
+use DateTime;
 use Path::Class;
+use Exception::Class::TryCatch;
 
 use Pinto::BatchResult;
 
@@ -101,48 +102,22 @@ Runs all the actions in this Batch.  Returns a L<BatchResult>.
 sub run {
     my ($self) = @_;
 
-    try {
-        $self->_run_actions();
-    }
-    catch {
-        $self->whine($_);
-        $self->_result->add_exception($_);
-    };
-
-    return $self->_result();
-}
-
-#-----------------------------------------------------------------------------
-
-sub _run_actions {
-    my ($self) = @_;
-
     $self->store->initialize() unless $self->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_one_action($action);
     }
 
-    $self->info('No changes were made') and return $self
+    $self->debug('No changes were made') and return $self->_result()
       unless $self->_result->changes_made();
 
-    my $index_file = $self->config->modules_dir->file('02packages.details.txt.gz');
-    $self->db->write_index($index_file);
+    $self->db->write_index();
 
-    return $self if $self->nocommit();
+    return $self->_result() if $self->nocommit();
 
-    if ( $self->store->isa('Pinto::Store::VCS') ) {
+    $self->_do_vcs_stuff() if $self->store->isa('Pinto::Store::VCS');
 
-        my $modules_dir = $self->config->modules_dir();
-        $self->store->mark_path_as_modified($modules_dir);
-
-        $self->store->commit( message => $self->message() );
-
-        # TODO: Expand date placeholders in tag
-        $self->store->tag( tag => $self->tag() ) if $self->has_tag();
-    }
-
-    return $self;
+    return $self->_result();
 }
 
 #-----------------------------------------------------------------------------
@@ -150,19 +125,13 @@ sub _run_actions {
 sub _run_one_action {
     my ($self, $action) = @_;
 
-    try   {
-        my $changes = $action->execute();
-        $self->_result->made_changes() if $changes;
+    eval { $action->execute() and $self->_result->made_changes() };
+
+    if ( catch my $e, ['Pinto::Exception'] ) {
+        $self->_result->add_exception($e);
+        $self->whine($e);
+        return $self;
     }
-    catch {
-        # Collect unhandled exceptions
-        $self->whine($_);
-        $self->_result->add_exception($_);
-    }
-    finally {
-        # Collect handled exceptions
-        $self->_result->add_exception($_) for $action->exceptions();
-    };
 
     for my $msg ( $action->messages() ) {
         $self->append_message("\n\n") if length $self->message();
@@ -172,6 +141,24 @@ sub _run_one_action {
     return $self;
 }
 
+#-----------------------------------------------------------------------------
+
+sub _do_vcs_stuff {
+    my ($self) = @_;
+
+    $self->store->mark_path_as_modified( $self->config->modules_dir() );
+    $self->store->mark_path_as_modified( $self->config->db_dir() );
+
+    $self->store->commit( message => $self->message() );
+
+    if ( $self->has_tag() ) {
+        my $now = DateTime->new();
+        my $tag = $now-strftime( $self->tag() );
+        $self->store->tag( tag => $tag );
+    }
+
+    return $self;
+}
 
 #-----------------------------------------------------------------------------
 

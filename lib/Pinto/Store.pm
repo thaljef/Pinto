@@ -6,7 +6,7 @@ use Moose;
 
 use File::Copy;
 
-use Pinto::Exceptions qw(throw_io throw_args);
+use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
 
@@ -104,10 +104,10 @@ sub add {
     my $file   = $args{file};
     my $source = $args{source};
 
-    throw_args "$file does not exist and no source was specified"
+    throw_fatal "$file does not exist and no source was specified"
         if not -e $file and not defined $source;
 
-    throw_args "$source is not a file"
+    throw_fatal "$source is not a file"
         if $source and $source->is_dir();
 
     if ($source) {
@@ -125,7 +125,7 @@ sub add {
         # We're going to be kind and accommodate the old versions.
 
         File::Copy::copy("$source", "$file")
-            or throw_io "Failed to copy $source to $file: $!";
+            or throw_fatal "Failed to copy $source to $file: $!";
     }
 
     return $self;
@@ -150,10 +150,10 @@ sub remove {
 
     return $self if not -e $file;
 
-    throw_args "$file is not a file" if -d $file;
+    throw_fatal "$file is not a file" if -d $file;
 
     $self->info("Removing file $file");
-    $file->remove() or throw_io "Failed to remove $file: $!";
+    $file->remove() or throw_fatal "Failed to remove $file: $!";
 
     while (my $dir = $file->parent()) {
         last if $dir->children();

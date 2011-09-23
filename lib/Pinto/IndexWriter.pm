@@ -12,9 +12,7 @@ use Carp;
 use PerlIO::gzip;
 use Path::Class qw();
 
-use Pinto::Package;
-use Pinto::Distribution;
-use Pinto::Exceptions qw(throw_io);
+use Pinto::Exceptions qw(throw_fatal);
 
 #------------------------------------------------------------------------------
 
@@ -43,7 +41,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my $file = $args{file};
     $self->info("Writing index at $file");
 
-    open my $fh, '>:gzip', $file or throw_io "Cannot open $file: $!";
+    open my $fh, '>:gzip', $file or throw_fatal "Cannot open $file: $!";
     $self->_write_header($fh, $file);
     $self->_write_packages($fh);
     close $fh;
@@ -81,10 +79,24 @@ END_PACKAGE_HEADER
 sub _write_packages {
     my ($self, $fh) = @_;
 
-    my $rs = $self->db->get_all_indexed_packages();
+    # The index is rewritten after almost every action, so
+    # we want this to be as fast as possible (especially
+    # during an Add or Remove action).  Therefore, we use
+    # a cursor to get raw data and skip all the DBIC extras.
 
-    while ( my $pkg = $rs->next() ) {
-        print {$fh} $pkg->to_index_string();
+    # TODO: Specify the precise columns to select in the
+    # query, to ensure we always get the right ones in the
+    # right order.  Otherwise, the order might change if the
+    # DBIC class definitions change in any way.
+
+    my $indexed = $self->db->get_all_indexed_packages();
+    my $cursor  = $indexed->cursor();
+
+    while ( my @vals = $cursor->next() ) {
+        my ($name, $version, $path) = @vals[1,2,8];
+        my $width = 38 - length $version;
+        $width = length $name if $width < length $name;
+        printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
     }
 
     return $self;

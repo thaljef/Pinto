@@ -1,10 +1,9 @@
 package Pinto::Action::Add;
 
-# ABSTRACT: An action to add one local distribution to the repository
+# ABSTRACT: Add one local distribution to the repository
 
 use Moose;
 
-use Try::Tiny;
 use Path::Class;
 use File::Temp;
 use Dist::Metadata 0.920; # supports .zip
@@ -12,8 +11,8 @@ use Dist::Metadata 0.920; # supports .zip
 use Pinto::Util;
 use Pinto::Types 0.017 qw(StrOrFileOrURI);
 
-use Pinto::Exceptions qw(throw_io throw_empty_dist throw_dist_parse
-                         throw_dupe throw_unauthorized);
+use Pinto::Exceptions qw(throw_error);
+use Exception::Class::TryCatch;
 
 use namespace::autoclean;
 
@@ -52,8 +51,8 @@ override execute => sub {
     $archive = Pinto::Util::is_url($archive) ?
         $self->fetch_temporary(url => $archive) : file($archive);
 
-    throw_io "Archive $archive does not exist"  if not -e $archive;
-    throw_io "Archive $archive is not readable" if not -r $archive;
+    throw_error "Archive $archive does not exist"  if not -e $archive;
+    throw_error "Archive $archive is not readable" if not -r $archive;
 
     my $dist = $self->_process_archive($archive);
     $self->store->add(file => $dist->physical_path($repos), source => $archive);
@@ -73,18 +72,19 @@ sub _process_archive {
     my @packages   = $self->_extract_packages($archive);
 
     $self->db->get_distribution_with_path($path)
-      and throw_dupe "Distribution $path already exists";
+        and throw_error "Distribution $path already exists";
 
     for my $pkg (@packages) {
         my $name = $pkg->{name};
         my $where = { is_local => 1, name => $name };
         my $incumbent = $self->db->get_all_packages($where)->first() or next;
         if ( (my $author = $incumbent->author() ) ne $self->author() ) {
-            throw_unauthorized "Only author $author can update $name";
+            throw_error "Only author $author can update $name";
         }
     }
 
-    $self->info(sprintf "Adding $path with %i packages", scalar @packages);
+    my $pkg_count = @packages;
+    $self->info("Adding distribution $path providing $pkg_count packages");
     my $dist = $self->db->add_distribution( {path => $path, origin => 'LOCAL'} );
 
     for my $pkg ( @packages ) {
@@ -100,23 +100,26 @@ sub _process_archive {
 sub _extract_packages {
     my ($self, $archive) = @_;
 
-    my $provides;
-
-    try {
+    my $provides = eval {
         my $distmeta = Dist::Metadata->new(file => $archive->stringify());
-        $provides = $distmeta->package_versions();
-    }
-    catch {
-        throw_dist_parse "Unable to extract packages from $archive: $_";
+        $distmeta->package_versions();
     };
 
-    throw_empty_dist "$archive contains no packages" if not %{ $provides };
+    throw_error "Unable to extract packages from $archive: $@" if $@;
+    throw_error "$archive contains no packages" if not %{ $provides };
 
     my @packages = ();
     for my $name (sort keys %{ $provides }) {
         my $version = $provides->{$name} || 'undef';
+        my $version_numeric = eval { Pinto::Util::numify_version($version) };
+
+        if (catch my $e, ['Pinto::Exception::IllegalVersion']) {
+           throw_error "$name: $e";
+        }
+
         push @packages, { name            => $name,
                           version         => $version,
+                          version_numeric => $version_numeric,
                           is_local        => 1 };
     }
 

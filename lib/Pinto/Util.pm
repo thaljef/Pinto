@@ -123,7 +123,7 @@ sub numify_version {
 
     my $numeric_version;
     try   { $numeric_version = version->parse($version)->numify() }
-    catch { throw_version("Illegal version ($version): $_") };
+    catch { throw_version "Illegal version ($version)" };
 
     return $numeric_version;
 }

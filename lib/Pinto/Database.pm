@@ -10,7 +10,7 @@ use Path::Class;
 use Pinto::Schema;
 use Pinto::IndexLoader;
 use Pinto::IndexWriter;
-use Pinto::Exceptions qw(throw_db);
+use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
 
@@ -46,7 +46,7 @@ sub _build_schema {
 
     my $connection;
     try   { $connection = Pinto::Schema->connect($dsn) }
-    catch { throw_db "Database error: $_" };
+    catch { throw_fatal "Database error: $_" };
 
     return $connection;
 }
@@ -145,7 +145,7 @@ sub add_package {
 sub remove_distribution {
     my ($self, $dist) = @_;
 
-    $self->info(sprintf "Removing $dist with %i packages", $dist->package_count());
+    $self->info(sprintf "Removing distribution $dist with %i packages", $dist->package_count());
     $self->remove_package($_) for $dist->packages();
     $dist->delete();
 
@@ -215,7 +215,7 @@ sub blocking_packages {
 
 #------------------------------------------------------------------------------
 
-sub local_distributions {
+sub get_all_local_distributions {
     my ($self) = @_;
 
     return $self->schema->resultset('Distribution')->locals();
@@ -223,10 +223,26 @@ sub local_distributions {
 
 #------------------------------------------------------------------------------
 
-sub foreign_distributions {
+sub get_all_foreign_distributions {
     my ($self) = @_;
 
     return $self->schema->resultset('Distribution')->foreigners();
+}
+
+#------------------------------------------------------------------------------
+
+sub get_all_distributions {
+    my ($self) = @_;
+
+    return $self->schema->resultset('Distribution')->search();
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_all_outdated_distributions {
+    my ($self) = @_;
+
+    return $self->schema->resultset('Distribution')->outdated();
 }
 
 #-------------------------------------------------------------------------------
