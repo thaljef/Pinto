@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::File;
-use Test::More (tests => 34);
+use Test::More (tests => 36);
 
 use File::Temp;
 use Path::Class;
@@ -37,7 +37,7 @@ my $t         = Pinto::Tester->new(pinto => $pinto);
 # Addition...
 
 # Make sure we have clean slate
-$t->package_not_indexed_ok( 'Foo' );
+$t->package_not_loaded_ok( 'Foo' );
 $t->dist_not_exists_ok( 'AUTHOR', $dist_name );
 
 $pinto->new_action_batch();
@@ -105,11 +105,13 @@ $pinto->run_actions();
 
 $t->dist_exists_ok( 'LOCAL', 'Foo-Bar-Baz-0.03.tar.gz' );
 $t->dist_exists_ok( 'LOCAL', 'BarAndBaz-0.04.tar.gz' );
-$t->dist_not_exists_ok( 'LOCAL', 'FooOnly-0.01.tar.gz' );
 
 $t->package_indexed_ok( 'Foo::Bar::Baz', 'LOCAL', '0.03' );
 $t->package_indexed_ok( 'Bar', 'LOCAL', '0.04', );
 $t->package_indexed_ok( 'Baz', 'LOCAL', '0.04', );
-
-$DB::single = 1;
 $t->package_indexed_ok( 'Foo', 'CHAUCER', '0.01' );
+
+$t->dist_not_exists_ok( 'LOCAL', 'FooOnly-0.01.tar.gz' );
+
+$t->dist_exists_ok( 'LOCAL', 'Fee-0.02_1.tar.gz' );
+$t->package_not_indexed_ok( 'Fee' );
