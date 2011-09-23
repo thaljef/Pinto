@@ -86,11 +86,7 @@ sub _process_archive {
     my $pkg_count = @packages;
     $self->info("Adding distribution $path providing $pkg_count packages");
     my $dist = $self->db->add_distribution( {path => $path, origin => 'LOCAL'} );
-
-    for my $pkg ( @packages ) {
-        $pkg->{distribution} = $dist->id();
-        $self->db->add_package( $pkg );
-    }
+    $self->db->add_package_from_dist( $_, $dist ) for @packages;
 
     return $dist;
   }

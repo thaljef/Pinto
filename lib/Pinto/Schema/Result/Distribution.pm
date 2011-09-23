@@ -36,6 +36,18 @@ __PACKAGE__->table("distribution");
   default_value: (empty string)
   is_nullable: 1
 
+=head2 is_local
+
+  data_type: 'boolean'
+  default_value: 0
+  is_nullable: 1
+
+=head2 is_devel
+
+  data_type: 'boolean'
+  default_value: 0
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -45,6 +57,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "origin",
   { data_type => "text", default_value => "", is_nullable => 1 },
+  "is_local",
+  { data_type => "boolean", default_value => 0, is_nullable => 1 },
+  "is_devel",
+  { data_type => "boolean", default_value => 0, is_nullable => 1 },
 );
 __PACKAGE__->set_primary_key("distribution_id");
 __PACKAGE__->add_unique_constraint("path_unique", ["path"]);
@@ -67,8 +83,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 16:46:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Jv9/BGimvE4djtTGzw/lpA
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-23 01:24:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7bfpsaxglkOmOTHFp0xWXw
 
 #-------------------------------------------------------------------------------
 

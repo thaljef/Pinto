@@ -88,8 +88,9 @@ sub get_packages_with_name {
 sub get_latest_package_with_name {
     my ($self, $package_name) = @_;
 
-    my $where = { name => $package_name };
-    my $attrs = { rows => 1, order_by => { -desc => [ qw(is_local version_numeric) ] }};
+    my $where = { name => $package_name, 'distribution.is_devel' => 0 };
+    my $order = { -desc => [ qw(distribution.is_local version_numeric) ] }
+    my $attrs = { prefetch => 'distribution', rows => 1, order_by => $order };
 
     return $self->schema->resultset('Package')->find($where, $attrs);
 }
@@ -114,17 +115,20 @@ sub add_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub add_package {
-    my ($self, $pkg) = @_;
+sub add_package_from_dist {
+    my ($self, $pkg, $dist) = @_;
 
-    if ( my $latest = $self->get_latest_package_with_name( $pkg->{name} ) ) {
+    if ( $dist->is_devel() ) {
+            # Do nothing...we never index developer releases;
+    }
+    elsif ( my $latest = $self->get_latest_package_with_name( $pkg->{name} ) ) {
 
-        if ( $pkg->{is_local} and not $latest->is_local() ) {
+        if ( $dist->is_local() and not $latest->distribution->is_local() ) {
             $pkg->{should_index} = 1;
             $latest->should_index(0);
             $latest->update();
         }
-        elsif ( $latest->is_local() and not $pkg->{is_local} ) {
+        elsif ( $latest->is_local() and not $dist->is_local() ) {
             $pkg->{should_index} = 0;
         }
         elsif ( $pkg->{version_numeric} > $latest->version_numeric() ) {

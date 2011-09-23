@@ -40,23 +40,17 @@ __PACKAGE__->table("package");
   data_type: 'real'
   is_nullable: 0
 
-=head2 distribution
-
-  data_type: 'integer'
-  is_foreign_key: 1
-  is_nullable: 0
-
-=head2 is_local
-
-  data_type: 'boolean'
-  default_value: 0
-  is_nullable: 1
-
 =head2 should_index
 
   data_type: 'boolean'
   default_value: 0
   is_nullable: 1
+
+=head2 distribution
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
 
 =cut
 
@@ -69,12 +63,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "version_numeric",
   { data_type => "real", is_nullable => 0 },
-  "distribution",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "is_local",
-  { data_type => "boolean", default_value => 0, is_nullable => 1 },
   "should_index",
   { data_type => "boolean", default_value => 0, is_nullable => 1 },
+  "distribution",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("package_id");
 __PACKAGE__->add_unique_constraint("name_should_index_unique", ["name", "should_index"]);
@@ -98,8 +90,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-20 16:46:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5I9n/jPnHs1lWFjbuePr0g
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-23 01:24:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZlKBI3WNulfONRVzU6HSWA
 
 #------------------------------------------------------------------------------
 
