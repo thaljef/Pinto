@@ -77,10 +77,10 @@ sub get_all_indexed_packages {
 #-------------------------------------------------------------------------------
 
 sub get_packages_with_name {
-    my ($self, $package_name) = @_;
+    my ($self, $package_name, $attrs) = @_;
 
     my $where = { name => $package_name };
-    my $attrs = { prefetch => 'distribution' };
+    $attrs ||= { prefetch => 'distribution' };
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }
@@ -88,11 +88,12 @@ sub get_packages_with_name {
 #-------------------------------------------------------------------------------
 
 sub get_distribution_with_path {
-    my ($self, $path) = @_;
+    my ($self, $path, $attrs) = @_;
 
     my $where = { path => $path };
+    $attrs ||= {};
 
-    return $self->schema->resultset('Distribution')->single($where);
+    return $self->schema->resultset('Distribution')->search($where, $attrs)->single();
 }
 
 #-------------------------------------------------------------------------------
@@ -196,22 +197,6 @@ sub load_index {
     $loader->load(from => $repos_url);
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub blocked_packages {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Package')->blocked();
-}
-
-#------------------------------------------------------------------------------
-
-sub blocking_packages {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Package')->blocking();
 }
 
 #------------------------------------------------------------------------------
