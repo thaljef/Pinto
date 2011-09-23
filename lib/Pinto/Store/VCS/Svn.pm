@@ -139,7 +139,7 @@ __END__
   store = Pinto::Store::VCS::Svn
 
   # Import Pinto repository into Subversion
-  $> svn import ~/tmp/PINTO http://my.company.com/svn/trunk/PINTO
+  $> svn import ~/tmp/PINTO http://my.company.com/svn/trunk/PINTO -m 'Import new Pinto repos'
 
   # Checkout working copy of the Pinto repository
   $> svn co http://my.company.com/svn/trunk/PINTO ~/srv/PINTO
