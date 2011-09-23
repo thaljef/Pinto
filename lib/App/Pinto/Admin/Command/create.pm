@@ -17,7 +17,11 @@ use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
-sub opt_sepc {
+sub command_names { return qw( create new ) }
+
+#------------------------------------------------------------------------------
+
+sub opt_spec {
     my ($self, $app) = @_;
 
     return (
@@ -27,10 +31,6 @@ sub opt_sepc {
         [ 'source=s'  => 'URL of repository where foreign dists will come from' ],
     );
 }
-
-#------------------------------------------------------------------------------
-
-sub command_names { return qw( create new ) }
 
 #------------------------------------------------------------------------------
 
