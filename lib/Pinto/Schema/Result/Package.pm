@@ -112,6 +112,9 @@ use Exception::Class::TryCatch;
 sub new {
     my ($class, $attrs) = @_;
 
+    $attrs->{version} = 'undef'
+        if not defined $attrs->{version};
+
     $attrs->{version_numeric} =
         eval { Pinto::Util::numify_version($attrs->{version}) };
 

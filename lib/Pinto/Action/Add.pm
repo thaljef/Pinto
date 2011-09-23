@@ -69,10 +69,12 @@ sub _process_archive {
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($self->author());
     my $path       = $author_dir->file($basename)->as_foreign('Unix');
-    my @packages   = $self->_extract_packages($archive);
 
-    $self->db->get_distribution_with_path($path)
-        and throw_error "Distribution $path already exists";
+    my $existing = $self->db->get_distribution_with_path($path);
+    throw_error "Distribution $path already exists" if $existing;
+
+    my @packages = $self->_extract_packages($archive);
+    throw_error "$archive contains no packages" if not @packages;
 
     for my $pkg (@packages) {
         my $name = $pkg->{name};
@@ -102,22 +104,13 @@ sub _extract_packages {
     };
 
     throw_error "Unable to extract packages from $archive: $@" if $@;
-    throw_error "$archive contains no packages" if not %{ $provides };
 
     my @packages = ();
-    for my $name (sort keys %{ $provides }) {
-        my $version = $provides->{$name} || 'undef';
-        my $version_numeric = eval { Pinto::Util::numify_version($version) };
-
-        if (catch my $e, ['Pinto::Exception::IllegalVersion']) {
-           throw_error "$name: $e";
-        }
-
-        push @packages, { name            => $name,
-                          version         => $version,
-                          version_numeric => $version_numeric };
+    while (my ($name, $version) = each %{ $provides }) {
+        push @packages, { name => $name, version => $version };
     }
 
+    $DB::single = 1;
     return @packages;
 }
 
