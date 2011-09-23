@@ -152,7 +152,7 @@ sub _do_vcs_stuff {
     $self->store->commit( message => $self->message() );
 
     if ( $self->has_tag() ) {
-        my $now = DateTime->new();
+        my $now = DateTime->now();
         my $tag = $now-strftime( $self->tag() );
         $self->store->tag( tag => $tag );
     }
