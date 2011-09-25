@@ -166,7 +166,7 @@ sub mark_latest_package_for_indexing {
 
     my ($newest, @older) = reverse sort {$a <=> $b} @non_devel_sisters;
 
-    do { $_->should_index(0);      $_->update() } foreach @older;
+    do { $_->should_index(undef); $_->update() } foreach @older;
     $newest->should_index(1); $newest->update();
 
     return $newest;
@@ -201,6 +201,14 @@ sub load_index {
 
 #------------------------------------------------------------------------------
 
+sub get_all_distributions {
+    my ($self) = @_;
+
+    return $self->schema->resultset('Distribution')->search();
+}
+
+#-------------------------------------------------------------------------------
+
 sub get_all_local_distributions {
     my ($self) = @_;
 
@@ -217,14 +225,6 @@ sub get_all_foreign_distributions {
 
 #------------------------------------------------------------------------------
 
-sub get_all_distributions {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Distribution')->search();
-}
-
-#-------------------------------------------------------------------------------
-
 sub get_all_outdated_distributions {
     my ($self) = @_;
 
@@ -237,6 +237,7 @@ sub deploy {
     my ($self) = @_;
 
     $self->mkpath( $self->config->db_dir() );
+    $self->debug( 'Creating database at ' . $self->config->db_file() );
     $self->schema->deploy();
 
     return $self;
