@@ -97,15 +97,6 @@ has nocleanup => (
 );
 
 
-has noclobber => (
-    is        => 'ro',
-    isa       => Bool,
-    key       => 'noclobber',
-    default   => 0,
-    documentation => 'Do not clobber existing packages when adding new ones',
-);
-
-
 has noinit => (
     is       => 'ro',
     isa      => Bool,
