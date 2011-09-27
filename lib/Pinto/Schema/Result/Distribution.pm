@@ -119,15 +119,7 @@ sub version_numeric {
 
     return $self->{__version_numeric__} ||= do {
 
-        my $vn = eval { Pinto::Util::numify_version( $self->version() ) } || 0;
-
-        # My perl warns about doing math on an operand that contains
-        # '_', even though that is a perfectly valid value in a
-        # number.  Not sure if other perls have this same problem.
-
-        $vn =~ s{_}{}g;
-
-        $vn;
+        eval { Pinto::Util::numify_version( $self->version() ) } || 0;
     };
 }
 

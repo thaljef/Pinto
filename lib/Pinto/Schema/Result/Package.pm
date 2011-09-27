@@ -145,8 +145,8 @@ sub is_local {
 sub is_devel {
     my ($self) = @_;
 
-    return    $self->distribution->is_devel()
-           || Pinto::Util::is_devel_version( $self->version() );
+    return    Pinto::Util::is_devel_version( $self->version() )
+           || $self->distribution->is_devel();
 }
 
 #------------------------------------------------------------------------------
@@ -164,19 +164,7 @@ sub version_numeric {
 
     return $self->{__version_numeric__} ||= do {
 
-        # If we can't parse the version and convert it to a number,
-        # then we force it to be 0.  The CPAN index will occasionally
-        # contain some odd ball version numbers.
-
-        my $vn = eval { Pinto::Util::numify_version( $self->version() ) } || 0;
-
-        # My perl warns about doing math on an operand that contains
-        # '_', even though that is a perfectly valid value in a
-        # number.  Not sure if other perls have this same problem.
-
-        $vn =~ s{_}{}g;
-
-        $vn;
+        eval { Pinto::Util::numify_version( $self->version() ) } || 0;
     };
 }
 
