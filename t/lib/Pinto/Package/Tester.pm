@@ -19,7 +19,6 @@ my $TB      = __PACKAGE__->builder();
 
 sub package_compare_ok {
     my ($pkg1, $pkg2, $detail) = @_;
-    $pkg1->[3] = 1; $pkg2->[3] = 2;
     my $name    = sprintf "Package A sorts before package B: %s", $detail || '';
     my $format  = "pkg_ver: %s, dist_ver: %s, is_local: %s";
     $TB->is_num( make_pkg($pkg1) <=> make_pkg($pkg2), -1, $name )
@@ -34,7 +33,7 @@ sub make_pkg {
     my $dist = Pinto::Schema->resultset('Distribution')->new_result(
         {
           path     => "A/AU/AUTHOR/Foo-$dist_version.tar.gz",
-          is_local => $is_local,
+          origin   => $is_local ? undef : 'REMOTE',
         }
     );
 
