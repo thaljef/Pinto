@@ -125,7 +125,16 @@ sub numify_version {
     try   { $numeric_version = version->parse($version)->numify() }
     catch { throw_version "Illegal version ($version)" };
 
-    return $numeric_version;
+    # My perl warns about doing math on an operand that contains
+    # '_', even though that is a perfectly valid value in a
+    # number.  Not sure if other perls have this same problem.
+
+    $numeric_version =~ s{_}{}g;
+
+    # Adding zero forces numeric context, which gets rid of any
+    # trailing zeros.
+
+    return $numeric_version + 0;
 }
 
 #-------------------------------------------------------------------------------
