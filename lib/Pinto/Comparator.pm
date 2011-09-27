@@ -51,7 +51,7 @@ sub compare_distributions {
     my $r =   ( $dist_a->is_local()         <=> $dist_b->is_local()        )
            || ( $dist_a->version_numeric()  <=> $dist_b->version_numeric() );
 
-    throw_error "Unable to compare $dist_a and dist_b" if not $r;
+    throw_error "Unable to compare $dist_a and $dist_b" if not $r;
 
     return $r;
 }
