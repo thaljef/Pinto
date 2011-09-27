@@ -35,15 +35,10 @@ __PACKAGE__->table("package");
   data_type: 'text'
   is_nullable: 0
 
-=head2 version_numeric
-
-  data_type: 'real'
-  is_nullable: 0
-
-=head2 should_index
+=head2 is_latest
 
   data_type: 'boolean'
-  default_value: 0
+  default_value: NULL
   is_nullable: 1
 
 =head2 distribution
@@ -61,15 +56,13 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "version",
   { data_type => "text", is_nullable => 0 },
-  "version_numeric",
-  { data_type => "real", is_nullable => 0 },
-  "should_index",
-  { data_type => "boolean", default_value => 0, is_nullable => 1 },
+  "is_latest",
+  { data_type => "boolean", default_value => \"NULL", is_nullable => 1 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("package_id");
-__PACKAGE__->add_unique_constraint("name_should_index_unique", ["name", "should_index"]);
+__PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
 __PACKAGE__->add_unique_constraint("name_distribution_unique", ["name", "distribution"]);
 
 =head1 RELATIONS
@@ -90,16 +83,19 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-23 01:24:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZlKBI3WNulfONRVzU6HSWA
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-25 13:47:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZgkSh8Qg5GKkwz+GFULT8A
 
 #------------------------------------------------------------------------------
 
-use overload ( '<=>' => 'compare_version',
-               'cmp' => 'compare_name',
-               '""'  => 'to_string' );
+use version;
+
+use overload ( '""'     => 'to_string',
+               '<=>'    => 'compare_version',
+               fallback => undef );
 
 use Pinto::Util;
+use Pinto::Comparator;
 
 use Exception::Class::TryCatch;
 
@@ -115,15 +111,15 @@ sub new {
     $attrs->{version} = 'undef'
         if not defined $attrs->{version};
 
-    $attrs->{version_numeric} =
-        eval { Pinto::Util::numify_version($attrs->{version}) };
-
-    if (catch my $e, ['Pinto::Exception::IllegalVersion']) {
-        warn "$attrs->{name}: $e. Forcing it to 0\n";
-        $attrs->{version_numeric} = 0;
-    }
-
     return $class->SUPER::new($attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub vname {
+    my ($self) = @_;
+
+    return $self->name() . '-' . $self->version();
 }
 
 #------------------------------------------------------------------------------
@@ -163,18 +159,41 @@ sub path {
 
 #------------------------------------------------------------------------------
 
-sub to_string {
+sub version_numeric {
     my ($self) = @_;
 
-    return $self->name();
+    return $self->{__version_numeric__} ||= do {
+
+        # If we can't parse the version and convert it to a number,
+        # then we force it to be 0.  The CPAN index will occasionally
+        # contain some odd ball version numbers.
+
+        my $vn = eval { Pinto::Util::numify_version( $self->version() ) } || 0;
+
+        # My perl warns about doing math on an operand that contains
+        # '_', even though that is a perfectly valid value in a
+        # number.  Not sure if other perls have this same problem.
+
+        $vn =~ s{_}{}g;
+
+        $vn;
+    };
 }
 
 #------------------------------------------------------------------------------
 
-sub to_long_string {
+sub to_string {
     my ($self) = @_;
 
-    my $indexed = $self->should_index() ? '*' : ' ';
+    return $self->vname();
+}
+
+#------------------------------------------------------------------------------
+
+sub to_formatted_string {
+    my ($self) = @_;
+
+    my $latest  = $self->is_latest()    ? '*' : ' ';
     my $local   = $self->is_local()     ? 'L' : 'F';
     my $mature  = $self->is_devel()     ? 'D' : 'R';
 
@@ -182,26 +201,15 @@ sub to_long_string {
     $width = length $self->name() if $width < length $self->name();
 
     return sprintf "%s%s%s %-${width}s %s  %s\n",
-       $indexed, $local, $mature, $self->name(), $self->version(), $self->path();
+       $latest, $local, $mature, $self->name(), $self->version(), $self->path();
 }
 
 #-------------------------------------------------------------------------------
 
 sub compare_version {
-    my ($self, $other, $swap) = @_;
-    ($other, $self) = ($self, $other) if $swap;
+    my ($self, $other) = @_;
 
-    return    ( $self->is_local()        <=> $other->is_local()         )
-           || ( $self->version_numeric() <=> $other->version_numeric()  );
-}
-
-#-------------------------------------------------------------------------------
-
-sub compare_name {
-    my ($self, $other, $swap) = @_;
-    ($other, $self) = ($self, $other) if $swap;
-
-    return  $self->name() cmp $other->name();
+    return Pinto::Comparator->compare_packages($self, $other);
 }
 
 #-------------------------------------------------------------------------------

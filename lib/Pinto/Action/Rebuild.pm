@@ -19,10 +19,14 @@ extends 'Pinto::Action';
 sub execute {
     my ($self) = @_;
 
-    $self->add_message('Rebuilt the index');
+    my $attrs   = {select => ['name'], distinct => 1};
+    my $cursor  = $self->db->get_all_packages(undef, $attrs)->cursor();
 
-    # Return 1 to signal changes, thus causing
-    # Pinto to regenerate the index for us.
+    while (my ($name) = $cursor->next()) {
+        $self->db->mark_latest_package_with_name( $name );
+    }
+
+    $self->add_message('Rebuilt the index');
 
     return 1;
 }

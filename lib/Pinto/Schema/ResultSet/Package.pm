@@ -13,16 +13,6 @@ use base qw( DBIx::Class::ResultSet );
 
 #-------------------------------------------------------------------------------
 
-sub every {
-    my ($self) = @_;
-
-    my $attrs = { order_by => { -asc => 'name' } };
-
-    return $self->search(undef, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
 sub locals {
     my ($self) = @_;
 
@@ -38,17 +28,6 @@ sub foreigners {
     my ($self) = @_;
 
     my $where = { origin => {'!=' => 'LOCAL' } };
-    my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
-
-    return $self->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
-sub indexed {
-    my ($self) = @_;
-
-    my $where = { should_index => 1 };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);

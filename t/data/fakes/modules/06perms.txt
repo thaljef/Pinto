@@ -5,7 +5,7 @@ Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
 Written-By:   CPAN::Faker version 0.007
 Line-Count:   5
-Last-Updated: Fri Sep 23 07:57:59 2011 GMT
+Last-Updated: Mon Sep 26 21:40:04 2011 GMT
 
 Bar,LOCAL,f
 Baz,LOCAL,f

@@ -4,6 +4,7 @@ package Pinto::Action::Add;
 
 use Moose;
 
+use Try::Tiny;
 use Path::Class;
 use File::Temp;
 use Dist::Metadata 0.920; # supports .zip
@@ -12,7 +13,7 @@ use Pinto::Util;
 use Pinto::Types 0.017 qw(StrOrFileOrURI);
 
 use Pinto::Exceptions qw(throw_error);
-use Exception::Class::TryCatch;
+
 
 use namespace::autoclean;
 
@@ -73,22 +74,27 @@ sub _process_archive {
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
-    my @packages = $self->_extract_packages($archive);
-    throw_error "$archive contains no packages" if not @packages;
+    my @package_specs = $self->_extract_packages($archive);
+    throw_error "$archive contains no packages" if not @package_specs;
 
-    for my $pkg (@packages) {
-        my $name = $pkg->{name};
-        my $where = { is_local => 1, name => $name };
+    for my $pkg (@package_specs) {
+        my $where = { name => $pkg->{name}, 'distribution.origin' => 'LOCAL'};
         my $incumbent = $self->db->get_all_packages($where)->first() or next;
         if ( (my $author = $incumbent->author() ) ne $self->author() ) {
-            throw_error "Only author $author can update package $name";
+            throw_error "Only author $author can update package $pkg->{name}";
         }
     }
 
-    my $pkg_count = @packages;
+    my $pkg_count = @package_specs;
     $self->info("Adding distribution $path providing $pkg_count packages");
-    my $dist = $self->db->add_distribution( {path => $path, is_local => 1} );
-    $self->db->add_package( { %{$_}, distribution => $dist->id() } ) for @packages;
+
+    my $dist = $self->db->new_distribution(path => $path);
+    $self->db->add_distribution($dist);
+
+    for my $pkg_spec ( @package_specs ) {
+        my $pkg = $self->db->new_package(%{$pkg_spec}, distribution => $dist);
+        $self->db->add_package($pkg);
+    }
 
     return $dist;
   }
@@ -98,19 +104,13 @@ sub _process_archive {
 sub _extract_packages {
     my ($self, $archive) = @_;
 
-    my $provides = eval {
-        my $distmeta = Dist::Metadata->new(file => $archive->stringify());
-        $distmeta->package_versions();
-    };
+    my $file = $archive->stringify();
+    my $provides;
 
-    throw_error "Unable to extract packages from $archive: $@" if $@;
+    try   { $provides = Dist::Metadata->new(file => $file)->package_versions(); }
+    catch { throw_error "Unable to extract packages from $file: $_" };
 
-    my @packages = ();
-    while (my ($name, $version) = each %{ $provides }) {
-        push @packages, { name => $name, version => $version };
-    }
-
-    return @packages;
+    return map { {name => $_, version => $provides->{$_}} } keys %{ $provides }
 }
 
 #-----------------------------------------------------------------------------

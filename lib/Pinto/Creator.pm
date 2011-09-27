@@ -45,10 +45,11 @@ sub create {
     # Sanity checks
     my $repos = $self->config->repos();
     $self->fatal("Directory $repos is not empty")
-      if -e $repos and $repos->children();
+        if -e $repos and $repos->children();
 
     # Create repos directory
-    $self->mkpath($repos);
+    $self->mkpath($repos)
+        if not -e $repos;
 
     # Create config dir
     my $config_dir = $self->config->config_dir();

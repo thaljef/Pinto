@@ -55,8 +55,13 @@ sub load {
             next;
         }
 
-        my $dist = $self->db->add_distribution( {path => $path, origin => $from} );
-        $self->db->add_package( { %{$_}, distribution => $dist->id() } ) for @{ $dists->{$path} };
+        my $dist = $self->db->new_distribution(path => $path, origin => $from);
+        $self->db->add_distribution($dist);
+
+        for my $pkg_spec ( @{ $dists->{$path} } ) {
+            my $pkg = $self->db->new_package(%{$pkg_spec}, distribution => $dist);
+            $self->db->add_package($pkg);
+        }
     }
 
     return $self;

@@ -57,7 +57,7 @@ sub _write_header {
     my $base    = $filename->basename();
     my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
     my $version = $Pinto::IndexWriter::VERSION || 'UNKNOWN VERSION';
-    my $count   = $self->db->get_all_indexed_packages->count();
+    my $count   = $self->db->get_records_for_packages_details->count();
 
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $base
@@ -79,16 +79,22 @@ END_PACKAGE_HEADER
 sub _write_packages {
     my ($self, $fh) = @_;
 
-    # The index is rewritten after almost every action, so
-    # we want this to be as fast as possible (especially
-    # during an Add or Remove action).  Therefore, we use
-    # a cursor to get raw data and skip all the DBIC extras.
+    # The index is rewritten after almost every action, so we want
+    # this to be as fast as possible (especially during an Add or
+    # Remove action).  Therefore, we use a cursor to get raw data and
+    # skip all the DBIC extras.
 
-    my $indexed = $self->db->get_all_indexed_packages();
-    my $cursor  = $indexed->cursor();
+    # Yes, slurping all the records at once consumes a lot of memory,
+    # but I want them to be sorted the way perl sorts them, not the
+    # way sqlite sorts them.  That way, the index file looks more
+    # like one produced by PAUSE.  Also, this is about twice as fast
+    # as using an iterator to reach each record lazily.
 
-    while ( my @vals = $cursor->next() ) {
-        my ($name, $version, $path) = @vals;
+    my $records = $self->db->get_records_for_packages_details();
+    my @records = sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
+
+    for my $record ( @records ) {
+        my ($name, $version, $path) = @{ $record };
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;

@@ -57,7 +57,7 @@ has db_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->repos->subdir('db') },
+    default   => sub { return $_[0]->pinto_dir->subdir('db') },
     lazy      => 1,
 );
 
@@ -70,12 +70,19 @@ has db_file => (
     lazy      => 1,
 );
 
+has pinto_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->repos->subdir('.pinto') },
+    lazy      => 1,
+);
 
 has config_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->repos->subdir('config') },
+    default   => sub { return $_[0]->pinto_dir->subdir('config') },
     lazy      => 1,
 );
 

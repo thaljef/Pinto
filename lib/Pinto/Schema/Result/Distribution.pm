@@ -33,20 +33,7 @@ __PACKAGE__->table("distribution");
 =head2 origin
 
   data_type: 'text'
-  default_value: (empty string)
-  is_nullable: 1
-
-=head2 is_local
-
-  data_type: 'boolean'
-  default_value: 0
-  is_nullable: 1
-
-=head2 is_devel
-
-  data_type: 'boolean'
-  default_value: 0
-  is_nullable: 1
+  is_nullable: 0
 
 =cut
 
@@ -56,11 +43,7 @@ __PACKAGE__->add_columns(
   "path",
   { data_type => "text", is_nullable => 0 },
   "origin",
-  { data_type => "text", default_value => "", is_nullable => 1 },
-  "is_local",
-  { data_type => "boolean", default_value => 0, is_nullable => 1 },
-  "is_devel",
-  { data_type => "boolean", default_value => 0, is_nullable => 1 },
+  { data_type => "text", is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("distribution_id");
 __PACKAGE__->add_unique_constraint("path_unique", ["path"]);
@@ -83,8 +66,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-23 01:24:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7bfpsaxglkOmOTHFp0xWXw
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-25 13:47:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6OrU0bGXWOnEWUIYJVnVzA
 
 #-------------------------------------------------------------------------------
 
@@ -99,10 +82,53 @@ use overload ('""' => 'to_string');
 sub new {
     my ($class, $attrs) = @_;
 
-    my $info = CPAN::DistnameInfo->new($attrs->{path});
-    $attrs->{is_devel} = 1 if $info->maturity() eq 'developer';
+    $attrs->{origin} = 'LOCAL'
+        if not defined $attrs->{origin};
 
     return $class->SUPER::new($attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub name {
+    my ($self) = @_;
+
+    return $self->_distname_info->dist();
+}
+
+#------------------------------------------------------------------------------
+
+sub vname {
+    my ($self) = @_;
+
+    return $self->_distname_info->distvname();
+}
+
+#------------------------------------------------------------------------------
+
+sub version {
+    my ($self) = @_;
+
+    return $self->_distname_info->version();
+}
+
+#------------------------------------------------------------------------------
+
+sub version_numeric {
+    my ($self) = @_;
+
+    return $self->{__version_numeric__} ||= do {
+
+        my $vn = eval { Pinto::Util::numify_version( $self->version() ) } || 0;
+
+        # My perl warns about doing math on an operand that contains
+        # '_', even though that is a perfectly valid value in a
+        # number.  Not sure if other perls have this same problem.
+
+        $vn =~ s{_}{}g;
+
+        $vn;
+    };
 }
 
 #------------------------------------------------------------------------------
@@ -116,7 +142,6 @@ sub physical_path {
 }
 
 #------------------------------------------------------------------------------
-# TODO: rename. maybe "origin_url"
 
 sub url {
     my ($self, $base) = @_;
@@ -124,6 +149,22 @@ sub url {
     $base ||= $self->origin();
 
     return URI->new( "$base/authors/id/" . $self->path() )->canonical();
+}
+
+#------------------------------------------------------------------------------
+
+sub is_devel {
+    my ($self) = @_;
+
+    return $self->_distname_info->maturity() eq 'developer';
+}
+
+#------------------------------------------------------------------------------
+
+sub is_local {
+    my ($self) = @_;
+
+    return $self->origin() eq 'LOCAL';
 }
 
 #------------------------------------------------------------------------------
@@ -140,6 +181,15 @@ sub to_string {
     my ($self) = @_;
 
     return $self->path();
+}
+
+#------------------------------------------------------------------------------
+
+sub _distname_info {
+    my ($self) = @_;
+
+    return $self->{__distname_info__} ||= CPAN::DistnameInfo->new( $self->path() );
+
 }
 
 #------------------------------------------------------------------------------
