@@ -5,7 +5,11 @@ use warnings;
 
 use Test::More (tests => 13);
 
-use Pinto::Schema;
+use Path::Class;
+use FindBin qw($Bin);
+use lib dir($Bin, 'lib')->stringify();
+
+use Pinto::Tester::Util qw(make_dist make_pkg);
 
 #------------------------------------------------------------------------------
 
@@ -37,17 +41,3 @@ $dist = make_dist(path => 'A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz');
 $pkg  = make_pkg(name => 'Foo', version => '2.0', distribution => $dist);
 
 is($pkg->is_devel(), 1, 'A non-devel package is considered devel when part of a devel dist');
-
-#------------------------------------------------------------------------------
-
-sub make_pkg {
-    my %attrs = @_;
-    return Pinto::Schema->resultset('Package')->new_result( \%attrs );
-}
-
-#------------------------------------------------------------------------------
-
-sub make_dist {
-    my %attrs = @_;
-    return Pinto::Schema->resultset('Distribution')->new_result( \%attrs );
-}
