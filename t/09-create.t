@@ -30,7 +30,7 @@ is $pinto->config->source(),    'http://cpan.perl.org', 'Got default source';
 # Test custom config
 
 my $config = {noinit => 1, nocleanup => 1, store => 'MyStore', source => 'MySource'};
-$t = Pinto::Tester->new($config);
+$t = Pinto::Tester->new(creator_args => $config);
 $pinto = $t->pinto();
 
 is $pinto->config->nocleanup(), 1, 'Got custom nocleanup';

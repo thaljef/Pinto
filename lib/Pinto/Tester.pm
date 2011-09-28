@@ -11,6 +11,7 @@ use Pinto;
 use Pinto::Util;
 use Pinto::Creator;
 use Pinto::Types qw(Dir);
+use MooseX::Types::Moose qw(ScalarRef HashRef);
 
 extends 'Test::Builder::Module';
 
@@ -20,19 +21,42 @@ extends 'Test::Builder::Module';
 
 #------------------------------------------------------------------------------
 
+has pinto_args => (
+   is         => 'ro',
+   isa        => HashRef,
+   default    => sub { {} },
+   auto_deref => 1,
+);
+
+
+has creator_args => (
+   is         => 'ro',
+   isa        => HashRef,
+   default    => sub { {} },
+   auto_deref => 1,
+);
+
+
 has pinto => (
     is       => 'ro',
     isa      => 'Pinto',
-    required => 1,
+    builder  => '_build_pinto',
+    lazy     => 1,
 );
 
 
 has repos => (
    is       => 'ro',
    isa      => Dir,
-   init_arg => undef,
-   default  => sub { $_[0]->pinto->config->repos() },
-   lazy     => 1,
+   default  => sub { dir( File::Temp::tempdir(CLEANUP => 1) ) },
+);
+
+
+has buffer => (
+   is         => 'ro',
+   isa        => ScalarRef,
+   default    => sub { \my $buffer },
+   writer     => '_set_buffer',
 );
 
 
@@ -45,16 +69,28 @@ has tb => (
 
 #------------------------------------------------------------------------------
 
-sub BUILDARGS {
-    my ($class, $creator_args, $pinto_args) = @_;
+sub _build_pinto {
+    my ($self) = @_;
 
-    my $repos   = dir( File::Temp::tempdir(CLEANUP => 1) );
-    my $creator = Pinto::Creator->new(repos => $repos);
-    $creator->create( %{ $creator_args } );
+    my $creator = Pinto::Creator->new( repos => $self->repos() );
+    $creator->create( $self->creator_args() );
 
-    my $pinto = Pinto->new(repos => $repos, %{$pinto_args});
+    my %defaults = (out => $self->buffer(), verbose => 3, repos => $self->repos());
+    return Pinto->new(%defaults, $self->pinto_args());
+}
+#------------------------------------------------------------------------------
 
-    return {pinto => $pinto};
+sub bufferstr {
+    my ($self)  = @_;
+    return ${ $self->buffer() };
+}
+
+#------------------------------------------------------------------------------
+
+sub reset_buffer {
+    my ($self, $new_buffer_ref) = @_;
+
+    return $self->_set_buffer( $new_buffer_ref || \my $buffer );
 }
 
 #------------------------------------------------------------------------------
