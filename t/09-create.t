@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 13);
+use Test::More (tests => 14);
 
 use Path::Class;
 
@@ -20,6 +20,7 @@ $t->path_exists_ok( [qw(.pinto db pinto.db)] );
 $t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
 $t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
 $t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
+$t->path_exists_ok( [qw(authors id)] );
 
 is $pinto->config->nocleanup(), 0, 'Got default nocleanup';
 is $pinto->config->noinit(),    0, 'Got default noinit';
