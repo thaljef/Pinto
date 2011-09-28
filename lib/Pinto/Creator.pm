@@ -74,9 +74,9 @@ sub create {
     # Write modlist
     $self->_write_modlist();
 
-    # Create authors dir
-    my $authors_dir = $self->config->authors_dir();
-    $self->mkpath($authors_dir);
+    # Create authors/id dir
+    my $authors_id_dir = $self->config->authors_dir->subdir('id');
+    $self->mkpath($authors_id_dir);
 
     # Write authors index
     $self->_write_mailrc();
