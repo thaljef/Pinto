@@ -50,7 +50,7 @@ sub BUILDARGS {
 
     my $repos   = dir( File::Temp::tempdir(CLEANUP => 1) );
     my $creator = Pinto::Creator->new(repos => $repos);
-    $creator->create(%{ $creator_args} );
+    $creator->create( %{ $creator_args } );
 
     my $pinto = Pinto->new(repos => $repos, %{$pinto_args});
 
