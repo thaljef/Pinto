@@ -88,16 +88,12 @@ __PACKAGE__->belongs_to(
 
 #------------------------------------------------------------------------------
 
-use version;
+use Pinto::Util;
+use Pinto::Exceptions qw(throw_error);
 
 use overload ( '""'     => 'to_string',
                '<=>'    => 'compare_version',
                fallback => undef );
-
-use Pinto::Util;
-use Pinto::Comparator;
-
-use Exception::Class::TryCatch;
 
 #------------------------------------------------------------------------------
 
@@ -195,10 +191,26 @@ sub to_formatted_string {
 #-------------------------------------------------------------------------------
 
 sub compare_version {
-    my ($self, $other) = @_;
+    my ($pkg_a, $pkg_b) = @_;
 
-    return Pinto::Comparator->compare_packages($self, $other);
-}
+    throw_error "Cannot compare packages with different names"
+        if $pkg_a->name() ne $pkg_b->name();
+
+    throw_error "Cannot compare development distribution $pkg_a"
+        if $pkg_a->is_devel();
+
+    throw_error "Cannot compare development distribution $pkg_b"
+        if $pkg_b->is_devel();
+
+    my $r =   ( $pkg_a->is_local()          <=> $pkg_b->is_local()          )
+           || ( $pkg_a->version_numeric()   <=> $pkg_b->version_numeric()   )
+           || ( $pkg_a->distribution()      <=> $pkg_b->distribution()      );
+
+    # No two packages can be considered equal!
+    throw_error "Unable to compare $pkg_a and $pkg_b" if not $r;
+
+    return $r;
+};
 
 #-------------------------------------------------------------------------------
 1;

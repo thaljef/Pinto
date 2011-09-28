@@ -75,7 +75,12 @@ use URI;
 use Path::Class;
 use CPAN::DistnameInfo;
 
-use overload ('""' => 'to_string');
+use Pinto::Util;
+use Pinto::Exceptions qw(throw_error);
+
+use overload ( '""'     => 'to_string',
+               '<=>'    => 'compare_version',
+               fallback => undef );
 
 #------------------------------------------------------------------------------
 
@@ -173,6 +178,30 @@ sub to_string {
     my ($self) = @_;
 
     return $self->path();
+}
+
+#------------------------------------------------------------------------------
+
+sub compare_version {
+    my ($dist_a, $dist_b) = @_;
+
+    throw_error "Cannot compare distributions with different names"
+        if $dist_a->name() ne $dist_b->name();
+
+    throw_error "Cannot compare development distribution $dist_a"
+        if $dist_a->is_devel();
+
+    throw_error "Cannot compare development distribution $dist_b"
+        if $dist_b->is_devel();
+
+    my $r =   ( $dist_a->is_local()         <=> $dist_b->is_local()        )
+           || ( $dist_a->version_numeric()  <=> $dist_b->version_numeric() );
+
+    # No two dists can be considered equal
+    throw_error "Unable to compare $dist_a and $dist_b" if not $r;
+
+    return $r;
+
 }
 
 #------------------------------------------------------------------------------

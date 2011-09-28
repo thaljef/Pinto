@@ -7,7 +7,7 @@ use Path::Class;
 use FindBin qw($Bin);
 use lib dir($Bin, 'lib')->stringify();
 
-use Test::More (tests => 9);
+use Test::More (tests => 11);
 use Test::Exception;
 
 use Pinto::Tester::Util qw(make_dist make_pkg);
@@ -28,6 +28,12 @@ package_compare_ok( [1,1,0], [1,2,0], );
 package_compare_ok( [1,2,0], [1,1,1], );
 
 package_compare_ok( [1,1,1], [1,2,1], );
+
+dies_ok { package_compare_ok( ['1.0_1',1,1], [1,1,1] ) }
+  'Comparing a devel package should raise exception';
+
+dies_ok { package_compare_ok( [1,'1.0_1',1], [1,1,1] ) }
+  'Comparing a devel dist should raise exception';
 
 dies_ok { package_compare_ok( [1,1,0], [1,1,0] ) }
   'Comparing identical foreign packages/dists should raise exception';
@@ -50,17 +56,16 @@ sub package_compare_ok {
 #------------------------------------------------------------------------------
 
 sub _make_pkg {
-    my ($pkg_version, $dist_version, $is_local, $pkg_id) = @{ shift() };
+    my ($pkg_version, $dist_version, $is_local) = @{ shift() };
 
     my $dist = make_dist(
           path     => "A/AU/AUTHOR/Foo-$dist_version.tar.gz",
-          origin   => $is_local ? undef : 'REMOTE',
+          origin   => $is_local ? undef : 'FOREIGN',
     );
 
     my $pkg = make_pkg(
           name         => 'Foo',
           version      => $pkg_version,
-          package_id   => $pkg_id,
           distribution => $dist,
     );
 
