@@ -9,6 +9,7 @@ use Path::Class;
 
 use Pinto;
 use Pinto::Util;
+use Pinto::Creator;
 use Pinto::Types qw(Dir);
 
 extends 'Test::Builder::Module';
@@ -41,6 +42,20 @@ has tb => (
    init_arg => undef,
    default  => => sub { __PACKAGE__->builder() },
 );
+
+#------------------------------------------------------------------------------
+
+sub BUILDARGS {
+    my ($class, $creator_args, $pinto_args) = @_;
+
+    my $repos   = dir( File::Temp::tempdir(CLEANUP => 1) );
+    my $creator = Pinto::Creator->new(repos => $repos);
+    $creator->create(%{ $creator_args} );
+
+    my $pinto = Pinto->new(repos => $repos, %{$pinto_args});
+
+    return {pinto => $pinto};
+}
 
 #------------------------------------------------------------------------------
 

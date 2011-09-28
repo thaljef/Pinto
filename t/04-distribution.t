@@ -6,8 +6,6 @@ use warnings;
 use Test::More (tests => 18);
 
 use Path::Class;
-use FindBin qw($Bin);
-use lib dir($Bin, 'lib')->stringify();
 
 use Pinto::Tester::Util qw(make_dist);
 
