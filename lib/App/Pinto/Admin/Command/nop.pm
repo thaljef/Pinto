@@ -31,7 +31,11 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Arguments are not allowed') if @{ $args };
+    $self->usage_error('Arguments are not allowed')
+      if @{ $args };
+
+    $self->usage_error('Sleep time must be positive integer')
+      if defined $opts->{sleep} && $opts->{sleep} < 1;
 
     return 1;
 }
