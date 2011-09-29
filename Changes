@@ -7,9 +7,9 @@
      pinto-admin and VCS commands.  If you really want to try
      migrating your old repository, please contact me for guidance.
 
-     Otherwise, you'll have to create a new repository and `add` each
+     Otherwise, you'll have to create a new repository and 'add' each
      of your local distributions again.  If you have foreign
-     distributions in your repository then you'll have to `update`
+     distributions in your repository then you'll have to 'update'
      them again too, but you might not get exactly the same versions
      that you used to have.
 
@@ -23,7 +23,9 @@
 
      Pinto now uses a SQLite database to store information.  This
      improves performance, reduces memory consumption, and ensures
-     data integrity.
+     data integrity.  Pinto is single threaded and permits only one
+     database connection at a time, so it is safe for NFS (or so I've
+     been told by SQLite experts).
 
      Pinto now behaves more like PAUSE, and will accept distributions
      with overlapping packages.  As always, only the 'latest' version
@@ -48,8 +50,27 @@
      The 'list' command for pinto-admin now accepts a --format option
      that can be used to customize what/how information is displayed.
 
+     The 'remove' command for pinto-admin now works for both foreign
+     and local distributions.  However, there is a caveat when
+     removing foreign distributions (See POD for details).
+
+     The 'rebuild' command for pinto-admin now has a --recompute
+     option that causes Pinto to recompute the 'latest' version
+     of all the packages (See POD for details).
+
+     pinto-admin now has a 'manual' command for displaying the full
+     manual for a particular command.
+
+     pinto-admin now has a 'version' command for displaying version
+     information.
+
      pinto-admin now has a 'purge' command that removes everything
      from your repository.
+
+     Most of the pinto-admin commands now have aliases.  Thanks to the
+     awesomeness of App::Cmd, you can say 'pinto-admin up' instead of
+     'pinto-admin update' or 'pinto-admin rm' instead of 'pinto-admin
+     remove'.  The aliases are listed in the manual for each command.
 
      * Other Changes:
 
@@ -62,6 +83,15 @@
 
      The 'noclobber' configuration setting has been removed, since it
      was never implemented anyway.
+
+     The --force option of the 'update' command for pinto-admin is no
+     longer supported.  I'm thinking of changing the meaning of "force"
+     and might bring it back in a future release.
+
+     pinto-admin is less noisy.  You won't see any output on the
+     command line unless you set the --verbose switch or there is some
+     kind of error or warning.  Setting the --quiet switch will still
+     suppress any non-fatal warnings.
 
      * Bug Fixes:
 
