@@ -19,9 +19,6 @@ sense not to.
 =item Write a tutorial to explain different ways for using Pinto in
 the development/deployment cycle. ++
 
-=item Add support for cpan[1] clients.  For this I think we just need
-to produce minimal version of the authors and modules index files. ++
-
 =item Generate a RECENT file.  This could just contain the files
 added in the last action (if any).
 
