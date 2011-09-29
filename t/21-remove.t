@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 11);
+use Test::More (tests => 13);
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -54,7 +54,9 @@ $pinto->add_action('Remove', dist_name => $dist_name, author => $LOCAL1 );
 $t->result_ok( $pinto->run_actions() );
 
 $t->dist_not_exists_ok( $dist_name, $LOCAL1 );
+$t->path_not_exists_ok( [qw( authors id L LO LOCAL1 CHECKSUMS)] );
 $t->path_not_exists_ok( [qw( authors id L LO LOCAL1 )] );
 $t->path_not_exists_ok( [qw( authors id L LO )] );
 $t->path_not_exists_ok( [qw( authors id L )] );
+$t->path_exists_ok( [qw( authors id )] );
 $t->package_not_loaded_ok('Foo', $dist_name, $LOCAL1 );

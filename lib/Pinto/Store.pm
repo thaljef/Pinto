@@ -4,7 +4,9 @@ package Pinto::Store;
 
 use Moose;
 
+use Try::Tiny;
 use File::Copy;
+use CPAN::Checksums;
 
 use Pinto::Exceptions qw(throw_fatal);
 
@@ -86,37 +88,26 @@ sub tag {
 
 #------------------------------------------------------------------------------
 
-=method add( file => $some_file, source => $other_file )
+sub add_archive {
 
-Adds the specified C<file> (as a L<Path::Class::File>) to this Store.
-The path to C<file> is presumed to be somewhere beneath the root
-directory of this Store.  If the optional C<source> is given (also as
-a L<Path::Class::File>), then that C<source> is first copied to
-C<file>.  If C<source> is not specified, then the C<file> must already
-exist.  Throws an exception on failure.  Returns a reference to this
-Store.
+    my ($self, @args) = @_;
 
-=cut
+    my $to   = pop @args;
+    my $from = shift @args;
 
-sub add {
-    my ($self, %args) = @_;
+    throw_fatal "$to does not exist and no source was specified"
+        if not -e $to and not defined $from;
 
-    my $file   = $args{file};
-    my $source = $args{source};
+    throw_fatal "$from is not a file"
+        if defined $from and not -f $from;
 
-    throw_fatal "$file does not exist and no source was specified"
-        if not -e $file and not defined $source;
+    if ($from) {
 
-    throw_fatal "$source is not a file"
-        if $source and $source->is_dir();
-
-    if ($source) {
-
-        if ( not -e (my $parent = $file->parent()) ) {
+        if ( not -e (my $parent = $to->parent()) ) {
           $self->mkpath($parent);
         }
 
-        $self->debug("Copying $source to $file");
+        $self->debug("Copying $from -> $to");
 
         # NOTE: We have to force stringification of the arguments to
         # File::Copy, since older versions don't support Path::Class
@@ -124,8 +115,66 @@ sub add {
         # not dual-lifed, so upgrading it requires a whole new Perl.
         # We're going to be kind and accommodate the old versions.
 
-        File::Copy::copy("$source", "$file")
-            or throw_fatal "Failed to copy $source to $file: $!";
+        File::Copy::copy("$from", "$to")
+            or throw_fatal "Failed to copy $from to $to: $!";
+    }
+
+    $self->add_file( file => $to );
+    $self->update_checksums( directory => $to->parent() );
+
+    return $self;
+
+}
+
+#------------------------------------------------------------------------------
+
+sub remove_archive {
+    my ($self, $path) = @_;
+
+    $self->remove_file( file => $path );
+
+    $self->update_checksums( directory => $path->parent() );
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub add_file {
+    my ($self, %args) = @_;
+
+    my $file   = $args{file};
+
+    throw_fatal "$file does not exist"
+        if not -e $file;
+
+    throw_fatal "$file is not a file"
+        if not -f $file;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub remove_file {
+    my ($self, %args) = @_;
+
+    my $file = $args{file};
+
+    throw_fatal "$file does not exist"
+        if not -e $file;
+
+    throw_fatal "$file is not a file"
+        if not -f $file;
+
+    $file->remove()
+        or throw_fatal "Failed to remove file $file: $!";
+
+    while (my $dir = $file->parent()) {
+        last if $dir->children();
+        $self->debug("Removing empty directory $dir");
+        $dir->remove() or throw_fatal "Failed to remove directory $dir: $!";
+        $file = $dir;
     }
 
     return $self;
@@ -133,34 +182,26 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method remove( file => $some_file )
-
-Removes the specified C<file> (as a L<Path::Class::File>) from this
-Store.  The path to C<file> is presumed to be somewhere beneath the
-root directory of this Store.  Any empty directories above C<file>
-will also be removed.  Throws an exception on failure.  Returns a
-reference to this Store.
-
-=cut
-
-sub remove {
+sub update_checksums {
     my ($self, %args) = @_;
+    my $dir = $args{directory};
 
-    my $file  = $args{file};
+    my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children();
+    return 0 if not @children;
 
-    return $self if not -e $file;
+    my $cs_file = $dir->file('CHECKSUMS');
 
-    throw_fatal "$file is not a file" if -d $file;
-
-    $self->info("Removing file $file");
-    $file->remove() or throw_fatal "Failed to remove $file: $!";
-
-    while (my $dir = $file->parent()) {
-        last if $dir->children();
-        $self->debug("Removing empty directory $dir");
-        $dir->remove();
-        $file = $dir;
+    if ( -e $cs_file && @children == 1 ) {
+        $self->remove_file(file => $cs_file);
+        return 0;
     }
+
+    $self->debug("Generating $cs_file");
+
+    try   { CPAN::Checksums::updatedir($dir) }
+    catch { throw_error("CHECKSUM generation failed for $dir: $_") };
+
+    $self->add_file(file => $cs_file);
 
     return $self;
 }

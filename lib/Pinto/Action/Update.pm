@@ -71,7 +71,7 @@ sub _do_mirror {
     $self->debug("Skipping $dest: already fetched") and return 0 if -e $dest;
     $self->fetch(url => $dist->url(), to => $dest)   or return 0;
 
-    $self->store->add(file => $dest);
+    $self->store->add_archive( $dest );
 
     return 1;
 }

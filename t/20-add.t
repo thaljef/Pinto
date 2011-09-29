@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 19);
+use Test::More (tests => 20);
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -39,6 +39,7 @@ $pinto->add_action('Add', archive => $archive, author => $LOCAL1);
 $t->result_ok( $pinto->run_actions() );
 
 $t->dist_exists_ok( $dist_name, $LOCAL1 );
+$t->path_exists_ok( [qw( authors id L LO LOCAL1 CHECKSUMS)] );
 $t->path_exists_ok( [qw( authors id L LO LOCAL1 )] );
 $t->path_exists_ok( [qw( authors id L LO )] );
 $t->path_exists_ok( [qw( authors id L )] );

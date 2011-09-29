@@ -37,7 +37,6 @@ override execute => sub {
 
     my $dist_name  = $self->dist_name();
     my $author     = $self->author();
-    my $cleanup    = !$self->config->nocleanup();
 
     my $path = $dist_name =~ m{/}mx ?
         $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
@@ -48,7 +47,7 @@ override execute => sub {
     my $file = $dist->physical_path( $self->config->repos() );
 
     $self->db->remove_distribution($dist);
-    $self->store->remove( file => $file ) if $cleanup;
+    $self->store->remove_archive( $file );
     $self->add_message( Pinto::Util::removed_dist_message( $dist ) );
 
     return 1;

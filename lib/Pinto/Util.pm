@@ -20,7 +20,7 @@ use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
-Readonly my %SCM_FILES => (map {$_ => 1} qw(.svn .git .gitignore CVS));
+Readonly my %VCS_FILES => (map {$_ => 1} qw(.svn .git .gitignore CVS));
 
 #-------------------------------------------------------------------------------
 
@@ -59,17 +59,19 @@ sub is_url {
 
 #-------------------------------------------------------------------------------
 
-=func is_source_control_file($path)
+=func is_vcs_file($path)
 
 Given a path (which may be a file or directory), returns true if that path
 is part of the internals of a version control system (e.g. Git, Subversion).
 
 =cut
 
-sub is_source_control_file {
+sub is_vcs_file {
     my ($file) = @_;
 
-    return exists $SCM_FILES{$file};
+    $file = file($file) unless eval { $file->isa('Path::Class::File') };
+
+    return exists $VCS_FILES{ $file->basename() };
 }
 
 #-------------------------------------------------------------------------------
