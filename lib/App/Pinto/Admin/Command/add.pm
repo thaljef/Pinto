@@ -77,13 +77,15 @@ __END__
 
 =head1 DESCRIPTION
 
-This command adds a local distribution to the repository.  Packages in
-local distributions always mask packages in foreign distributions.
+This command adds a local distribution and all its packages to the
+repository and recomputes the 'latest' version of the packages that
+were in that distribution.
+
 When a distribution is first added to the repository, the author
-becomes the owner of the distribution Thereafter, only the same author
-can add a new version of that distribution. [Technically speaking, the
-author really owns the *packages* in the distribution, not the
-distribution itself.]
+becomes the owner of the distribution (actually, the packages).
+Thereafter, only the same author can add new versions or remove those
+packages.  However, this is not strongly enforced -- you can change
+your author identity at any time using the C<--author> option.
 
 =head1 COMMAND ARGUMENTS
 
@@ -138,5 +140,18 @@ This is only relevant if you are using a VCS-based storage mechanism.
 The syntax of the NAME depends on the type of VCS you are using.
 
 =back
+
+=head1 DISCUSSION
+
+Using the 'add' command on a distribution you got from another
+repository (such as CPAN mirror) effectvely makes that distribution
+local.  So you become the owner of that distribution, even if the
+repository already contains a copy that was pulled from another
+repsository by the 'update' command.
+
+Local packages are always considered 'later' then any foreign package
+with the same name, even if the foreign package has a higher version
+number.  So a foreign package will not become 'latest' until all
+versions of the local package with that name have been removed.
 
 =cut

@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::remove;
 
-# ABSTRACT: remove local distributions from the repository
+# ABSTRACT: remove distributions from the repository
 
 use strict;
 use warnings;
@@ -78,10 +78,9 @@ __END__
 
 =head1 DESCRIPTION
 
-This command removes a local distribution from the repository.  You
-cannot remove foreign distributions that were pulled in from another
-repository using the C<update> command (however you can mask them by
-adding your own versions).
+This command removes a distribution and all its packages from the
+repository and recomputes the 'latest' version of the packages that
+were in that distribution.
 
 =head1 COMMAND ARGUMENTS
 
@@ -145,5 +144,27 @@ This is only relevant if you are using a VCS-based storage mechanism.
 The syntax of the NAME depends on the type of VCS you are using.
 
 =back
+
+=head1 DISCUSSION
+
+Local packages are always considered 'later' then any foreign package
+with the same name, even if the foreign package has a higher version
+number.  So a foreign package will not become 'latest' until all
+versions of the local package with that name have been removed.
+
+Removing the latest version of local package generally works as you
+would expect.  That is, the package with the next highest version (if
+it exists) will take its place in the 02packages.details file.  But
+when removing the latest version of a foreign package, the next
+'latest' version may not alway appear in the 02packages.details file,
+or it may not be the version you were expecting.
+
+This is because Pinto does not index foreign distributions so it only
+knows about the packages listed in the foreign index, which may not
+actually represent all the packages in that distribution.  Moreover,
+the completeness of the history of a foreign package depends on how
+often you update your repository.  So if you update infrequently,
+there may be large gaps between the package versions that your Pinto
+repository knows about.
 
 =cut

@@ -8,13 +8,16 @@ use MooseX::Types::Moose qw( Str );
 use Pinto::Util;
 use Pinto::Exceptions qw(throw_error);
 
-extends 'Pinto::Action';
-
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 # Attributes
@@ -47,7 +50,7 @@ override execute => sub {
     my $file = $dist->physical_path( $self->config->repos() );
 
     $self->db->remove_distribution($dist);
-    $self->store->remove_archive( $file );
+    $self->store->remove_archive($file);
     $self->add_message( Pinto::Util::removed_dist_message( $dist ) );
 
     return 1;
