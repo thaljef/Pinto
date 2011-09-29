@@ -16,7 +16,7 @@ use Pinto;
 my $buffer = '';
 my $repos  = File::Temp::tempdir(CLEANUP => 1);
 my $pinto  = Pinto->new(repos => $repos, out => \$buffer, verbose => 2);
-$pinto->new_action_batch();
+$pinto->new_batch();
 
 #------------------------------------------------------------------------------
 # Finally, we can do a test now..

@@ -34,7 +34,7 @@ $t->dist_not_exists_ok($dist_name, $LOCAL1);
 #------------------------------------------------------------------------------
 # Adding a local dist...
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL1);
 $t->result_ok( $pinto->run_actions() );
 
@@ -50,21 +50,21 @@ $t->package_is_latest_ok('Foo', $dist_name, $LOCAL1);
 #-----------------------------------------------------------------------------
 # Addition exceptions...
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
 
 like($t->bufferstr(), qr/$dist_name already exists/,
      'Cannot add same dist twice');
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL2);
 $t->result_not_ok( $pinto->run_actions() );
 
 like($t->bufferstr(), qr/Only author $LOCAL1 can update package Foo/,
      'Cannot add package owned by another author');
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => 'none_such', author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
 
@@ -72,7 +72,7 @@ like($t->bufferstr(), qr/none_such does not exist/,
      'Cannot add nonexistant archive');
 
 my $lower = $auth_dir->file('FooOnly-0.009.tar.gz');
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => $lower, author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
 

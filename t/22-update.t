@@ -40,7 +40,7 @@ $t->dist_not_exists_ok($dist_name, $LOCAL1);
 #------------------------------------------------------------------------------
 # Updating from a foreign repository...
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Update');
 $t->result_ok( $pinto->run_actions() );
 
@@ -69,7 +69,7 @@ like $t->bufferstr(), qr{L/LO/LOCAL/Fee-0.02_1.tar.gz will not be indexed};
 $dist_name = 'BarAndBaz-0.04.tar.gz';
 $archive   =  $auth_dir->file($dist_name);
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL1);
 $pinto->run_actions();
 
@@ -86,7 +86,7 @@ $t->package_not_latest_ok('Baz', $dist_name, $FOREIGN);
 #------------------------------------------------------------------------------
 # After removing our local version, the foreign version should become latest...
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Remove', dist_name => $dist_name, author => $LOCAL1 );
 $pinto->run_actions();
 

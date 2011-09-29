@@ -10,7 +10,7 @@ use Pinto::Config;
 use Pinto::Logger;
 use Pinto::Locker;
 use Pinto::Database;
-use Pinto::ActionBatch;
+use Pinto::Batch;
 
 use Pinto::Exceptions qw(throw_fatal);
 
@@ -23,10 +23,10 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has _action_batch => (
+has _batch => (
     is         => 'ro',
-    isa        => 'Pinto::ActionBatch',
-    writer     => '_set_action_batch',
+    isa        => 'Pinto::Batch',
+    writer     => '_set_batch',
     init_arg   => undef,
 );
 
@@ -112,16 +112,16 @@ sub _build_locker {
 #------------------------------------------------------------------------------
 # Public methods
 
-sub new_action_batch {
+sub new_batch {
     my ($self, %args) = @_;
 
-    my $batch = Pinto::ActionBatch->new( config => $self->config(),
-                                         logger => $self->logger(),
-                                         store  => $self->store(),
-                                         db     => $self->db(),
-                                         %args );
+    my $batch = Pinto::Batch->new( config => $self->config(),
+                                   logger => $self->logger(),
+                                   store  => $self->store(),
+                                   db     => $self->db(),
+                                   %args );
 
-   $self->_set_action_batch( $batch );
+   $self->_set_batch( $batch );
 
    return $self;
 }
@@ -142,7 +142,7 @@ sub add_action {
                                       db     => $self->db(),
                                       %args );
 
-    $self->_action_batch->enqueue($action);
+    $self->_batch->enqueue($action);
 
     return $self;
 }
@@ -152,15 +152,15 @@ sub add_action {
 sub run_actions {
     my ($self) = @_;
 
-    my $action_batch = $self->_action_batch()
-        or throw_fatal 'You must create an action batch first';
+    my $batch = $self->_batch()
+        or throw_fatal 'You must create an batch first';
 
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->whine(@_) };
 
     $self->locker->lock();
 
-    my $r = $self->_action_batch->run();
+    my $r = $self->_batch->run();
 
     $self->locker->unlock();
 

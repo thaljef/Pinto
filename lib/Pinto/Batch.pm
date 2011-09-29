@@ -1,4 +1,4 @@
-package Pinto::ActionBatch;
+package Pinto::Batch;
 
 # ABSTRACT: Runs a series of actions
 

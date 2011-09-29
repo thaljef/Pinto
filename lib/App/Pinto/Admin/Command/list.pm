@@ -62,7 +62,7 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->new_batch( %{$opts} );
     my $list_class = 'List::' . ucfirst delete $opts->{type};
     $self->pinto->add_action($list_class, %{$opts});
     my $result = $self->pinto->run_actions();

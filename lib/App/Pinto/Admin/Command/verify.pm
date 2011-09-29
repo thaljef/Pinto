@@ -38,7 +38,7 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->new_batch( %{$opts} );
     $self->pinto->add_action('Verify', %{$opts});
     my $result = $self->pinto->run_actions();
 

@@ -58,7 +58,7 @@ sub execute {
     my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
     return 0 if not @args;
 
-    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->new_batch( %{$opts} );
     $self->pinto->add_action('Remove', %{$opts}, dist_name => $_) for @args;
     my $result = $self->pinto->run_actions();
 

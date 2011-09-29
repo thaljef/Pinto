@@ -48,7 +48,7 @@ sub execute {
     $self->prompt_for_confirmation()
         if IO::Interactive::is_interactive();
 
-    $self->pinto->new_action_batch( %{$opts} );
+    $self->pinto->new_batch( %{$opts} );
     $self->pinto->add_action('Clean', %{$opts});
     my $result = $self->pinto->run_actions();
 

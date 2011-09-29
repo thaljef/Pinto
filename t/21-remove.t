@@ -35,21 +35,21 @@ $t->dist_not_exists_ok($dist_name, $LOCAL1);
 #------------------------------------------------------------------------------
 # Adding a local dist...
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL1);
 $t->result_ok( $pinto->run_actions() );
 
 #------------------------------------------------------------------------------
 # Removing the local dist...
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Remove', dist_name => $dist_name, author => $LOCAL2);
 $t->result_not_ok( $pinto->run_actions() );
 
 like($t->bufferstr(), qr/$LOCAL2\/$dist_name does not exist/,
      'Cannot remove dist owned by another author');
 
-$pinto->new_action_batch();
+$pinto->new_batch();
 $pinto->add_action('Remove', dist_name => $dist_name, author => $LOCAL1 );
 $t->result_ok( $pinto->run_actions() );
 
@@ -58,5 +58,5 @@ $t->path_not_exists_ok( [qw( authors id L LO LOCAL1 CHECKSUMS)] );
 $t->path_not_exists_ok( [qw( authors id L LO LOCAL1 )] );
 $t->path_not_exists_ok( [qw( authors id L LO )] );
 $t->path_not_exists_ok( [qw( authors id L )] );
-$t->path_exists_ok( [qw( authors id )] );
+$t->path_not_exists_ok( [qw( authors id )] );
 $t->package_not_loaded_ok('Foo', $dist_name, $LOCAL1 );
