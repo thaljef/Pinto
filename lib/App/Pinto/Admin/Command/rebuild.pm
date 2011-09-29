@@ -5,6 +5,8 @@ package App::Pinto::Admin::Command::rebuild;
 use strict;
 use warnings;
 
+use IO::Interactive;
+
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -20,9 +22,10 @@ sub opt_spec {
 
     return (
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
-        [ 'nocommit'  => 'Do not commit changes to VCS' ],
-        [ 'noinit'    => 'Do not pull/update from VCS' ],
-        [ 'tag=s'     => 'Specify a VCS tag name' ],
+        [ 'nocommit'    => 'Do not commit changes to VCS' ],
+        [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'recompute'   => 'Also recompute latest versions' ],
+        [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
 
@@ -41,6 +44,9 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
+    $self->prompt_for_confirmation()
+        if IO::Interactive::is_interactive();
+
     $self->pinto->new_batch( %{$opts} );
     $self->pinto->add_action('Rebuild', %{$opts});
     my $result = $self->pinto->run_actions();
@@ -51,6 +57,30 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
+sub prompt_for_confirmation {
+    my ($self) = @_;
+
+    print <<'END_MESSAGE';
+Rebuilding the 02packages.details file may cause its contents to change.
+This means that users pulling distributions from your repository could
+start getting different results after you rebuild.  Once the
+02packages.details file has been rebuilt, the only way to restore the
+old version is to roll back your VCS (if that is applicable).
+
+END_MESSAGE
+
+    my $answer = '';
+
+    until ($answer =~ m/^[yn]$/ix) {
+        print "Are you sure you want to proceed? [Y/N]: ";
+        chomp( $answer = uc <STDIN> );
+    }
+
+    exit 0 if $answer eq 'N';
+    return 1;
+}
+
+#------------------------------------------------------------------------------
 1;
 
 __END__

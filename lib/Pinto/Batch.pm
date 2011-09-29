@@ -113,6 +113,8 @@ sub run {
 
     $self->db->write_index();
 
+    $self->debug( 'AUDIT: ' . $self->message() );
+
     return $self->_result() if $self->nocommit();
 
     $self->_do_vcs_stuff() if $self->store->isa('Pinto::Store::VCS');
