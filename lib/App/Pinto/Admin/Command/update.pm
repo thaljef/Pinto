@@ -19,7 +19,6 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'force'       => 'Force action, even if indexes appear unchanged' ],
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
@@ -77,11 +76,6 @@ None
 =head1 COMMAND OPTIONS
 
 =over 4
-
-=item --force
-
-Forces action, even if the indexes on the source repository appear to
-be unchanged.
 
 =item --message=MESSAGE
 

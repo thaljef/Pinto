@@ -20,15 +20,6 @@ use namespace::autoclean;
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
-# Moose Attributes
-
-has force => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
-
-#------------------------------------------------------------------------------
 # Moose Roles
 
 with qw(Pinto::Role::UserAgent);
