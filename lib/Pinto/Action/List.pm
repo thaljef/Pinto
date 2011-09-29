@@ -6,7 +6,7 @@ use Moose;
 
 use Carp qw(croak);
 
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Bool Str);
 use Pinto::Types 0.017 qw(IO);
 
 use namespace::autoclean;
@@ -30,6 +30,13 @@ has out => (
 );
 
 
+has format => (
+    is      => 'ro',
+    isa     => Str,
+    default => undef,
+);
+
+
 has indexed => (
     is      => 'ro',
     isa     => Bool,
@@ -46,8 +53,9 @@ override execute => sub {
     my ($self) = @_;
 
     my $rs = $self->packages();
+    my $format = $self->format();
     while( my $package = $rs->next() ) {
-        print { $self->out() } $package->to_long_string();
+        print { $self->out() } $package->to_formatted_string($format);
     }
 
     return 0;

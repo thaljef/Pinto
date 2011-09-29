@@ -88,6 +88,8 @@ __PACKAGE__->belongs_to(
 
 #------------------------------------------------------------------------------
 
+use String::Format;
+
 use Pinto::Util;
 use Pinto::Exceptions qw(throw_error);
 
@@ -175,17 +177,42 @@ sub to_string {
 #------------------------------------------------------------------------------
 
 sub to_formatted_string {
-    my ($self) = @_;
+    my ($self, $format) = @_;
 
-    my $latest  = $self->is_latest()    ? '*' : ' ';
-    my $local   = $self->is_local()     ? 'L' : 'F';
-    my $mature  = $self->is_devel()     ? 'D' : 'R';
+    my %fspec = (
+         'n' => sub { $self->name()                           },
+         'N' => sub { $self->vname()                          },
+         'v' => sub { $self->version()                        },
+         'V' => sub { $self->version_numeric()                },
+         'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
+         'x' => sub { $self->is_latest()  ? '*' : ' '         },
+         'p' => sub { $self->distribution->path()             },
+         'P' => sub { $self->distribution->physical_path()    },
+         'o' => sub { $self->is_local()   ? 'L' : 'F'         },
+         'O' => sub { $self->distribution->origin()           },
+         'a' => sub { $self->author()                         },
+         'b' => sub { $self->is_blocked() ? 'B' : ' '         },
+         'd' => sub { $self->distribution->name()             },
+         'D' => sub { $self->distribution->vname()            },
+         'w' => sub { $self->distribution->version()          },
+         'W' => sub { $self->distribution->version_numeric()  },
+         'u' => sub { $self->distribution->url()              },
+    );
+
+    $format ||= $self->default_format();
+    return String::Format::stringf($format, %fspec);
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub default_format {
+    my ($self) = @_;
 
     my $width = 38 - length $self->version();
     $width = length $self->name() if $width < length $self->name();
 
-    return sprintf "%s%s%s %-${width}s %s  %s\n",
-       $latest, $local, $mature, $self->name(), $self->version(), $self->path();
+    return "%x%m%o %-${width}n %v  %p\n",
 }
 
 #-------------------------------------------------------------------------------

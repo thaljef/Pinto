@@ -33,6 +33,8 @@ sub opt_spec {
     return (
         [ 'noinit'   => 'Do not pull/update from VCS' ],
 
+        [ 'format=s' => 'Format specification (See POD for details)' ],
+
         [ 'type:s'   => "One of: ( $PINTO_LIST_TYPES_STRING )",
                         {default => $PINTO_DEFAULT_LIST_TYPE} ],
 
@@ -48,6 +50,9 @@ sub validate_args {
 
     $self->usage_error('Arguments are not allowed') if @{ $args };
     $self->usage_error('Invalid type') if none { $opts->{type} eq $_ } @PINTO_LIST_TYPES;
+
+    # Double-interpolate, to expand \n, \t, etc.
+    $opts->{format} = eval qq{"$opts->{format}"} if $opts->{format};
 
     return 1;
 }
