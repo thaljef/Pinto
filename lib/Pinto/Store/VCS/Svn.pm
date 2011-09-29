@@ -122,10 +122,10 @@ __END__
 
 =head1 SYNOPSIS
 
-  # If you don't already have a Pinto repository, create one
+  # If you don't already have a Pinto repository, create one (notice the --store option here)
   $> pinto-admin --repos=~/tmp/PINTO create --store=Pinto::Store::VCS::Svn
 
-  # If you do alreay have a repository, edit its config (at confg/pinto.ini)
+  # If you do already have a repository, edit its config (at $REPOS/.pinto/config/pinto.ini)
   store = Pinto::Store::VCS::Svn
 
   # Import Pinto repository into Subversion
