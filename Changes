@@ -1,15 +1,73 @@
 {{$NEXT}}
 
+     ===============================================================
+     IMPORTANT: This version of Pinto is not compatible with
+     repositories built with any prior version.  In theory, you can
+     migrate your old repository with the right combination of
+     pinto-admin and VCS commands.  If you really want to try
+     migrating your old repository, please contact me for guidance.
+
+     Otherwise, you'll have to create a new repository and `add` each
+     of your local distributions again.  If you have foreign
+     distributions in your repository then you'll have to `update`
+     them again too, but you might not get exactly the same versions
+     that you used to have.
+
+     I know this sucks, but it is definitely worth the upgrade.  This
+     version of Pinto is faster, more reliable, and packed with new
+     features.  And going forward, I'll be able to maintain backward
+     compatibility or at least provide an automated migration path.
+     ================================================================
+
+     * New Features:
+
+     Pinto now uses a SQLite database to store information.  This
+     improves performance, reduces memory consumption, and ensures
+     data integrity.
+
+     Pinto now behaves more like PAUSE, and will accept distributions
+     with overlapping packages.  As always, only the 'latest' version
+     of a package appears in the 02packages.details.txt file.
+
+     Pinto also tries hard to figure out the lineage of packages (i.e.
+     which version came first, second, third, etc.)  So you can throw
+     a pile of archives at it without having to think about putting
+     them in a certain order (See POD for details).
+
+     A Pinto repository can now be used with the cpan[1] utility.  It
+     should also work with cpanp[1], but I haven't tried it.  And of
+     course it still works with cpanm[1].
+
+     Pinto does the-right-thing with development packages and
+     distributions (See POD for details).
+
+     The 'create' command for pinto-admin now accepts options to set
+     the parameters in the config file that will be generated for the
+     new repository.
+
+     The 'list' command for pinto-admin now accepts a --format option
+     that can be used to customize what/how information is displayed.
+
+     pinto-admin now has a 'purge' command that removes everything
+     from your repository.
+
+     * Other Changes:
+
+     The config files for each Pinto repsoitory are now located in
+     $REPOS/.pinto/config.
+
+     The VCS tagging mechanism has changed.  Instead of making a tag for
+     every commit, a tag is made only when you specify the --tag option.
+     You can still put date/time placeholders in your tag name.
+
+     The 'noclobber' configuration setting has been removed, since it
+     was never implemented anyway.
+
      * Bug Fixes:
 
      Fixed bug where Pinto might blow up with 'too many args' error
      the first time you update from a CPAN mirror.
 
-     * Enhancements:
-
-     The 'create' command for pinto-admin now accepts options to set
-     the parameters in the config file that will be generated for the
-     new repository.
 
 0.024     2011-09-01 15:23:48 America/Los_Angeles
 
