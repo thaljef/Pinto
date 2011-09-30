@@ -27,10 +27,6 @@ my $LOCAL2 = 'LOCAL2';
 my $t = Pinto::Tester->new();
 my $pinto = $t->pinto();
 
-# Make sure we have clean slate
-$t->package_not_loaded_ok('Foo', $dist_name, $LOCAL1);
-$t->dist_not_exists_ok($dist_name, $LOCAL1);
-
 #------------------------------------------------------------------------------
 # Adding a local dist...
 
@@ -50,6 +46,7 @@ $t->package_is_latest_ok('Foo', $dist_name, $LOCAL1);
 #-----------------------------------------------------------------------------
 # Addition exceptions...
 
+$t->reset_buffer();
 $pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
@@ -57,6 +54,7 @@ $t->result_not_ok( $pinto->run_actions() );
 like($t->bufferstr(), qr/$dist_name already exists/,
      'Cannot add same dist twice');
 
+$t->reset_buffer();
 $pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $LOCAL2);
 $t->result_not_ok( $pinto->run_actions() );
@@ -64,6 +62,7 @@ $t->result_not_ok( $pinto->run_actions() );
 like($t->bufferstr(), qr/Only author $LOCAL1 can update package Foo/,
      'Cannot add package owned by another author');
 
+$t->reset_buffer();
 $pinto->new_batch();
 $pinto->add_action('Add', archive => 'none_such', author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
@@ -72,6 +71,7 @@ like($t->bufferstr(), qr/none_such does not exist/,
      'Cannot add nonexistant archive');
 
 my $lower = $auth_dir->file('FooOnly-0.009.tar.gz');
+$t->reset_buffer();
 $pinto->new_batch();
 $pinto->add_action('Add', archive => $lower, author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
