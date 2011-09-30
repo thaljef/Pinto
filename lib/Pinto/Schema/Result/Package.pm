@@ -171,7 +171,7 @@ sub version_numeric {
 sub to_string {
     my ($self) = @_;
 
-    return $self->vname();
+    return $self->distribution->vname() . '/' . $self->vname();
 }
 
 #------------------------------------------------------------------------------
@@ -220,7 +220,7 @@ sub default_format {
 sub compare_version {
     my ($pkg_a, $pkg_b) = @_;
 
-    throw_error "Cannot compare packages with different names"
+    throw_error "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name() ne $pkg_b->name();
 
     throw_error "Cannot compare development distribution $pkg_a"
@@ -234,7 +234,7 @@ sub compare_version {
            || ( $pkg_a->distribution()      <=> $pkg_b->distribution()      );
 
     # No two packages can be considered equal!
-    throw_error "Unable to compare $pkg_a and $pkg_b" if not $r;
+    throw_error "Unable determine ordering: $pkg_a <=> $pkg_b" if not $r;
 
     return $r;
 };
