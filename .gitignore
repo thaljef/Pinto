@@ -1,2 +1,5 @@
 Pinto-*
 .build
+profiles
+nytprof
+nytprof.out
