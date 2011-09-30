@@ -1,16 +1,10 @@
 package Pinto::IndexWriter;
 
-# ABSTRACT: Write records to an 02packages file
+# ABSTRACT: Write records to an 02packages.details.txt file
 
 use Moose;
-use Moose::Autobox;
 
-use MooseX::Types::Moose qw(HashRef Bool);
-use Pinto::Types 0.017 qw(File);
-
-use Carp;
 use PerlIO::gzip;
-use Path::Class qw();
 
 use Pinto::Exceptions qw(throw_fatal);
 
