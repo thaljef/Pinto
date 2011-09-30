@@ -4,6 +4,7 @@ package Pinto::Tester;
 
 use Moose;
 use MooseX::NonMoose;
+use IO::String;
 
 use Path::Class;
 
@@ -76,21 +77,29 @@ sub _build_pinto {
     $creator->create( $self->creator_args() );
 
     my %defaults = (out => $self->buffer(), verbose => 3, repos => $self->repos());
+
     return Pinto->new(%defaults, $self->pinto_args());
 }
 #------------------------------------------------------------------------------
 
 sub bufferstr {
     my ($self)  = @_;
+
     return ${ $self->buffer() };
 }
 
 #------------------------------------------------------------------------------
 
 sub reset_buffer {
-    my ($self, $new_buffer_ref) = @_;
+    my ($self, $new_buffer) = @_;
 
-    return $self->_set_buffer( $new_buffer_ref || \my $buffer );
+    $DB::single = 1;
+    $new_buffer ||= \my $buffer;
+    my $io = IO::String->new( ${$new_buffer} );
+    $self->pinto->logger->{out} = $io; # Hack!
+    $self->_set_buffer($new_buffer);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
