@@ -95,10 +95,9 @@ sub removed_dist_message {
 sub _dist_message {
     my ($dist, $action) = @_;
 
-    my @items = sort map { $_->name() . ' ' . $_->version() } $dist->packages();
-    my $item_string = join "\n    ", @items;
+    my $vnames = join "\n    ", sort map { $_->vname() } $dist->packages();
 
-    return "$action distribution $dist providing:\n    $item_string";
+    return "$action distribution $dist providing:\n    $vnames";
 }
 
 #-------------------------------------------------------------------------------
