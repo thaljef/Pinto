@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 20);
+use Test::More (tests => 18);
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -76,6 +76,6 @@ $pinto->new_batch();
 $pinto->add_action('Add', archive => $lower, author => $LOCAL1);
 $t->result_not_ok( $pinto->run_actions() );
 
-like($t->bufferstr(), qr/Foo-0.009 has lower version than existing package Foo-0.01/,
+like($t->bufferstr(), qr/Foo-0.009 has lower version than existing package/,
      'Cannot add package with lower version number');
 
