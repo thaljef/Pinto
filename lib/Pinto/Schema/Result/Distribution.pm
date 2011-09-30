@@ -74,6 +74,7 @@ __PACKAGE__->has_many(
 use URI;
 use Path::Class;
 use CPAN::DistnameInfo;
+use String::Format;
 
 use Pinto::Util;
 use Pinto::Exceptions qw(throw_error);
@@ -186,10 +187,42 @@ sub to_string {
 
 #------------------------------------------------------------------------------
 
+sub to_formatted_string {
+    my ($self, $format) = @_;
+
+    my %fspec = (
+         'd' => sub { $self->name()                           },
+         'D' => sub { $self->vname()                          },
+         'w' => sub { $self->version()                        },
+         'W' => sub { $self->version_numeric()                },
+         'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
+         'p' => sub { $self->path()                           },
+         'P' => sub { $self->physical_path()                  },
+         'o' => sub { $self->is_local()   ? 'L' : 'F'         },
+         'O' => sub { $self->origin()                         },
+         'a' => sub { $self->author()                         },
+         'u' => sub { $self->url()                            },
+         'c' => sub { $self->package_count()                  },
+    );
+
+    $format ||= $self->default_format();
+    return String::Format::stringf($format, %fspec);
+}
+
+#-------------------------------------------------------------------------------
+
+sub default_format {
+    my ($self) = @_;
+
+    return '%p',
+}
+
+#------------------------------------------------------------------------------
+
 sub compare_version {
     my ($dist_a, $dist_b) = @_;
 
-    throw_error "Cannot compare distributions with different names"
+    throw_error "Cannot compare distributions with different names: $dist_a <=> $dist_b"
         if $dist_a->name() ne $dist_b->name();
 
     throw_error "Cannot compare development distribution $dist_a"
@@ -202,7 +235,7 @@ sub compare_version {
            || ( $dist_a->version_numeric()  <=> $dist_b->version_numeric() );
 
     # No two dists can be considered equal
-    throw_error "Unable to compare $dist_a and $dist_b" if not $r;
+    throw_error "Unable to determine ordering: $dist_a <=> $dist_b" if not $r;
 
     return $r;
 
