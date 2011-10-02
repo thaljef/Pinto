@@ -223,12 +223,6 @@ sub compare_version {
     throw_error "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name() ne $pkg_b->name();
 
-    throw_error "Cannot compare development distribution $pkg_a"
-        if $pkg_a->is_devel();
-
-    throw_error "Cannot compare development distribution $pkg_b"
-        if $pkg_b->is_devel();
-
     my $r =   ( $pkg_a->is_local()          <=> $pkg_b->is_local()          )
            || ( $pkg_a->version_numeric()   <=> $pkg_b->version_numeric()   )
            || ( $pkg_a->distribution()      <=> $pkg_b->distribution()      );

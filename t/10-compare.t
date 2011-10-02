@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::Exception;
-use Test::More (tests => 17);
+use Test::More (tests => 23);
 
 use Pinto::Tester::Util qw(make_dist make_pkg);
 
@@ -23,23 +23,29 @@ use Pinto::Tester::Util qw(make_dist make_pkg);
 #------------------------------------------------------------------------------
 
 # Comparing locals to locals
-package_compare_ok( 'Dist-1/Pkg-1-1', 'Dist-1/Pkg-2-1' );
-package_compare_ok( 'Dist-1/Pkg-1-1', 'Dist-2/Pkg-1-1' );
-package_compare_ok( 'Dist-1/Pkg-0-1', 'Dist-2/Pkg-0-1' );
-package_compare_ok( 'Dist-1/Pkg-0-1', 'Dist-1/Pkg-2-1' );
+package_compare_ok( 'Dist-1/Pkg-1-1',   'Dist-1/Pkg-2-1'   );
+package_compare_ok( 'Dist-1/Pkg-1-1',   'Dist-2/Pkg-1-1'   );
+package_compare_ok( 'Dist-1/Pkg-0-1',   'Dist-2/Pkg-0-1'   );
+package_compare_ok( 'Dist-1/Pkg-0-1',   'Dist-1/Pkg-2-1'   );
+package_compare_ok( 'Dist-1/Pkg-1-1',   'Dist-1/Pkg-1.0_1-1' );
+package_compare_ok( 'Dist-1/Pkg-1-1',   'Dist-1.0_1/Pkg-1-1' );
 
 # Comparing foreign to foreign
-package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-2-0' );
-package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-2/Pkg-1-0' );
-package_compare_ok( 'Dist-1/Pkg-0-0', 'Dist-2/Pkg-0-0' );
-package_compare_ok( 'Dist-1/Pkg-0-0', 'Dist-1/Pkg-2-0' );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-1/Pkg-2-0'   );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-2/Pkg-1-0'   );
+package_compare_ok( 'Dist-1/Pkg-0-0',   'Dist-2/Pkg-0-0'   );
+package_compare_ok( 'Dist-1/Pkg-0-0',   'Dist-1/Pkg-2-0'   );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-1/Pkg-1.0_1-0' );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-1.0_1/Pkg-1-0' );
 
 # Comparing foreign to local
-package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-1-1' );
-package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-2-1' );
-package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-0-1' );
-package_compare_ok( 'Dist-1/Pkg-2-0', 'Dist-1/Pkg-1-1' );
-package_compare_ok( 'Dist-2/Pkg-1-0', 'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-1/Pkg-2-1' );
+package_compare_ok( 'Dist-1/Pkg-1-0',   'Dist-1/Pkg-0-1' );
+package_compare_ok( 'Dist-1/Pkg-2-0',   'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-2/Pkg-1-0',   'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-1/Pkg-1.0_1-0', 'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-1.0_1/Pkg-1-0', 'Dist-1/Pkg-1-1' );
 
 # Exceptions
 throws_ok { package_compare_ok( 'Dist-1/Foo-1-0', 'Dist-1/Bar-1-1' ) }
