@@ -87,6 +87,17 @@ sub get_all_packages_with_name {
     return $self->schema->resultset('Package')->search($where);
 }
 
+
+#-------------------------------------------------------------------------------
+
+sub get_latest_package_with_name {
+    my ($self, $package_name) = @_;
+
+    my $where = { name => $package_name, is_latest => 1 };
+
+    return $self->schema->resultset('Package')->search($where)->single();
+}
+
 #-------------------------------------------------------------------------------
 
 sub get_distribution_with_path {
@@ -134,9 +145,10 @@ sub add_package {
     $self->debug("Loading package $pkg");
 
     # Pinto::Package actally computes the numeric version on the fly
-    # when you call the version_numeric() method, and forces it to
-    # 0.00 then.  But we only want to warn about it when first loading
-    # the package. Ignore this warning at your own peril.
+    # when you call the version_numeric() method, and forces it to 0
+    # if the version string is invalid.  But we only want to warn
+    # about it when first loading the package. Ignore this warning at
+    # your own peril.
 
     try   { Pinto::Util::numify_version( $pkg->version() ) if not $pkg->is_devel() }
     catch { $self->whine("$pkg: Illegal version will be forced to 0") };
@@ -148,7 +160,7 @@ sub add_package {
     # Don't whine about a devel package if it was in a devel dist,
     # since we already whined about that when we added the dist.
 
-    $self->whine("Developer package $pkg will not be indexed")
+    $self->info("Developer package $pkg will not be indexed")
         if $pkg->is_devel() && !$pkg->distribution->is_devel();
 
     # Devel packages can have any version at all.  But non-devel
@@ -159,9 +171,9 @@ sub add_package {
     # Must insert *before* attempting to mark the latest package
     $pkg->insert();
 
-    # Devel packages are never marked as latest, so assume
-    # that the latest package hasn't changed.
-    $self->mark_latest_package_with_name( $pkg->name() ) if not $pkg->is_devel();
+    # Devel packages are never marked as latest, so no need
+    # to recompute the latest if this is a devel package.
+    $self->recompute_latest( $pkg ) if not $pkg->is_devel();
 
     return $pkg;
 }
@@ -196,21 +208,57 @@ sub remove_package {
 
 #-------------------------------------------------------------------------------
 
-sub mark_latest_package_with_name {
-    my ($self, $pkg_name) = @_;
+sub recompute_latest {
+    my ($self, $this_pkg) = @_;
 
-    my @sisters = $self->get_all_packages_with_name( $pkg_name )->all();
-    my @non_devel_sisters = grep { not $_->is_devel() } @sisters;
-    return if not @non_devel_sisters;
+    # If there is no other version of the package in the database,
+    # then go ahead and mark $this_pkg as the latest one.
+    my $latest_pkg = $self->get_latest_package_with_name( $this_pkg->name() );
+    $self->mark_as_latest($this_pkg) if not defined $latest_pkg;
 
-    my ($latest, @older) = reverse sort {$a <=> $b} @non_devel_sisters;
+    # If $this_pkg is newer than $latest_pkg, then mark $this_pkg as
+    # latest and unmark $latest_pkg.
+    $self->mark_as_latest($this_pkg) && $self->unmark_as_latest($latest_pkg)
+        if $this_pkg > $latest_pkg;
 
-    do { $_->is_latest(undef); $_->update() } for @older;
+    # But if $this_pkg is less than $latest_pkg then we can bail,
+    # since $latest_pkg is still newer than $this_pkg.
+    return if $this_pkg < $latest_pkg;
 
-    $self->debug("Marking $latest as the latest version");
-    $latest->is_latest(1);
+    # At this point, we know that $this_pkg == $latest_pkg so we must
+    # compare distribution numbers to determine which is realy later.
+    my $this_dist   = $this_pkg->distribution();
+    my $latest_dist = $latest_pkg->distribution();
 
-    return $latest->update();
+    throw_error "Cannot determine which package is newer: $this_pkg <=> $latest_pkg"
+        if $this_dist->name() ne $latest_dist->name();
+
+    # If $this_dist is newer than $latest_dist, then mark $this_pkg as
+    # latest and unmark $latest_pkg.
+    $self->mark_as_latest($this_pkg) && $self->unmark_as_latest($latest_pkg)
+        if $this_dist > $latest_dist;
+
+    # So at this point, we also know that $this_dist <= $pkg_dist and
+    # we have no way of figuring out which package really comes first
+    throw_error "Cannot determine which package is newer: $this_pkg <=> $latest_pkg";
+}
+
+#-------------------------------------------------------------------------------
+
+sub mark_as_latest {
+    my ($self, $pkg) = @_;
+    $self->debug("Marking $pkg as the latest version");
+    $pkg->is_latest(1);
+    $pkg->update();
+}
+
+#-------------------------------------------------------------------------------
+
+sub unmark_as_latest {
+    my ($self, $pkg) = @_;
+    $self->debug("Unmarking $pkg as the latest version");
+    $pkg->is_latest(0);
+    $pkg->update();
 }
 
 #-------------------------------------------------------------------------------
