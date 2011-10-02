@@ -228,7 +228,7 @@ sub compare_version {
            || ( $pkg_a->distribution()      <=> $pkg_b->distribution()      );
 
     # No two packages can be considered equal!
-    throw_error "Unable determine ordering: $pkg_a <=> $pkg_b" if not $r;
+    throw_error "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
 
     return $r;
 };
