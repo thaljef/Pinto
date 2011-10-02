@@ -3,68 +3,87 @@
 use strict;
 use warnings;
 
-use Path::Class;
-use FindBin qw($Bin);
-use lib dir($Bin, 'lib')->stringify();
-
-use Test::More (tests => 11);
 use Test::Exception;
+use Test::More (tests => 17);
 
 use Pinto::Tester::Util qw(make_dist make_pkg);
 
 #------------------------------------------------------------------------------
-# Args for each test package are:       [ pkg_version, dist_version, is_local ]
+# Test package specification is as follows:
+#
+#   dist_name-dist_version/pkg_name-pkg_version-origin
+#
+# where origin = 1 (local) or 0 (foreign)
+#
+# For example:
+#
+#   Foo-1.2/Bar-0.3-1
+#
+# Means local pacakge Bar v0.3 in dist Foo v1.2
+#------------------------------------------------------------------------------
 
-package_compare_ok( [1,1,0], [2,1,0], );
+# Comparing locals to locals
+package_compare_ok( 'Dist-1/Pkg-1-1', 'Dist-1/Pkg-2-1' );
+package_compare_ok( 'Dist-1/Pkg-1-1', 'Dist-2/Pkg-1-1' );
+package_compare_ok( 'Dist-1/Pkg-0-1', 'Dist-2/Pkg-0-1' );
+package_compare_ok( 'Dist-1/Pkg-0-1', 'Dist-1/Pkg-2-1' );
 
-package_compare_ok( [1,1,1], [2,1,1], );
+# Comparing foreign to foreign
+package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-2-0' );
+package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-2/Pkg-1-0' );
+package_compare_ok( 'Dist-1/Pkg-0-0', 'Dist-2/Pkg-0-0' );
+package_compare_ok( 'Dist-1/Pkg-0-0', 'Dist-1/Pkg-2-0' );
 
-package_compare_ok( [1,1,0], [1,1,1], );
+# Comparing foreign to local
+package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-2-1' );
+package_compare_ok( 'Dist-1/Pkg-1-0', 'Dist-1/Pkg-0-1' );
+package_compare_ok( 'Dist-1/Pkg-2-0', 'Dist-1/Pkg-1-1' );
+package_compare_ok( 'Dist-2/Pkg-1-0', 'Dist-1/Pkg-1-1' );
 
-package_compare_ok( [2,1,0], [1,1,1], );
+# Exceptions
+throws_ok { package_compare_ok( 'Dist-1/Foo-1-0', 'Dist-1/Bar-1-1' ) }
+  qr/packages with different names/;
 
-package_compare_ok( [1,1,0], [1,2,0], );
+throws_ok { package_compare_ok( 'Foo-1/Pkg-1-1',  'Bar-1/Pkg-1-1'  ) }
+  qr/distributions with different names/;
 
-package_compare_ok( [1,2,0], [1,1,1], );
+throws_ok { package_compare_ok( 'Dist-1/Foo-1-1', 'Dist-1/Foo-1-1' ) }
+  qr/Unable to determine ordering/;
 
-package_compare_ok( [1,1,1], [1,2,1], );
-
-dies_ok { package_compare_ok( ['1.0_1',1,1], [1,1,1] ) }
-  'Comparing a devel package should raise exception';
-
-dies_ok { package_compare_ok( [1,'1.0_1',1], [1,1,1] ) }
-  'Comparing a devel dist should raise exception';
-
-dies_ok { package_compare_ok( [1,1,0], [1,1,0] ) }
-  'Comparing identical foreign packages/dists should raise exception';
-
-dies_ok { package_compare_ok( [1,1,1], [1,1,1] ) }
-  'Comparing identical local packages/dists should raise exception';
+throws_ok { package_compare_ok( 'Dist-1/Foo-1-0', 'Dist-1/Foo-1-0' ) }
+  qr/Unable to determine ordering/;
 
 #===============================================================================
 
 sub package_compare_ok {
-    my ($pkg1, $pkg2, $detail) = @_;
-    my $name    = sprintf "Package A sorts before package B: %s", $detail || '';
-    my $format  = "pkg_ver: %s, dist_ver: %s, is_local: %s";
+    my ($spec_A, $spec_B, $test_name) = @_;
+
+    $test_name = "Package A sorts before package B";
+    my ($pkg_A, $pkg_B) = map { _make_pkg($_)} ($spec_A, $spec_B);
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    is( _make_pkg($pkg1) <=> _make_pkg($pkg2), -1, $name )
-        or diag( sprintf "A: $format \nB: $format", @{ $pkg1 }, @{ $pkg2 } );
+    my $ok = is( $pkg_A <=> $pkg_B, -1, $test_name );
+    diag( "  A: $spec_A \n  B: $spec_B" ) if not $ok;
+    return $ok;
 }
 
 #------------------------------------------------------------------------------
 
 sub _make_pkg {
-    my ($pkg_version, $dist_version, $is_local) = @{ shift() };
+    my ($spec) = @_;
+    my ($dist_spec, $pkg_spec) = split '/', $spec;
+
+    my ($dist_name, $dist_version) = split '-', $dist_spec;
+    my ($pkg_name, $pkg_version, $is_local) = split '-', $pkg_spec;
 
     my $dist = make_dist(
-          path     => "A/AU/AUTHOR/Foo-$dist_version.tar.gz",
+          path     => "A/AU/AUTHOR/$dist_name-$dist_version.tar.gz",
           origin   => $is_local ? undef : 'FOREIGN',
     );
 
     my $pkg = make_pkg(
-          name         => 'Foo',
+          name         => $pkg_name,
           version      => $pkg_version,
           distribution => $dist,
     );
