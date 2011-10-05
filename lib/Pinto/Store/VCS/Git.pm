@@ -35,14 +35,14 @@ override tag => sub {
 
 #-------------------------------------------------------------------------------
 
-override add => sub {
+override add_file => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git add
 };
 
 #-------------------------------------------------------------------------------
 
-override remove => sub {
+override remove_file => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git rm
 };
