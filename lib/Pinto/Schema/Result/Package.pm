@@ -145,8 +145,25 @@ sub is_local {
 sub is_devel {
     my ($self) = @_;
 
-    return    Pinto::Util::is_devel_version( $self->version() )
-           || $self->distribution->is_devel();
+    return $self->distribution->is_devel();
+}
+
+#------------------------------------------------------------------------------
+
+sub is_eligible_for_index {
+    my ($self) = @_;
+
+    return $self->distribution->is_eligible_for_index();
+}
+
+#------------------------------------------------------------------------------
+
+sub index_status {
+    my ($self) = @_;
+
+    return '-' if not $self->is_eligible_for_index();
+    return '*' if $self->is_latest();
+    return ' ';
 }
 
 #------------------------------------------------------------------------------
@@ -185,7 +202,7 @@ sub to_formatted_string {
          'v' => sub { $self->version()                        },
          'V' => sub { $self->version_numeric()                },
          'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
-         'x' => sub { $self->is_latest()  ? '*' : ' '         },
+         'x' => sub { $self->index_status()                   },
          'p' => sub { $self->distribution->path()             },
          'P' => sub { $self->distribution->native_path()      },
          'o' => sub { $self->is_local()   ? 'L' : 'F'         },

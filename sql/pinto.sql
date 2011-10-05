@@ -1,7 +1,8 @@
 CREATE TABLE distribution (
        distribution_id INTEGER PRIMARY KEY NOT NULL,
        path TEXT NOT NULL,
-       origin TEXT NOT NULL
+       origin TEXT NOT NULL,
+       is_eligible_for_index BOOLEAN DEFAULT 1 NOT NULL
 );
 
 

@@ -6,7 +6,6 @@ use Moose;
 
 use Try::Tiny;
 use Path::Class;
-use List::Util qw(first);
 
 use Pinto::Schema;
 use Pinto::IndexLoader;
@@ -157,8 +156,14 @@ sub add_package {
 
     $pkg->insert();
 
-    try   { $self->mark_latest_package_with_name( $pkg->name() ) }
-    catch { throw_error "Unable to accept $pkg into the repository: $_" };
+    try   {
+        $self->mark_latest_package_with_name( $pkg->name() );
+    }
+    catch {
+        $self->whine("Package $pkg is ineligible for indexing: $_");
+        $pkg->distribution->is_elligible_for_index(0);
+        $pkg->distribution->update();
+    };
 
     return $pkg;
 }
@@ -201,6 +206,7 @@ sub mark_latest_package_with_name {
 
     my @sisters  = $self->get_all_packages_with_name( $pkg_name )->all();
     @sisters = grep { not $_->is_devel() } @sisters unless $self->config->devel();
+    @sisters = grep { $_->is_eligible_for_index() } @sisters;
     return $self if not @sisters;
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
