@@ -43,6 +43,10 @@
      Pinto does the-right-thing with development packages and
      distributions (See POD for details).
 
+     Each Pinto repository now has a 'devel' configuration parameter.
+     Setting this to a true value instructs Pinto to include
+     development releases in the index.  The default is false.
+
      The 'create' command for pinto-admin now accepts options to set
      the parameters in the config file that will be generated for the
      new repository.
