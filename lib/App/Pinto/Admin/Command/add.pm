@@ -144,10 +144,10 @@ The syntax of the NAME depends on the type of VCS you are using.
 =head1 DISCUSSION
 
 Using the 'add' command on a distribution you got from another
-repository (such as CPAN mirror) effectvely makes that distribution
+repository (such as CPAN mirror) effectively makes that distribution
 local.  So you become the owner of that distribution, even if the
 repository already contains a copy that was pulled from another
-repsository by the 'update' command.
+repository by the 'update' command.
 
 Local packages are always considered 'later' then any foreign package
 with the same name, even if the foreign package has a higher version

@@ -156,15 +156,15 @@ Removing the latest version of local package generally works as you
 would expect.  That is, the package with the next highest version (if
 it exists) will take its place in the 02packages.details file.  But
 when removing the latest version of a foreign package, the next
-'latest' version may not alway appear in the 02packages.details file,
+'latest' version may not always appear in the 02packages.details file,
 or it may not be the version you were expecting.
 
-This is because Pinto does not index foreign distributions so it only
-knows about the packages listed in the foreign index, which may not
-actually represent all the packages in that distribution.  Moreover,
-the completeness of the history of a foreign package depends on how
-often you update your repository.  So if you update infrequently,
-there may be large gaps between the package versions that your Pinto
-repository knows about.
+This is because Pinto does not examine the contents of a foreign
+distribution, so it only knows about the packages listed in the
+foreign index.  This may not actually represent all the packages in
+that distribution.  Moreover, the completeness of the history of a
+foreign package depends on how often you update your repository.  So
+if you update infrequently, there may be large gaps between the
+package versions that your Pinto repository knows about.
 
 =cut
