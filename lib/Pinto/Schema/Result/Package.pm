@@ -88,6 +88,10 @@ __PACKAGE__->belongs_to(
 
 #------------------------------------------------------------------------------
 
+# ABSTRACT: Represents a package in a Distribution
+
+#------------------------------------------------------------------------------
+
 use String::Format;
 
 use Pinto::Util;

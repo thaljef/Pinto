@@ -78,6 +78,10 @@ __PACKAGE__->has_many(
 
 #-------------------------------------------------------------------------------
 
+# ABSTRACT: Represents a distribution archive
+
+#-------------------------------------------------------------------------------
+
 use URI;
 use Path::Class;
 use CPAN::DistnameInfo;
