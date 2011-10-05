@@ -75,7 +75,7 @@ sub _process_archive {
     throw_error "Distribution $path already exists" if $existing;
 
     my @package_specs = $self->_extract_packages($archive);
-    throw_error "$archive contains no packages" if not @package_specs;
+    $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
         my $where = { name => $pkg->{name}, 'distribution.origin' => 'LOCAL'};
@@ -89,15 +89,10 @@ sub _process_archive {
     $self->info("Adding distribution $path providing $pkg_count packages");
 
     my $dist = $self->db->new_distribution(path => $path);
-    $self->db->add_distribution($dist);
+    my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
 
-    for my $pkg_spec ( @package_specs ) {
-        my $pkg = $self->db->new_package(%{$pkg_spec}, distribution => $dist);
-        $self->db->add_package($pkg);
-    }
-
-    return $dist;
-  }
+    return $self->db->add_distribution_with_packages($dist, @packages);
+}
 
 #------------------------------------------------------------------------------
 

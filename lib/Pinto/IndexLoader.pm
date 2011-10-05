@@ -55,13 +55,10 @@ sub load {
             next;
         }
 
+        my @package_specs =  @{ $dists->{$path} };
         my $dist = $self->db->new_distribution(path => $path, origin => $from);
-        $self->db->add_distribution($dist);
-
-        for my $pkg_spec ( @{ $dists->{$path} } ) {
-            my $pkg = $self->db->new_package(%{$pkg_spec}, distribution => $dist);
-            $self->db->add_package($pkg);
-        }
+        my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
+        $self->db->add_distribution_with_packages($dist, @packages);
     }
 
     return $self;

@@ -119,14 +119,24 @@ sub new_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub add_distribution {
-    my ($self, $dist) = @_;
+sub add_distribution_with_packages {
+    my ($self, $dist, @packages) = @_;
 
     $self->debug("Loading distribution $dist");
 
     $self->whine("Developer distribution $dist will not be indexed") if $dist->is_devel();
 
-    return $dist->insert();
+    my $txn_guard = $self->schema->txn_scope_guard();
+    $dist->insert();
+
+    for my $pkg ( @packages ) {
+        $pkg->distribution($dist);
+        $self->add_package($pkg)
+    }
+
+    $txn_guard->commit();
+
+    return $dist;
 }
 
 #-------------------------------------------------------------------------------
@@ -150,30 +160,16 @@ sub add_package {
     # about it when first loading the package. Ignore this warning at
     # your own peril.
 
-    try   { Pinto::Util::numify_version( $pkg->version() ) if not $pkg->is_devel() }
+    try   { Pinto::Util::numify_version( $pkg->version() ) }
     catch { $self->whine("$pkg: Illegal version will be forced to 0") };
-
-    # Remember: All packages in a devel dist are considered devel,
-    # but a non-devel dist may contain devel packages.  Not sure
-    # if that's how PAUSE really does it though.
-
-    # Don't whine about a devel package if it was in a devel dist,
-    # since we already whined about that when we added the dist.
-
-    $self->info("Developer package $pkg will not be indexed")
-        if $pkg->is_devel() && !$pkg->distribution->is_devel();
-
-    # Devel packages can have any version at all.  But non-devel
-    # packages must always have an increasing version number.
-    # TODO: consider removing exemption for devel packages.
-    $self->check_for_regressive_version($pkg) if not $pkg->is_devel();
 
     # Must insert *before* attempting to mark the latest package
     $pkg->insert();
 
     # Devel packages are never marked as latest, so no need
     # to recompute the latest if this is a devel package.
-    $self->recompute_latest( $pkg ) if not $pkg->is_devel();
+    try   { $self->mark_latest_package_with_name( $pkg->name() ) if not $pkg->is_devel() }
+    catch { throw_error "Unable to accept $pkg into the repository: $_" };
 
     return $pkg;
 }
@@ -208,57 +204,24 @@ sub remove_package {
 
 #-------------------------------------------------------------------------------
 
-sub recompute_latest {
-    my ($self, $this_pkg) = @_;
+sub mark_latest_package_with_name {
+    my ($self, $pkg_name) = @_;
 
-    # If there is no other version of the package in the database,
-    # then go ahead and mark $this_pkg as the latest one.
-    my $latest_pkg = $self->get_latest_package_with_name( $this_pkg->name() );
-    $self->mark_as_latest($this_pkg) if not defined $latest_pkg;
+    my @sisters  = $self->get_all_packages_with_name( $pkg_name )->all();
+    return $self if not @sisters;
 
-    # If $this_pkg is newer than $latest_pkg, then mark $this_pkg as
-    # latest and unmark $latest_pkg.
-    $self->mark_as_latest($this_pkg) && $self->unmark_as_latest($latest_pkg)
-        if $this_pkg > $latest_pkg;
+    my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
 
-    # But if $this_pkg is less than $latest_pkg then we can bail,
-    # since $latest_pkg is still newer than $this_pkg.
-    return if $this_pkg < $latest_pkg;
+    # Mark older packages as 'undef' first, to prevent contraint violation.
+    # The schema only allows one package to be marked latest at a time.
 
-    # At this point, we know that $this_pkg == $latest_pkg so we must
-    # compare distribution numbers to determine which is realy later.
-    my $this_dist   = $this_pkg->distribution();
-    my $latest_dist = $latest_pkg->distribution();
+    $_->is_latest(undef) for @older;
+    $_->update() for @older;
 
-    throw_error "Cannot determine which package is newer: $this_pkg <=> $latest_pkg"
-        if $this_dist->name() ne $latest_dist->name();
+    $latest->is_latest(1);
+    $latest->update();
 
-    # If $this_dist is newer than $latest_dist, then mark $this_pkg as
-    # latest and unmark $latest_pkg.
-    $self->mark_as_latest($this_pkg) && $self->unmark_as_latest($latest_pkg)
-        if $this_dist > $latest_dist;
-
-    # So at this point, we also know that $this_dist <= $pkg_dist and
-    # we have no way of figuring out which package really comes first
-    throw_error "Cannot determine which package is newer: $this_pkg <=> $latest_pkg";
-}
-
-#-------------------------------------------------------------------------------
-
-sub mark_as_latest {
-    my ($self, $pkg) = @_;
-    $self->debug("Marking $pkg as the latest version");
-    $pkg->is_latest(1);
-    $pkg->update();
-}
-
-#-------------------------------------------------------------------------------
-
-sub unmark_as_latest {
-    my ($self, $pkg) = @_;
-    $self->debug("Unmarking $pkg as the latest version");
-    $pkg->is_latest(0);
-    $pkg->update();
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -318,29 +281,6 @@ sub get_all_outdated_distributions {
     my ($self) = @_;
 
     return $self->schema->resultset('Distribution')->outdated();
-}
-
-#-------------------------------------------------------------------------------
-
-sub check_for_regressive_version {
-    my ($self, $pkg) = @_;
-
-    # Foreign packages always sort before local ones, so we don't need
-    # to worry about comparing those with each other.  But we must
-    # compare a local package with any other local packages of the
-    # same name.  Likewise, we must compare a foreign package with any
-    # other foreign packages of the same name.
-
-    my $sisters = $self->get_all_packages_with_name( $pkg->name() );
-    my @sisters = grep { $_->is_local() eq $pkg->is_local() } $sisters->all();
-
-    if ( my $higher_pkg = first {$_ > $pkg} @sisters ) {
-        my $higher_dist = $higher_pkg->distribution();
-        throw_error "New package $pkg has lower version " .
-            "than existing package $higher_pkg in $higher_dist";
-    }
-
-    return $self;
 }
 
 #-------------------------------------------------------------------------------
