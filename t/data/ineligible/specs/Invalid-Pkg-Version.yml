@@ -1,0 +1,15 @@
+---
+name: Bar
+version: 1.0
+abstract: This dist has a package with an invalid version
+author:
+  - SUZY <SUZY@cpan.local>
+generated_by: Module::Faker version 
+license: unknown
+meta-spec: 
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+  version: 1.3
+provides:
+  Bar:
+    file: lib/Bar.pm
+    version: BOGUS

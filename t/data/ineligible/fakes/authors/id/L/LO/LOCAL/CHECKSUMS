@@ -1,0 +1,19 @@
+# CHECKSUMS file written on Wed Oct  5 22:29:01 2011 GMT by CPAN::Checksums (v2.06)
+$cksum = {
+  'Bar-1.0.tar.gz' => {
+    'md5' => '68d82e34a7f4613833c3845abdfd589e',
+    'md5-ungz' => 'd08a3b21dfc19890eb19daecd3aadb91',
+    'mtime' => '2011-10-05',
+    'sha256' => '6dd9a4c226e3b20b54bee24e62cd2aa222f82870becb253aa4b3d96ca75801b2',
+    'sha256-ungz' => 'ef16873654061bf94f449cbfb7b502317a8315fe7fdf396a42467b780b541426',
+    'size' => 652
+  },
+  'Foo-1.0.BOGUS.tar.gz' => {
+    'md5' => 'd2fa97914c61cf9995d8e3e646d7d7e4',
+    'md5-ungz' => '2d16ce8f454e06989c19580964150174',
+    'mtime' => '2011-10-05',
+    'sha256' => '7dd84aaa75bcdf19951d8ff6a04a279ae5c1dba14f35641722d48b13c61564fb',
+    'sha256-ungz' => '7e26a949c344394c824116639c0513782feaac0871fcdabb8c12b2f22d63aa05',
+    'size' => 660
+  }
+};
