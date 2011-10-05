@@ -3,7 +3,6 @@ package Pinto::Action::Verify;
 # ABSTRACT: Verify all distributions are present in the repository
 
 use Moose;
-use Moose::Autobox;
 
 use Pinto::Util;
 use Pinto::Types 0.017 qw(IO);
@@ -39,7 +38,7 @@ sub execute {
     my $rs    = $self->db->get_all_distributions();
 
     while ( my $dist = $rs->next() ) {
-        my $file = $dist->physical_path($repos);
+        my $file = $dist->native_path($repos);
         print { $self->out } "Missing distribution $file\n" if not -e $file;
     }
 

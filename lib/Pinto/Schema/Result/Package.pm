@@ -125,7 +125,7 @@ sub vname {
 sub author {
     my ($self) = @_;
 
-    return $self->disribution->author();
+    return $self->distribution->author();
 }
 
 #------------------------------------------------------------------------------
@@ -183,7 +183,7 @@ sub to_formatted_string {
          'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
          'x' => sub { $self->is_latest()  ? '*' : ' '         },
          'p' => sub { $self->distribution->path()             },
-         'P' => sub { $self->distribution->physical_path()    },
+         'P' => sub { $self->distribution->native_path()      },
          'o' => sub { $self->is_local()   ? 'L' : 'F'         },
          'O' => sub { $self->distribution->origin()           },
          'a' => sub { $self->author()                         },

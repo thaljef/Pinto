@@ -26,7 +26,7 @@ override execute => sub {
 
     while ( my $dist = $outdated->next() ) {
         my $path = $dist->path();
-        my $file = $dist->physical_path( $self->config->repos() );
+        my $file = $dist->native_path( $self->config->repos() );
 
         $self->db->remove_distribution($dist);
         $self->store->remove(file => $file);

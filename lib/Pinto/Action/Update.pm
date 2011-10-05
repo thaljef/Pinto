@@ -57,7 +57,7 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $dest = $dist->physical_path( $self->config->repos() );
+    my $dest = $dist->native_path( $self->config->repos() );
 
     $self->debug("Skipping $dest: already fetched") and return 0 if -e $dest;
     $self->fetch(url => $dist->url(), to => $dest)   or return 0;
