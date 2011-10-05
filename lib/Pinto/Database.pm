@@ -124,7 +124,8 @@ sub add_distribution_with_packages {
 
     $self->debug("Loading distribution $dist");
 
-    $self->whine("Developer distribution $dist will not be indexed") if $dist->is_devel();
+    $self->whine("Developer distribution $dist will not be indexed")
+        if $dist->is_devel() and not $self->config->devel();
 
     my $txn_guard = $self->schema->txn_scope_guard();
     $dist->insert();
@@ -199,7 +200,7 @@ sub mark_latest_package_with_name {
     my ($self, $pkg_name) = @_;
 
     my @sisters  = $self->get_all_packages_with_name( $pkg_name )->all();
-    @sisters = grep { not $_->is_devel() } @sisters;  # TODO: make configurable
+    @sisters = grep { not $_->is_devel() } @sisters unless $self->config->devel();
     return $self if not @sisters;
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;

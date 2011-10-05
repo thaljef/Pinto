@@ -70,6 +70,7 @@ has db_file => (
     lazy      => 1,
 );
 
+
 has pinto_dir => (
     is        => 'ro',
     isa       => Dir,
@@ -77,6 +78,7 @@ has pinto_dir => (
     default   => sub { return $_[0]->repos->subdir('.pinto') },
     lazy      => 1,
 );
+
 
 has config_dir => (
     is        => 'ro',
@@ -101,6 +103,15 @@ has nocleanup => (
     key       => 'nocleanup',
     default   => 0,
     documentation => 'Do not delete distributions when they become outdated',
+);
+
+
+has devel => (
+    is        => 'ro',
+    isa       => Bool,
+    key       => 'devel',
+    default   => 0,
+    documentation => 'Include development releases in the index',
 );
 
 

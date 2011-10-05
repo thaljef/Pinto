@@ -25,6 +25,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
+        [ 'devel'     => 'Include development releases in the index' ],
         [ 'nocleanup' => 'Do not delete distributions when they become outdated' ],
         [ 'noinit'    => 'Do not pull/update from VCS before each operation' ],
         [ 'store=s'   => 'Name of class that handles storage of your repository' ],
@@ -82,6 +83,12 @@ None.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --devel
+
+Instructs L<Pinto> to include development releases in the index.  A
+development release is any archive that includes an underscore (_) in
+the last component of the version number.
 
 =item --nocleanup
 
