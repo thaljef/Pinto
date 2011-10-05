@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 18);
+use Test::More (tests => 16);
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -69,13 +69,4 @@ $t->result_not_ok( $pinto->run_actions() );
 
 like($t->bufferstr(), qr/none_such does not exist/,
      'Cannot add nonexistant archive');
-
-my $lower = $auth_dir->file('FooOnly-0.009.tar.gz');
-$t->reset_buffer();
-$pinto->new_batch();
-$pinto->add_action('Add', archive => $lower, author => $LOCAL1);
-$t->result_not_ok( $pinto->run_actions() );
-
-like($t->bufferstr(), qr/Foo-0.009 has lower version than existing package/,
-     'Cannot add package with lower version number');
 
