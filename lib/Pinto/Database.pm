@@ -64,7 +64,6 @@ sub get_all_packages {
 }
 
 #-------------------------------------------------------------------------------
-# TODO: Move this into IndexWriter
 
 sub get_records_for_packages_details {
     my ($self) = @_;
