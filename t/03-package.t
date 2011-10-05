@@ -20,7 +20,7 @@ is($pkg->version(), '2.001_02', 'version attribute');
 is($pkg->version_numeric(), 2.00102, 'version_numeric attribute');
 is($pkg->is_devel(), 1, 'is_devel attribute');
 is($pkg->is_local(), 1, 'is_local attribute');
-is("$pkg", 'Foo-2.001_02', 'strigifies to vname');
+is("$pkg", 'Foo-2.001_02/Foo-2.001_02', 'strigifies to dist/pkg vnames');
 
 #------------------------------------------------------------------------------
 
