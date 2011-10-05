@@ -127,10 +127,8 @@ sub version {
 sub version_numeric {
     my ($self) = @_;
 
-    return $self->{__version_numeric__} ||= do {
-
-        eval { Pinto::Util::numify_version( $self->version() ) } || 0;
-    };
+    return $self->{__version_numeric__} ||=
+        Pinto::Util::numify_version( $self->version() );
 }
 
 #------------------------------------------------------------------------------
@@ -141,6 +139,16 @@ sub physical_path {
     my @parts = split '/', $self->path();
 
     return Path::Class::file(@base, qw(authors id), @parts);
+}
+
+#------------------------------------------------------------------------------
+
+sub author {
+    my ($self) = @_;
+
+    my $dist_path = $self->path();
+
+    return (split '/', $dist_path)[2];
 }
 
 #------------------------------------------------------------------------------

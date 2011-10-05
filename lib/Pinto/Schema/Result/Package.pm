@@ -125,9 +125,7 @@ sub vname {
 sub author {
     my ($self) = @_;
 
-    my $dist_path = $self->distribution->path();
-
-    return (split '/', $dist_path)[2];
+    return $self->disribution->author();
 }
 
 #------------------------------------------------------------------------------
@@ -160,10 +158,8 @@ sub path {
 sub version_numeric {
     my ($self) = @_;
 
-    return $self->{__version_numeric__} ||= do {
-
-        eval { Pinto::Util::numify_version( $self->version() ) } || 0;
-    };
+    return $self->{__version_numeric__} ||=
+        Pinto::Util::numify_version( $self->version() );
 }
 
 #------------------------------------------------------------------------------
