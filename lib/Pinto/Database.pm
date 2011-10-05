@@ -154,21 +154,9 @@ sub add_package {
 
     $self->debug("Loading package $pkg");
 
-    # Pinto::Package actally computes the numeric version on the fly
-    # when you call the version_numeric() method, and forces it to 0
-    # if the version string is invalid.  But we only want to warn
-    # about it when first loading the package. Ignore this warning at
-    # your own peril.
-
-    try   { Pinto::Util::numify_version( $pkg->version() ) }
-    catch { $self->whine("$pkg: Illegal version will be forced to 0") };
-
-    # Must insert *before* attempting to mark the latest package
     $pkg->insert();
 
-    # Devel packages are never marked as latest, so no need
-    # to recompute the latest if this is a devel package.
-    try   { $self->mark_latest_package_with_name( $pkg->name() ) if not $pkg->is_devel() }
+    try   { $self->mark_latest_package_with_name( $pkg->name() ) }
     catch { throw_error "Unable to accept $pkg into the repository: $_" };
 
     return $pkg;
@@ -179,11 +167,14 @@ sub add_package {
 sub remove_distribution {
     my ($self, $dist) = @_;
 
-    # TODO: check that dist exists
-
     $self->info(sprintf "Removing distribution $dist with %i packages", $dist->package_count());
+
+    my $txn_guard = $self->schema->txn_scope_guard();
+
     $self->remove_package($_) for $dist->packages();
     $dist->delete();
+
+    $txn_guard->commit();
 
     return;
 }
@@ -208,6 +199,7 @@ sub mark_latest_package_with_name {
     my ($self, $pkg_name) = @_;
 
     my @sisters  = $self->get_all_packages_with_name( $pkg_name )->all();
+    @sisters = grep { not $_->is_devel() } @sisters;  # TODO: make configurable
     return $self if not @sisters;
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
