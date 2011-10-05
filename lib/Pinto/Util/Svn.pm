@@ -129,7 +129,7 @@ sub location {
     $buffer =~ /^ URL: \s+ (\S+) $/xm
         or throw_fatal "Unable to parse svn info: $buffer";
 
-    return $1;
+    return $1; ## no critic qw(Capture)
 }
 
 #--------------------------------------------------------------------------

@@ -51,7 +51,8 @@ sub validate_args {
     $self->usage_error('Arguments are not allowed') if @{ $args };
     $self->usage_error('Invalid type') if none { $opts->{type} eq $_ } @PINTO_LIST_TYPES;
 
-    # Double-interpolate, to expand \n, \t, etc.
+    ## no critic qw(StringyEval)
+    ## Double-interpolate, to expand \n, \t, etc.
     $opts->{format} = eval qq{"$opts->{format}"} if $opts->{format};
 
     return 1;

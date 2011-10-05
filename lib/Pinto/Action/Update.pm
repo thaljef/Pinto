@@ -37,9 +37,9 @@ sub execute {
 
     while ( my $dist = $foreigners->next() ) {
 
-        eval { $count += $self->_do_mirror($dist) };
+        my $ok = eval { $count += $self->_do_mirror($dist); 1 };
 
-        if ( catch my $e, ['Pinto::Exception'] ) {
+        if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
             $self->add_exception($e);
             $self->whine($e);
             next;

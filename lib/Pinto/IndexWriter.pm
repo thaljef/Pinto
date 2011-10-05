@@ -87,8 +87,8 @@ sub _write_packages {
     my $records = $self->db->get_records_for_packages_details();
     my @records = sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
 
-    for my $record ( @records ) {
-        my ($name, $version, $path) = @{ $record };
+    for my $details_record ( @records ) {
+        my ($name, $version, $path) = @{ $details_record };
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;

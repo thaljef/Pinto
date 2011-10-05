@@ -130,7 +130,7 @@ sub numify_version {
     # '_', even though that is a perfectly valid value in a
     # number.  Not sure if other perls have this same problem.
 
-    $numeric_version =~ s{_}{}g;
+    $numeric_version =~ s{_}{}gx;
 
     # Adding zero forces numeric context, which gets rid of any
     # trailing zeros.
@@ -144,7 +144,7 @@ sub is_devel_version {
     my ($version) = @_;
 
     # See CPAN::DistnameInfo for a better regex
-    return $version =~ m/(_|-RC|-TRIAL)\d*$/;
+    return $version =~ m/(_|-RC|-TRIAL) \d* $/x;
 }
 
 #-------------------------------------------------------------------------------

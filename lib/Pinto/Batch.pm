@@ -127,9 +127,9 @@ sub run {
 sub _run_one_action {
     my ($self, $action) = @_;
 
-    eval { $action->execute() and $self->_result->made_changes() };
+    my $ok = eval { $action->execute() and $self->_result->made_changes(); 1 };
 
-    if ( catch my $e, ['Pinto::Exception'] ) {
+    if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
         $self->_result->add_exception($e);
         $self->whine($e);
         return $self;

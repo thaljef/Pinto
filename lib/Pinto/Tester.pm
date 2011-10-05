@@ -93,7 +93,6 @@ sub bufferstr {
 sub reset_buffer {
     my ($self, $new_buffer) = @_;
 
-    $DB::single = 1;
     $new_buffer ||= \my $buffer;
     my $io = IO::String->new( ${$new_buffer} );
     $self->pinto->logger->{out} = $io; # Hack!
