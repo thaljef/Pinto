@@ -4,6 +4,8 @@ In no particular order...
 
 =over 4
 
+=item Implement --force option for the update command.
+
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
 CPAN::Mini::Visit.
 
