@@ -180,19 +180,47 @@ __END__
 
 =pod
 
-=for stopwords PASSed
-
 =head1 SYNOPSIS
-
-There is nothing for you to see here. Instead, please look at one or
-more of the following:
-
-See L<Pinto::Manual> for broad information about the Pinto tools.
 
 See L<pinto-admin> to create and manage your Pinto repository.
 
 See L<pinto-server> to allow remote access to your Pinto repository.
 
 See L<pinto-remote> to interact with a remote Pinto repository.
+
+See L<Pinto::Manual> for detailed information about the Pinto tools.
+
+=head1 DESCRIPTION
+
+L<Pinto> is a suite of tools for creating and managing a CPAN-style
+repository of Perl archives.  Pinto is inspired by L<CPAN::Mini> and
+L<CPAN::Mini::Inject>, but adds several novel features:
+
+=over 4
+
+=item * Pinto lets you build a repository with only your local archives.
+
+
+=item * Pinto supports adding AND removing archives from the repository.
+
+
+=item * Pinto can be integrated with your version control system.
+
+
+=item * Pinto makes it easier to build several local repositories.
+
+
+=item * Pinto can pull archives from multiple remote repositories.
+
+
+=item * Pinto supports team development (i.e. concurrent users).
+
+
+=item * Pinto has a robust command line interface.
+
+
+=item * Pinto can be extended with new commands.
+
+=back
 
 =cut
