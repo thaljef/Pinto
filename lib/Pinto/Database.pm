@@ -261,7 +261,7 @@ sub load_index {
     my $loader = Pinto::IndexLoader->new( logger => $self->logger(),
                                           db     => $self );
 
-    $loader->load(from => $repos_url);
+    $loader->load(source => $repos_url);
 
     return $self;
 }
@@ -277,10 +277,10 @@ sub get_all_distributions {
 
 #-------------------------------------------------------------------------------
 
-sub get_all_distributions_from_origin {
-    my ($self, $origin) = @_;
+sub get_all_distributions_from_source {
+    my ($self, $source) = @_;
 
-    my $where = { origin => $origin };
+    my $where = { source => $source };
 
     return $self->schema->resultset('Distribution')->search($where);
 }

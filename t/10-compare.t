@@ -11,9 +11,9 @@ use Pinto::Tester::Util qw(make_dist make_pkg);
 #------------------------------------------------------------------------------
 # Test package specification is as follows:
 #
-#   dist_name-dist_version/pkg_name-pkg_version-origin
+#   dist_name-dist_version/pkg_name-pkg_version-source
 #
-# where origin = 1 (local) or 0 (foreign)
+# where source = 1 (local) or 0 (foreign)
 #
 # For example:
 #
@@ -85,7 +85,7 @@ sub _make_pkg {
 
     my $dist = make_dist(
           path     => "A/AU/AUTHOR/$dist_name-$dist_version.tar.gz",
-          origin   => $is_local ? undef : 'FOREIGN',
+          source   => $is_local ? undef : 'FOREIGN',
     );
 
     my $pkg = make_pkg(

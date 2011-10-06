@@ -37,12 +37,12 @@ with qw( Pinto::Role::Loggable
 
 sub load {
     my ($self, %args) = @_;
-    my $from = $args{from};
+    my $source = $args{source};
 
-    my $index_url = "$from/modules/02packages.details.txt.gz";
+    my $index_url = "$source/modules/02packages.details.txt.gz";
     my $index_file = $self->fetch_temporary(url => $index_url);
 
-    $self->info("Loading index from $from");
+    $self->info("Loading index from $source");
     open my $fh, '<:gzip', $index_file or throw_fatal "Cannot open $index_file: $!";
     my $dists = $self->_read($fh);
     close $fh;
@@ -56,7 +56,7 @@ sub load {
         }
 
         my @package_specs =  @{ $dists->{$path} };
-        my $dist = $self->db->new_distribution(path => $path, origin => $from);
+        my $dist = $self->db->new_distribution(path => $path, source => $source);
         my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
         $self->db->add_distribution_with_packages($dist, @packages);
     }

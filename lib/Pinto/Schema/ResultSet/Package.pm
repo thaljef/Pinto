@@ -16,7 +16,7 @@ use base qw( DBIx::Class::ResultSet );
 sub locals {
     my ($self) = @_;
 
-    my $where = { origin => 'LOCAL' };
+    my $where = { source => 'LOCAL' };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);
@@ -27,7 +27,7 @@ sub locals {
 sub foreigners {
     my ($self) = @_;
 
-    my $where = { origin => {'!=' => 'LOCAL' } };
+    my $where = { source => {'!=' => 'LOCAL' } };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);
@@ -39,7 +39,7 @@ sub blocked {
     my ($self) = @_;
 
     my $local_pkg_names = $self->locals()->get_column('name')->as_query();
-    my $where = { origin => {'!=' => 'LOCAL'}, name => {-in => $local_pkg_names} };
+    my $where = { source => {'!=' => 'LOCAL'}, name => {-in => $local_pkg_names} };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);
@@ -51,7 +51,7 @@ sub blocking {
     my ($self) = @_;
 
     my $foreign_pkg_names = $self->foreigners()->get_column('name')->as_query();
-    my $where = { origin => 'LOCAL', name => {-in => $foreign_pkg_names} };
+    my $where = { source => 'LOCAL', name => {-in => $foreign_pkg_names} };
     my $attrs = { prefetch => 'distribution', order_by => {-asc => 'name'} };
 
     return $self->search($where, $attrs);

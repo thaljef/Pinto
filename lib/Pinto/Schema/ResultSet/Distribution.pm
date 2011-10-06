@@ -18,7 +18,7 @@ use base qw( DBIx::Class::ResultSet );
 sub foreigners {
     my ($self) = @_;
 
-    my $where = { origin => {'!=' => 'LOCAL' } };
+    my $where = { source => {'!=' => 'LOCAL' } };
     my $attrs = { order_by => {-asc => 'path'} };
 
     return $self->search($where, $attrs);
@@ -29,7 +29,7 @@ sub foreigners {
 sub locals {
     my ($self) = @_;
 
-    my $where = { origin => 'LOCAL' };
+    my $where = { source => 'LOCAL' };
     my $attrs = { order_by => {-asc => 'path'} };
 
     return $self->search($where, $attrs);

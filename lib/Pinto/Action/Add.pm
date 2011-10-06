@@ -78,7 +78,7 @@ sub _process_archive {
     $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
-        my $where = { name => $pkg->{name}, 'distribution.origin' => 'LOCAL'};
+        my $where = { name => $pkg->{name}, 'distribution.source' => 'LOCAL'};
         my $incumbent = $self->db->get_all_packages($where)->first() or next;
         if ( (my $author = $incumbent->author() ) ne $self->author() ) {
             throw_error "Only author $author can update package $pkg->{name}";

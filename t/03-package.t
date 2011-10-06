@@ -24,7 +24,7 @@ is("$pkg", 'Foo-2.001_02/Foo-2.001_02', 'strigifies to dist/pkg vnames');
 
 #------------------------------------------------------------------------------
 
-$dist = make_dist(path => 'A/AU/AUTHOR/Foo-2.0.tar.gz', origin => 'http://remote');
+$dist = make_dist(path => 'A/AU/AUTHOR/Foo-2.0.tar.gz', source => 'http://remote');
 $pkg  = make_pkg(name => 'Foo', distribution => $dist );
 
 is($pkg->vname(), 'Foo-undef', 'vname with undef version');

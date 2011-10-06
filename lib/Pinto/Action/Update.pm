@@ -43,7 +43,7 @@ sub execute {
     $self->db->load_index($source);
 
     my $count = 0;
-    my $foreigners = $self->db->get_all_distributions_from_origin($source);
+    my $foreigners = $self->db->get_all_distributions_from_source($source);
 
     while ( my $dist = $foreigners->next() ) {
 

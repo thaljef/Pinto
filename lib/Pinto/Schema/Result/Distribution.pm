@@ -30,7 +30,7 @@ __PACKAGE__->table("distribution");
   data_type: 'text'
   is_nullable: 0
 
-=head2 origin
+=head2 source
 
   data_type: 'text'
   is_nullable: 0
@@ -48,7 +48,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "path",
   { data_type => "text", is_nullable => 0 },
-  "origin",
+  "source",
   { data_type => "text", is_nullable => 0 },
   "is_eligible_for_index",
   { data_type => "boolean", default_value => 1, is_nullable => 0 },
@@ -74,8 +74,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-10-05 13:37:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QVAmuQaeR/mPYJb6BgqtQw
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-10-06 16:06:30
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pr7vH75hIfdQx9/6aWE/ow
 
 #-------------------------------------------------------------------------------
 
@@ -104,8 +104,8 @@ use overload ( '""'     => 'to_string',
 sub new {
     my ($class, $attrs) = @_;
 
-    $attrs->{origin} = 'LOCAL'
-        if not defined $attrs->{origin};
+    $attrs->{source} = 'LOCAL'
+        if not defined $attrs->{source};
 
     return $class->SUPER::new($attrs);
 }
@@ -168,7 +168,7 @@ sub author {
 sub url {
     my ($self, $base) = @_;
 
-    $base ||= $self->origin();
+    $base ||= $self->source();
 
     return URI->new( "$base/authors/id/" . $self->path() )->canonical();
 }
@@ -186,7 +186,7 @@ sub is_devel {
 sub is_local {
     my ($self) = @_;
 
-    return $self->origin() eq 'LOCAL';
+    return $self->source() eq 'LOCAL';
 }
 
 #------------------------------------------------------------------------------
@@ -218,8 +218,8 @@ sub to_formatted_string {
          'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
          'p' => sub { $self->path()                           },
          'P' => sub { $self->native_path()                    },
-         'o' => sub { $self->is_local()   ? 'L' : 'F'         },
-         'O' => sub { $self->origin()                         },
+         's' => sub { $self->is_local()   ? 'L' : 'F'         },
+         'S' => sub { $self->source()                         },
          'a' => sub { $self->author()                         },
          'u' => sub { $self->url()                            },
          'c' => sub { $self->package_count()                  },
