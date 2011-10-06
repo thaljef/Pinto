@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 18);
+use Test::More (tests => 19);
 
 use Path::Class;
 
@@ -20,6 +20,7 @@ is($dist->version(), '1.2', 'dist version');
 is($dist->version_numeric(), '1.2', 'dist version_numeric');
 is($dist->is_local(), 1, 'is_local is true when origin eq q{LOCAL}');
 is($dist->is_devel(), q{}, 'this is not a devel dist');
+is($dist->is_eligible_for_index(), 1, 'is_eligible_for_index default to TRUE');
 is($dist->path(), 'F/FO/FOO/Bar-1.2.tar.gz', 'Logical dist path');
 is($dist->native_path(), file( qw(authors id F FO FOO Bar-1.2.tar.gz) ), 'Native dist path');
 is($dist->native_path('here'), file( qw(here authors id F FO FOO Bar-1.2.tar.gz) ), 'Native dist path, with base');

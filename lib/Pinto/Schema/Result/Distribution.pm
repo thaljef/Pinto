@@ -107,6 +107,9 @@ sub new {
     $attrs->{source} = 'LOCAL'
         if not defined $attrs->{source};
 
+    $attrs->{is_eligible_for_index} = 1
+        if not defined $attrs->{is_eligible_for_index};
+
     return $class->SUPER::new($attrs);
 }
 
