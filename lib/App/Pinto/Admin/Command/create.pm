@@ -25,7 +25,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'devel'      => 'Include development releases in the index' ],
+        [ 'devel'      => 'Include development releases in the repository index' ],
         [ 'nocleanup'  => 'Do not delete distributions when they become outdated' ],
         [ 'noinit'     => 'Do not pull/update from VCS before each operation' ],
         [ 'store=s'    => 'Name of class that handles storage of your repository' ],
@@ -100,7 +100,7 @@ Prevents L<Pinto> from deleting outdated distributions from your
 repository when newer ones are added.  Remember that outdated
 distributions are NEVER listed in the index.  But if you set this
 option, then you'll be able to install outdated distributions using
-the full distribution identity, like this:
+the full distribution path, like this:
 
   $> cpanm A/AU/AUTHOR/Some-Dist-2.4.tar.gz
 

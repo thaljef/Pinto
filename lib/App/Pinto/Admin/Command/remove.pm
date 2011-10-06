@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
  my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] DISTRIBUTION_NAME ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_DISTRIBUTION_NAMES
+%c --repos=PATH $command [OPTIONS] DISTRIBUTION_PATH ...
+%c --repos=PATH $command [OPTIONS] < LIST_OF_DISTRIBUTION_PATHS
 END_USAGE
 
     chomp $usage;
@@ -59,7 +59,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_batch( %{$opts} );
-    $self->pinto->add_action('Remove', %{$opts}, dist_name => $_) for @args;
+    $self->pinto->add_action('Remove', %{$opts}, path => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -73,28 +73,28 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir remove [OPTIONS] DISTRIBUTION_NAME ...
-  pinto-admin --repos=/some/dir remove [OPTIONS] < LIST_OF_DISTRIBUTION_NAMES
+  pinto-admin --repos=/some/dir remove [OPTIONS] ARCHIVE_PATH ...
+  pinto-admin --repos=/some/dir remove [OPTIONS] < LIST_OF_ARCHIVE_PATHS
 
 =head1 DESCRIPTION
 
-This command removes a distribution and all its packages from the
-repository and recomputes the 'latest' version of the packages that
-were in that distribution.
+This command removes a distribution archive and all its packages from
+the repository and recomputes the 'latest' version of the packages
+that were in that distribution.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments to this command are the names of the distributions you wish
-to remove.  You must specify the complete distribution name, including
-version number and extension.  The precise identity of the
-distribution that will be removed depends on who you are.  So if you
-are C<JOE> and you ask to remove C<Foo-1.0.tar.gz> then you are really
-asking to remove F<J/JO/JOE/Foo-1.0.tar.gz>.
+Arguments to this command are the paths to the distribution archives
+you wish to remove.  The precise archive that will be removed depends
+on who you are.  So if you are C<JOE> and you ask to remove
+C<Foo-1.0.tar.gz> then you are really asking to remove
+F<J/JO/JOE/Foo-1.0.tar.gz>.
 
-To remove a distribution that was added by another author, use the
-C<--author> option to change who you are.  Or you can just
-explicitly specify the full identity of the distribution.  So the
-following two examples are equivalent:
+To remove an archive that is owned by another author, use the
+C<--author> option to change your identity.  Or you can just
+explicitly specify the full path of the archive (note that paths are
+always expressed with forward slashes).  So the following two examples
+are equivalent:
 
   $> pinto-admin --repos=/some/dir remove --author=SUSAN Foo-1.0.tar.gz
   $> pinto-admin --repos=/some/dir remove S/SU/SUSAN/Foo-1.0.tar.gz

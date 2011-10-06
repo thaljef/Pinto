@@ -129,6 +129,14 @@ considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
 
+=item --recompute
+
+Instructs L<Pinto> to also recompute what it thinks is the 'latest'
+version of each package in the repository.  This is useful if you've
+upgraded to a newer version of Pinto that has different logic for
+determining the 'latest' version.  Beware that this may change your
+index (hopefully for the better).
+
 =item --tag=NAME
 
 Instructs L<Pinto> to tag the head revision of the repository at NAME.

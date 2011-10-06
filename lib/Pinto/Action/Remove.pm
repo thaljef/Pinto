@@ -22,7 +22,7 @@ extends 'Pinto::Action';
 #------------------------------------------------------------------------------
 # Attributes
 
-has dist_name  => (
+has path  => (
     is       => 'ro',
     isa      => Str,
     required => 1,
@@ -38,11 +38,11 @@ with qw( Pinto::Role::Authored );
 override execute => sub {
     my ($self) = @_;
 
-    my $dist_name  = $self->dist_name();
-    my $author     = $self->author();
+    my $path    = $self->path();
+    my $author  = $self->author();
 
-    my $path = $dist_name =~ m{/}mx ?
-        $dist_name : Pinto::Util::author_dir($author)->file($dist_name)->as_foreign('Unix');
+    $path = $path =~ m{/}mx ?
+        $path : Pinto::Util::author_dir($author)->file($path)->as_foreign('Unix');
 
     my $dist = $self->db->get_distribution_with_path($path)
         or throw_error "Distribution $path does not exist";

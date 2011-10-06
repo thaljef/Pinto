@@ -20,9 +20,8 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
     my ($self, $app) = @_;
 
-    # TODO: add option to prompt before cleaning each dist
-
     return (
+        [ 'confirm'     => 'Ask for confirmation before removing each distribution' ],
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
@@ -111,6 +110,12 @@ None.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --confirm
+
+Causes L<Pinto> to prompt for confirmation before deleting each
+distribution.  This option only has effect if the terminal is
+interactive.
 
 =item --message=MESSAGE
 
