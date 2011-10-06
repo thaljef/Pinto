@@ -18,7 +18,7 @@ use Pinto::Config;
 {
     my %default_cases = (
         repos     => 'nowhere',
-        source    => 'http://cpan.perl.org',
+        sources   => 'http://cpan.perl.org',
         store     => 'Pinto::Store',
         nocleanup => 0,
         noinit    => 0,
@@ -32,7 +32,7 @@ use Pinto::Config;
 
    my %custom_cases = (
         repos     => 'nowhere',
-        source    => 'http://cpan.pair.com',
+        sources   => 'http://cpan.pair.com  http://metacpan.org',
         store     => 'Pinto::Store::VCS::Git',
         nocleanup => 1,
         noinit    => 1,

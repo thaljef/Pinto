@@ -24,18 +24,18 @@ $t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
 is $pinto->config->nocleanup(), 0, 'Got default nocleanup';
 is $pinto->config->noinit(),    0, 'Got default noinit';
 is $pinto->config->store(),     'Pinto::Store', 'Got default store';
-is $pinto->config->source(),    'http://cpan.perl.org', 'Got default source';
+is $pinto->config->sources(),   'http://cpan.perl.org', 'Got default source';
 
 #------------------------------------------------------------------------------
 # Test custom config
 
-my $config = {noinit => 1, nocleanup => 1, store => 'MyStore', source => 'MySource'};
+my $config = {noinit => 1, nocleanup => 1, store => 'MyStore', sources => 'MySource'};
 $t = Pinto::Tester->new(creator_args => $config);
 $pinto = $t->pinto();
 
 is $pinto->config->nocleanup(), 1, 'Got custom nocleanup';
 is $pinto->config->noinit(),    1, 'Got custom noinit';
 is $pinto->config->store(),     'MyStore', 'Got custom store';
-is $pinto->config->source(),    'MySource', 'Got custom source';
+is $pinto->config->sources(),   'MySource', 'Got custom source';
 
 #------------------------------------------------------------------------------

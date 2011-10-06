@@ -25,11 +25,11 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'devel'     => 'Include development releases in the index' ],
-        [ 'nocleanup' => 'Do not delete distributions when they become outdated' ],
-        [ 'noinit'    => 'Do not pull/update from VCS before each operation' ],
-        [ 'store=s'   => 'Name of class that handles storage of your repository' ],
-        [ 'sources=s' => 'URLs of repositories for foreign distributions (space delimited)' ],
+        [ 'devel'      => 'Include development releases in the index' ],
+        [ 'nocleanup'  => 'Do not delete distributions when they become outdated' ],
+        [ 'noinit'     => 'Do not pull/update from VCS before each operation' ],
+        [ 'store=s'    => 'Name of class that handles storage of your repository' ],
+        [ 'source=s@' => 'URL of repository for foreign distributions (repeatable)' ],
     );
 }
 
@@ -50,6 +50,10 @@ sub execute {
 
     my $repos = $self->app->global_options()->{repos}
         or die 'Must specify a repository directory';    ## no critic qw(Carp)
+
+    # Combine repeatable "source" options into one space-delimited "sources" option.
+    # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
+    $opts->{sources} = join ' ', @{ delete $opts->{source} } if defined $opts->{source};
 
     my $creator = Pinto::Creator->new( repos => $repos );
     $creator->create( %{$opts} );
@@ -114,7 +118,7 @@ considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
 
-=item --store
+=item --store CLASS_NAME
 
 The name of the class that will handle storage for your repository.
 The default is L<Pinto::Store> which just stores files on the local
@@ -123,14 +127,17 @@ L<Pinto::Store::VCS::Svn> or L<Pinto::Store::VCS::Git>.  Each Store
 has its own idiosyncrasies, so check the documentation of your Store
 for specific details on its usage.
 
-=item --sources
+=item --source URL
 
-A space-delimited list of the URLs of the repositories where foreign
-distributions will be pulled from.  These are usually the URLs of one
-or more CPAN mirrors, and it defaults to L<http://cpan.perl.org>.  But
-they could also be L<CPAN::Mini> mirrors, or other L<Pinto>
-repositories.  Repositories that appear earlier in the list have
-priority over those that appear later.
+The URL of a repository where foreign distributions will be pulled
+from.  This is usually the URL of a CPAN mirror, and it defaults to
+L<http://cpan.perl.org>.  But it could also be a L<CPAN::Mini> mirror,
+or another L<Pinto> repository.
+
+You can specify multiple repository URLs by repeating the C<--source>
+option.  Repositories that appear earlier in the list have priority
+over those that appear later.  See L<Pinto::Manual> for more
+information about using multiple source repositories.
 
 =back
 

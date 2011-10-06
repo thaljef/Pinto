@@ -127,10 +127,9 @@ has noinit => (
 
 has sources  => (
     is        => 'ro',
-    isa       => URI,
+    isa       => Str,
     key       => 'sources',
     default   => 'http://cpan.perl.org',
-    coerce    => 1,
     documentation => 'URLs of repositories for foreign distributions (space delimited)',
 );
 
