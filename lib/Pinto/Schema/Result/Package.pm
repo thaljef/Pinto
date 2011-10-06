@@ -208,7 +208,7 @@ sub to_formatted_string {
          's' => sub { $self->is_local()   ? 'L' : 'F'         },
          'S' => sub { $self->distribution->source()           },
          'a' => sub { $self->author()                         },
-         'b' => sub { $self->is_blocked() ? 'B' : ' '         },
+ #TODO:  'b' => sub { $self->is_blocked() ? 'B' : ' '         },
          'd' => sub { $self->distribution->name()             },
          'D' => sub { $self->distribution->vname()            },
          'w' => sub { $self->distribution->version()          },
