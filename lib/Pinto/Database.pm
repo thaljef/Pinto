@@ -129,7 +129,6 @@ sub add_distribution_with_packages {
         $dist->version_numeric();
     }
     catch {
-      $DB::single = 1;
         $self->whine("Distribution $dist is ineligible for indexing: $_");
         $dist->is_eligible_for_index(0);
     };
