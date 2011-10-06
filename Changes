@@ -40,6 +40,12 @@
      should also work with cpanp[1], but I haven't tried it.  And of
      course it still works with cpanm[1].
 
+     Pinto can now pull foreign packages from multiple repositories.
+     You can use this to "fall back" to another repository if one
+     of them is offline (which sometimes happens with CPAN mirrors).
+     Or you can use this to create a "network" of repositories that
+     may each have different sets of distributions.
+
      Pinto does the-right-thing with development packages and
      distributions (See POD for details).
 

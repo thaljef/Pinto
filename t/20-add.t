@@ -12,7 +12,7 @@ use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 
-my $fakes     = dir( $Bin, qw(data fakes) );
+my $fakes     = dir( $Bin, qw(data fakepan repos) );
 my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
 my $dist_name = 'FooOnly-0.01.tar.gz';
 my $archive   = $auth_dir->file($dist_name);

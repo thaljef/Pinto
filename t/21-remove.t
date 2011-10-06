@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 13);
+use Test::More (tests => 11);
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -12,7 +12,7 @@ use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 
-my $fakes     = dir( $Bin, qw(data fakes) );
+my $fakes     = dir( $Bin, qw(data fakepan repos) );
 my $source    = URI->new("file://$fakes");
 my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
 my $dist_name = 'FooOnly-0.01.tar.gz';
@@ -27,10 +27,6 @@ my $LOCAL2 = 'LOCAL2';
 
 my $t = Pinto::Tester->new();
 my $pinto = $t->pinto();
-
-# Make sure we have clean slate
-$t->package_not_loaded_ok('Foo', $dist_name, $LOCAL1);
-$t->dist_not_exists_ok($dist_name, $LOCAL1);
 
 #------------------------------------------------------------------------------
 # Adding a local dist...

@@ -12,7 +12,7 @@ use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 
-my $fakes     = dir( $Bin, qw(data fakes) );
+my $fakes     = dir( $Bin, qw(data fakepan repos) );
 my $source    = URI->new("file://$fakes");
 my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
 my $dist_name = 'FooOnly-0.01.tar.gz';
@@ -30,7 +30,7 @@ my $FOREIGN = 'LOCAL';
 #------------------------------------------------------------------------------
 # Setup...
 
-my $t = Pinto::Tester->new(creator_args => {source => $source});
+my $t = Pinto::Tester->new();
 my $pinto = $t->pinto();
 
 # Make sure we have clean slate
@@ -41,7 +41,7 @@ $t->dist_not_exists_ok($dist_name, $LOCAL1);
 # Updating from a foreign repository...
 
 $pinto->new_batch();
-$pinto->add_action('Update');
+$pinto->add_action('Update', source => $source);
 $t->result_ok( $pinto->run_actions() );
 
 $t->dist_exists_ok('BarAndBaz-0.04.tar.gz',   $FOREIGN);
