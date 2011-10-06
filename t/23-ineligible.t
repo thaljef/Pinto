@@ -32,6 +32,8 @@ like $t->bufferstr(), qr/ineligible for indexing: Illegal version/;
 $t->reset_buffer();
 
 #------------------------------------------------------------------------------
+# These dists both have package Bar-1.0, but they are in dists with different
+# names.  Therefore, we cannot compare them so the later one is ineligible.
 
 my $part1 = 'Unsortable-Part1-1.0.tar.gz';
 my $part2 = 'Unsortable-Part2-2.0.tar.gz';
