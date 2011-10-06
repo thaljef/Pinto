@@ -42,7 +42,7 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     $self->pinto->new_batch( %{$opts} );
-    my @sources = $self->config->source_list();
+    my @sources = $self->pinto->config->sources_list();
     $self->pinto->add_action('Update', %{$opts}, source => $_) for @sources;
     my $result = $self->pinto->run_actions();
 

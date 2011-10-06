@@ -7,7 +7,7 @@ use Moose;
 use MooseX::Configuration;
 
 use MooseX::Types::Moose qw(Str Bool Int);
-use Pinto::Types 0.017 qw(URI Dir File);
+use Pinto::Types 0.017 qw(Dir File);
 use URI;
 
 use namespace::autoclean;
@@ -168,7 +168,7 @@ sub _build_config_file {
 sub _build_sources_list {
     my ($self) = @_;
 
-    my @sources = split m{\s+}mx, $self->source();
+    my @sources = split m{\s+}mx, $self->sources();
     my @source_urls = map { URI->new($_) } @sources;
 
     return \@source_urls;

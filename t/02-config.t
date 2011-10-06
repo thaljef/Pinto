@@ -48,6 +48,9 @@ use Pinto::Config;
     my $home = dir( File::HomeDir->my_home() );
     is($cfg->repos(), $home->file('nowhere'), 'Expanded ~/ to home directory');
 
+    my $expect = [ map {URI->new($_)} qw(here there) ];
+    $cfg = Pinto::Config->new(repos => 'anywhere', sources => 'here there');
+    is_deeply([$cfg->sources_list()], $expect, 'Parsed sources list');
 }
 
 
