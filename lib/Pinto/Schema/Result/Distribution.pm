@@ -38,7 +38,6 @@ __PACKAGE__->table("distribution");
 =head2 is_eligible_for_index
 
   data_type: 'boolean'
-  default_value: 1
   is_nullable: 0
 
 =cut
@@ -51,7 +50,7 @@ __PACKAGE__->add_columns(
   "source",
   { data_type => "text", is_nullable => 0 },
   "is_eligible_for_index",
-  { data_type => "boolean", default_value => 1, is_nullable => 0 },
+  { data_type => "boolean", is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("distribution_id");
 __PACKAGE__->add_unique_constraint("path_unique", ["path"]);
@@ -74,8 +73,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-10-06 16:06:30
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pr7vH75hIfdQx9/6aWE/ow
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-10-06 16:31:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YyghzYT3B2m91DNFwsJtdw
 
 #-------------------------------------------------------------------------------
 
