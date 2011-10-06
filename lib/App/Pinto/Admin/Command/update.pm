@@ -42,7 +42,8 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     $self->pinto->new_batch( %{$opts} );
-    $self->pinto->add_action('Update', %{$opts});
+    my @sources = $self->config->source_list();
+    $self->pinto->add_action('Update', %{$opts}, source => $_) for @sources;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -60,12 +61,12 @@ __END__
 
 =head1 DESCRIPTION
 
-This command pulls the latest versions of all distributions from a
-source repository (often a CPAN mirror) into your repository.  Any
-locally added distributions will always mask those that you pulled
-from another repository.
+This command pulls the latest versions of all distributions from your
+source repositories (often one or more CPAN mirrors) into your
+repository.  Any locally added distributions will always mask those
+that you pulled from another repository.
 
-The address of the source repository is defined in the configuration
+The URLs of the source repositories are defined in the configuration
 file at F<config/pinto.ini> within your repository. See
 L<Pinto::Config> for more information on setting that.
 

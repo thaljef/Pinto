@@ -74,6 +74,7 @@ sub _process_archive {
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
+    $DB::single = 1;
     my @package_specs = $self->_extract_packages($archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 

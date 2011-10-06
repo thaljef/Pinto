@@ -8,6 +8,7 @@ use MooseX::Configuration;
 
 use MooseX::Types::Moose qw(Str Bool Int);
 use Pinto::Types 0.017 qw(URI Dir File);
+use URI;
 
 use namespace::autoclean;
 
@@ -124,13 +125,23 @@ has noinit => (
 );
 
 
-has source  => (
+has sources  => (
     is        => 'ro',
     isa       => URI,
-    key       => 'source',
+    key       => 'sources',
     default   => 'http://cpan.perl.org',
     coerce    => 1,
-    documentation => 'URL of repository where foreign dists will come from',
+    documentation => 'URLs of repositories for foreign distributions (space delimited)',
+);
+
+
+has sources_list => (
+    is         => 'ro',
+    isa        => 'ArrayRef[URI]',
+    builder    => '_build_sources_list',
+    auto_deref => 1,
+    init_arg   => undef,
+    lazy       => 1,
 );
 
 
@@ -151,6 +162,17 @@ sub _build_config_file {
     my $config_file = $self->config_dir->file( $self->basename() );
 
     return -e $config_file ? $config_file : ();
+}
+
+#------------------------------------------------------------------------------
+
+sub _build_sources_list {
+    my ($self) = @_;
+
+    my @sources = split m{\s+}mx, $self->source();
+    my @source_urls = map { URI->new($_) } @sources;
+
+    return \@source_urls;
 }
 
 #------------------------------------------------------------------------------

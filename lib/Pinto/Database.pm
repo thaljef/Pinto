@@ -129,6 +129,7 @@ sub add_distribution_with_packages {
         $dist->version_numeric();
     }
     catch {
+      $DB::single = 1;
         $self->whine("Distribution $dist is ineligible for indexing: $_");
         $dist->is_eligible_for_index(0);
     };
@@ -177,7 +178,7 @@ sub add_package {
     }
     catch {
         $self->whine("Package $pkg is ineligible for indexing: $_");
-        $pkg->distribution->is_elligible_for_index(0);
+        $pkg->distribution->is_eligible_for_index(0);
         $pkg->distribution->update();
     };
 
@@ -272,6 +273,17 @@ sub get_all_distributions {
     my ($self) = @_;
 
     return $self->schema->resultset('Distribution')->search();
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub get_all_distributions_from_origin {
+    my ($self, $origin) = @_;
+
+    my $where = { origin => $origin };
+
+    return $self->schema->resultset('Distribution')->search($where);
 }
 
 #-------------------------------------------------------------------------------

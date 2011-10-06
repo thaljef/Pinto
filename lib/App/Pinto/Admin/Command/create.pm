@@ -29,7 +29,7 @@ sub opt_spec {
         [ 'nocleanup' => 'Do not delete distributions when they become outdated' ],
         [ 'noinit'    => 'Do not pull/update from VCS before each operation' ],
         [ 'store=s'   => 'Name of class that handles storage of your repository' ],
-        [ 'source=s'  => 'URL of repository where foreign dists will come from' ],
+        [ 'sources=s' => 'URLs of repositories for foreign distributions (space delimited)' ],
     );
 }
 
@@ -123,12 +123,14 @@ L<Pinto::Store::VCS::Svn> or L<Pinto::Store::VCS::Git>.  Each Store
 has its own idiosyncrasies, so check the documentation of your Store
 for specific details on its usage.
 
-=item --source
+=item --sources
 
-The URL of the repository where foreign distributions will be pulled
-from.  This is usually a CPAN mirror, and it defaults to
-L<http://cpan.perl.org>.  But it could also be a L<CPAN::Mini> mirror,
-or another L<Pinto> repository.
+A space-delimited list of the URLs of the repositories where foreign
+distributions will be pulled from.  These are usually the URLs of one
+or more CPAN mirrors, and it defaults to L<http://cpan.perl.org>.  But
+they could also be L<CPAN::Mini> mirrors, or other L<Pinto>
+repositories.  Repositories that appear earlier in the list have
+priority over those that appear later.
 
 =back
 

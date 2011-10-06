@@ -5,6 +5,7 @@ package Pinto::Action::Update;
 use Moose;
 
 use MooseX::Types::Moose qw(Bool);
+use Pinto::Types qw(URI);
 
 use Exception::Class::TryCatch;
 
@@ -20,6 +21,15 @@ use namespace::autoclean;
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
+# Moose Attributes
+
+has source => (
+    is       => 'ro',
+    isa      => URI,
+    required => 1,
+);
+
+#------------------------------------------------------------------------------
 # Moose Roles
 
 with qw(Pinto::Role::UserAgent);
@@ -29,11 +39,11 @@ with qw(Pinto::Role::UserAgent);
 sub execute {
     my ($self) = @_;
 
-    my $source = $self->config->source();
+    my $source = $self->source();
     $self->db->load_index($source);
 
     my $count = 0;
-    my $foreigners = $self->db->get_all_foreign_distributions();
+    my $foreigners = $self->db->get_all_distributions_from_origin($source);
 
     while ( my $dist = $foreigners->next() ) {
 
