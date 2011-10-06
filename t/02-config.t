@@ -3,12 +3,13 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 11);
+use Test::More (tests => 12);
 use Test::Exception;
 
 use Path::Class;
 use File::HomeDir;
 use File::Temp;
+use URI;
 
 use Pinto::Config;
 
