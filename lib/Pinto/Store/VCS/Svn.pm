@@ -4,11 +4,9 @@ package Pinto::Store::VCS::Svn;
 
 use Moose;
 
+use DateTime;
 use Pinto::Util::Svn;
 use Pinto::Types qw(URI);
-use DateTime;
-
-extends 'Pinto::Store::VCS';
 
 use namespace::autoclean;
 
@@ -17,6 +15,12 @@ use namespace::autoclean;
 # VERSION
 
 #-------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Store::VCS';
+
+#-------------------------------------------------------------------------------
+# Attributes
 
 has svn_location => (
     is       => 'ro',
@@ -29,6 +33,7 @@ has svn_location => (
 
 
 #-------------------------------------------------------------------------------
+# Methods
 
 override initialize => sub {
     my ($self) = @_;

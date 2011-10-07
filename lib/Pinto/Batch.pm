@@ -113,7 +113,7 @@ sub run {
 
     $self->db->write_index();
 
-    $self->debug( 'AUDIT: ' . $self->message() );
+    $self->debug( $self->message() );
 
     return $self->_result() if $self->nocommit();
 

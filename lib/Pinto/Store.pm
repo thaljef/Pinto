@@ -17,7 +17,7 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# Moose roles
+# Roles
 
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable
@@ -56,16 +56,13 @@ This method is called after each batch of Pinto events and is
 responsible for doing any work that is required to commit the Store.
 This could include scheduling files for addition/deletion, pushing
 commits to a remote repository.  If the commit fails, an exception
-should be thrown.  The default implementation merely logs the message.
-Returns a reference to this Store.
+should be thrown.  The default implementation does nothing.  Returns a
+reference to this Store.
 
 =cut
 
 sub commit {
     my ($self, %args) = @_;
-
-    my $message = $args{message} || 'Committing the store';
-    $self->debug($message);
 
     return $self;
 }
