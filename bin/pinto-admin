@@ -40,15 +40,13 @@ __END__
 =head1 DESCRIPTION
 
 C<pinto-admin> is a command line utility for creating and managing a
-Pinto repository.  The repository can contain your own distributions
-and/or foreign distributions from another repository (such as a CPAN
-mirror like L<http://cpan.perl.org>).  You can also put patched
-versions of foreign distributions in your repository.
+Pinto repository.  The repository can contain your own distribution
+archives and/or foreign distribution archives from another repository
+(such as a CPAN mirror).  You can also put patched versions of foreign
+distribution archives in your repository.
 
-You can then point L<cpanm> to your Pinto repository and install your
-distributions (with their dependencies).  B<NOTE:> At this time, only
-L<cpanm> will work properly with a Pinto repository.  But support for
-L<cpan> and L<cpanp> is coming real soon!
+You can then point L<cpan> (or L<cpanm> or L<cpanp>) to your Pinto
+repository and install your distributions (with their dependencies).
 
 =head1 GLOBAL OPTIONS
 
@@ -91,15 +89,14 @@ Each command has its own options and arguments.  To get a brief summary:
 
 To see the complete manual for a command:
 
-  $> pinto-admin COMMAND --man
+  $> pinto-admin manual COMMAND
 
 =head1 CONFIGURATION
 
-The F<config> directory in the root of every repository contains a
+The F<.pinto/config> directory of every repository contains a
 configuration file named F<pinto.ini>.  This file will be generated
-for you (with default values) whenever you create a new repository.
-Thereafter, it is up to you to manually adjust the configuration file
-as you see fit.
+for you whenever you create a new repository.  Thereafter, it is up to
+you to manually adjust the configuration file as you see fit.
 
 The configuration file is in the typical INI format.  Parameters are
 C<NAME = VALUE> pairs.  Global parameters (which are all the ones
@@ -109,12 +106,19 @@ semi-colon (;).
 
 =over 4
 
-=item source = URL
+=item devel = 0|1
 
-The URL of a repository that you would like L<Pinto> to pull foreign
-distributions from.  This could be a public CPAN mirror, or another
-Pinto repository.  Defaults to L<http://cpan.perl.org>.  This
-parameter is only relevant to the C<update> command.
+If true, L<Pinto> will allow development releases to appear in the
+index when they are the "latest" version.  Otherwise, development
+releases are accepted into the repository, but never included in the
+index.  Defaults to 0.
+
+=item sources = URL [ URL URL ... ]
+
+A space-delimted list of the URLs of the repositories that L<Pinto>
+will pull foreign distribution from.  These could be public CPAN
+mirrors, a private L<CPAN::Mini> mirror, or other Pinto repositories.
+Defaults to L<http://cpan.perl.org>.
 
 =item nocleanup = 0|1
 
@@ -122,20 +126,19 @@ If true, L<Pinto> will not automatically delete distributions that
 become out of date (either because you've added your own local version
 or you've pulled a newer one from a remote repository).  The default
 is 0, which means you won't be able to install older versions of a
-distribution from your repository.  But if you set <nocleanup> to 1,
+distribution from your repository.  But if you set C<nocleanup> to 1,
 then you can still get older distributions in the usual way:
 
   $> cpanm A/AU/AUTHOR/Older-Dist-1.2.tar gz
 
-=item noclobber = 0|1
+=item noinit = 0|1
 
-Normally, L<Pinto> favors removing "old" distributions when new ones
-are added (see L<"BEHAVIOR">).  But if C<noclobber> is true, L<Pinto>
-will not remove (from the index) every package in an existing
-distribution whenever you add a distribution that contains one or more
-of the packges that were in the existing distribution.  Setting this
-to true make Pinto behave more like PAUSE.  TODO: explain this better!
-
+If true, L<Pinto> will not pull/update the repository from the VCS
+before each operation.  This is only relevant if you are using a
+VCS‐based storage mechanism.  This can speed up operations
+considerably, but should only be used if you *know* that your working
+copy is up‐to‐date and you are going to be the only actor touching the
+Pinto repository within the VCS.  Defaults to 0.
 
 =item store = CLASS_NAME
 
