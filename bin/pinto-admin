@@ -57,7 +57,8 @@ The following options are available for all commands.
 =item  --repos=/path/to/your/repository
 
 Specifies the path to the root directory of your repository.  This is
-mandatory for all commands.
+mandatory for all commands unless you've set the C<PINTO_REPOSITORY>
+environment variable to point to your repository.
 
 =item --nocolor
 

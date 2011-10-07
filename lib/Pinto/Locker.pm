@@ -7,7 +7,6 @@ use Moose;
 use Path::Class;
 use LockFile::Simple;
 
-use Pinto::Exceptions qw(throw_fatal);
 use Pinto::Types 0.017 qw(Dir);
 
 use namespace::autoclean;
@@ -76,10 +75,10 @@ sub lock {                                             ## no critic (Homonym)
     # If by chance, the directory we are trying to lock does not exist,
     # then LockFile::Simple will wait (a while) until it does.  To
     # avoid this extra delay, just make sure the directory exists now.
-    throw_fatal "$repos does not exist" if not -e $repos;
+    $self->fatal("Repository $repos does not exist") if not -e $repos;
 
     my $lock = $self->_lockmgr->lock( $repos->file('')->stringify() )
-        or throw_fatal 'Unable to lock the repository -- please try later';
+        or $self->fatal('Unable to lock the repository -- please try later');
 
     $self->debug("Process $$ got the lock on $repos");
     $self->_lock($lock);
@@ -101,7 +100,7 @@ sub unlock {
 
     return $self if not $self->_has_lock();
 
-    $self->_lock->release() or throw_fatal 'Unable to unlock repository';
+    $self->_lock->release() or $self->fatal('Unable to unlock repository');
 
     my $repos = $self->config->repos();
     $self->debug("Process $$ released the lock on $repos");
