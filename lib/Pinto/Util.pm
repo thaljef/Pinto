@@ -92,6 +92,14 @@ sub removed_dist_message {
 
 #-------------------------------------------------------------------------------
 
+sub reindexed_dist_message {
+    my ($distribution) = @_;
+
+    return _dist_message($distribution, 'Reindexed');
+}
+
+#-------------------------------------------------------------------------------
+
 sub _dist_message {
     my ($dist, $action) = @_;
 

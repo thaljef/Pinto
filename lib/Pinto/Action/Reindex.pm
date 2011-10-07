@@ -1,0 +1,86 @@
+package Pinto::Action::Reindex;
+
+# ABSTRACT: Reindex one distribution in the repository
+
+use Moose;
+use MooseX::Types::Moose qw( Str );
+
+use Pinto::Util;
+use Pinto::Exceptions qw(throw_error);
+
+use namespace::autoclean;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
+# Attributes
+
+has path  => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Authored
+         Pinto::Role::Extractor );
+
+#------------------------------------------------------------------------------
+
+
+override execute => sub {
+    my ($self) = @_;
+
+    my $path    = $self->path();
+    my $author  = $self->author();
+
+    $path = $path =~ m{/}mx ?
+        $path : Pinto::Util::author_dir($author)->file($path)->as_foreign('Unix');
+
+    my $old_dist = $self->db->get_distribution_with_path($path)
+        or throw_error "Distribution $path does not exist";
+
+    $self->_reindex($old_dist);
+
+    return 1;
+};
+
+sub _reindex {
+    my ($self, $old_dist) = @_;
+
+    my $path    = $old_dist->path();
+    my $archive = $old_dist->native_path( $self->config->repos() );
+    my $source  = $old_dist->source();
+
+    my $txn_guard = $self->db->schema->txn_scope_guard();
+
+    $self->db->remove_distribution($old_dist);
+    my $new_dist = $self->db->new_distribution(path => $path, source => $source);
+    my @package_specs = $self->extractor->extract_packages(archive => $archive);
+    my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
+    $self->db->add_distribution_with_packages($new_dist, @packages);
+
+    $txn_guard->commit();
+
+    $self->add_message( Pinto::Util::reindexed_dist_message( $new_dist ) );
+
+    return $self;
+};
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
+
+#------------------------------------------------------------------------------
+
+1;
+
+__END__

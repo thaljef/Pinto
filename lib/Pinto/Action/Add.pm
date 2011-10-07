@@ -4,16 +4,11 @@ package Pinto::Action::Add;
 
 use Moose;
 
-use Try::Tiny;
 use Path::Class;
-use File::Temp;
-use Dist::Metadata 0.920; # supports .zip
 
 use Pinto::Util;
 use Pinto::Types 0.017 qw(StrOrFileOrURI);
-
 use Pinto::Exceptions qw(throw_error);
-
 
 use namespace::autoclean;
 
@@ -39,9 +34,11 @@ has archive => (
 # Roles
 
 with qw( Pinto::Role::UserAgent
-         Pinto::Role::Authored );
+         Pinto::Role::Authored
+         Pinto::Role::Extractor );
 
 #------------------------------------------------------------------------------
+# Public methods
 
 override execute => sub {
     my ($self) = @_;
@@ -74,7 +71,7 @@ sub _process_archive {
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
-    my @package_specs = $self->_extract_packages($archive);
+    my @package_specs = $self->extractor->extract_packages(archive => $archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
@@ -95,20 +92,6 @@ sub _process_archive {
 }
 
 #------------------------------------------------------------------------------
-
-sub _extract_packages {
-    my ($self, $archive) = @_;
-
-    my $file = $archive->stringify();
-    my $provides;
-
-    try   { $provides = Dist::Metadata->new(file => $file)->package_versions(); }
-    catch { throw_error "Unable to extract packages from $file: $_" };
-
-    return map { {name => $_, version => $provides->{$_}} } keys %{ $provides }
-}
-
-#-----------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable();
 
