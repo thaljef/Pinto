@@ -28,8 +28,8 @@ sub opt_spec {
         [ 'cleanup'    => 'Automatically remove distributions when they become outdated' ],
         [ 'devel'      => 'Include development releases in the repository index' ],
         [ 'noinit'     => 'Do not pull/update from VCS before each operation' ],
-        [ 'store=s'    => 'Name of class that handles storage of your repository' ],
         [ 'source=s@'  => 'URL of repository for foreign distributions (repeatable)' ],
+        [ 'store=s'    => 'Name of class that handles storage of your repository' ],
     );
 }
 
