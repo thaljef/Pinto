@@ -26,10 +26,10 @@ override execute => sub {
 
     while ( my $dist = $outdated->next() ) {
         my $path = $dist->path();
-        my $file = $dist->archive( $self->config->repos() );
+        my $archive = $dist->archive( $self->config->repos() );
 
         $self->db->remove_distribution($dist);
-        $self->store->remove(file => $file);
+        $self->store->remove(file => $archive);
 
         $self->add_message( "Removed distribution $path" );
         $removed++;

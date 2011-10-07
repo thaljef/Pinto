@@ -126,11 +126,11 @@ sub add_archive {
 #------------------------------------------------------------------------------
 
 sub remove_archive {
-    my ($self, $path) = @_;
+    my ($self, $archive_path) = @_;
 
-    $self->remove_file( file => $path );
+    $self->remove_file( file => $archive_path );
 
-    $self->update_checksums( directory => $path->parent() );
+    $self->update_checksums( directory => $archive_path->parent() );
 
     return $self;
 }

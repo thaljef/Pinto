@@ -47,11 +47,11 @@ override execute => sub {
     my $dist = $self->db->get_distribution_with_path($path)
         or throw_error "Distribution $path does not exist";
 
-    my $file = $dist->archive( $self->config->repos() );
+    my $archive = $dist->archive( $self->config->repos() );
 
     $self->db->remove_distribution($dist);
-    $self->store->remove_archive($file);
-    $self->add_message( Pinto::Util::removed_dist_message( $dist ) );
+    $self->store->remove_archive($archive);
+    $self->add_message( Pinto::Util::removed_dist_message($dist) );
 
     return 1;
 };

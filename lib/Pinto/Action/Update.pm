@@ -74,12 +74,12 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $dest = $dist->archive( $self->config->repos() );
+    my $archive = $dist->archive( $self->config->repos() );
 
-    $self->debug("Skipping $dest: already fetched") and return 0 if -e $dest;
-    $self->fetch(url => $dist->url(), to => $dest)   or return 0;
+    $self->debug("Skipping $archive: already fetched") and return 0 if -e $archive;
+    $self->fetch(url => $dist->url(), to => $archive)   or return 0;
 
-    $self->store->add_archive( $dest );
+    $self->store->add_archive($archive);
 
     return 1;
 }

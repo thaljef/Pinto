@@ -23,9 +23,9 @@ override execute => sub {
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
-        my $file = $dist->archive( $self->config->repos() );
+        my $archive = $dist->archive( $self->config->repos() );
         $self->db->remove_distribution($dist);
-        $self->store->remove_archive( $file );
+        $self->store->remove_archive($archive);
         $removed++
     }
 
