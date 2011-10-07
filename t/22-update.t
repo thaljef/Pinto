@@ -87,7 +87,7 @@ $t->package_not_latest_ok('Baz', $dist_name, $FOREIGN);
 # After removing our local version, the foreign version should become latest...
 
 $pinto->new_batch();
-$pinto->add_action('Remove', dist_name => $dist_name, author => $LOCAL1 );
+$pinto->add_action('Remove', path => $dist_name, author => $LOCAL1 );
 $pinto->run_actions();
 
 $t->package_not_loaded_ok('Bar', $dist_name, $LOCAL1);
