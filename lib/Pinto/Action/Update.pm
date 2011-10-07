@@ -29,6 +29,13 @@ has source => (
     required => 1,
 );
 
+
+has soft => (
+   is      => 'ro',
+   isa     => Bool,
+   default => 0,
+);
+
 #------------------------------------------------------------------------------
 # Moose Roles
 
@@ -40,7 +47,7 @@ sub execute {
     my ($self) = @_;
 
     my $source = $self->source();
-    $self->db->load_index($source);
+    $self->db->load_index($source) unless $self->soft();
 
     my $count = 0;
     my $foreigners = $self->db->get_all_distributions_from_source($source);

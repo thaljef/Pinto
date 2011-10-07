@@ -22,6 +22,7 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'soft'        => 'Skip loading of remote indexes' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -62,13 +63,16 @@ __END__
 =head1 DESCRIPTION
 
 This command pulls the latest versions of all distributions from your
-source repositories (often one or more CPAN mirrors) into your
-repository.  Any locally added distributions will always mask those
-that you pulled from another repository.
+source repositories (usually one or more CPAN mirrors) into your local
+repository.  The URLs of the source repositories are defined in the
+configuration file at F<.pinto/config/pinto.ini> inside your
+repository.
 
-The URLs of the source repositories are defined in the configuration
-file at F<config/pinto.ini> within your repository. See
-L<Pinto::Config> for more information on setting that.
+The update process happens in two steps: First, the index of the
+source repository is loaded into the local L<Pinto> database.  Second,
+every (new) distribution from that source is downloaded into the local
+L<Pinto> repository.  These steps are repeated for each source
+repository.
 
 =head1 COMMAND ARGUMENTS
 
@@ -101,6 +105,13 @@ VCS-based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
+
+=item --soft
+
+Directs L<Pinto> to not load the indexes of the source repositories
+and just fetch the archives for any distributions that have already
+been loaded.  This is helpful if the C<verify> command shows that some
+foreign distribution archives have gone missing from your repository.
 
 =item --tag=NAME
 
