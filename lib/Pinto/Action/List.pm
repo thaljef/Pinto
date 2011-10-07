@@ -41,7 +41,7 @@ has format => (
 sub packages {
     my ($self) = @_;
 
-    my $attrs = { prefetch => 'distribution', order_by => 'name' };
+    my $attrs = { order_by => 'name' };
 
     return $self->db->get_all_packages(undef, $attrs);
 }
