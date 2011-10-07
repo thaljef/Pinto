@@ -40,11 +40,11 @@
      should also work with cpanp[1], but I haven't tried it.  And of
      course it still works with cpanm[1].
 
-     Pinto can now pull foreign packages from multiple repositories.
-     You can use this to "fall back" to another repository if one
-     of them is offline (which sometimes happens with CPAN mirrors).
-     Or you can use this to create a "network" of repositories that
-     may each have different sets of distributions.
+     Pinto can now pull foreign distributions from multiple
+     repositories.  You can use this to fall back to another
+     repository if one of them is offline (which sometimes happens
+     with CPAN mirrors).  Or you can use this to create a network of
+     repositories that may each have different sets of distributions.
 
      Pinto does the-right-thing with development packages and
      distributions (See POD for details).
@@ -75,7 +75,7 @@
      information.
 
      pinto-admin now has a 'purge' command that removes everything
-     from your repository.
+     from your repository.  You'll be prompted for confirmation.
 
      Most of the pinto-admin commands now have aliases.  Thanks to the
      awesomeness of App::Cmd, you can say 'pinto-admin up' instead of
@@ -86,6 +86,11 @@
 
      The config files for each Pinto repsoitory are now located in
      $REPOS/.pinto/config.
+
+     The 'list' command for pinto-admin has been neutered a bit.  You
+     can no longer specify the --type or --indexed options.  However,
+     the output does show whether the package is local/foreign and
+     indexed/unindexed, so you can grep on that to narrow the results.
 
      The VCS tagging mechanism has changed.  Instead of making a tag for
      every commit, a tag is made only when you specify the --tag option.
