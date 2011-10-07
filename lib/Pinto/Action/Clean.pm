@@ -29,7 +29,7 @@ override execute => sub {
         my $archive = $dist->archive( $self->config->repos() );
 
         $self->db->remove_distribution($dist);
-        $self->store->remove(file => $archive);
+        $self->store->remove_archive($archive);
 
         $self->add_message( "Removed distribution $path" );
         $removed++;

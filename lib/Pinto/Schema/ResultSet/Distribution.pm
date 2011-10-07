@@ -45,7 +45,7 @@ sub outdated {
 
     my @outdated;
     while ( my $dist = $rs->next() ) {
-        push @outdated, $dist if none { $_->should_index() } $dist->packages();
+        push @outdated, $dist if none { $_->is_latest() } $dist->packages();
     }
 
     my $new_rs = $self->result_source->resultset();

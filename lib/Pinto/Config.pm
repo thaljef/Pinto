@@ -98,12 +98,12 @@ has basename => (
 );
 
 
-has nocleanup => (
+has cleanup => (
     is        => 'ro',
     isa       => Bool,
-    key       => 'nocleanup',
+    key       => 'cleanup',
     default   => 0,
-    documentation => 'Do not delete distributions when they become outdated',
+    documentation => 'Automatically remove distributions when they become outdated',
 );
 
 

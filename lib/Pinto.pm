@@ -158,6 +158,8 @@ sub run_actions {
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->whine(@_) };
 
+    $self->add_action('Clean') if $self->config->cleanup();
+
     $self->locker->lock();
 
     my $r = $self->_batch->run();

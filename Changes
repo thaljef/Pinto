@@ -99,6 +99,11 @@
      The 'noclobber' configuration setting has been removed, since it
      was never implemented anyway.
 
+     The 'nocleanup' configuration setting has been changed to 'cleanup'
+     and it now defaults to 0.  This is the opposite of the old behavior.
+     So if you want your repository to contain only the latest dists,
+     then set cleanup=1 in your configuration.
+
      The --force option of the 'update' command for pinto-admin is no
      longer supported.  I'm thinking of changing the meaning of "force"
      and might bring it back in a future release.

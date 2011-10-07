@@ -25,11 +25,11 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
+        [ 'cleanup'    => 'Automatically remove distributions when they become outdated' ],
         [ 'devel'      => 'Include development releases in the repository index' ],
-        [ 'nocleanup'  => 'Do not delete distributions when they become outdated' ],
         [ 'noinit'     => 'Do not pull/update from VCS before each operation' ],
         [ 'store=s'    => 'Name of class that handles storage of your repository' ],
-        [ 'source=s@' => 'URL of repository for foreign distributions (repeatable)' ],
+        [ 'source=s@'  => 'URL of repository for foreign distributions (repeatable)' ],
     );
 }
 
@@ -94,20 +94,16 @@ Instructs L<Pinto> to include development releases in the index.  A
 development release is any archive that includes an underscore (_) in
 the last component of the version number.
 
-=item --nocleanup
+=item --cleanup
 
-Prevents L<Pinto> from deleting outdated distributions from your
-repository when newer ones are added.  Remember that outdated
-distributions are NEVER listed in the index.  But if you set this
-option, then you'll be able to install outdated distributions using
-the full distribution path, like this:
+Instructs L<Pinto> to remove outdated distributions from your
+repository when newer ones are added.  In effect, your repository will
+contain only those distributions that have the latest version of any
+given package.
 
-  $> cpanm A/AU/AUTHOR/Some-Dist-2.4.tar.gz
-
-If C<--nocleanup> is set, your repository could significantly grow in
-size over time.  At any time, you may run the C<clean> command to
-remove outdated distributions, irrespective of the C<--nocleanup>
-parameter.
+If C<--cleanup> is not set, your repository could significantly grow
+in size over time.  But at any time, you may run the C<clean> command
+to remove outdated distributions.
 
 =item --noinit
 
