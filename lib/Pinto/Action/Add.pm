@@ -53,7 +53,7 @@ override execute => sub {
     throw_error "Archive $archive is not readable" if not -r $archive;
 
     my $dist = $self->_process_archive($archive);
-    $self->store->add_archive( $archive => $dist->native_path($repos) );
+    $self->store->add_archive( $archive => $dist->archive($repos) );
     $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     return 1;

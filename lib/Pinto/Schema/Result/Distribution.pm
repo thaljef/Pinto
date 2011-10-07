@@ -147,7 +147,7 @@ sub version_numeric {
 
 #------------------------------------------------------------------------------
 
-sub native_path {
+sub archive {
     my ($self, @base) = @_;
 
     my @parts = split '/', $self->path();
@@ -227,7 +227,7 @@ sub to_formatted_string {
          'W' => sub { $self->version_numeric()                },
          'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
          'p' => sub { $self->path()                           },
-         'P' => sub { $self->native_path()                    },
+         'P' => sub { $self->archive()                        },
          's' => sub { $self->is_local()   ? 'L' : 'F'         },
          'S' => sub { $self->source()                         },
          'a' => sub { $self->author()                         },

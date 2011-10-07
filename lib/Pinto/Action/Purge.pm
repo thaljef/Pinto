@@ -23,7 +23,7 @@ override execute => sub {
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
-        my $file = $dist->native_path( $self->config->repos() );
+        my $file = $dist->archive( $self->config->repos() );
         $self->db->remove_distribution($dist);
         $self->store->remove_archive( $file );
         $removed++

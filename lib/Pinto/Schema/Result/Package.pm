@@ -204,7 +204,7 @@ sub to_formatted_string {
          'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
          'x' => sub { $self->index_status()                   },
          'p' => sub { $self->distribution->path()             },
-         'P' => sub { $self->distribution->native_path()      },
+         'P' => sub { $self->distribution->archive()          },
          's' => sub { $self->is_local()   ? 'L' : 'F'         },
          'S' => sub { $self->distribution->source()           },
          'a' => sub { $self->author()                         },

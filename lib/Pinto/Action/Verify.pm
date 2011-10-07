@@ -38,7 +38,7 @@ sub execute {
     my $rs    = $self->db->get_all_distributions();
 
     while ( my $dist = $rs->next() ) {
-        my $file = $dist->native_path($repos);
+        my $file = $dist->archive($repos);
         print { $self->out } "Missing distribution $file\n" if not -e $file;
     }
 

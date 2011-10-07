@@ -35,7 +35,6 @@ with qw( Pinto::Role::Authored
 
 #------------------------------------------------------------------------------
 
-
 override execute => sub {
     my ($self) = @_;
 
@@ -48,17 +47,19 @@ override execute => sub {
     my $old_dist = $self->db->get_distribution_with_path($path)
         or throw_error "Distribution $path does not exist";
 
-    $self->_reindex($old_dist);
-
-    return 1;
+    return $self->_reindex($old_dist);
 };
+
+#------------------------------------------------------------------------------
 
 sub _reindex {
     my ($self, $old_dist) = @_;
 
     my $path    = $old_dist->path();
-    my $archive = $old_dist->native_path( $self->config->repos() );
     my $source  = $old_dist->source();
+    my $archive = $old_dist->archive( $self->config->repos() );
+
+    throw_error "Distribution $archive does not exist" if not -e $archive;
 
     my $txn_guard = $self->db->schema->txn_scope_guard();
 
@@ -72,7 +73,7 @@ sub _reindex {
 
     $self->add_message( Pinto::Util::reindexed_dist_message( $new_dist ) );
 
-    return $self;
+    return 1;
 };
 
 #------------------------------------------------------------------------------
