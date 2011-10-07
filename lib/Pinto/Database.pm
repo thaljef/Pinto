@@ -58,7 +58,7 @@ sub get_all_packages {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
-    $attrs ||= { prefetch => 'distribution' };
+    $attrs ||= {};
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }
@@ -161,15 +161,6 @@ sub add_package {
 
     $self->debug("Loading package $pkg");
 
-    try {
-        $pkg->version_numeric();
-    }
-    catch {
-        $self->whine("Package $pkg is ineligible for indexing: $_");
-        $pkg->distribution->is_eligible_for_index(0);
-    };
-
-
     $pkg->insert();
 
     try   {
@@ -233,6 +224,7 @@ sub mark_latest_package_with_name {
     $_->is_latest(undef) for @older;
     $_->update() for @older;
 
+    $self->debug("Marking $latest as latest");
     $latest->is_latest(1);
     $latest->update();
 

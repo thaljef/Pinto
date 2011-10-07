@@ -36,16 +36,15 @@ has format => (
     default => '',
 );
 
-
-has indexed => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 1,
-);
-
 #------------------------------------------------------------------------------
 
-sub packages { croak 'Abstract method!' }
+sub packages {
+    my ($self) = @_;
+
+    my $attrs = { prefetch => 'distribution', order_by => 'name' };
+
+    return $self->db->get_all_packages(undef, $attrs);
+}
 
 #------------------------------------------------------------------------------
 
