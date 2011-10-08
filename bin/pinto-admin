@@ -120,16 +120,16 @@ will pull foreign distributions from.  These could be public CPAN
 mirrors, a private L<CPAN::Mini> mirror, or other Pinto repositories.
 Defaults to L<http://cpan.perl.org>.
 
-=item nocleanup = 0|1
+=item cleanup = 0|1
 
-If true, L<Pinto> will not automatically delete distributions that
-become out of date (either because you've added your own local version
-or you've pulled a newer one from a remote repository).  The default
-is 0, which means you won't be able to install older versions of a
-distribution from your repository.  But if you set C<nocleanup> to 1,
-then you can still get older distributions in the usual way:
+If true, L<Pinto> will automatically remove outdated distributions
+from your repository when newer ones are added.  In effect, your
+repository will contain only those distributions that have the latest
+version of any given package.  The default is 0.
 
-  $> cpanm A/AU/AUTHOR/Older-Dist-1.2.tar gz
+If C<cleanup> is is not true, then your repository could significantly
+grow in size over time.  But at any time, you may run the "clean"
+command to remove outdated distributions.
 
 =item noinit = 0|1
 
