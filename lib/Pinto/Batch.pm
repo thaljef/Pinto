@@ -8,7 +8,7 @@ use DateTime;
 use Path::Class;
 use Exception::Class::TryCatch;
 
-use Pinto::BatchResult;
+use Pinto::Result;
 
 use Pinto::Types 0.017 qw(Dir);
 use MooseX::Types::Moose qw(Str Bool);
@@ -81,8 +81,8 @@ has actions => (
 
 has _result => (
     is       => 'ro',
-    isa      => 'Pinto::BatchResult',
-    default  => sub { Pinto::BatchResult->new() },
+    isa      => 'Pinto::Result',
+    default  => sub { Pinto::Result->new() },
     init_arg => undef,
 );
 
@@ -97,7 +97,7 @@ with qw( Pinto::Role::Loggable
 
 =method run()
 
-Runs all the actions in this Batch.  Returns a L<BatchResult>.
+Runs all the actions in this Batch.  Returns a L<Pinto::Result>.
 
 =cut
 

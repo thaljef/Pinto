@@ -1,6 +1,6 @@
-package Pinto::BatchResult;
+package Pinto::Result;
 
-# ABSTRACT: Accumulates exceptions and status from an ActionBatch
+# ABSTRACT: The result from running a Batch of Actions
 
 use Moose;
 
@@ -34,12 +34,11 @@ has exceptions => (
 );
 
 #-----------------------------------------------------------------------------
-# TODO: Should we have an "ActionResult" to go with our "BatchResult" too?
 
 sub is_success {
     my ($self) = @_;
 
-    return @{ $self->exceptions } == 0;
+    return @{ $self->exceptions() } == 0;
 }
 
 #-----------------------------------------------------------------------------
