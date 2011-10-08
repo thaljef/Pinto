@@ -25,7 +25,7 @@ __END__
 
 =head1 BASIC USAGE
 
-  # Create an empty repository
+  # Create an empty repository at /some/dir
   pinto-admin --repos=/some/dir create
 
   # Add your own distribution to the repository
@@ -40,13 +40,12 @@ __END__
 =head1 DESCRIPTION
 
 C<pinto-admin> is a command line utility for creating and managing a
-Pinto repository.  The repository can contain your own distribution
-archives and/or foreign distribution archives from another repository
-(such as a CPAN mirror).  You can also put patched versions of foreign
-distribution archives in your repository.
-
-You can then point L<cpan> (or L<cpanm> or L<cpanp>) to your Pinto
-repository and install your distributions (with their dependencies).
+local Pinto repository.  The repository can contain your own
+distributions and/or foreign distributions from another repository
+(such as a CPAN mirror).  You can also put locally patched versions of
+foreign distributions in your repository.  Then you can then point
+L<cpan> (or L<cpanm> or L<cpanp>) at your Pinto repository and
+build/install your distributions.
 
 =head1 GLOBAL OPTIONS
 
@@ -111,13 +110,13 @@ semi-colon (;).
 
 If true, L<Pinto> will allow development releases to appear in the
 index when they are the "latest" version.  Otherwise, development
-releases are accepted into the repository, but never included in the
+releases are accepted into the repository but never included in the
 index.  Defaults to 0.
 
 =item sources = URL [ URL URL ... ]
 
 A space-delimted list of the URLs of the repositories that L<Pinto>
-will pull foreign distribution from.  These could be public CPAN
+will pull foreign distributions from.  These could be public CPAN
 mirrors, a private L<CPAN::Mini> mirror, or other Pinto repositories.
 Defaults to L<http://cpan.perl.org>.
 
@@ -153,67 +152,9 @@ L<Pinto> with a VCS.
 
 =back
 
-=head1 BEHAVIOR
-
-There are certain rules that govern how a Pinto repository behaves.
-These rules are intended to ensure that clients installing
-distributions from your repository will always get the B<right ones>,
-regardless of what happens on the public CPAN or what order they
-install things.
-
-=over 4
-
-=item A local package always masks a foreign package, and all other
-packages that are in the same distribution with the foreign package.
-
-This is important, so pay attention.  If you C<update> or C<add> a
-distribution that contains both C<Foo> and C<Bar> packages, and you
-C<add> another distribution that contains just the C<Foo> package,
-then both the C<Foo> and C<Bar> packages from the prior distribution
-will be removed from your index.  This ensures that anyone installing
-packages from your repository will always get B<your latest> version of
-C<Foo>.  But they'll never be able to get C<Bar>, because doing so
-would leave them with the older C<Foo>.
-
-However, you can disable this behavior with the C<noclobber>
-configuration parameter.
-
-=item You can never add a distribution with the same name twice.
-
-Most distribution-building tools will put some kind of version number
-in the name of the distribution, so this is rarely a problem.  The
-"name" of a distribution is actually a function of the name of the
-file and the name of the author.  So technically, it is possible for
-two different authors to both add a distribution called
-F<Foo-Bar-1.2.tar.gz>.  But in practice, this almost never happens
-because...
-
-=item Only the original author of a local package can add a
-distribution that contains the same package.
-
-Ownership is given on a first-come basis, just like PAUSE.  So if
-C<SALLY> is the first author to add a distribution to the repository
-with package C<Foo::Bar>, then only C<SALLY> can ever add another
-distribution with that package again.  Unless that package is
-explicitly removed, but...
-
-=item Only the original author of a local package can remove it.
-
-Just like when adding new versions of a local package, only the
-original author can remove it.  Yes, you can just change the C<author>
-parameter in your configuration, but C<SALLY> probably wouldn't
-appreciate you messing with her releases (unless C<SALLY> no longer
-works here).
-
-So if you're working as part of a team and everyone is allowed to
-make releases of the same packages, then conisder having everyone
-use the same C<author> parameter.
-
-=back
-
 =head1 SEE ALSO
 
-L<Pinto::Manual> for broad information about using the Pinto tools.
+L<Pinto::Manual> for detailed information on using the Pinto tools.
 
 L<pinto-server> to allow remote access to your Pinto repository.
 
