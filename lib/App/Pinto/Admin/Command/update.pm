@@ -74,6 +74,10 @@ every (new) distribution from that source is downloaded into the local
 L<Pinto> repository.  These steps are repeated for each source
 repository.
 
+Updates can take a while (see L</NOTES>) so if you're impatient,
+you might consider using the C<--verbose> switch so you can see what
+is going on.
+
 =head1 COMMAND ARGUMENTS
 
 None
@@ -120,5 +124,17 @@ This is only relevant if you are using a VCS-based storage mechanism.
 The syntax of the NAME depends on the type of VCS you are using.
 
 =back
+
+=head NOTES
+
+The first time you pull from a CPAN mirror, it will take a few hours
+to download and process all the distributions (over 25,000 of them).
+And if you are using a VCS-based store then it will take more time to
+commit all that stuff.  On my MacBook Pro with a 20Mb connection, it
+takes about 4 hours to do the whole job.  Yours may be faster or
+slower, depending on the performance of your network and disk.
+
+But subsequent updates will be much, much faster.  If you update daily
+(or even weekly) then the updates should only take a few seconds.
 
 =cut
