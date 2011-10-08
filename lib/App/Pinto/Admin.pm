@@ -41,7 +41,7 @@ sub pinto {
         my %global_options = %{ $self->global_options() };
 
         $global_options{repos} ||= $ENV{PINTO_REPOSITORY}
-            or $self->usage_error('Must specify a repository directory');
+            || $self->usage_error('Must specify a repository directory');
 
         my $pinto_class = $self->pinto_class();
         Class::Load::load_class($pinto_class);

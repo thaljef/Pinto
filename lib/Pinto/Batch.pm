@@ -65,9 +65,8 @@ has tag => (
 );
 
 #-----------------------------------------------------------------------------
-# Private attributes
 
-has _actions => (
+has actions => (
     is       => 'ro',
     isa      => 'ArrayRef[Pinto::Action]',
     traits   => [ 'Array' ],
@@ -75,6 +74,9 @@ has _actions => (
     handles  => {enqueue => 'push', dequeue => 'shift'},
     init_arg => undef,
 );
+
+#-----------------------------------------------------------------------------
+# Private attributes
 
 
 has _result => (
@@ -85,7 +87,7 @@ has _result => (
 );
 
 #-----------------------------------------------------------------------------
-# Moose roles
+# Roles
 
 with qw( Pinto::Role::Loggable
          Pinto::Role::Configurable );
@@ -127,7 +129,7 @@ sub run {
 sub _run_one_action {
     my ($self, $action) = @_;
 
-    my $ok = eval { $action->execute() and $self->_result->made_changes(); 1 };
+    my $ok = eval { $action->execute() && $self->_result->made_changes(); 1 };
 
     if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
         $self->_result->add_exception($e);
