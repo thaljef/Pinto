@@ -82,8 +82,8 @@ sub _process_archive {
         }
     }
 
-    my $pkg_count = @package_specs;
-    $self->info("Adding distribution $path providing $pkg_count packages");
+    my $count = @package_specs;
+    $self->info("Adding distribution $path providing $count packages");
 
     my $dist = $self->db->new_distribution(path => $path);
     my @packages = map { $self->db->new_package(%{$_}) } @package_specs;

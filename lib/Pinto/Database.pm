@@ -121,7 +121,7 @@ sub new_distribution {
 sub add_distribution_with_packages {
     my ($self, $dist, @packages) = @_;
 
-    $self->debug("Loading distribution $dist");
+    $self->debug("Loading distribution $dist into database");
 
     $self->whine("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
@@ -160,7 +160,7 @@ sub new_package {
 sub add_package {
     my ($self, $pkg) = @_;
 
-    $self->debug("Loading package $pkg");
+    $self->debug("Loading package $pkg into database");
 
     $pkg->insert();
 
@@ -181,7 +181,7 @@ sub add_package {
 sub remove_distribution {
     my ($self, $dist) = @_;
 
-    $self->info(sprintf "Removing distribution $dist with %i packages", $dist->package_count());
+    $self->debug("Removing distribution $dist from database");
 
     my $txn_guard = $self->schema->txn_scope_guard();
 
@@ -197,6 +197,8 @@ sub remove_distribution {
 
 sub remove_package {
     my ($self, $pkg) = @_;
+
+    $self->debug("Removing package $pkg from database");
 
     my $name       = $pkg->name();
     my $was_latest = $pkg->is_latest();
@@ -219,9 +221,11 @@ sub mark_latest_package_with_name {
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
 
+    # If the latest package is already marked as latest, then we can bail
+    return $self if $latest->is_latest();
+
     # Mark older packages as 'undef' first, to prevent contraint violation.
     # The schema only allows one package to be marked latest at a time.
-
     $_->is_latest(undef) for @older;
     $_->update() for @older;
 
