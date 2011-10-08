@@ -4,6 +4,10 @@ package Pinto::Action::Clean;
 
 use Moose;
 
+use MooseX::Types::Moose qw(Bool);
+
+use IO::Interactive;
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -14,6 +18,14 @@ use namespace::autoclean;
 # ISA
 
 extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
+
+has confirm => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
 
 #------------------------------------------------------------------------------
 # Methods
@@ -28,6 +40,10 @@ override execute => sub {
         my $path = $dist->path();
         my $archive = $dist->archive( $self->config->repos() );
 
+        if ( $self->confirm() && IO::Interactive::is_interactive() ) {
+            next if not $self->prompt_for_confirmation($archive);
+        }
+
         $self->db->remove_distribution($dist);
         $self->store->remove_archive($archive);
 
@@ -37,6 +53,20 @@ override execute => sub {
 
     return $removed;
 };
+
+#------------------------------------------------------------------------------
+
+sub prompt_for_confirmation {
+    my ($self, $archive) = @_;
+
+    my $answer = '';
+    until ($answer =~ m/^[yn]$/ix) {
+        print "Remove distribution $archive? [Y/N]: ";
+        chomp( $answer = uc <STDIN> );
+    }
+
+    return $answer eq 'Y';
+}
 
 #------------------------------------------------------------------------------
 
