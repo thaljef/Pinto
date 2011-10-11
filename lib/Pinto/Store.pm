@@ -183,7 +183,7 @@ sub update_checksums {
     my ($self, %args) = @_;
     my $dir = $args{directory};
 
-    return 0 if not -e $dir;  # Smells fishy
+    #return 0 if not -e $dir;  # Smells fishy
 
     my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children();
     return 0 if not @children;

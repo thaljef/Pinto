@@ -158,11 +158,6 @@ sub run_actions {
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->whine(@_) };
 
-    # Don't add a clean action unless directed by config,
-    # and the batch doesn't already end with a clean action
-    $self->add_action('Clean') if $self->config->cleanup()
-       and ref $self->_batch->actions->[-1] eq 'Pinto::Action::Clean';
-
     # Shit happens here!
     $self->locker->lock();
     my $r = $self->_batch->run();

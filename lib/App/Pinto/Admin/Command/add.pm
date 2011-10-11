@@ -57,8 +57,9 @@ sub execute {
     my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
     return 0 if not @args;
 
-    $self->pinto->new_batch( %{$opts} );
+    $self->pinto->new_batch(%{$opts});
     $self->pinto->add_action('Add', %{$opts}, archive => $_) for @args;
+    $self->pinto->add_action('Clean') if $self->pinto->config->cleanup();
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
