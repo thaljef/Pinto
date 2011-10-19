@@ -1,6 +1,6 @@
 package Pinto;
 
-# ABSTRACT: Perl distribution repository manager
+# ABSTRACT: Curate a private CPAN repository
 
 use Moose;
 
