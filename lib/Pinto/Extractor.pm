@@ -5,7 +5,7 @@ package Pinto::Extractor;
 use Moose;
 
 use Try::Tiny;
-use Dist::Metadata 0.920; # supports .zip
+use Dist::Metadata 0.922;
 use Pinto::Exceptions qw(throw_error);
 
 use namespace::autoclean;
