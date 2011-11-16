@@ -90,6 +90,15 @@ has config_dir => (
 );
 
 
+has cache_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->pinto_dir->subdir('cache') },
+    lazy      => 1,
+);
+
+
 has basename => (
     is        => 'ro',
     isa       => Str,

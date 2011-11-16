@@ -63,6 +63,10 @@ sub create {
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);
 
+   # Create cache dir
+    my $cache_dir = $self->config->cache_dir();
+    $self->mkpath($cache_dir);
+
     # Create database
     my $db = Pinto::Database->new( config => $self->config(),
                                    logger => $self->logger() );

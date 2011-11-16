@@ -1,10 +1,11 @@
-package Pinto::Extractor;
+package Pinto::PackageExtractor;
 
-# ABSTRACT: Extract package names and versions from a distribution
+# ABSTRACT: Extract package names and versions from a distribution archive
 
 use Moose;
 
 use Try::Tiny;
+use Archive::Extract;
 use Dist::Metadata 0.922;
 use Pinto::Exceptions qw(throw_error);
 

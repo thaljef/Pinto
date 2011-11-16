@@ -45,6 +45,7 @@ sub outdated {
 
     my @outdated;
     while ( my $dist = $rs->next() ) {
+        next unless $dist->is_eligible_for_index();
         push @outdated, $dist if none { $_->is_latest() } $dist->packages();
     }
 

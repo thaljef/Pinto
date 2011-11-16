@@ -8,6 +8,7 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Schema;
+use Pinto::IndexReader;
 use Pinto::IndexLoader;
 use Pinto::IndexWriter;
 use Pinto::Exceptions qw(throw_fatal throw_error);
@@ -33,8 +34,7 @@ has schema => (
 
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable
-         Pinto::Role::PathMaker
-         Pinto::Role::UserAgent );
+         Pinto::Role::PathMaker );
 
 #-------------------------------------------------------------------------------
 # Builders
@@ -255,10 +255,12 @@ sub write_index {
 sub load_index {
     my ($self, $repos_url) = @_;
 
+    my $reader = Pinto::IndexReader->new( logger => $self->logger(),
+                                          source => $repos_url );
+
     my $loader = Pinto::IndexLoader->new( logger => $self->logger(),
                                           db     => $self );
-
-    $loader->load(source => $repos_url);
+    $loader->load(reader => $reader);
 
     return $self;
 }

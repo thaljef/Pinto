@@ -16,8 +16,6 @@ CPAN::Mini::Visit.
 =item Standardize API, using named parameters except where it makes
 sense not to.
 
-=item Consider how we might mirror multiple repositories.
-
 =item Write a tutorial to explain different ways for using Pinto in
 the development/deployment cycle. ++
 
