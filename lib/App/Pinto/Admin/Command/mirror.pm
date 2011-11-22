@@ -45,7 +45,6 @@ sub execute {
     $self->pinto->new_batch( %{$opts} );
     my @sources = $self->pinto->config->sources_list();
     $self->pinto->add_action('Mirror', %{$opts}, source => $_) for @sources;
-    $self->pinto->add_action('Clean') if $self->pinto->config->cleanup();
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
