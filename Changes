@@ -77,6 +77,10 @@
      pinto-admin now has a 'purge' command that removes everything
      from your repository.  You'll be prompted for confirmation.
 
+     pinto-admin now has an experimental 'import' command that fetches
+     a remote package or distribution (and its dependencies,
+     recursively) and puts all of them in your local repository.
+
      Most of the pinto-admin commands now have aliases.  Thanks to the
      awesomeness of App::Cmd, you can say 'pinto-admin up' instead of
      'pinto-admin update' or 'pinto-admin rm' instead of 'pinto-admin
@@ -102,7 +106,9 @@
      The 'nocleanup' configuration setting has been changed to 'cleanup'
      and it now defaults to 0.  This is the opposite of the old behavior.
      So if you want your repository to contain only the latest dists,
-     then set cleanup=1 in your configuration.
+     then set cleanup=1 in your configuration.  NOTE: the cleanup
+     feature is currently disabled, since I haven't decided how it
+     should work.
 
      The --force option of the 'update' command for pinto-admin is no
      longer supported.  I'm thinking of changing the meaning of "force"
