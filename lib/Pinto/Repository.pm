@@ -124,7 +124,24 @@ sub add_archive {
     return $dist;
 }
 
-sub remove_archive {}
+#-------------------------------------------------------------------------------
+
+sub remove_archive {
+    my ($self, $path) = @_;
+
+    my $dist = $self->db->get_distribution_with_path($path)
+        or throw_error "Distribution $path does not exist";
+
+    my $count = $dist->package_count();
+    $self->info("Removing distribution $dist with $count packages");
+
+    $self->db->remove_distribution($dist);
+
+    my $archive = $dist->archive( $self->config->root_dir() );
+    $self->store->remove_archive($archive);
+
+    return $dist;
+}
 
 #-------------------------------------------------------------------------------
 

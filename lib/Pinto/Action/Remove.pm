@@ -41,20 +41,10 @@ override execute => sub {
     my $path    = $self->path();
     my $author  = $self->author();
 
-    $path = $path =~ m{/}mx ?
-        $path : Pinto::Util::author_dir($author)->file($path)->as_foreign('Unix');
+    $path = $path =~ m{/}mx ? $path
+                            : Pinto::Util::author_dir($author)->file($path)->as_foreign('Unix');
 
-    my $dist = $self->db->get_distribution_with_path($path)
-        or throw_error "Distribution $path does not exist";
-
-    my $count = $dist->package_count();
-    $self->info("Removing distribution $dist with $count packages");
-
-    $self->db->remove_distribution($dist);
-
-    my $archive = $dist->archive( $self->config->root_dir() );
-    $self->store->remove_archive($archive);
-
+    my $dist = $self->repos->remove_archive($path);
     $self->add_message( Pinto::Util::removed_dist_message($dist) );
 
     return 1;
