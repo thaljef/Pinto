@@ -1,4 +1,4 @@
-package Pinto::Action::Update;
+package Pinto::Action::Mirror;
 
 # ABSTRACT: Pull all the latest distributions into your repository
 
@@ -64,7 +64,7 @@ sub execute {
     }
 
     return 0 if not $count;
-    $self->add_message("Updated $count distributions from $source");
+    $self->add_message("Mirrored $count distributions from $source");
 
     return 1;
 }

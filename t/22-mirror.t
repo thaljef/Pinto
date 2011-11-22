@@ -41,7 +41,7 @@ $t->dist_not_exists_ok($dist_name, $LOCAL1);
 # Updating from a foreign repository...
 
 $pinto->new_batch();
-$pinto->add_action('Update', source => $source);
+$pinto->add_action('Mirror', source => $source);
 $t->result_ok( $pinto->run_actions() );
 
 $t->dist_exists_ok('BarAndBaz-0.04.tar.gz',   $FOREIGN);

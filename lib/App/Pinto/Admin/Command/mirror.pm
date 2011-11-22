@@ -1,4 +1,4 @@
-package App::Pinto::Admin::Command::update;
+package App::Pinto::Admin::Command::mirror;
 
 # ABSTRACT: get all the latest distributions from another repository
 
@@ -44,7 +44,7 @@ sub execute {
 
     $self->pinto->new_batch( %{$opts} );
     my @sources = $self->pinto->config->sources_list();
-    $self->pinto->add_action('Update', %{$opts}, source => $_) for @sources;
+    $self->pinto->add_action('Mirror', %{$opts}, source => $_) for @sources;
     $self->pinto->add_action('Clean') if $self->pinto->config->cleanup();
     my $result = $self->pinto->run_actions();
 
@@ -59,7 +59,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir update [OPTIONS]
+  pinto-admin --repos=/some/dir mirror [OPTIONS]
 
 =head1 DESCRIPTION
 
@@ -69,13 +69,13 @@ repository.  The URLs of the source repositories are defined in the
 configuration file at F<.pinto/config/pinto.ini> inside your
 repository.
 
-The update process happens in two steps: First, the index of the
+The mirror process happens in two steps: First, the index of the
 source repository is loaded into the local L<Pinto> database.  Second,
 every (new) distribution from that source is downloaded into the local
 L<Pinto> repository.  These steps are repeated for each source
 repository.
 
-Updates can take a while (see L</NOTES>) so if you're impatient,
+Mirrors can take a while (see L</NOTES>) so if you're impatient,
 you might consider using the C<--verbose> switch so you can see what
 is going on.
 
@@ -96,11 +96,11 @@ for L<Pinto>.
 =item --nocommit
 
 Prevents L<Pinto> from committing changes in the repository to the VCS
-after the operation.  This is only relevant if you are
-using a VCS-based storage mechanism.  Beware this will leave your
-working copy out of sync with the VCS.  It is up to you to then commit
-or rollback the changes using your VCS tools directly.  Pinto will not
-commit old changes that were left from a previous operation.
+after the operation.  This is only relevant if you are using a
+VCS-based storage mechanism.  Beware this will leave your working copy
+out of sync with the VCS.  It is up to you to then commit or rollback
+the changes using your VCS tools directly.  Pinto will not commit old
+changes that were left from a previous operation.
 
 =item --noinit
 
@@ -130,12 +130,13 @@ The syntax of the NAME depends on the type of VCS you are using.
 
 The first time you pull from a CPAN mirror, it will take a few hours
 to download and process all the distributions (over 25,000 of them).
-And if you are using a VCS-based store then it will take more time to
-commit all that stuff.  On my MacBook Pro with a 20Mb connection, it
-takes about 4 hours to do the whole job.  Yours may be faster or
-slower, depending on the performance of your network and disk.
+And if you are using a VCS-based store then it will take even more
+time to commit all that stuff.  On my MacBook Pro with a 20Mb
+connection, it takes about 4 hours to do the whole job.  Yours may be
+faster or slower, depending on the performance of your network and
+disk.
 
-But subsequent updates will be much, much faster.  If you update daily
-(or even weekly) then the updates should only take a few seconds.
+But subsequent mirrors will be much, much faster.  If you mirror daily
+(or even weekly) then the process should only take a few seconds.
 
 =cut
