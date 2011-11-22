@@ -47,10 +47,10 @@ sub execute {
     my ($self) = @_;
 
     my $source = $self->source();
-    $self->db->load_index($source) unless $self->soft();
+    $self->repos->db->load_index($source) unless $self->soft();
 
     my $count = 0;
-    my $foreigners = $self->db->get_all_distributions_from_source($source);
+    my $foreigners = $self->repos->db->get_all_distributions_from_source($source);
 
     while ( my $dist = $foreigners->next() ) {
 
@@ -79,7 +79,7 @@ sub _do_mirror {
     $self->debug("Skipping $archive: already fetched") and return 0 if -e $archive;
     $self->fetch(url => $dist->url(), to => $archive)   or return 0;
 
-    $self->store->add_archive($archive);
+    $self->repos->store->add_archive($archive);
 
     return 1;
 }
