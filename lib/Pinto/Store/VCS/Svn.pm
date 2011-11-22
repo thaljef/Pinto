@@ -26,7 +26,7 @@ has svn_location => (
     is       => 'ro',
     isa      => URI,
     init_arg => undef,
-    default  => sub { Pinto::Util::Svn::location( path => $_[0]->config->repos() ) },
+    default  => sub { Pinto::Util::Svn::location( path => $_[0]->config->root_dir() ) },
     coerce   => 1,
     lazy     => 1,
 );
@@ -38,9 +38,9 @@ has svn_location => (
 override initialize => sub {
     my ($self) = @_;
 
-    my $repos = $self->config->repos();
+    my $root_dir = $self->config->root_dir();
     $self->info('Updating working copy');
-    Pinto::Util::Svn::svn_update(dir => $repos);
+    Pinto::Util::Svn::svn_update(dir => $root_dir);
 
     return 1;
 };
@@ -94,7 +94,7 @@ override commit => sub {
     $self->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
-    return 1;
+    return $self;
 };
 
 #-------------------------------------------------------------------------------
@@ -103,7 +103,9 @@ override commit => sub {
 override tag => sub {
     my ($self, %args) = @_;
 
-    my $tag    = $args{tag};
+    my $now = DateTime->now();
+    my $tag = $now->strftime( $args{tag} );
+
     my $origin = $self->svn_location();
 
     $self->info("Tagging at $tag");

@@ -70,17 +70,17 @@ we patiently wait until we timeout, which is about 60 seconds.
 sub lock {                                             ## no critic (Homonym)
     my ($self) = @_;
 
-    my $repos = $self->config->repos();
+    my $root_dir = $self->config->root_dir();
 
     # If by chance, the directory we are trying to lock does not exist,
     # then LockFile::Simple will wait (a while) until it does.  To
     # avoid this extra delay, just make sure the directory exists now.
-    $self->fatal("Repository $repos does not exist") if not -e $repos;
+    $self->fatal("Repository $root_dir does not exist") if not -e $root_dir;
 
-    my $lock = $self->_lockmgr->lock( $repos->file('')->stringify() )
+    my $lock = $self->_lockmgr->lock( $root_dir->file('')->stringify() )
         or $self->fatal('Unable to lock the repository -- please try later');
 
-    $self->debug("Process $$ got the lock on $repos");
+    $self->debug("Process $$ got the lock on $root_dir");
     $self->_lock($lock);
 
     return $self;
@@ -102,8 +102,8 @@ sub unlock {
 
     $self->_lock->release() or $self->fatal('Unable to unlock repository');
 
-    my $repos = $self->config->repos();
-    $self->debug("Process $$ released the lock on $repos");
+    my $root_dir = $self->config->root_dir();
+    $self->debug("Process $$ released the lock on $root_dir");
 
     return $self;
 }

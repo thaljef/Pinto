@@ -18,7 +18,7 @@ use Pinto::Config;
 
 {
     my %default_cases = (
-        repos     => 'nowhere',
+        root_dir  => 'nowhere',
         sources   => 'http://cpan.perl.org',
         store     => 'Pinto::Store',
         cleanup   => 0,
@@ -26,14 +26,14 @@ use Pinto::Config;
         devel     => 0,
     );
 
-    my $cfg = Pinto::Config->new(repos => 'nowhere');
+    my $cfg = Pinto::Config->new(root_dir => 'nowhere');
     while ( my ($method, $expect) = each %default_cases ) {
         my $msg = "Got default value for '$method'";
         is($cfg->$method(), $expect, $msg);
     }
 
    my %custom_cases = (
-        repos     => 'nowhere',
+        root_dir  => 'nowhere',
         sources   => 'http://cpan.pair.com  http://metacpan.org',
         store     => 'Pinto::Store::VCS::Git',
         cleanup   => 1,
@@ -47,12 +47,12 @@ use Pinto::Config;
         is($cfg->$method(), $expect, $msg);
     }
 
-    $cfg = Pinto::Config->new(repos => '~/nowhere');
+    $cfg = Pinto::Config->new(root_dir => '~/nowhere');
     my $home = dir( File::HomeDir->my_home() );
-    is($cfg->repos(), $home->file('nowhere'), 'Expanded ~/ to home directory');
+    is($cfg->root_dir(), $home->file('nowhere'), 'Expanded ~/ to home directory');
 
     my $expect = [ map {URI->new($_)} qw(here there) ];
-    $cfg = Pinto::Config->new(repos => 'anywhere', sources => 'here there');
+    $cfg = Pinto::Config->new(root_dir => 'anywhere', sources => 'here there');
     is_deeply([$cfg->sources_list()], $expect, 'Parsed sources list');
 }
 

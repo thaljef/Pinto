@@ -74,7 +74,7 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $archive = $dist->archive( $self->config->repos() );
+    my $archive = $dist->archive( $self->config->root_dir() );
 
     $self->debug("Skipping $archive: already fetched") and return 0 if -e $archive;
     $self->fetch(url => $dist->url(), to => $archive)   or return 0;

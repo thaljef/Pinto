@@ -20,26 +20,21 @@ use MooseX::Types::Moose qw(Str Bool);
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has store    => (
+has repos    => (
     is       => 'ro',
-    isa      => 'Pinto::Store',
+    isa      => 'Pinto::Repository',
     required => 1
 );
 
 
-has db => (
-    is       => 'ro',
-    isa      => 'Pinto::Database',
-    required => 1,
-);
-
-
-has message => (
-    is       => 'ro',
-    isa      => Str,
-    traits   => [ 'String' ],
-    handles  => {append_message => 'append'},
-    default  => '',
+has messages => (
+    is         => 'ro',
+    isa        => 'ArrayRef[Str]',
+    traits     => [ 'Array' ],
+    handles    => {add_message => 'push'},
+    default    => sub { [] },
+    init_arg   => undef,
+    auto_deref => 1,
 );
 
 
@@ -70,9 +65,9 @@ has actions => (
     is       => 'ro',
     isa      => 'ArrayRef[Pinto::Action]',
     traits   => [ 'Array' ],
-    default  => sub { [] },
     handles  => {enqueue => 'push', dequeue => 'shift'},
     init_arg => undef,
+    default  => sub { [] },
 );
 
 #-----------------------------------------------------------------------------
@@ -104,7 +99,7 @@ Runs all the actions in this Batch.  Returns a L<Pinto::Result>.
 sub run {
     my ($self) = @_;
 
-    $self->store->initialize() unless $self->noinit();
+    $self->repos->initialize() unless $self->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_one_action($action);
@@ -113,15 +108,25 @@ sub run {
     $self->debug('No changes were made') and return $self->_result()
       unless $self->_result->changes_made();
 
-    $self->db->write_index();
+    $self->repos->write_index();
 
-    $self->debug( $self->message() );
+    $self->debug( $self->message_string() );
 
     return $self->_result() if $self->nocommit();
 
-    $self->_do_vcs_stuff() if $self->store->isa('Pinto::Store::VCS');
+    $self->repos->commit( message => $self->message_string() );
+
+    $self->repos->tag( tag => $self->tag() ) if $self->has_tag();
 
     return $self->_result();
+}
+
+#-----------------------------------------------------------------------------
+
+sub message_string {
+    my ($self) = @_;
+
+    return join "\n\n", grep { $_ } $self->messages(), "\n";
 }
 
 #-----------------------------------------------------------------------------
@@ -137,29 +142,7 @@ sub _run_one_action {
         return $self;
     }
 
-    for my $msg ( $action->messages() ) {
-        $self->append_message("\n\n") if length $self->message();
-        $self->append_message($msg);
-    }
-
-    return $self;
-}
-
-#-----------------------------------------------------------------------------
-
-sub _do_vcs_stuff {
-    my ($self) = @_;
-
-    $self->store->mark_path_as_modified( $self->config->modules_dir() );
-    $self->store->mark_path_as_modified( $self->config->db_dir() );
-
-    $self->store->commit( message => $self->message() );
-
-    if ( $self->has_tag() ) {
-        my $now = DateTime->now();
-        my $tag = $now->strftime( $self->tag() );
-        $self->store->tag( tag => $tag );
-    }
+    $self->add_message( $action->messages() );
 
     return $self;
 }

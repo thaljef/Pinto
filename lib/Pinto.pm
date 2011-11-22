@@ -1,6 +1,6 @@
 package Pinto;
 
-# ABSTRACT: Curate a private CPAN repository
+# ABSTRACT: Curate your own CPAN-like repository
 
 use Moose;
 
@@ -9,9 +9,8 @@ use Class::Load;
 use Pinto::Config;
 use Pinto::Logger;
 use Pinto::Locker;
-use Pinto::Database;
 use Pinto::Batch;
-
+use Pinto::Repository;
 use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
@@ -23,32 +22,14 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has _batch => (
-    is         => 'ro',
-    isa        => 'Pinto::Batch',
-    writer     => '_set_batch',
-    init_arg   => undef,
-);
-
 #------------------------------------------------------------------------------
 
-has db => (
-    is          => 'ro',
-    isa         => 'Pinto::Database',
-    init_arg    => undef,
-    lazy_build  => 1,
-);
-
-#------------------------------------------------------------------------------
-
-has store => (
+has repos   => (
     is         => 'ro',
-    isa        => 'Pinto::Store',
-    init_arg   => undef,
+    isa        => 'Pinto::Repository',
     lazy_build => 1,
 );
 
-#------------------------------------------------------------------------------
 
 has locker  => (
     is         => 'ro',
@@ -56,6 +37,15 @@ has locker  => (
     init_arg   =>  undef,
     lazy_build => 1,
 );
+
+
+has _batch => (
+    is         => 'ro',
+    isa        => 'Pinto::Batch',
+    writer     => '_set_batch',
+    init_arg   => undef,
+);
+
 
 #------------------------------------------------------------------------------
 # Moose roles
@@ -79,25 +69,11 @@ sub BUILDARGS {
 #------------------------------------------------------------------------------
 # Builders
 
-sub _build_db {
+sub _build_repos {
     my ($self) = @_;
 
-    return Pinto::Database->new( config => $self->config(),
-                                 logger => $self->logger() );
-}
-
-#------------------------------------------------------------------------------
-
-sub _build_store {
-    my ($self) = @_;
-
-    my $store_class = $self->config->store();
-
-    eval { Class::Load::load_class( $store_class ); 1 }
-        or throw_fatal "Unable to load store class $store_class: $@";
-
-    return $store_class->new( config => $self->config(),
-                              logger => $self->logger() );
+    return Pinto::Repository->new( config => $self->config(),
+                                   logger => $self->logger() );
 }
 
 #------------------------------------------------------------------------------
@@ -117,8 +93,7 @@ sub new_batch {
 
     my $batch = Pinto::Batch->new( config => $self->config(),
                                    logger => $self->logger(),
-                                   store  => $self->store(),
-                                   db     => $self->db(),
+                                   repos  => $self->repos(),
                                    %args );
 
    $self->_set_batch( $batch );
@@ -138,8 +113,7 @@ sub add_action {
 
     my $action =  $action_class->new( config => $self->config(),
                                       logger => $self->logger(),
-                                      store  => $self->store(),
-                                      db     => $self->db(),
+                                      repos  => $self->repos(),
                                       %args );
 
     $self->_batch->enqueue($action);
@@ -153,7 +127,7 @@ sub run_actions {
     my ($self) = @_;
 
     my $batch = $self->_batch()
-        or throw_fatal 'You must create an batch first';
+        or throw_fatal 'You must create a batch first';
 
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->whine(@_) };

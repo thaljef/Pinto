@@ -38,7 +38,7 @@ override execute => sub {
 
     while ( my $dist = $outdated->next() ) {
         my $path = $dist->path();
-        my $archive = $dist->archive( $self->config->repos() );
+        my $archive = $dist->archive( $self->config->root_dir() );
 
         if ( $self->confirm() && IO::Interactive::is_interactive() ) {
             next if not $self->prompt_for_confirmation($archive);

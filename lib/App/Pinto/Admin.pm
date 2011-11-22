@@ -40,7 +40,10 @@ sub pinto {
     return $self->{pinto} ||= do {
         my %global_options = %{ $self->global_options() };
 
-        $global_options{repos} ||= $ENV{PINTO_REPOSITORY}
+        # Convert option name to match attribute...
+        $global_options{root_dir} ||= delete $global_options{repos};
+
+        $global_options{root_dir} ||= $ENV{PINTO_REPOSITORY}
             || $self->usage_error('Must specify a repository directory');
 
         my $pinto_class = $self->pinto_class();

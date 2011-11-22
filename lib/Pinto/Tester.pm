@@ -46,7 +46,7 @@ has pinto => (
 );
 
 
-has repos => (
+has root_dir => (
    is       => 'ro',
    isa      => Dir,
    default  => sub { dir( File::Temp::tempdir(CLEANUP => 1) ) },
@@ -73,10 +73,10 @@ has tb => (
 sub _build_pinto {
     my ($self) = @_;
 
-    my $creator = Pinto::Creator->new( repos => $self->repos() );
+    my $creator = Pinto::Creator->new( root_dir => $self->root_dir() );
     $creator->create( $self->creator_args() );
 
-    my %defaults = (out => $self->buffer(), verbose => 3, repos => $self->repos());
+    my %defaults = (out => $self->buffer(), verbose => 3, root_dir => $self->root_dir());
 
     return Pinto->new(%defaults, $self->pinto_args());
 }
@@ -106,7 +106,7 @@ sub reset_buffer {
 sub path_exists_ok {
     my ($self, $path, $name) = @_;
 
-    $path = file( $self->repos(), @{$path} );
+    $path = file( $self->root_dir(), @{$path} );
     $name ||= "$path exists";
 
     return $self->tb->ok(-e $path, $name);
@@ -117,7 +117,7 @@ sub path_exists_ok {
 sub path_not_exists_ok {
     my ($self, $path, $name) = @_;
 
-    $path = file( $self->repos(), @{$path} );
+    $path = file( $self->root_dir(), @{$path} );
     $name ||= "$path does not exist";
 
     return $self->tb->ok(! -e $path, $name);
@@ -128,7 +128,7 @@ sub path_not_exists_ok {
 sub dist_exists_ok {
     my ($self, $dist_basename, $author, $test_name) = @_;
 
-    my $author_dir = Pinto::Util::author_dir($self->repos(), qw(authors id), $author);
+    my $author_dir = Pinto::Util::author_dir($self->root_dir(), qw(authors id), $author);
     my $dist_path = $author_dir->file($dist_basename);
     $test_name ||= "Distribution $dist_path exists in repository";
 
@@ -140,7 +140,7 @@ sub dist_exists_ok {
 sub dist_not_exists_ok {
     my ($self, $dist_basename, $author, $test_name) = @_;
 
-    my $author_dir = Pinto::Util::author_dir($self->repos(), qw(authors id), $author);
+    my $author_dir = Pinto::Util::author_dir($self->root_dir(), qw(authors id), $author);
     my $dist_path = $author_dir->file($dist_basename);
     $test_name ||= "Distribution $dist_path does not exist in repository";
 
@@ -156,7 +156,7 @@ sub package_is_latest_ok {
     my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
 
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->db->get_all_packages($where)->single();
+    my $pkg = $self->pinto->repos->db->get_all_packages($where)->single();
 
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
     return $self->tb->is_eq($pkg->is_latest(), 1, "$pkg_name -- $dist_path is the latest");
@@ -171,7 +171,7 @@ sub package_not_latest_ok {
     my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
 
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->db->get_all_packages($where)->single();
+    my $pkg = $self->pinto->repos->db->get_all_packages($where)->single();
 
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
     return $self->tb->is_eq($pkg->is_latest(), undef, "$pkg_name -- $dist_path is not the latest");
@@ -186,7 +186,7 @@ sub package_loaded_ok {
     my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
 
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->db->get_all_packages($where)->single();
+    my $pkg = $self->pinto->repos->db->get_all_packages($where)->single();
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
 
     $self->tb->ok(1, "$pkg_name -- $dist_path is loaded");
@@ -204,7 +204,7 @@ sub package_not_loaded_ok {
     my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
 
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->db->get_all_packages($where)->single();
+    my $pkg = $self->pinto->repos->db->get_all_packages($where)->single();
 
     return $self->tb->ok(0, "$pkg_name -- $dist_path is still loaded") if $pkg;
 

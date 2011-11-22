@@ -42,8 +42,8 @@ sub initialize {
     my ($self) = @_;
 
     $self->debug('Initializing the store');
-    my $repos = $self->config->repos();
-    $self->mkpath($repos);
+    my $root_dir = $self->config->root_dir();
+    $self->mkpath($root_dir);
 
     return $self;
 }

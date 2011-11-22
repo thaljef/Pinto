@@ -21,7 +21,6 @@ has extractor => (
     lazy      => 1,
 );
 
-requires qw(logger config);
 
 #------------------------------------------------------------------------------
 # TODO: Allow users to specify an alternative extractor class in the config
@@ -32,8 +31,6 @@ requires qw(logger config);
 sub _build_extractor {
     my ($self) = @_;
 
-    return Pinto::Extractor->new( logger => $self->logger(),
-                                  config => $self->config() );
 
 }
 

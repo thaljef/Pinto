@@ -15,15 +15,9 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Attributes
 
-has db => (
+has repos => (
     is       => 'ro',
-    isa      => 'Pinto::Database',
-    required => 1,
-);
-
-has store => (
-    is       => 'ro',
-    isa      => 'Pinto::Store',
+    isa      => 'Pinto::Repository',
     required => 1,
 );
 
@@ -31,9 +25,9 @@ has messages => (
     is         => 'ro',
     isa        => 'ArrayRef[Str]',
     traits     => [ 'Array' ],
+    handles    => {add_message => 'push'},
     default    => sub{ [] },
     init_arg   => undef,
-    handles    => {add_message => 'push'},
     auto_deref => 1,
 );
 

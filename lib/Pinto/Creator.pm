@@ -43,13 +43,13 @@ sub create {
     my ($self, %args) = @_;
 
     # Sanity checks
-    my $repos = $self->config->repos();
-    $self->fatal("Directory $repos is not empty")
-        if -e $repos and $repos->children();
+    my $root_dir = $self->config->root_dir();
+    $self->fatal("Directory $root_dir is not empty")
+        if -e $root_dir and $root_dir->children();
 
-    # Create repos directory
-    $self->mkpath($repos)
-        if not -e $repos;
+    # Create repos root directory
+    $self->mkpath($root_dir)
+        if not -e $root_dir;
 
     # Create config dir
     my $config_dir = $self->config->config_dir();

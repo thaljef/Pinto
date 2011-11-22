@@ -14,8 +14,8 @@ use Pinto;
 #------------------------------------------------------------------------------
 
 my $buffer = '';
-my $repos  = File::Temp::tempdir(CLEANUP => 1);
-my $pinto  = Pinto->new(repos => $repos, out => \$buffer, verbose => 2);
+my $root_dir  = File::Temp::tempdir(CLEANUP => 1);
+my $pinto  = Pinto->new(root_dir => $root_dir, out => \$buffer, verbose => 2);
 $pinto->new_batch();
 
 #------------------------------------------------------------------------------

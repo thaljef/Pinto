@@ -57,7 +57,7 @@ sub _reindex {
 
     my $path    = $old_dist->path();
     my $source  = $old_dist->source();
-    my $archive = $old_dist->archive( $self->config->repos() );
+    my $archive = $old_dist->archive( $self->config->root_dir() );
 
     throw_error "Distribution $archive does not exist" if not -e $archive;
 

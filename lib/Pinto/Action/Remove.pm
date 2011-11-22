@@ -52,7 +52,7 @@ override execute => sub {
 
     $self->db->remove_distribution($dist);
 
-    my $archive = $dist->archive( $self->config->repos() );
+    my $archive = $dist->archive( $self->config->root_dir() );
     $self->store->remove_archive($archive);
 
     $self->add_message( Pinto::Util::removed_dist_message($dist) );
