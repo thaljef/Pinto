@@ -1,4 +1,4 @@
-package App::Pinto::Admin::Command::get;
+package App::Pinto::Admin::Command::import;
 
 # ABSTRACT: get selected distributions from a remote repository
 
@@ -17,7 +17,7 @@ use base 'App::Pinto::Admin::Command';
 
 #-----------------------------------------------------------------------------
 
-sub command_names { return qw( get fetch ) }
+sub command_names { return qw( import ) }
 
 #-----------------------------------------------------------------------------
 
@@ -27,6 +27,7 @@ sub opt_spec {
     return (
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
+        [ 'nodeps'      => 'Do not import dependencies' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
@@ -40,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] MODULE_NAME ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_MODULE_NAMES
+%c --repos=PATH $command [OPTIONS] PACKAGE_NAME_OR_DIST_PATH ...
+%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGES_NAMES_OR_DIST_PATHS
 END_USAGE
 
     chomp $usage;
@@ -57,8 +58,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action('Get', %{$opts}, module => $_) for @args;
-    $self->pinto->add_action('Clean') if $self->pinto->config->cleanup();
+    $self->pinto->add_action('Import', %{$opts}, package => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -72,32 +72,51 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir get [OPTIONS] MODULE_NAME ...
-  pinto-admin --repos=/some/dir get [OPTIONS] < LIST_OF_MODULE_NAMES
+  pinto-admin --repos=/some/dir import [OPTIONS] PACKAGE_NAME_OR_DIST_PATH ...
+  pinto-admin --repos=/some/dir import [OPTIONS] < LIST_OF_PACKAGE_NAMES_OR_DIST_PATHS
 
 =head1 DESCRIPTION
 
-This command adds a local distribution archive and all its packages to
-the repository and recomputes the 'latest' version of the packages
-that were in that distribution.
+This command locates a package (or a specific distribution) on one of
+your remote repositories and then imports the distribution providing
+that package into your local repository.  Then it recursively locates
+and imports all the distributions that provide the packages to satisfy
+the prerequisites for that distribution.
 
-When a distribution is first added to the repository, the author
-becomes the owner of the distribution (actually, the packages).
-Thereafter, only the same author can add new versions or remove those
-packages.  However, this is not strongly enforced -- you can change
-your author identity at any time using the C<--author> option.
+When looking for packages to satisfy prerequisites, we first look at
+the distributions that already exist in the local repository, then we
+look for the latest version that is available on any of the remote
+repositories.  If a dependency cannot be satisfied, a warning will be
+issued.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments to this command are paths to the distribution files that you
-wish to add.  Each of these files must exist and must be readable.  If
-a path looks like a URL, then the distribution first retrieved
-from that URL and stored in a temporary file, which is subsequently
-added.
+To import a distribution that provides a particular package, just give
+the name of the package.  For example:
 
-You can also pipe arguments to this command over STDIN.  In that case,
-blank lines and lines that look like comments (i.e. starting with "#"
-or ';') will be ignored.
+  Foo::Bar
+
+To specify a minimum version for that package, append '=' and the
+minimum version number to the name.  For example:
+
+  Foo::Bar=1.2
+
+To import a particular distribution, you must give the full
+distribution path as it would appear in the index file.  For example:
+
+  A/AU/AUTHOR/Foo-Bar-1.2.tar.gz
+
+Distributions will be imported from the first remote repository that
+has the requested distribution (the remote repositories are defined in
+your repository configuration file).  But if you want to pull from a
+particular remote repository, then just specify the full URL.  For
+example:
+
+  http://cpan.perl.org/authors/id/A/AU/AUTHOR/Foo-Bar.1.2.tar.gz
+
+You can also pipe any combination of these arguments to this command
+over STDIN.  In that case, blank lines and lines that look like
+comments (i.e. starting with "#" or ';') will be ignored.
 
 =head1 COMMAND OPTIONS
 
@@ -118,6 +137,11 @@ working copy out of sync with the VCS.  It is up to you to then commit
 or rollback the changes using your VCS tools directly.  Pinto will not
 commit old changes that were left from a previous operation.
 
+=item --nodeps
+
+Directs L<Pinto> to not recursively import whatever distributions are
+required to satisfy the dependencies.
+
 =item --noinit
 
 Prevents L<Pinto> from pulling/updating the repository from the VCS
@@ -137,15 +161,11 @@ The syntax of the NAME depends on the type of VCS you are using.
 
 =head1 DISCUSSION
 
-Using the 'add' command on a distribution you got from another
-repository (such as CPAN mirror) effectively makes that distribution
-local.  So you become the owner of that distribution, even if the
-repository already contains a copy that was pulled from another
-repository by the 'update' command.
-
-Local packages are always considered 'later' then any foreign package
-with the same name, even if the foreign package has a higher version
-number.  So a foreign package will not become 'latest' until all
-versions of the local package with that name have been removed.
+Imported distributions will be assigned to their original author
+(comapre this to the C<add> command which makes B<you> the author of a
+distribution).  Also, packages provided by imported distributions are
+still considered foreign, so locally added packages will always
+override ones that you imported, even if the imported package has a
+higher version.
 
 =cut
