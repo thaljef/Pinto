@@ -31,7 +31,7 @@ override extract => sub {
     try   { %prereqs = Dist::Requires->new()->requires(dist => $archive) }
     catch { throw_error "Unable to extract prerequisites from $archive: $_" };
 
-    return map { {name => $_, version => $prereqs->{$_}} } keys %{ $prereqs }
+    return map { {name => $_, version => $prereqs{$_}} } keys %prereqs;
 };
 
 #-----------------------------------------------------------------------------

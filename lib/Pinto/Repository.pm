@@ -65,7 +65,8 @@ has root_dir => (
 # Roles
 
 with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
+         Pinto::Role::Loggable
+         Pinto::Role::UserAgent );
 
 #-------------------------------------------------------------------------------
 # Builders
@@ -160,14 +161,14 @@ sub import_distribution {
 
     $DB::single = 1;
     my $url = $args{url};
-    my $path = $url->path();                # '/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
-    $path    =~ s{ ^/authors/id/ }{}mx;     # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
+    my $path = $url->path();                        # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
+    $path    =~ s{^ .* /authors/id/(.*) $}{$1}mx;   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
 
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
     my @path_parts = split m{ / }mx, $path; # qw( A AU AUTHOR Foo-1.2.tar.gz )
-    my $archive = file($self->config->root_dir(), @path_parts);
+    my $archive = file($self->config->root_dir(), qw(authors id), @path_parts);
     my $author  = $path_parts[2];
 
     $self->fetch( url => $url, to => $archive );
@@ -214,7 +215,7 @@ sub remove_distribution {
 sub locate_remotely {
     my ($self, $package, $version) = @_;
 
-    my $found = $self->repos->cache->locate( $package => $version );
+    my $found = $self->cache->locate( $package => $version );
 
     return $found ? $found : ();
 }

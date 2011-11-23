@@ -93,14 +93,14 @@ sub _find_or_import {
     my $pretty_pkg = "$pkg_name-$pkg_ver";
     my $got_pkg = $self->repos->db->get_latest_package_with_name( $pkg_name );
 
-    if ($got_pkg and $got_pkg->version_numeric() >= $pkg_ver->numfiy() ) {
+    if ($got_pkg and $got_pkg->version_numeric() >= $pkg_ver->numify() ) {
         $self->debug("Already have $pretty_pkg or newer as $got_pkg");
-        return $pkg->distribution();
+        return $got_pkg->distribution();
     }
 
     if (my $url = $self->repos->locate_remotely( $pkg_name => $pkg_ver ) ) {
         $self->debug("Found $pretty_pkg in $url");
-        return $self->repos->import_archive($url);
+        return $self->repos->import_distribution( url => $url );
         # TODO: catch exception
     }
 
@@ -114,7 +114,8 @@ sub _find_or_import {
 sub _descend_into_prerequisites {
     my ($self, $archive) = @_;
 
-    my @prerequisites = $self->exctract_prerequisites($archive);
+          $DB::single = 1;
+    my @prerequisites = $self->_extract_prerequisites($archive);
 
     while (my $prereq = pop @prerequisites) {
 
@@ -131,7 +132,7 @@ sub _descend_into_prerequisites {
 
 #------------------------------------------------------------------------------
 
-sub _extract_prequisites {
+sub _extract_prerequisites {
     my ($self, $archive) = @_;
 
     my $req = Pinto::Extractor::Requires->new( config => $self->config(),
