@@ -4,6 +4,8 @@ package Pinto::IndexCache;
 
 use Moose;
 
+use Package::Locator;
+
 use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
@@ -13,11 +15,37 @@ use namespace::autoclean;
 #-------------------------------------------------------------------------------
 # Attributes
 
+has _locator => (
+    is         => 'ro',
+    isa        => 'Package::Locator',
+    lazy_build => 1,
+);
+
 #-------------------------------------------------------------------------------
 # Roles
 
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable );
+
+#-------------------------------------------------------------------------------
+
+sub _build__locator {
+    my ($self) = @_;
+
+    my @urls    = $self->config->sources_list();
+    my $locator = Package::Locator->new( repostory_urls => \@urls,
+                                         cache_dir      => $self->config->cache_dir());
+
+    return $locator;
+}
+
+#-------------------------------------------------------------------------------
+
+sub locate {
+    my ($self, @args) = @_;
+
+    return $self->_locator->locate(@args);
+}
 
 #-------------------------------------------------------------------------------
 

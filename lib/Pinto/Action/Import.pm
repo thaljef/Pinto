@@ -2,6 +2,8 @@ package Pinto::Action::Import;
 
 # ABSTRACT: Import a distribution (and dependencies) into the local repository
 
+use version;
+
 use Moose;
 
 use MooseX::Types::Moose qw(Str Bool);
@@ -22,65 +24,118 @@ extends 'Pinto::Action';
 #------------------------------------------------------------------------------
 # Moose Attributes
 
-has target => (
+has package => (
     is       => 'ro',
     isa      => Str,
     required => 1,
 );
 
 
-has recurse => (
-   is      => 'ro',
-   isa     => Bool,
-   default => 1,
+has minimum_version => (
+    is      => 'ro',
+    isa     => 'version',
+    default => sub { version->parse(0) },
 );
 
-#------------------------------------------------------------------------------
-# Moose Roles
 
-with qw(Pinto::Role::UserAgent);
+has norecurse => (
+   is      => 'ro',
+   isa     => Bool,
+   default => 0,
+);
+
+
+has latest => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $source = $self->source();
-    $self->db->load_index($source) unless $self->soft();
+    # if: we have requested dist/package
+    #     return if $self->recurse();
+    #     goto foreach
 
-    my $count = 0;
-    my $foreigners = $self->db->get_all_distributions_from_source($source);
+    # else:
+    #       get requested dist
+    #       add requested dist to repository
+    #       return if not $self->recurse();
 
-    while ( my $dist = $foreigners->next() ) {
+    # foreach: dist requirement
+    #      if: we have required package
+    #          next requirement
+    #      else:
+    #          get dist
+    #          add dist to repository
+    #          recurse
 
-        my $ok = eval { $count += $self->_do_mirror($dist); 1 };
+    $DB::single = 1;
 
-        if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
-            $self->add_exception($e);
-            $self->whine($e);
-            next;
-        }
-    }
+    my $dist = $self->_find_or_import( $self->package() => $self->minimum_version() );
+    return 0 if not $dist;
 
-    return 0 if not $count;
-    $self->add_message("Mirrored $count distributions from $source");
+    my $archive = $dist->archive( $self->config->root_dir() );
+    $self->_descend_into_prerequisites($archive) unless $self->norecurse();
 
     return 1;
 }
 
 #------------------------------------------------------------------------------
 
-sub _do_mirror {
-    my ($self, $dist) = @_;
+sub _find_or_import {
+    my ($self, $pkg_name, $pkg_ver) = @_;
 
-    my $archive = $dist->archive( $self->config->root_dir() );
+    my $pretty_pkg = "$pkg_name-$pkg_ver";
+    my $pkg = $self->repos->db->get_latest_package_with_name( $pkg_name );
 
-    $self->debug("Skipping $archive: already fetched") and return 0 if -e $archive;
-    $self->fetch(url => $dist->url(), to => $archive)   or return 0;
+    if ($pkg and $pkg->version_numeric() >= $pkg_ver->numfiy() ) {
+        $self->debug("Already have $pretty_pkg or newer as $pkg");
+        return $pkg->distribution();
+    }
 
-    $self->store->add_archive($archive);
+    if (my $url = $self->repos->locate_remotely( $pkg_name => $pkg_ver ) ) {
+        $self->debug("Found $pretty_pkg in $url");
+        return $self->repos->import_archive($url);
+        # TODO: catch exception
+    }
+
+    $self->whine("Cannot find $pretty_pkg in anywhere");
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _descend_into_prerequisites {
+    my ($self, $archive) = @_;
+
+    my @prerequisites = $self->exctract_prerequisites($archive);
+
+    while (my $prereq = pop @prerequisites) {
+
+        # TODO: log activity
+        # TODO: catch exceptions
+
+        my $required_dist    = $self->_find_or_import( %{ $prereq } ) or next;
+        my $required_archive = $required_dist->archive( $self->config->root_dir() );
+        push @prerequisites, $self->_extract_prerequisites( $required_archive );
+    }
 
     return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub _extract_prequisites {
+    my ($self, $archive) = @_;
+
+    my $req = Dist::Requires->new();
+
+    return $req->requires(dist => $archive);
 }
 
 #------------------------------------------------------------------------------

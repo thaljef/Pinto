@@ -43,7 +43,9 @@ with qw( Pinto::Role::Authored
 override execute => sub {
     my ($self) = @_;
 
-    my $dist = $self->repos->add_archive( $self->archive(), $self->author() );
+    my $dist = $self->repos->add_distribution( archive => $self->archive(),
+                                               author  => $self->author() );
+
     $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     return 1;

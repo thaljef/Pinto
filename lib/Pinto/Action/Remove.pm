@@ -44,7 +44,7 @@ override execute => sub {
     $path = $path =~ m{/}mx ? $path
                             : Pinto::Util::author_dir($author)->file($path)->as_foreign('Unix');
 
-    my $dist = $self->repos->remove_archive($path);
+    my $dist = $self->repos->remove_distribution(path => $path);
     $self->add_message( Pinto::Util::removed_dist_message($dist) );
 
     return 1;

@@ -27,7 +27,7 @@ sub opt_spec {
     return (
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
-        [ 'nodeps'      => 'Do not import dependencies' ],
+        [ 'norecurse'   => 'Do not import dependencies' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );

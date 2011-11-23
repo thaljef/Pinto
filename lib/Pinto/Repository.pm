@@ -5,9 +5,11 @@ package Pinto::Repository;
 use Moose;
 
 use Class::Load;
+use Path::Class;
 
 use Pinto::Database;
 use Pinto::IndexCache;
+use Pinto::Extractor;
 use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
@@ -38,6 +40,13 @@ has store => (
 has cache => (
     is         => 'ro',
     isa        => 'Pinto::IndexCache',
+    lazy_build => 1,
+);
+
+
+has extractor => (
+    is         => 'ro',
+    isa        => 'Pinto::Extractor',
     lazy_build => 1,
 );
 
@@ -81,10 +90,22 @@ sub _build_cache {
 }
 
 #-------------------------------------------------------------------------------
+
+sub _build_extractor {
+    my ($self) = @_;
+
+    return Pinto::Extractor->new( config => $self->config(),
+                                  logger => $self->logger() );
+}
+
+#-------------------------------------------------------------------------------
 # Methods
 
-sub add_archive {
-    my ($self, $archive, $author) = @_;
+sub add_distribution {
+    my ($self, %args) = @_;
+
+    my $archive = $args{archive};
+    my $author  = $args{author};
 
     throw_error "Archive $archive does not exist"  if not -e $archive;
     throw_error "Archive $archive is not readable" if not -r $archive;
@@ -97,10 +118,7 @@ sub add_archive {
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
-    my $extractor = Pinto::Extractor->new( logger => $self->logger(),
-                                           config => $self->config() );
-
-    my @package_specs = $extractor->extract_packages(archive => $archive);
+    my @package_specs = $self->extractor->extract_packages(archive => $archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
@@ -126,8 +144,45 @@ sub add_archive {
 
 #-------------------------------------------------------------------------------
 
-sub remove_archive {
-    my ($self, $path) = @_;
+sub import_distribution {
+    my ($self, %args) = @_;
+
+    $DB::single = 1;
+    my $url = $args{url};
+    my $path = $url->path();                # '/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
+    $path    =~ s{ ^/authors/id/ }{}mx;     # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
+
+    my $existing = $self->db->get_distribution_with_path($path);
+    throw_error "Distribution $path already exists" if $existing;
+
+    my @path_parts = split m{ / }mx, $path; # qw( A AU AUTHOR Foo-1.2.tar.gz )
+    my $archive = file($self->config->root_dir(), @path_parts);
+    my $author  = $path_parts[2];
+
+    $self->fetch( url => $url, to => $archive );
+
+    my @package_specs = $self->extractor->extract_packages(archive => $archive);
+    $self->whine("$archive contains no packages") if not @package_specs;
+
+    my $count = @package_specs;
+    $self->info("Importing distribution $url providing $count packages");
+
+    my $dist = $self->db->new_distribution(path => $path);
+    my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
+
+    $dist = $self->db->add_distribution_with_packages($dist, @packages);
+
+    $self->store->add_archive( $archive );
+
+    return $dist;
+}
+
+#-------------------------------------------------------------------------------
+
+sub remove_distribution {
+    my ($self, %args) = @_;
+
+    my $path = $args{path};
 
     my $dist = $self->db->get_distribution_with_path($path)
         or throw_error "Distribution $path does not exist";
@@ -141,6 +196,16 @@ sub remove_archive {
     $self->store->remove_archive($archive);
 
     return $dist;
+}
+
+#-------------------------------------------------------------------------------
+
+sub locate_remotely {
+    my ($self, $package, $version) = @_;
+
+    my $found = $self->repos->cache->locate( $package => $version );
+
+    return $found ? $found : ();
 }
 
 #-------------------------------------------------------------------------------
