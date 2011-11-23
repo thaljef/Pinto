@@ -5,10 +5,9 @@ package Pinto::Action::Import;
 use version;
 
 use Moose;
-
 use MooseX::Types::Moose qw(Str Bool);
 
-use Exception::Class::TryCatch;
+use Pinto::Extractor::Requires;
 
 use namespace::autoclean;
 
@@ -24,7 +23,7 @@ extends 'Pinto::Action';
 #------------------------------------------------------------------------------
 # Moose Attributes
 
-has package => (
+has package_name => (
     is       => 'ro',
     isa      => Str,
     required => 1,
@@ -45,7 +44,7 @@ has norecurse => (
 );
 
 
-has latest => (
+has get_latest => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
@@ -74,11 +73,11 @@ sub execute {
     #          recurse
 
     $DB::single = 1;
-
-    my $dist = $self->_find_or_import( $self->package() => $self->minimum_version() );
+    my $wanted = { name => $self->package_name(), version => $self->minimum_version() };
+    my $dist = $self->_find_or_import( $wanted );
     return 0 if not $dist;
 
-    my $archive = $dist->archive( $self->config->root_dir() );
+    my $archive = $dist->archive( $self->repos->root_dir() );
     $self->_descend_into_prerequisites($archive) unless $self->norecurse();
 
     return 1;
@@ -87,13 +86,15 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _find_or_import {
-    my ($self, $pkg_name, $pkg_ver) = @_;
+    my ($self, $wanted_package_spec) = @_;
+
+    my ($pkg_name, $pkg_ver) = @$wanted_package_spec{ qw(name version) };
 
     my $pretty_pkg = "$pkg_name-$pkg_ver";
-    my $pkg = $self->repos->db->get_latest_package_with_name( $pkg_name );
+    my $got_pkg = $self->repos->db->get_latest_package_with_name( $pkg_name );
 
-    if ($pkg and $pkg->version_numeric() >= $pkg_ver->numfiy() ) {
-        $self->debug("Already have $pretty_pkg or newer as $pkg");
+    if ($got_pkg and $got_pkg->version_numeric() >= $pkg_ver->numfiy() ) {
+        $self->debug("Already have $pretty_pkg or newer as $got_pkg");
         return $pkg->distribution();
     }
 
@@ -103,7 +104,7 @@ sub _find_or_import {
         # TODO: catch exception
     }
 
-    $self->whine("Cannot find $pretty_pkg in anywhere");
+    $self->whine("Cannot find $pretty_pkg anywhere");
 
     return;
 }
@@ -120,7 +121,7 @@ sub _descend_into_prerequisites {
         # TODO: log activity
         # TODO: catch exceptions
 
-        my $required_dist    = $self->_find_or_import( %{ $prereq } ) or next;
+        my $required_dist    = $self->_find_or_import( $prereq ) or next;
         my $required_archive = $required_dist->archive( $self->config->root_dir() );
         push @prerequisites, $self->_extract_prerequisites( $required_archive );
     }
@@ -133,9 +134,12 @@ sub _descend_into_prerequisites {
 sub _extract_prequisites {
     my ($self, $archive) = @_;
 
-    my $req = Dist::Requires->new();
+    my $req = Pinto::Extractor::Requires->new( config => $self->config(),
+                                               logger => $self->logger() );
 
-    return $req->requires(dist => $archive);
+    my @prereqs = $req->extract( archive => $archive );
+
+    return @prereqs;
 }
 
 #------------------------------------------------------------------------------

@@ -1,11 +1,10 @@
-package Pinto::PackageExtractor;
+package Pinto::Extractor::Provides;
 
-# ABSTRACT: Extract package names and versions from a distribution archive
+# ABSTRACT: Extract packages provided by a distribution archive
 
 use Moose;
 
 use Try::Tiny;
-use Archive::Extract;
 use Dist::Metadata 0.922;
 use Pinto::Exceptions qw(throw_error);
 
@@ -16,17 +15,12 @@ use namespace::autoclean;
 # VERSION
 
 #-----------------------------------------------------------------------------
-# Moose attributes
 
-#-----------------------------------------------------------------------------
-# Roles
-
-with qw( Pinto::Role::Loggable
-         Pinto::Role::Configurable );
+extends 'Pinto::Extractor';
 
 #-----------------------------------------------------------------------------
 
-sub extract_packages {
+override extract => sub {
     my ($self, %args) = @_;
 
     # Must stringify, cuz D::M doesn't like Path::Class objects
@@ -39,7 +33,7 @@ sub extract_packages {
     catch { throw_error "Unable to extract packages from $archive: $_" };
 
     return map { {name => $_, version => $provides->{$_}} } keys %{ $provides }
-}
+};
 
 #-----------------------------------------------------------------------------
 
