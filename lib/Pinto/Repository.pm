@@ -159,9 +159,9 @@ sub add_distribution {
 sub import_distribution {
     my ($self, %args) = @_;
 
-    $DB::single = 1;
-    my $url = $args{url};
-    my $path = $url->path();                        # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
+
+    my $url  = $args{url};
+    my $path = $url->path(); # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
     $path    =~ s{^ .* /authors/id/(.*) $}{$1}mx;   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
 
     my $existing = $self->db->get_distribution_with_path($path);
@@ -215,6 +215,7 @@ sub remove_distribution {
 sub locate_remotely {
     my ($self, $package, $version) = @_;
 
+    $self->debug("Searching for $package-$version");
     my $found = $self->cache->locate( $package => $version );
 
     return $found ? $found : ();

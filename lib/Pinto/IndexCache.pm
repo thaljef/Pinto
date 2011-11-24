@@ -4,7 +4,7 @@ package Pinto::IndexCache;
 
 use Moose;
 
-use Package::Locator;
+use Package::Locator 0.003;  # Bug fixes
 
 use namespace::autoclean;
 
@@ -32,7 +32,6 @@ with qw( Pinto::Role::Configurable
 sub _build__locator {
     my ($self) = @_;
 
-    $DB::single = 1;
     my @urls    = $self->config->sources_list();
     my $locator = Package::Locator->new( repository_urls => \@urls,
                                          cache_dir       => $self->config->cache_dir() );
