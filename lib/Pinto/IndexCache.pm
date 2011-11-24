@@ -44,6 +44,9 @@ sub _build__locator {
 sub locate {
     my ($self, @args) = @_;
 
+    @args = ( $args[0]->name(), $args[0]->version() )
+      if @args == 1 and ref $args[0] eq 'Pinto::PackageSpec';
+
     return $self->_locator->locate(@args);
 }
 

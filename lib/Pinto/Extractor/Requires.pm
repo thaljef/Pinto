@@ -6,6 +6,8 @@ use Moose;
 
 use Try::Tiny;
 use Dist::Requires;
+
+use Pinto::PackageSpec;
 use Pinto::Exceptions qw(throw_error);
 
 use namespace::autoclean;
@@ -31,7 +33,7 @@ override extract => sub {
     try   { %prereqs = Dist::Requires->new()->requires(dist => $archive) }
     catch { throw_error "Unable to extract prerequisites from $archive: $_" };
 
-    return map { {name => $_, version => $prereqs{$_}} } keys %prereqs;
+    return map { Pinto::PackageSpec->new(name => $_, version => $prereqs{$_}) } keys %prereqs;
 };
 
 #-----------------------------------------------------------------------------

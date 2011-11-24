@@ -213,12 +213,9 @@ sub remove_distribution {
 #-------------------------------------------------------------------------------
 
 sub locate_remotely {
-    my ($self, $package, $version) = @_;
+    my ($self, @args) = @_;
 
-    $self->debug("Searching for $package-$version");
-    my $found = $self->cache->locate( $package => $version );
-
-    return $found ? $found : ();
+    return $self->cache->locate( @args );
 }
 
 #-------------------------------------------------------------------------------

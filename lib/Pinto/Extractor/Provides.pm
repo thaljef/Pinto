@@ -6,6 +6,8 @@ use Moose;
 
 use Try::Tiny;
 use Dist::Metadata 0.922;
+
+use Pinto::PackageSpec;
 use Pinto::Exceptions qw(throw_error);
 
 use namespace::autoclean;
@@ -32,7 +34,7 @@ override extract => sub {
     try   { $provides = Dist::Metadata->new(file => $archive)->package_versions(); }
     catch { throw_error "Unable to extract packages from $archive: $_" };
 
-    return map { {name => $_, version => $provides->{$_}} } keys %{ $provides }
+    return map { Pinto::PackageSpec->new(name => $_, version => $provides->{$_}) } keys %{ $provides }
 };
 
 #-----------------------------------------------------------------------------

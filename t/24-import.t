@@ -36,13 +36,9 @@ $pinto->new_batch();
 $pinto->add_action('Import', norecurse => 1, package_name => 'Foo');
 $t->result_ok( $pinto->run_actions() );
 
-$DB::single = 1;
-
 $t->dist_exists_ok('FooAndBar-0.02.tar.gz', $LOCAL);
 $t->package_loaded_ok( 'Foo', 'FooAndBar-0.02.tar.gz', $LOCAL, '0.02' );
 $t->package_loaded_ok( 'Bar', 'FooAndBar-0.02.tar.gz', $LOCAL, '0.02' );
 
 $t->package_is_latest_ok( 'Foo', 'FooAndBar-0.02.tar.gz', $LOCAL );
 $t->package_is_latest_ok( 'Bar', 'FooAndBar-0.02.tar.gz', $LOCAL );
-
-print ${ $t->buffer() };

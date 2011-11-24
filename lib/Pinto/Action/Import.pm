@@ -8,6 +8,8 @@ use Moose;
 use MooseX::Types::Moose qw(Str Bool);
 
 use Try::Tiny;
+
+use Pinto::PackageSpec;
 use Pinto::Extractor::Requires;
 
 use namespace::autoclean;
@@ -56,7 +58,9 @@ has get_latest => (
 sub execute {
     my ($self) = @_;
 
-    my $wanted = { name => $self->package_name(), version => $self->minimum_version() };
+    my $wanted = Pinto::PackageSpec->new( name    => $self->package_name(),
+                                          version => $self->minimum_version() );
+
     my $dist = $self->_find_or_import( $wanted );
     return 0 if not $dist;
 
@@ -69,24 +73,21 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _find_or_import {
-    my ($self, $wanted_package_spec) = @_;
+    my ($self, $pkg_spec) = @_;
 
-    my ($pkg_name, $pkg_ver) = @$wanted_package_spec{ qw(name version) };
+    my $got_pkg = $self->repos->db->get_latest_package_with_name( $pkg_spec->name() );
 
-    my $pretty_pkg = "$pkg_name-$pkg_ver";
-    my $got_pkg = $self->repos->db->get_latest_package_with_name( $pkg_name );
-
-    if ($got_pkg and $got_pkg->version_numeric() >= $pkg_ver->numify() ) {
-        $self->debug("Already have $pretty_pkg or newer as $got_pkg");
+    if ($got_pkg and $pkg_spec < $got_pkg->version()) {
+        $self->debug("Already have $pkg_spec or newer as $got_pkg");
         return $got_pkg->distribution();
     }
 
-    if (my $url = $self->repos->locate_remotely( $pkg_name => $pkg_ver ) ) {
-        $self->debug("Found $pretty_pkg in $url");
+    if (my $url = $self->repos->locate_remotely( $pkg_spec ) ) {
+        $self->debug("Found $pkg_spec in $url");
         return $self->repos->import_distribution( url => $url );
     }
 
-    $self->whine("Cannot find $pretty_pkg anywhere");
+    $self->whine("Cannot find $pkg_spec anywhere");
 
     return;
 }
@@ -109,9 +110,8 @@ sub _descend_into_prerequisites {
               $required_archive = $required_dist->archive( $self->config->root_dir() );
         }
         catch {
-             my $it = $prereq->{name} . '-' . $prereq->{version};
-             $self->whine("Skipping $it.  Import failed: $_");
-             $done{ $prereq->{name} } = $prereq->{version};
+             $self->whine("Skipping prerequisite $prereq.  Import failed: $_");
+             $done{ $prereq->name() } = $prereq;
              next;
         };
 
@@ -124,10 +124,10 @@ sub _descend_into_prerequisites {
 
         for my $new_prereq ( $self->_extract_prerequisites($required_archive) ) {
             # Add a prereq to the queue only if greater than the ones we already got
-            my ($name, $version) = ($new_prereq->{name}, $new_prereq->{version});
-            next if exists $done{$name} && ( $version < $done{$name} );
+            my $name = $new_prereq->name();
+            next if exists $done{$name} && ( $new_prereq < $done{$name} );
 
-            $done{$name} = $version;
+            $done{$name} = $new_prereq;
             push @prereq_queue, $new_prereq;
         }
 
