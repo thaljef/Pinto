@@ -22,6 +22,7 @@ has name => (
     required => 1,
 );
 
+
 has version => (
     is       => 'ro',
     isa      => Vers,
@@ -29,33 +30,14 @@ has version => (
     required => 1,
 );
 
-
-has version_numeric => (
-    is       => 'ro',
-    isa      => Num,
-    init_arg => undef,
-    default  => sub { $_[0]->version->numify() },
-    lazy     => 1,
-);
-
 #------------------------------------------------------------------------------
 
 sub as_hashref {
     my ($self) = @_;
 
-    my %hash = $self->as_hash();
-
-    return \%hash;
-}
-
-#------------------------------------------------------------------------------
-
-sub as_hash {
-    my ($self) = @_;
-
     my %hash = ( name => $self->name(), version => $self->version() );
 
-    return %hash;
+    return \%hash;
 }
 
 #------------------------------------------------------------------------------
