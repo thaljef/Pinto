@@ -19,13 +19,11 @@ extends 'Pinto::Action';
 override execute => sub {
     my ($self) = @_;
 
-    my $dists = $self->db->get_all_distributions();
+    my $dists = $self->repos->db->get_all_distributions();
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
-        my $archive = $dist->archive( $self->config->root_dir() );
-        $self->db->remove_distribution($dist);
-        $self->store->remove_archive($archive);
+        $self->repos->remove_distribution(path => $dist);
         $removed++
     }
 

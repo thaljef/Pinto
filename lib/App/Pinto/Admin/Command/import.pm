@@ -111,6 +111,9 @@ You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"
 or ';') will be ignored.
 
+In the future, you may be able to specify distribution paths or
+specific URLs for import as well.
+
 =head1 COMMAND OPTIONS
 
 =over 4

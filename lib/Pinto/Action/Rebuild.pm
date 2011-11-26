@@ -42,10 +42,10 @@ sub _recompute {
     my ($self) = @_;
 
     my $attrs   = {select => ['name'], distinct => 1};
-    my $cursor  = $self->db->get_all_packages(undef, $attrs)->cursor();
+    my $cursor  = $self->repos->db->get_all_packages(undef, $attrs)->cursor();
 
     while (my ($name) = $cursor->next()) {
-        $self->db->mark_latest_package_with_name( $name );
+        $self->repos->db->mark_latest_package_with_name( $name );
     }
 
     $self->add_message('Recalculated the latest version of all packages');

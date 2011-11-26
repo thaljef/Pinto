@@ -134,8 +134,9 @@ sub add_distribution {
     $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
+        my $attrs = { prefetch => 'distribution' };
         my $where = { name => $pkg->{name}, 'distribution.source' => 'LOCAL'};
-        my $incumbent = $self->db->get_all_packages($where)->first() or next;
+        my $incumbent = $self->db->get_all_packages($where, $attrs)->first() or next;
         if ( (my $author = $incumbent->author() ) ne $author ) {
             throw_error "Only author $author can update package $pkg->{name}";
         }
@@ -161,8 +162,9 @@ sub import_distribution {
 
 
     my $url  = $args{url};
-    my $path = $url->path(); # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
-    $path    =~ s{^ .* /authors/id/(.*) $}{$1}mx;   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
+    my $path   = $url->path(); # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
+    $path      =~ s{^ (.*) /authors/id/(.*) $}{$2}mx;   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
+    my $source = $url->isa('URI::file') ? $1 : $url->authority();
 
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
@@ -179,7 +181,7 @@ sub import_distribution {
     my $count = @package_specs;
     $self->info("Importing distribution $url providing $count packages");
 
-    my $dist = $self->db->new_distribution(path => $path);
+    my $dist = $self->db->new_distribution(path => $path, source => $source);
     my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
 
     $dist = $self->db->add_distribution_with_packages($dist, @packages);

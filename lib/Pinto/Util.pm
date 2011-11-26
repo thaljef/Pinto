@@ -45,7 +45,7 @@ sub author_dir {                                  ## no critic (ArgUnpacking)
 
 =func is_url($it)
 
-Returns true if C<$it> is a L<URI> or looks like a URL.
+Returns true if C<$it> is a L<URI> object or looks like a URL string.
 
 =cut
 

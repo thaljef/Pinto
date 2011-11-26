@@ -63,11 +63,8 @@ sub _reindex {
 
     my $txn_guard = $self->db->schema->txn_scope_guard();
 
-    $self->db->remove_distribution($old_dist);
-    my $new_dist = $self->db->new_distribution(path => $path, source => $source);
-    my @package_specs = $self->extractor->extract_packages(archive => $archive);
-    my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
-    $self->db->add_distribution_with_packages($new_dist, @packages);
+    $self->repos->db->remove_distribution($old_dist);
+    $self->preos->add_distribution(archive => $archive);
 
     $txn_guard->commit();
 

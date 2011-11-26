@@ -38,12 +38,12 @@ has format => (
 
 #------------------------------------------------------------------------------
 
-sub packages {
+sub package_rs {
     my ($self) = @_;
 
-    my $attrs = { order_by => 'name' };
+    my $attrs = { order_by => 'name',  prefetch = 'distribution' };
 
-    return $self->db->get_all_packages(undef, $attrs);
+    return $self->repos->db->get_all_packages(undef, $attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ sub packages {
 override execute => sub {
     my ($self) = @_;
 
-    my $rs = $self->packages();
+    my $rs = $self->package_rs();
     my $format = $self->format();
     while( my $package = $rs->next() ) {
         print { $self->out() } $package->to_formatted_string($format);

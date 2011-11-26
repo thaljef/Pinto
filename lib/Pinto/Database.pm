@@ -59,7 +59,6 @@ sub get_all_packages {
 
     $where ||= {};
     $attrs ||= {};
-    $attrs->{prefetch} = 'distribution';
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }

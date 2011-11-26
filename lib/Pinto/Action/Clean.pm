@@ -33,7 +33,7 @@ has confirm => (
 override execute => sub {
     my ($self) = @_;
 
-    my $outdated = $self->db->get_all_outdated_distributions();
+    my $outdated = $self->repos->db->get_all_outdated_distributions();
     my $removed  = 0;
 
     while ( my $dist = $outdated->next() ) {
@@ -44,9 +44,7 @@ override execute => sub {
             next if not $self->prompt_for_confirmation($archive);
         }
 
-        $self->db->remove_distribution($dist);
-        $self->store->remove_archive($archive);
-
+        $self->repos->remove_distribution(path => $dist);
         $self->add_message( "Removed distribution $path" );
         $removed++;
     }
