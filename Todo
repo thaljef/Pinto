@@ -1,3 +1,38 @@
+=head1 PRIORITIZE...
+
+=over 4
+
+=item Reclassify some Roles as Interfaces
+
+=item Organize methods on DB and Repos classes
+
+=item Support target_perl option
+
+=item Support --latest option on Import action
+
+=item Support dist path and dist URL targets for Import action
+
+=item Get rid of IndexReader class
+
+=item Documentation review
+
+=item API documentation
+
+=item Exception hierarchy/handling
+
+=item Use standard logging module
+
+=item More robust list action
+
+=item Query language?
+
+=item Get rid of the ineligible stuff
+
+=item More resilient version comparison
+
+=back
+
+
 =head1 STUFF TODO
 
 In no particular order...
