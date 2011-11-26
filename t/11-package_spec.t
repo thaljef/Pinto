@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 19);
+use Test::More (tests => 20);
 use Test::Exception;
 
 use Pinto::PackageSpec;
@@ -35,11 +35,14 @@ is '1.0.1' >= mkspec('2.0.1'),  '', 'greater-than-or-equal strings';
 is '1.0.1' == mkspec('2.0.1'),  '', 'equal strings';
 
 # Invalid...
-throws_ok { mkspec('Foo', 1) <=> mkspec('Bar', 1) } qr/Cannot compare/,
+throws_ok { mkspec('Foo', 1) <=> mkspec('Bar', 1) } qr/Cannot compare different packages/,
     'Comparing package specs with different names';
 
 throws_ok { mkspec('Foo', 1) <=> '1.2a' } qr/Invalid version/,
     'Comparing package spec with invalid version string';
+
+throws_ok { mkspec('Foo', 1) <=> {} } qr/Cannot compare HASH with Pinto::PackageSpec/,
+    'Comparing incompatible objects';
 
 #-------------------------------------------------------------------------------
 

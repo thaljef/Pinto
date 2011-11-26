@@ -63,12 +63,25 @@ sub as_hash {
 sub compare {
     my ($this, $that, $swap) = @_;
 
-    my $class = ref $this;
-    $that = $class->new( name => $this->name(), version => $that ) if ref $that ne $class;
+    # Note:  I'm not entirely sure this code will work for subclasses
+
+    my $this_class = ref $this;
+    my $that_class = ref $that;
+
+    if ( not $that_class )  {
+        $that = __PACKAGE__->new( name => $this->name(), version => $that );
+    }
+    elsif ( blessed($that) && $that->isa('version') ) {
+        $that = __PACKAGE__->new( name => $this->name(), version => $that );
+    }
+    elsif ( !(blessed($that) && $that->can('name') && $that->can('version')) ) {
+        croak "Cannot compare $that_class with $this_class";
+    }
+
+    croak "Cannot compare different packages: $this <=> $that"
+        if $this->name() ne $that->name();
 
     ($this, $that) = ($that, $this) if $swap;
-    $this->name() eq $that->name() or croak "Cannot compare different packages: $this <=> $that";
-
     return $this->version() <=> $that->version();
 }
 
