@@ -10,7 +10,7 @@ use Try::Tiny;
 use Path::Class;
 use Readonly;
 
-use Pinto::Exceptions qw(throw_version);
+use Pinto::Exceptions qw(throw_version throw_error);
 
 use namespace::autoclean;
 
@@ -55,6 +55,24 @@ sub is_url {
     return 1 if eval { $it->isa('URI') };
     return 0 if eval { $it->isa('Path::Class::File') };
     return $it =~ m/^ (?: http|ftp|file) : /x;
+}
+
+#-------------------------------------------------------------------------------
+
+sub parse_dist_url {
+    my ($url, $base_dir) = @_;
+
+    my $path   = $url->path(); # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
+
+    $path =~ s{^ (.*) /authors/id/(.*) $}{$2}mx   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
+        or throw_error 'Unable to parse url: $url';
+
+    my $source     = $url->isa('URI::file') ? $1 : $url->authority();
+    my @path_parts = split m{ / }mx, $path; # qw( A AU AUTHOR Foo-1.2.tar.gz )
+    my $archive    = file($base_dir, qw(authors id), @path_parts);
+    my $author     = $path_parts[2];
+
+    return ($source, $path, $author, $archive);
 }
 
 #-------------------------------------------------------------------------------

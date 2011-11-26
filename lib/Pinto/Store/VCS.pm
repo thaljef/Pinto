@@ -49,7 +49,7 @@ has _mods => (
 #------------------------------------------------------------------------------
 
 override commit => sub {
-    my ($self, %args);
+    my ($self);
 
     $self->mark_path_as_modified( $self->config->pinto_dir() );
 

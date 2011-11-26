@@ -137,8 +137,8 @@ sub add_distribution {
         my $attrs = { prefetch => 'distribution' };
         my $where = { name => $pkg->{name}, 'distribution.source' => 'LOCAL'};
         my $incumbent = $self->db->get_all_packages($where, $attrs)->first() or next;
-        if ( (my $author = $incumbent->author() ) ne $author ) {
-            throw_error "Only author $author can update package $pkg->{name}";
+        if ( (my $incumbent_author = $incumbent->author()) ne $author ) {
+            throw_error "Only author $incumbent_author can update package $pkg->{name}";
         }
     }
 
@@ -160,18 +160,12 @@ sub add_distribution {
 sub import_distribution {
     my ($self, %args) = @_;
 
-
     my $url  = $args{url};
-    my $path   = $url->path(); # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
-    $path      =~ s{^ (.*) /authors/id/(.*) $}{$2}mx;   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
-    my $source = $url->isa('URI::file') ? $1 : $url->authority();
+    my ($source, $path, $author, $archive) =
+      Pinto::Util::parse_dist_url( $url, $self->config->root_dir() );
 
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
-
-    my @path_parts = split m{ / }mx, $path; # qw( A AU AUTHOR Foo-1.2.tar.gz )
-    my $archive = file($self->config->root_dir(), qw(authors id), @path_parts);
-    my $author  = $path_parts[2];
 
     $self->fetch( url => $url, to => $archive );
 

@@ -110,7 +110,6 @@ override tag => sub {
 
     $self->info("Tagging at $tag");
 
-    my $now = DateTime->now();
     my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();
     Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $msg);
 
