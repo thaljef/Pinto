@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] PACKAGE_NAME_OR_DIST_PATH ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGES_NAMES_OR_DIST_PATHS
+%c --repos=PATH $command [OPTIONS] PACKAGE_SPECS ...
+%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGES_SPECS
 END_USAGE
 
     chomp $usage;
@@ -58,7 +58,12 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action('Import', %{$opts}, package_name => $_) for @args;
+
+    for my $arg (@args) {
+        my ($name, $version) = split m/ - /mx, $arg, 2;
+        $self->pinto->add_action('Import', %{$opts}, package_name    => $name,
+                                                     minimum_version => ($version || 0));
+    }
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;

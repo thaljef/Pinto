@@ -11,7 +11,9 @@ use Try::Tiny;
 
 use Pinto::PackageSpec;
 use Pinto::Extractor::Requires;
+use Pinto::Types qw(Vers);
 
+use version;
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -35,8 +37,9 @@ has package_name => (
 
 has minimum_version => (
     is      => 'ro',
-    isa     => 'version',
+    isa     => Vers,
     default => sub { version->parse(0) },
+    coerce  => 1,
 );
 
 
@@ -46,12 +49,10 @@ has norecurse => (
    default => 0,
 );
 
+#------------------------------------------------------------------------------
 
-has get_latest => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
+# TODO: Allow the import target to be specified as a package/version,
+# dist path, or a particular URL.  Then do the right thing for each.
 
 #------------------------------------------------------------------------------
 
@@ -103,7 +104,6 @@ sub _descend_into_prerequisites {
 
     while (my $prereq = shift @prereq_queue) {
 
-
         my $required_archive = try {
               my $required_dist = $self->_find_or_import( $prereq );
               $required_dist->archive( $self->config->root_dir() );
@@ -111,7 +111,7 @@ sub _descend_into_prerequisites {
         catch {
              $self->whine("Skipping prerequisite $prereq.  Import failed: $_");
              $done{ $prereq->name() } = $prereq;
-             undef; # returned by try{}
+             undef;  # returned by try{}
         };
 
         next if not $required_archive;
@@ -125,7 +125,7 @@ sub _descend_into_prerequisites {
         for my $new_prereq ( $self->_extract_prerequisites($required_archive) ) {
             # Add a prereq to the queue only if greater than the ones we already got
             my $name = $new_prereq->name();
-            next if exists $done{$name} && ( $new_prereq < $done{$name} );
+            next if exists $done{$name} && ( $new_prereq <= $done{$name} );
 
             $done{$name} = $new_prereq;
             push @prereq_queue, $new_prereq;
