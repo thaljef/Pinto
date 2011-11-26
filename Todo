@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Make all types in Pinto::* namespace
+
 =item Reclassify some Roles as Interfaces
 
 =item Organize methods on DB and Repos classes
