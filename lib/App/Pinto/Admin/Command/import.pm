@@ -27,7 +27,7 @@ sub opt_spec {
     return (
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
-        [ 'norecurse'   => 'Do not import dependencies' ],
+        [ 'norecurse'   => 'Do not recursively import prereqs' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] PACKAGE_SPECS ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGES_SPECS
+%c --repos=PATH $command [OPTIONS] PACKAGE_NAME ...
+%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGE_NAMES
 END_USAGE
 
     chomp $usage;
@@ -77,22 +77,23 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir import [OPTIONS] PACKAGE_NAME_OR_DIST_PATH ...
-  pinto-admin --repos=/some/dir import [OPTIONS] < LIST_OF_PACKAGE_NAMES_OR_DIST_PATHS
+  pinto-admin --repos=/some/dir import [OPTIONS] PACKAGE_NAME ...
+  pinto-admin --repos=/some/dir import [OPTIONS] < LIST_OF_PACKAGE_NAMES
 
 =head1 DESCRIPTION
 
-This command locates a package (or a specific distribution) on one of
-your remote repositories and then imports the distribution providing
-that package into your local repository.  Then it recursively locates
-and imports all the distributions that provide the packages to satisfy
-the prerequisites for that distribution.
+This command locates a package on one of your remote repositories and
+then imports the distribution providing that package into your local
+repository.  Then it recursively locates and imports all the
+distributions that provide the packages to satisfy the prerequisites
+for that distribution.
 
-When looking for packages to satisfy prerequisites, we first look at
-the distributions that already exist in the local repository, then we
-look for the latest version that is available on any of the remote
-repositories.  If a dependency cannot be satisfied, a warning will be
-issued.
+When locating packages, Pinto first looks at the the packages that
+already exist in the local repository, then Pinto looks at the
+packages that are available available on the remote repositories.  At
+present, Pinto takes the *first* package it can find that satisfies
+the prerequisite.  In the future, you may be able to direct Pinto to
+instead choose the *latest* package that satisfies the prerequisite.
 
 =head1 COMMAND ARGUMENTS
 
@@ -101,27 +102,14 @@ the name of the package.  For example:
 
   Foo::Bar
 
-To specify a minimum version for that package, append '=' and the
+To specify a minimum version for that package, append '-' and the
 minimum version number to the name.  For example:
 
-  Foo::Bar=1.2
+  Foo::Bar-1.2
 
-To import a particular distribution, you must give the full
-distribution path as it would appear in the index file.  For example:
-
-  A/AU/AUTHOR/Foo-Bar-1.2.tar.gz
-
-Distributions will be imported from the first remote repository that
-has the requested distribution (the remote repositories are defined in
-your repository configuration file).  But if you want to pull from a
-particular remote repository, then just specify the full URL.  For
-example:
-
-  http://cpan.perl.org/authors/id/A/AU/AUTHOR/Foo-Bar.1.2.tar.gz
-
-You can also pipe any combination of these arguments to this command
-over STDIN.  In that case, blank lines and lines that look like
-comments (i.e. starting with "#" or ';') will be ignored.
+You can also pipe arguments to this command over STDIN.  In that case,
+blank lines and lines that look like comments (i.e. starting with "#"
+or ';') will be ignored.
 
 =head1 COMMAND OPTIONS
 
@@ -136,16 +124,16 @@ for L<Pinto>.
 =item --nocommit
 
 Prevents L<Pinto> from committing changes in the repository to the VCS
-after the operation.  This is only relevant if you are
-using a VCS-based storage mechanism.  Beware this will leave your
-working copy out of sync with the VCS.  It is up to you to then commit
-or rollback the changes using your VCS tools directly.  Pinto will not
-commit old changes that were left from a previous operation.
+after the operation.  This is only relevant if you are using a
+VCS-based storage mechanism.  Beware this will leave your working copy
+out of sync with the VCS.  It is up to you to then commit or rollback
+the changes using your VCS tools directly.  Pinto will not commit old
+changes that were left from a previous operation.
 
-=item --nodeps
+=item --norecurse
 
-Directs L<Pinto> to not recursively import whatever distributions are
-required to satisfy the dependencies.
+Prevents L<Pinto> from recursively importing any distributions
+required to satisfy prerequisites.
 
 =item --noinit
 
@@ -167,9 +155,9 @@ The syntax of the NAME depends on the type of VCS you are using.
 =head1 DISCUSSION
 
 Imported distributions will be assigned to their original author
-(comapre this to the C<add> command which makes B<you> the author of a
-distribution).  Also, packages provided by imported distributions are
-still considered foreign, so locally added packages will always
+(comapre this to the C<add> command which makes B<you> the author of
+the distribution).  Also, packages provided by imported distributions
+are still considered foreign, so locally added packages will always
 override ones that you imported, even if the imported package has a
 higher version.
 
