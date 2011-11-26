@@ -9,8 +9,6 @@ In no particular order...
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
 CPAN::Mini::Visit.
 
-=item Automatically fetch dependecies when adding *VERY COOL*
-
 =item Make file/directory permissions configurable. Not sure this is needed.
 
 =item Standardize API, using named parameters except where it makes
