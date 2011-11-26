@@ -3,10 +3,28 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 20);
+use Test::More (tests => 25);
 use Test::Exception;
 
 use Pinto::PackageSpec;
+
+#-------------------------------------------------------------------------------
+# Construction with pspec notation...
+
+my $pkg_spec = Pinto::PackageSpec->new('Foo');
+is $pkg_spec->name(), 'Foo', 'name from pspec notation: Foo';
+is $pkg_spec->version(),  0, 'version from pspec notation: Foo';
+
+
+$pkg_spec = Pinto::PackageSpec->new('Bar-2.3.4');
+is $pkg_spec->name(), 'Bar', 'name from pspec notation: Bar-2.3.4';
+is $pkg_spec->version(),  "2.3.4", 'version from pspec notation: Bar-2.3.4';
+
+#-------------------------------------------------------------------------------
+# Stringification...
+
+$pkg_spec = Pinto::PackageSpec->new('Foo-1.2');
+is "$pkg_spec", 'Foo-1.2', 'Stringification of Foo-1.2';
 
 #-------------------------------------------------------------------------------
 

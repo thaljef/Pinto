@@ -32,6 +32,19 @@ has version => (
 
 #------------------------------------------------------------------------------
 
+around BUILDARGS => sub {
+    my ($orig, $class, @args) = @_;
+
+    if ( @args == 1 && !ref $args[0] ) {
+        my ($name, $version) = split m/ - /mx, $args[0], 2;
+        return $class->$orig( {name => $name, version => ($version || 0)} );
+    }
+
+    return $class->$orig(@args);
+  };
+
+#------------------------------------------------------------------------------
+
 sub as_hashref {
     my ($self) = @_;
 
