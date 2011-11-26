@@ -77,7 +77,7 @@ sub _find_or_import {
 
     my $got_pkg = $self->repos->db->get_latest_package_with_name( $pkg_spec->name() );
 
-    if ($got_pkg and $pkg_spec < $got_pkg->version()) {
+    if ($got_pkg and $pkg_spec <= $got_pkg) {
         $self->debug("Already have $pkg_spec or newer as $got_pkg");
         return $got_pkg->distribution();
     }
@@ -103,18 +103,18 @@ sub _descend_into_prerequisites {
 
     while (my $prereq = shift @prereq_queue) {
 
-        my $required_archive;
 
-        try {
+        my $required_archive = try {
               my $required_dist = $self->_find_or_import( $prereq );
-              $required_archive = $required_dist->archive( $self->config->root_dir() );
+              $required_dist->archive( $self->config->root_dir() );
         }
         catch {
              $self->whine("Skipping prerequisite $prereq.  Import failed: $_");
              $done{ $prereq->name() } = $prereq;
-             next;
+             undef; # returned by try{}
         };
 
+        next if not $required_archive;
 
         if ( $visited{$required_archive} ) {
             # We don't need to extract prereqs from the same dist more than once
@@ -149,9 +149,8 @@ sub _extract_prerequisites {
     # caller should just go on to the next archive.  The user will have
     # to figure out the prerequisites by other means.
 
-    my @prereqs;
-    try   { @prereqs = $req->extract( archive => $archive ) }
-    catch { $self->whine("Unable to extract prerequisites from $archive: $_") };
+    my @prereqs = try   { $req->extract( archive => $archive ) }
+                  catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;
 }
