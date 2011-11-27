@@ -150,20 +150,10 @@ sub is_devel {
 
 #------------------------------------------------------------------------------
 
-sub is_eligible_for_index {
-    my ($self) = @_;
-
-    return $self->distribution->is_eligible_for_index();
-}
-
-#------------------------------------------------------------------------------
-
 sub index_status {
     my ($self) = @_;
 
-    return '-' if not $self->is_eligible_for_index();
-    return '*' if $self->is_latest();
-    return ' ';
+    return $self->is_latest() ? '*' : ' ';
 }
 
 #------------------------------------------------------------------------------

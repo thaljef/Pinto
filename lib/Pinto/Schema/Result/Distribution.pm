@@ -35,11 +35,6 @@ __PACKAGE__->table("distribution");
   data_type: 'text'
   is_nullable: 0
 
-=head2 is_eligible_for_index
-
-  data_type: 'boolean'
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -49,8 +44,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "source",
   { data_type => "text", is_nullable => 0 },
-  "is_eligible_for_index",
-  { data_type => "boolean", is_nullable => 0 },
 );
 __PACKAGE__->set_primary_key("distribution_id");
 __PACKAGE__->add_unique_constraint("path_unique", ["path"]);
@@ -73,8 +66,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-10-06 16:31:00
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YyghzYT3B2m91DNFwsJtdw
+# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-11-26 20:10:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xfkXV0aoy6Z9yxR9kN9p/Q
 
 #-------------------------------------------------------------------------------
 
@@ -105,9 +98,6 @@ sub new {
 
     $attrs->{source} = 'LOCAL'
         if not defined $attrs->{source};
-
-    $attrs->{is_eligible_for_index} = 1
-        if not defined $attrs->{is_eligible_for_index};
 
     return $class->SUPER::new($attrs);
 }

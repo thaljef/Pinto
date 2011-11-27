@@ -125,14 +125,6 @@ sub add_distribution_with_packages {
     $self->whine("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
 
-    try   {
-        $dist->version_numeric();
-    }
-    catch {
-        $self->whine("Distribution $dist is ineligible for indexing: $_");
-        $dist->is_eligible_for_index(0);
-    };
-
     my $txn_guard = $self->schema->txn_scope_guard();
     $dist->insert();
 
@@ -163,14 +155,7 @@ sub add_package {
 
     $pkg->insert();
 
-    try   {
-        $self->mark_latest_package_with_name( $pkg->name() );
-    }
-    catch {
-        $self->whine("Package $pkg is ineligible for indexing: $_");
-        $pkg->distribution->is_eligible_for_index(0);
-        $pkg->distribution->update();
-    };
+    $self->mark_latest_package_with_name( $pkg->name() );
 
     return $pkg;
 }
