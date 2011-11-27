@@ -15,7 +15,7 @@ use namespace::autoclean;
 #-------------------------------------------------------------------------------
 # Attributes
 
-has _locator => (
+has locator => (
     is         => 'ro',
     isa        => 'Package::Locator',
     lazy_build => 1,
@@ -29,7 +29,7 @@ with qw( Pinto::Interface::Configurable
 
 #-------------------------------------------------------------------------------
 
-sub _build__locator {
+sub _build_locator {
     my ($self) = @_;
 
     my @urls    = $self->config->sources_list();
@@ -47,7 +47,7 @@ sub locate {
     @args = ( $args[0]->name(), $args[0]->version() )
       if @args == 1 and ref $args[0] eq 'Pinto::PackageSpec';
 
-    return $self->_locator->locate(@args);
+    return $self->locator->locate(@args);
 }
 
 #-------------------------------------------------------------------------------
