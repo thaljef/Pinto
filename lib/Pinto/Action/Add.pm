@@ -34,7 +34,7 @@ has archive => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::Authored
+with qw( Pinto::Interface::Authorable
          Pinto::Role::Extractor );
 
 #------------------------------------------------------------------------------

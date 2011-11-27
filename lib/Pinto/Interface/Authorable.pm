@@ -1,4 +1,4 @@
-package Pinto::Role::Authored;
+package Pinto::Interface::Authorable;
 
 # ABSTRACT: Something that has an author
 
