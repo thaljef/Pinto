@@ -200,7 +200,6 @@ sub mark_latest_package_with_name {
 
     my @sisters  = $self->get_all_packages_with_name( $pkg_name )->all();
     @sisters = grep { not $_->is_devel() } @sisters unless $self->config->devel();
-    @sisters = grep { $_->is_eligible_for_index() } @sisters;
     return $self if not @sisters;
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
