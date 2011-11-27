@@ -34,8 +34,7 @@ has archive => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Interface::Authorable
-         Pinto::Role::Extractor );
+with qw( Pinto::Interface::Authorable );
 
 #------------------------------------------------------------------------------
 # Public methods
