@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Make all types in Pinto::* namespace
-
 =item Organize methods on DB and Repos classes
 
 =item Support target_perl option
