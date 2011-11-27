@@ -5,7 +5,7 @@ package Pinto::Role::PathMaker;
 use Moose::Role;
 
 use Path::Class;
-use English qw(-no_match_vars);
+use Try::Tiny;
 
 use Pinto::Exceptions qw(throw_fatal);
 
@@ -42,8 +42,8 @@ sub mkpath {
 
     $self->debug("Making directory $path");
 
-    eval { $path->mkpath(); 1}
-        or throw_fatal "Failed to make directory $path: $EVAL_ERROR";
+    try   { $path->mkpath() }
+    catch { throw_fatal "Failed to make directory $path: $_" };
 
     return 1;
 }
