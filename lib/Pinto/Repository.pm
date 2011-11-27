@@ -9,7 +9,7 @@ use Path::Class;
 
 use Pinto::Database;
 use Pinto::IndexCache;
-use Pinto::Extractor::Provides;
+use Pinto::PackageExtractor;
 use Pinto::Exceptions qw(throw_fatal throw_error);
 use Pinto::Types qw(Dir);
 
@@ -45,9 +45,9 @@ has cache => (
 );
 
 
-has extractor => (
+has package_extractor => (
     is         => 'ro',
-    isa        => 'Pinto::Extractor::Provides',
+    isa        => 'Pinto::PackageExtractor',
     lazy_build => 1,
 );
 
@@ -102,11 +102,11 @@ sub _build_cache {
 
 #-------------------------------------------------------------------------------
 
-sub _build_extractor {
+sub _build_package_extractor {
     my ($self) = @_;
 
-    return Pinto::Extractor::Provides->new( config => $self->config(),
-                                            logger => $self->logger() );
+    return Pinto::PackageExtractor->new( config => $self->config(),
+                                         logger => $self->logger() );
 }
 
 #-------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ sub add_distribution {
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
-    my @package_specs = $self->extractor->extract(archive => $archive);
+    my @package_specs = $self->package_extractor->provides(archive => $archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
@@ -168,7 +168,7 @@ sub import_distribution {
 
     $self->fetch( url => $url, to => $archive );
 
-    my @package_specs = $self->extractor->extract(archive => $archive);
+    my @package_specs = $self->package_extractor->provides(archive => $archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 
     my $count = @package_specs;

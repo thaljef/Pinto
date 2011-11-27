@@ -10,7 +10,6 @@ use MooseX::Types::Moose qw(Str Bool);
 use Try::Tiny;
 
 use Pinto::PackageSpec;
-use Pinto::Extractor::Requires;
 use Pinto::Types qw(Vers);
 
 use version;
@@ -142,14 +141,11 @@ sub _descend_into_prerequisites {
 sub _extract_prerequisites {
     my ($self, $archive) = @_;
 
-    my $req = Pinto::Extractor::Requires->new( config => $self->config(),
-                                               logger => $self->logger() );
-
     # If extraction fails, then just warn and return an empty list.  The
     # caller should just go on to the next archive.  The user will have
     # to figure out the prerequisites by other means.
 
-    my @prereqs = try   { $req->extract( archive => $archive ) }
+    my @prereqs = try   { $self->repos->package_extractor->requires( archive => $archive ) }
                   catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;

@@ -1,10 +1,11 @@
-package Pinto::Extractor::Provides;
+package Pinto::PackageExtractor;
 
-# ABSTRACT: Extract packages provided by a distribution archive
+# ABSTRACT: Extract packages provided/required by a distribution archive
 
 use Moose;
 
 use Try::Tiny;
+use Dist::Requires;
 use Dist::Metadata 0.922;
 
 use Pinto::PackageSpec;
@@ -18,24 +19,37 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-extends 'Pinto::Extractor';
+with qw( Pinto::Interface::Configurable
+         Pinto::Interface::Loggable );
 
 #-----------------------------------------------------------------------------
 
-override extract => sub {
+sub provides {
     my ($self, %args) = @_;
 
     # Must stringify, cuz D::M doesn't like Path::Class objects
     my $archive = $args{archive}->stringify();
-    my $provides;
-
     $self->debug("Extracting packages from $archive");
 
-    try   { $provides = Dist::Metadata->new(file => $archive)->package_versions(); }
-    catch { throw_error "Unable to extract packages from $archive: $_" };
+    my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
+                   catch { throw_error "Unable to extract packages from $archive: $_" };
 
     return map { Pinto::PackageSpec->new(name => $_, version => $provides->{$_}) } keys %{ $provides }
-};
+}
+
+#-----------------------------------------------------------------------------
+
+sub requires {
+    my ($self, %args) = @_;
+
+    my $archive = $args{archive};
+    $self->debug("Extracting prerequisites from $archive");
+
+    my %prereqs =   try { Dist::Requires->new()->requires(dist => $archive)               }
+                  catch { throw_error "Unable to extract prerequisites from $archive: $_" };
+
+    return map { Pinto::PackageSpec->new(name => $_, version => $prereqs{$_}) } keys %prereqs;
+}
 
 #-----------------------------------------------------------------------------
 
