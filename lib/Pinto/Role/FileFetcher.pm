@@ -1,4 +1,4 @@
-package Pinto::Role::UserAgent;
+package Pinto::Role::FileFetcher;
 
 # ABSTRACT: Something that fetches remote files
 
@@ -18,11 +18,10 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Attributes
 
-has _ua => (
-    is       => 'ro',
-    isa      => 'LWP::UserAgent',
-    builder  => '_build_ua',
-    init_arg => undef,
+has ua => (
+    is         => 'ro',
+    isa        => 'LWP::UserAgent',
+    lazy_build => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -90,7 +89,7 @@ sub _fetch {
 
     $self->info("Fetching $url");
 
-    my $result = eval { $self->_ua->mirror($url, $to) } or throw_fatal $@;
+    my $result = eval { $self->ua->mirror($url, $to) } or throw_fatal $@;
 
     if ($result->is_success()) {
         return 1;

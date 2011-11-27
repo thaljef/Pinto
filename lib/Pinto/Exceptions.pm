@@ -42,11 +42,6 @@ use Exception::Class (
          alias => 'throw_db',
      },
 
-     'Pinto::Exception::UserAgent'  => {
-         isa   => 'Pinto::Exception',
-         alias => 'throw_ua',
-     },
-
      'Pinto::Exception::DuplicateDistribution'  => {
          isa   => 'Pinto::Exception',
          alias => 'throw_dupe',

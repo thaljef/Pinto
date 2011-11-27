@@ -65,7 +65,7 @@ has root_dir => (
 
 with qw( Pinto::Interface::Configurable
          Pinto::Interface::Loggable
-         Pinto::Role::UserAgent );
+         Pinto::Role::FileFetcher );
 
 #-------------------------------------------------------------------------------
 # Builders

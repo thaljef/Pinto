@@ -44,7 +44,7 @@ has modules => (
 # Roles
 
 with qw( Pinto::Interface::Loggable
-         Pinto::Role::UserAgent );
+         Pinto::Role::FileFetcher );
 
 #------------------------------------------------------------------------------
 
