@@ -48,7 +48,6 @@ has cache => (
 has extractor => (
     is         => 'ro',
     isa        => 'Pinto::Extractor::Provides',
-    handles    => { provides => 'extract' },
     lazy_build => 1,
 );
 
@@ -130,7 +129,7 @@ sub add_distribution {
     my $existing = $self->db->get_distribution_with_path($path);
     throw_error "Distribution $path already exists" if $existing;
 
-    my @package_specs = $self->provides(archive => $archive);
+    my @package_specs = $self->extractor->extract(archive => $archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 
     for my $pkg (@package_specs) {
@@ -169,7 +168,7 @@ sub import_distribution {
 
     $self->fetch( url => $url, to => $archive );
 
-    my @package_specs = $self->provides(archive => $archive);
+    my @package_specs = $self->extractor->extract(archive => $archive);
     $self->whine("$archive contains no packages") if not @package_specs;
 
     my $count = @package_specs;
