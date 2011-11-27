@@ -29,7 +29,7 @@ has _ua => (
 # Roles
 
 with qw( Pinto::Role::PathMaker
-         Pinto::Role::Loggable );
+         Pinto::Interface::Loggable );
 
 #------------------------------------------------------------------------------
 

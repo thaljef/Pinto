@@ -64,8 +64,8 @@ has root_dir => (
 #-------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable
+with qw( Pinto::Interface::Configurable
+         Pinto::Interface::Loggable
          Pinto::Role::UserAgent );
 
 #-------------------------------------------------------------------------------

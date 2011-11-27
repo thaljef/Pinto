@@ -36,8 +36,8 @@ has _lockmgr => (
 #-----------------------------------------------------------------------------
 # Moose roles
 
-with qw ( Pinto::Role::Configurable
-          Pinto::Role::Loggable );
+with qw ( Pinto::Interface::Configurable
+          Pinto::Interface::Loggable );
 
 #-----------------------------------------------------------------------------
 # Builders

@@ -1,4 +1,4 @@
-package Pinto::Role::Configurable;
+package Pinto::Interface::Configurable;
 
 # ABSTRACT: Something that has a configuration
 

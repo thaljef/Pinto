@@ -84,8 +84,8 @@ has _result => (
 #-----------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::Loggable
-         Pinto::Role::Configurable );
+with qw( Pinto::Interface::Loggable
+         Pinto::Interface::Configurable );
 
 #-----------------------------------------------------------------------------
 # Public methods

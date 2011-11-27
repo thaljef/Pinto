@@ -1,4 +1,4 @@
-package Pinto::Role::Loggable;
+package Pinto::Interface::Loggable;
 
 # ABSTRACT: Something that wants to log its activity
 

@@ -43,7 +43,7 @@ has modules => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::Loggable
+with qw( Pinto::Interface::Loggable
          Pinto::Role::UserAgent );
 
 #------------------------------------------------------------------------------
