@@ -267,22 +267,6 @@ sub get_all_distributions_from_source {
     return $self->schema->resultset('Distribution')->search($where);
 }
 
-#-------------------------------------------------------------------------------
-
-sub get_all_local_distributions {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Distribution')->locals();
-}
-
-#------------------------------------------------------------------------------
-
-sub get_all_foreign_distributions {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Distribution')->foreigners();
-}
-
 #------------------------------------------------------------------------------
 
 sub get_all_outdated_distributions {
