@@ -65,18 +65,6 @@ sub get_all_packages {
 
 #-------------------------------------------------------------------------------
 
-sub get_records_for_packages_details {
-    my ($self) = @_;
-
-    my $where  = { is_latest => 1 };
-    my $select = [ qw(name version distribution.path) ];
-    my $attrs  = { select => $select, join => 'distribution'};
-
-    return $self->schema->resultset('Package')->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
 sub get_all_packages_with_name {
     my ($self, $package_name) = @_;
 

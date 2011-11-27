@@ -51,7 +51,6 @@ sub _write_header {
     my $base    = $filename->basename();
     my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
     my $version = $Pinto::IndexWriter::VERSION || 'UNKNOWN VERSION';
-    my $count   = $self->db->get_records_for_packages_details->count();
 
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $base
@@ -60,7 +59,7 @@ Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
 Written-By:   Pinto::IndexWriter $version
-Line-Count:   $count
+Line-Count:   UNKNOWN
 Last-Updated: @{[ scalar localtime() ]}
 
 END_PACKAGE_HEADER
@@ -73,6 +72,21 @@ END_PACKAGE_HEADER
 sub _write_packages {
     my ($self, $fh) = @_;
 
+    for my $details_record ( $self->_get_index_records() ) {
+        my ($name, $version, $path) = @{ $details_record };
+        my $width = 38 - length $version;
+        $width = length $name if $width < length $name;
+        printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
+    }
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _get_index_records {
+    my ($self) = @_;
+
     # The index is rewritten after almost every action, so we want
     # this to be as fast as possible (especially during an Add or
     # Remove action).  Therefore, we use a cursor to get raw data and
@@ -82,19 +96,17 @@ sub _write_packages {
     # but I want them to be sorted the way perl sorts them, not the
     # way sqlite sorts them.  That way, the index file looks more
     # like one produced by PAUSE.  Also, this is about twice as fast
-    # as using an iterator to reach each record lazily.
+    # as using an iterator to read each record lazily.
 
-    my $records = $self->db->get_records_for_packages_details();
-    my @records = sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
+    my $where  = { is_latest => 1 };
+    my $select = [ qw(name version distribution.path) ];
+    my $attrs  = { select => $select, join => 'distribution'};
 
-    for my $details_record ( @records ) {
-        my ($name, $version, $path) = @{ $details_record };
-        my $width = 38 - length $version;
-        $width = length $name if $width < length $name;
-        printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
-    }
+    my $records = $self->db->get_all_packages( $where, $attrs );
+    my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
 
-    return $self;
+    return @records;
+
 }
 
 #------------------------------------------------------------------------------
