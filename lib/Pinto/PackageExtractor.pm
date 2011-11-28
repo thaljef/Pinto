@@ -34,7 +34,12 @@ sub provides {
     my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
                    catch { throw_error "Unable to extract packages from $archive: $_" };
 
-    return map { Pinto::PackageSpec->new(name => $_, version => $provides->{$_}) } keys %{ $provides }
+    my @provides = map { Pinto::PackageSpec->new(name => $_, version => $provides->{$_}) } 
+        keys %{ $provides };
+
+    $self->debug("Archive $archive provides: " . join ' ', @provides);
+
+    return @provides;
 }
 
 #-----------------------------------------------------------------------------
@@ -48,7 +53,12 @@ sub requires {
     my %prereqs =   try { Dist::Requires->new()->requires(dist => $archive)               }
                   catch { throw_error "Unable to extract prerequisites from $archive: $_" };
 
-    return map { Pinto::PackageSpec->new(name => $_, version => $prereqs{$_}) } keys %prereqs;
+    my @prereqs = map { Pinto::PackageSpec->new(name => $_, version => $prereqs{$_}) } 
+        keys %prereqs;
+
+    $self->debug("Archive $archive requires: " . join ' ', @prereqs);
+
+    return @prereqs;
 }
 
 #-----------------------------------------------------------------------------
