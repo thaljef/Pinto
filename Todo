@@ -4,19 +4,26 @@
 
 =item Organize methods on DB and Repos classes
 
-=item Support target_perl option
-
-=item Support --latest option on Import action
+=item More resilient version comparison
 
 =item Support dist path and dist URL targets for Import action
 
 =item Get rid of IndexReader class
 
+=item Support --fallback on Package::Locator
+
+=item Support --latest option on Import action
+
+=item Exception hierarchy/handling
+
+
+
+
 =item Documentation review
 
 =item API documentation
 
-=item Exception hierarchy/handling
+=item Support target_perl option
 
 =item Use standard logging module
 
@@ -24,7 +31,7 @@
 
 =item Query language?
 
-=item More resilient version comparison
+
 
 =back
 
