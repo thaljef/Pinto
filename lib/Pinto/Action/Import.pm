@@ -75,7 +75,8 @@ sub execute {
 sub _find_or_import {
     my ($self, $pkg_spec) = @_;
 
-    my $got_pkg = $self->repos->db->get_latest_package_with_name( $pkg_spec->name() );
+    my $where   = {name => $pkg_spec->name(), is_latest => 1};
+    my $got_pkg = $self->repos->db->get_packages( $where )->single();
 
     if ($got_pkg and $pkg_spec <= $got_pkg) {
         $self->debug("Already have $pkg_spec or newer as $got_pkg");

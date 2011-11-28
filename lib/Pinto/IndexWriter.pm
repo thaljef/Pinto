@@ -102,7 +102,7 @@ sub _get_index_records {
     my $select = [ qw(name version distribution.path) ];
     my $attrs  = { select => $select, join => 'distribution'};
 
-    my $records = $self->db->get_all_packages( $where, $attrs );
+    my $records = $self->db->get_packages( $where, $attrs );
     my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
 
     return @records;

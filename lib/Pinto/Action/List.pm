@@ -43,7 +43,7 @@ sub package_rs {
 
     my $attrs = { order_by => 'name',  prefetch => 'distribution' };
 
-    return $self->repos->db->get_all_packages(undef, $attrs);
+    return $self->repos->db->get_packages(undef, $attrs);
 }
 
 #------------------------------------------------------------------------------

@@ -49,9 +49,10 @@ sub execute {
     my $source = $self->source();
     $self->repos->db->load_index($source) unless $self->soft();
 
-    my $count = 0;
-    my $foreigners = $self->repos->db->get_all_distributions_from_source($source);
+    my $where = {source => $source};
+    my $foreigners = $self->repos->db->get_distributions($where);
 
+    my $count = 0;
     while ( my $dist = $foreigners->next() ) {
 
         my $ok = eval { $count += $self->_do_mirror($dist); 1 };

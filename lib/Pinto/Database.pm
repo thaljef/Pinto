@@ -54,44 +54,24 @@ sub _build_schema {
 #-------------------------------------------------------------------------------
 # Convenience methods
 
-sub get_all_packages {
+sub get_distributions {
+    my ($self, $where, $attrs) = @_;
+
+    $where ||= {};
+    $attrs ||= {};
+
+    return $self->schema->resultset('Distribution')->search($where, $attrs);
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_packages {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
     $attrs ||= {};
 
     return $self->schema->resultset('Package')->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_all_packages_with_name {
-    my ($self, $package_name) = @_;
-
-    my $where = { name => $package_name };
-
-    return $self->schema->resultset('Package')->search($where);
-}
-
-
-#-------------------------------------------------------------------------------
-
-sub get_latest_package_with_name {
-    my ($self, $package_name) = @_;
-
-    my $where = { name => $package_name, is_latest => 1 };
-
-    return $self->schema->resultset('Package')->search($where)->single();
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_distribution_with_path {
-    my ($self, $path) = @_;
-
-    my $where = { path => $path };
-
-    return $self->schema->resultset('Distribution')->search($where)->single();
 }
 
 #-------------------------------------------------------------------------------
@@ -105,7 +85,15 @@ sub new_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub add_distribution_with_packages {
+sub new_package {
+    my ($self, %attributes) = @_;
+
+    return $self->schema->resultset('Package')->new_result(\%attributes);
+}
+
+#-------------------------------------------------------------------------------
+
+sub add_distribution {
     my ($self, $dist, @packages) = @_;
 
     $self->debug("Loading distribution $dist into database");
@@ -128,14 +116,6 @@ sub add_distribution_with_packages {
 
 #-------------------------------------------------------------------------------
 
-sub new_package {
-    my ($self, %attributes) = @_;
-
-    return $self->schema->resultset('Package')->new_result(\%attributes);
-}
-
-#-------------------------------------------------------------------------------
-
 sub add_package {
     my ($self, $pkg) = @_;
 
@@ -143,7 +123,7 @@ sub add_package {
 
     $pkg->insert();
 
-    $self->mark_latest_package_with_name( $pkg->name() );
+    $self->_mark_latest_package_with_name( $pkg->name() );
 
     return $pkg;
 }
@@ -165,6 +145,7 @@ sub remove_distribution {
     return;
 }
 
+
 #-------------------------------------------------------------------------------
 
 sub remove_package {
@@ -176,17 +157,17 @@ sub remove_package {
     my $was_latest = $pkg->is_latest();
 
     $pkg->delete();
-    $self->mark_latest_package_with_name($name) if $was_latest;
+    $self->_mark_latest_package_with_name($name) if $was_latest;
 
     return;
 }
 
 #-------------------------------------------------------------------------------
 
-sub mark_latest_package_with_name {
+sub _mark_latest_package_with_name {
     my ($self, $pkg_name) = @_;
 
-    my @sisters  = $self->get_all_packages_with_name( $pkg_name )->all();
+    my @sisters  = $self->get_packages( {name => $pkg_name} )->all();
     @sisters = grep { not $_->is_devel() } @sisters unless $self->config->devel();
     return $self if not @sisters;
 
@@ -234,33 +215,6 @@ sub load_index {
     $loader->load(reader => $reader);
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub get_all_distributions {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Distribution')->search();
-}
-
-
-#-------------------------------------------------------------------------------
-
-sub get_all_distributions_from_source {
-    my ($self, $source) = @_;
-
-    my $where = { source => $source };
-
-    return $self->schema->resultset('Distribution')->search($where);
-}
-
-#------------------------------------------------------------------------------
-
-sub get_all_outdated_distributions {
-    my ($self) = @_;
-
-    return $self->schema->resultset('Distribution')->outdated();
 }
 
 #-------------------------------------------------------------------------------

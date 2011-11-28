@@ -33,15 +33,15 @@ has confirm => (
 override execute => sub {
     my ($self) = @_;
 
-    my $outdated = $self->repos->db->get_all_outdated_distributions();
-    my $removed  = 0;
+    my $outdated = $self->_select_outdated_distributions();
 
+    my $removed  = 0;
     while ( my $dist = $outdated->next() ) {
         my $path = $dist->path();
         my $archive = $dist->archive( $self->config->root_dir() );
 
         if ( $self->confirm() && IO::Interactive::is_interactive() ) {
-            next if not $self->prompt_for_confirmation($archive);
+            next if not $self->_prompt_for_confirmation($archive);
         }
 
         $self->repos->remove_distribution(path => $dist);
@@ -54,7 +54,27 @@ override execute => sub {
 
 #------------------------------------------------------------------------------
 
-sub prompt_for_confirmation {
+sub _select_outdated_distributions {
+    my ($self) = @_;
+
+    my $attrs = { prefetch => 'packages', order_by => {-asc => 'path'} };
+    my $rs = $self->db->get_distributions(undef, $attrs);
+
+    my @outdated;
+    while ( my $dist = $rs->next() ) {
+        push @outdated, $dist if none { $_->is_latest() } $dist->packages();
+    }
+
+    my $new_rs = $self->result_source->resultset();
+    $new_rs->set_cache(\@outdated);
+
+    return $new_rs;
+
+}
+
+#------------------------------------------------------------------------------
+
+sub _prompt_for_confirmation {
     my ($self, $archive) = @_;
 
     my $answer = '';
