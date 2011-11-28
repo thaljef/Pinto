@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Organize methods on DB and Repos classes
-
 =item More resilient version comparison
 
 =item Support dist path and dist URL targets for Import action
