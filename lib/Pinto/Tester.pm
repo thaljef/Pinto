@@ -157,7 +157,7 @@ sub package_is_latest_ok {
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->get_packages($where, $attrs)->single();
+    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
 
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
     return $self->tb->is_eq($pkg->is_latest(), 1, "$pkg_name -- $dist_path is the latest");
@@ -173,7 +173,7 @@ sub package_not_latest_ok {
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->get_packages($where, $attrs)->single();
+    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
 
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
     return $self->tb->is_eq($pkg->is_latest(), undef, "$pkg_name -- $dist_path is not the latest");
@@ -189,7 +189,7 @@ sub package_loaded_ok {
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->get_packages($where, $attrs)->single();
+    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
 
     $self->tb->ok(1, "$pkg_name -- $dist_path is loaded");
@@ -208,7 +208,7 @@ sub package_not_loaded_ok {
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->get_packages($where, $attrs)->single();
+    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
 
     return $self->tb->ok(0, "$pkg_name -- $dist_path is still loaded") if $pkg;
 

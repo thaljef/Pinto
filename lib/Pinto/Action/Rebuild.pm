@@ -42,7 +42,7 @@ sub _recompute {
     my ($self) = @_;
 
     my $attrs   = {select => ['name'], distinct => 1};
-    my $cursor  = $self->repos->db->get_packages(undef, $attrs)->cursor();
+    my $cursor  = $self->repos->db->select_packages(undef, $attrs)->cursor();
 
     while (my ($name) = $cursor->next()) {
         # HACK: calling a private method here!

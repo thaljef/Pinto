@@ -35,7 +35,7 @@ sub execute {
     my ($self) = @_;
 
     my $repos = $self->config()->repos();
-    my $rs    = $self->db->get_distributions();
+    my $rs    = $self->db->select_distributions();
 
     while ( my $dist = $rs->next() ) {
         my $archive = $dist->archive($repos);

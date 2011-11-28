@@ -127,7 +127,7 @@ sub add_distribution {
     my $path       = $author_dir->file($basename)->as_foreign('Unix');
 
     my $where    = {path => $path};
-    my $existing = $self->db->get_distributions( $where )->single();
+    my $existing = $self->db->select_distributions( $where )->single();
     throw_error "Distribution $path already exists" if $existing;
 
     my @package_specs = $self->package_extractor->provides(archive => $archive);
@@ -136,7 +136,7 @@ sub add_distribution {
     for my $pkg (@package_specs) {
         my $attrs = { prefetch => 'distribution' };
         my $where = { name => $pkg->{name}, 'distribution.source' => 'LOCAL'};
-        my $incumbent = $self->db->get_packages($where, $attrs)->first() or next;
+        my $incumbent = $self->db->select_packages($where, $attrs)->first() or next;
         if ( (my $incumbent_author = $incumbent->author()) ne $author ) {
             throw_error "Only author $incumbent_author can update package $pkg->{name}";
         }
@@ -148,7 +148,7 @@ sub add_distribution {
     my $dist = $self->db->new_distribution(path => $path);
     my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
 
-    $dist = $self->db->add_distribution($dist, @packages);
+    $dist = $self->db->insert_distribution($dist, @packages);
 
     $self->store->add_archive( $archive => $dist->archive($root_dir) );
 
@@ -165,7 +165,7 @@ sub import_distribution {
       Pinto::Util::parse_dist_url( $url, $self->config->root_dir() );
 
     my $where    = {path => $path};
-    my $existing = $self->db->get_distributions( $where )->single();
+    my $existing = $self->db->select_distributions( $where )->single();
     throw_error "Distribution $path already exists" if $existing;
 
     $self->fetch( url => $url, to => $archive );
@@ -179,7 +179,7 @@ sub import_distribution {
     my $dist = $self->db->new_distribution(path => $path, source => $source);
     my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
 
-    $dist = $self->db->add_distribution($dist, @packages);
+    $dist = $self->db->insert_distribution($dist, @packages);
 
     $self->store->add_archive( $archive );
 
@@ -194,13 +194,13 @@ sub remove_distribution {
     my $path = $args{path};
 
     my $where = {path => $path};
-    my $dist  = $self->db->get_distributions( $where )->single()
+    my $dist  = $self->db->select_distributions( $where )->single()
         or throw_error "Distribution $path does not exist";
 
     my $count = $dist->package_count();
     $self->info("Removing distribution $dist with $count packages");
 
-    $self->db->remove_distribution($dist);
+    $self->db->delete_distribution($dist);
 
     my $archive = $dist->archive( $self->config->root_dir() );
     $self->store->remove_archive($archive);

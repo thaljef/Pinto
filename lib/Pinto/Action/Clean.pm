@@ -58,7 +58,7 @@ sub _select_outdated_distributions {
     my ($self) = @_;
 
     my $attrs = { prefetch => 'packages', order_by => {-asc => 'path'} };
-    my $rs = $self->db->get_distributions(undef, $attrs);
+    my $rs = $self->db->select_distributions(undef, $attrs);
 
     my @outdated;
     while ( my $dist = $rs->next() ) {

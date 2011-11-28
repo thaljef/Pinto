@@ -50,7 +50,7 @@ sub execute {
     $self->repos->db->load_index($source) unless $self->soft();
 
     my $where = {source => $source};
-    my $foreigners = $self->repos->db->get_distributions($where);
+    my $foreigners = $self->repos->db->select_distributions($where);
 
     my $count = 0;
     while ( my $dist = $foreigners->next() ) {

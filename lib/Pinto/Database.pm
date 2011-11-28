@@ -54,7 +54,7 @@ sub _build_schema {
 #-------------------------------------------------------------------------------
 # Convenience methods
 
-sub get_distributions {
+sub select_distributions {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
@@ -65,7 +65,7 @@ sub get_distributions {
 
 #-------------------------------------------------------------------------------
 
-sub get_packages {
+sub select_packages {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
@@ -93,10 +93,10 @@ sub new_package {
 
 #-------------------------------------------------------------------------------
 
-sub add_distribution {
+sub insert_distribution {
     my ($self, $dist, @packages) = @_;
 
-    $self->debug("Loading distribution $dist into database");
+    $self->debug("Inserting distribution $dist into database");
 
     $self->whine("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
@@ -106,7 +106,7 @@ sub add_distribution {
 
     for my $pkg ( @packages ) {
         $pkg->distribution($dist);
-        $self->add_package($pkg)
+        $self->insert_package($pkg)
     }
 
     $txn_guard->commit();
@@ -116,10 +116,10 @@ sub add_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub add_package {
+sub insert_package {
     my ($self, $pkg) = @_;
 
-    $self->debug("Loading package $pkg into database");
+    $self->debug("Inserting package $pkg into database");
 
     $pkg->insert();
 
@@ -130,14 +130,14 @@ sub add_package {
 
 #-------------------------------------------------------------------------------
 
-sub remove_distribution {
+sub delete_distribution {
     my ($self, $dist) = @_;
 
-    $self->debug("Removing distribution $dist from database");
+    $self->debug("Deleting distribution $dist from database");
 
     my $txn_guard = $self->schema->txn_scope_guard();
 
-    $self->remove_package($_) for $dist->packages();
+    $self->delete_package($_) for $dist->packages();
     $dist->delete();
 
     $txn_guard->commit();
@@ -148,10 +148,10 @@ sub remove_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub remove_package {
+sub delete_package {
     my ($self, $pkg) = @_;
 
-    $self->debug("Removing package $pkg from database");
+    $self->debug("Deleting package $pkg from database");
 
     my $name       = $pkg->name();
     my $was_latest = $pkg->is_latest();
@@ -167,7 +167,7 @@ sub remove_package {
 sub _mark_latest_package_with_name {
     my ($self, $pkg_name) = @_;
 
-    my @sisters  = $self->get_packages( {name => $pkg_name} )->all();
+    my @sisters  = $self->select_packages( {name => $pkg_name} )->all();
     @sisters = grep { not $_->is_devel() } @sisters unless $self->config->devel();
     return $self if not @sisters;
 

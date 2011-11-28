@@ -42,7 +42,7 @@ sub load {
     for my $dist_path ( sort keys %{ $dists } ) {
 
         my $where = { path => $dist_path };
-        if ( $self->db->get_distributions( $where )->single() ) {
+        if ( $self->db->select_distributions( $where )->single() ) {
             $self->debug("Skipping $dist_path: already loaded");
             next;
         }
@@ -50,7 +50,7 @@ sub load {
         my @package_specs =  @{ $dists->{$dist_path} };
         my $dist = $self->db->new_distribution(path => $dist_path, source => $reader->source());
         my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
-        $self->db->add_distribution($dist, @packages);
+        $self->db->insert_distribution($dist, @packages);
     }
 
     return $self;
