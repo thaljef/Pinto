@@ -84,6 +84,7 @@ sub _find_or_import {
 
     if (my $url = $self->repos->locate_remotely( $pkg_spec ) ) {
         $self->debug("Found $pkg_spec in $url");
+        return if $self->_isa_perl($url);
         return $self->repos->import_distribution( url => $url );
     }
 
@@ -101,6 +102,7 @@ sub _descend_into_prerequisites {
     my %visited = ($archive => 1);
     my %done;
 
+  PREREQ:
     while (my $prereq = shift @prereq_queue) {
 
         my $required_archive = try {
@@ -109,28 +111,30 @@ sub _descend_into_prerequisites {
         }
         catch {
              $self->whine("Skipping prerequisite $prereq.  Import failed: $_");
+             # Mark the prereq as done so we don't try to import it again
              $done{ $prereq->name() } = $prereq;
              undef;  # returned by try{}
         };
 
-        next if not $required_archive;
+        next PREREQ if not $required_archive;
 
         if ( $visited{$required_archive} ) {
             # We don't need to extract prereqs from the same dist more than once
             $self->debug("Already visited archive $required_archive");
-            next;
+            next PREREQ;
         }
 
+      NEW_PREREQ:
         for my $new_prereq ( $self->_extract_prerequisites($required_archive) ) {
             # Add a prereq to the queue only if greater than the ones we already got
             my $name = $new_prereq->name();
-            next if exists $done{$name} && ( $new_prereq <= $done{$name} );
+            next NEW_PREREQ if exists $done{$name} && ( $new_prereq <= $done{$name} );
 
             $done{$name} = $new_prereq;
             push @prereq_queue, $new_prereq;
         }
 
-        $visited{$required_archive}++;
+        $visited{$required_archive} = 1;
     }
 
     return 1;
@@ -149,6 +153,23 @@ sub _extract_prerequisites {
                   catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;
+}
+
+#------------------------------------------------------------------------------
+
+sub _isa_perl {
+    my ($self, $url) = @_;
+
+    # TODO: Should we be checking the core list instead?
+    # What should we do if a dist does require a new perl?
+    # Should we ever allow perl itself to be imported?
+
+    if ($url =~ m{ / perl-[\d.]+ \.tar \.gz $ }mx) {
+        $self->debug("$url is a perl.  Skipping it.");
+        return 1;
+    }
+
+    return 0;
 }
 
 #------------------------------------------------------------------------------
