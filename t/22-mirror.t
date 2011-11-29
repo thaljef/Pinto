@@ -30,7 +30,7 @@ my $FOREIGN = 'LOCAL';
 #------------------------------------------------------------------------------
 # Setup...
 
-my $t = Pinto::Tester->new();
+my $t = Pinto::Tester->new( creator_args => {sources => $source} );
 my $pinto = $t->pinto();
 
 # Make sure we have clean slate

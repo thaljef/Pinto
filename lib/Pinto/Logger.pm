@@ -5,7 +5,7 @@ package Pinto::Logger;
 use Moose;
 
 use MooseX::Types::Moose qw(Int Bool);
-use Pinto::Types 0.017 qw(IO);
+use Pinto::Types qw(IO);
 
 use Readonly;
 use Term::ANSIColor 2.02;

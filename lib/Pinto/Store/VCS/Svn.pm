@@ -6,7 +6,7 @@ use Moose;
 
 use DateTime;
 use Pinto::Util::Svn;
-use Pinto::Types qw(URI);
+use Pinto::Types qw(Uri);
 
 use namespace::autoclean;
 
@@ -24,7 +24,7 @@ extends 'Pinto::Store::VCS';
 
 has svn_location => (
     is       => 'ro',
-    isa      => URI,
+    isa      => Uri,
     init_arg => undef,
     default  => sub { Pinto::Util::Svn::location( path => $_[0]->config->root_dir() ) },
     coerce   => 1,

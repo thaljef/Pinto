@@ -5,7 +5,7 @@ package Pinto::Action::Verify;
 use Moose;
 
 use Pinto::Util;
-use Pinto::Types 0.017 qw(IO);
+use Pinto::Types qw(IO);
 
 use namespace::autoclean;
 

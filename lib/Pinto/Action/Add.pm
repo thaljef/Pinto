@@ -7,7 +7,7 @@ use Moose;
 use Path::Class;
 
 use Pinto::Util;
-use Pinto::Types 0.017 qw(File);
+use Pinto::Types qw(File);
 use Pinto::Exceptions qw(throw_error);
 
 use namespace::autoclean;

@@ -48,7 +48,7 @@ around BUILDARGS => sub {
 sub as_hashref {
     my ($self) = @_;
 
-    my %hash = ( name => $self->name(), version => $self->version() );
+    my %hash = ( name => $self->name(), version => $self->version()->stringify() );
 
     return \%hash;
 }

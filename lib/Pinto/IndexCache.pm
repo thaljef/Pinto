@@ -4,7 +4,10 @@ package Pinto::IndexCache;
 
 use Moose;
 
-use Package::Locator 0.003;  # Bug fixes
+use Package::Locator;
+
+use Pinto::PackageSpec;
+use Pinto::DistributionSpec;
 
 use namespace::autoclean;
 
@@ -50,6 +53,29 @@ sub locate {
     return $self->locator->locate(@args);
 }
 
+#-------------------------------------------------------------------------------
+
+sub contents {
+    my ($self) = @_;
+
+    my %seen;
+    for my $index ( $self->locator->indexes() ) {
+        for my $dist ( values %{ $index->distributions() } ) {
+            next if exists $seen{ $dist->{path} };
+
+            # TODO: use coercion to do this for us
+            my @pkg_specs = map { Pinto::PackageSpec->new( $_ ) }  @{ $dist->{packages} };
+            $dist->{packages} = \@pkg_specs;
+
+            my $dist_spec = Pinto::DistributionSpec->new( $dist );
+            $seen{ $dist->{path} } = $dist_spec;
+        }
+    }
+
+    # TODO: Return hash values sorted by the keys
+    return values %seen;
+
+}
 #-------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable();

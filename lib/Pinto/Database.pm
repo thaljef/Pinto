@@ -8,8 +8,6 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Schema;
-use Pinto::IndexReader;
-use Pinto::IndexLoader;
 use Pinto::IndexWriter;
 use Pinto::Exceptions qw(throw_fatal throw_error);
 
@@ -89,6 +87,17 @@ sub new_package {
     my ($self, %attributes) = @_;
 
     return $self->schema->resultset('Package')->new_result(\%attributes);
+}
+
+#-------------------------------------------------------------------------------
+
+sub create_distribution {
+    my ($self, $dist_spec) = @_;
+
+    my $attrs = $dist_spec->as_hashref();
+
+    return $self->schema->resultset('Distribution')->create($attrs);
+
 }
 
 #-------------------------------------------------------------------------------
@@ -198,21 +207,6 @@ sub write_index {
 
     my $index_file = $self->config->packages_details_file();
     $writer->write(file => $index_file);
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub load_index {
-    my ($self, $repos_url) = @_;
-
-    my $reader = Pinto::IndexReader->new( logger => $self->logger(),
-                                          source => $repos_url );
-
-    my $loader = Pinto::IndexLoader->new( logger => $self->logger(),
-                                          db     => $self );
-    $loader->load(reader => $reader);
 
     return $self;
 }

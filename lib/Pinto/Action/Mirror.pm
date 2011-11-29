@@ -4,8 +4,10 @@ package Pinto::Action::Mirror;
 
 use Moose;
 
+use URI;
+use Path::Class;
 use MooseX::Types::Moose qw(Bool);
-use Pinto::Types qw(URI);
+use Pinto::Types qw(Uri);
 
 use Exception::Class::TryCatch;
 
@@ -25,7 +27,7 @@ extends 'Pinto::Action';
 
 has source => (
     is       => 'ro',
-    isa      => URI,
+    isa      => Uri,
     required => 1,
 );
 
@@ -46,26 +48,29 @@ with qw(Pinto::Role::FileFetcher);
 sub execute {
     my ($self) = @_;
 
-    my $source = $self->source();
-    $self->repos->db->load_index($source) unless $self->soft();
-
-    my $where = {source => $source};
-    my $foreigners = $self->repos->db->select_distributions($where);
-
     my $count = 0;
-    while ( my $dist = $foreigners->next() ) {
+    for my $dist ( $self->repos->cache->contents() ) {
 
-        my $ok = eval { $count += $self->_do_mirror($dist); 1 };
+      my $path = $dist->path();
+      my $where = { path => $path };
+      if ( $self->repos->db->select_distributions( $where )->count() ) {
+          $self->debug("Already have distribution $path.  Skipping it");
+          next;
+      }
 
-        if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
-            $self->add_exception($e);
-            $self->whine($e);
-            next;
-        }
+      $count += $self->_do_mirror($dist);
+
+#         my $ok = eval { $count += $self->_do_mirror($dist); 1 };
+
+#         if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
+#             $self->add_exception($e);
+#             $self->whine($e);
+#             next;
+#         }
     }
 
     return 0 if not $count;
-    $self->add_message("Mirrored $count distributions from $source");
+    $self->add_message("Mirrored $count distributions");
 
     return 1;
 }
@@ -75,11 +80,15 @@ sub execute {
 sub _do_mirror {
     my ($self, $dist) = @_;
 
-    my $archive = $dist->archive( $self->config->root_dir() );
+    my $url = URI->new($dist->source() . '/authors/id/' . $dist->path);
+    my @path_parts = split m{ / }mx, $dist->path();
+    my $archive = file($self->config->root_dir(), qw(authors id), @path_parts);
 
     $self->debug("Skipping $archive: already fetched") and return 0 if -e $archive;
-    $self->fetch(url => $dist->url(), to => $archive)   or return 0;
+    $self->fetch(url => $url, to => $archive)   or return 0;
 
+    $DB::single = 1;
+    $self->repos->db->create_distribution($dist);
     $self->repos->store->add_archive($archive);
 
     return 1;

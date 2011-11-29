@@ -5,7 +5,7 @@ package Pinto::Interface::Authorable;
 use Moose::Role;
 
 use English qw(-no_match_vars);
-use Pinto::Types 0.017 qw(AuthorID);
+use Pinto::Types qw(AuthorID);
 use Pinto::Exceptions qw(throw_fatal);
 
 #------------------------------------------------------------------------------

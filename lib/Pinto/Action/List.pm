@@ -7,7 +7,7 @@ use Moose;
 use Carp qw(croak);
 
 use MooseX::Types::Moose qw(Bool Str);
-use Pinto::Types 0.017 qw(IO);
+use Pinto::Types qw(IO);
 
 use namespace::autoclean;
 
