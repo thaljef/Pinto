@@ -15,7 +15,7 @@ __PACKAGE__->load_namespaces;
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hiBSzrLxcuMQ+7BAWzFFSw
 #-------------------------------------------------------------------------------
 
-# ABSTRACT:
+# ABSTRACT: The DBIx::Class::Schema for Pinto
 
 #-------------------------------------------------------------------------------
 
