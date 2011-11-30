@@ -107,15 +107,6 @@ has basename => (
 );
 
 
-has cleanup => (
-    is        => 'ro',
-    isa       => Bool,
-    key       => 'cleanup',
-    default   => 0,
-    documentation => 'Automatically remove distributions when they become outdated',
-);
-
-
 has devel => (
     is        => 'ro',
     isa       => Bool,

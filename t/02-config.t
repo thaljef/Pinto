@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 14);
+use Test::More (tests => 12);
 use Test::Exception;
 
 use Path::Class;
@@ -21,7 +21,6 @@ use Pinto::Config;
         root_dir  => 'nowhere',
         sources   => 'http://cpan.perl.org',
         store     => 'Pinto::Store',
-        cleanup   => 0,
         noinit    => 0,
         devel     => 0,
     );
@@ -36,7 +35,6 @@ use Pinto::Config;
         root_dir  => 'nowhere',
         sources   => 'http://cpan.pair.com  http://metacpan.org',
         store     => 'Pinto::Store::VCS::Git',
-        cleanup   => 1,
         noinit    => 1,
         devel     => 1,
     );

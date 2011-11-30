@@ -25,7 +25,6 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'cleanup'    => 'Automatically remove distributions when they become outdated' ],
         [ 'devel'      => 'Include development releases in the repository index' ],
         [ 'noinit'     => 'Do not pull/update from VCS before each operation' ],
         [ 'source=s@'  => 'URL of repository for foreign distributions (repeatable)' ],
@@ -93,17 +92,6 @@ None.
 Instructs L<Pinto> to include development releases in the index.  A
 development release is any archive that includes an underscore (_) in
 the last component of the version number.
-
-=item --cleanup
-
-Instructs L<Pinto> to remove outdated distributions from your
-repository when newer ones are added.  In effect, your repository will
-contain only those distributions that have the latest version of any
-given package.
-
-If C<--cleanup> is not set, your repository could significantly grow
-in size over time.  But at any time, you may run the C<clean> command
-to remove outdated distributions.
 
 =item --noinit
 

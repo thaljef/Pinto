@@ -96,12 +96,10 @@ __END__
 
 
 This command deletes any distribution in the repository that is not
-currently listed in the index.  This usually happens automatically,
-unless you've set the C<nocleanup> parameter in your repository
-configuration.  Beware that running the C<clean> command will make it
-impossible to install outdated distributions from your repository, and
-the only way to get them back is to use the C<add> command again (or
-rollback, if using VCS).
+currently listed in the index.  Beware that running the C<clean>
+command will make it impossible to install outdated distributions from
+your repository, and the only way to get them back is to C<add> or
+C<import> them again (or rollback, if using VCS).
 
 =head1 COMMAND ARGUMENTS
 
