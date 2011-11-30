@@ -48,6 +48,8 @@ sub fetch {
     my $url = URI->new($args{url})->canonical();
     my $to  = eval {$args{to}->isa('Path::Class')} ? $args{to} : file($args{to});
 
+    $self->debug("Skipping $url: already fetched to $to") and return 0 if -e $to;
+
     $self->mkpath( $to->parent() );
     my $has_changed = $self->_fetch($url, $to);
 
