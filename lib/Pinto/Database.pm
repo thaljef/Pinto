@@ -91,17 +91,6 @@ sub new_package {
 
 #-------------------------------------------------------------------------------
 
-sub create_distribution {
-    my ($self, $dist_spec) = @_;
-
-    my $attrs = $dist_spec->as_hashref();
-
-    return $self->schema->resultset('Distribution')->create($attrs);
-
-}
-
-#-------------------------------------------------------------------------------
-
 sub insert_distribution {
     my ($self, $dist, @packages) = @_;
 

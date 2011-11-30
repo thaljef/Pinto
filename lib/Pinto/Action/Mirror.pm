@@ -5,11 +5,7 @@ package Pinto::Action::Mirror;
 use Moose;
 
 use URI;
-use Path::Class;
-use MooseX::Types::Moose qw(Bool);
-use Pinto::Types qw(Uri);
-
-use Exception::Class::TryCatch;
+use Try::Tiny;
 
 use namespace::autoclean;
 
@@ -25,18 +21,11 @@ extends 'Pinto::Action';
 #------------------------------------------------------------------------------
 # Moose Attributes
 
-has source => (
-    is       => 'ro',
-    isa      => Uri,
-    required => 1,
-);
-
-
-has soft => (
-   is      => 'ro',
-   isa     => Bool,
-   default => 0,
-);
+# has force => (
+#    is      => 'ro',
+#    isa     => Bool,
+#    default => 0,
+# );
 
 #------------------------------------------------------------------------------
 # Moose Roles
@@ -49,27 +38,22 @@ sub execute {
     my ($self) = @_;
 
     my $count = 0;
-    for my $dist ( $self->repos->cache->contents() ) {
+    for my $dist_spec ( $self->repos->cache->contents() ) {
 
-      my $path = $dist->path();
-      my $where = { path => $path };
-      if ( $self->repos->db->select_distributions( $where )->count() ) {
-          $self->debug("Already have distribution $path.  Skipping it");
-          next;
-      }
+        my $path = $dist_spec->{path};
+        my $where = { path => $path };
+        if ( $self->repos->db->select_distributions( $where )->count() ) {
+            $self->debug("Already have distribution $path.  Skipping it");
+            next;
+        }
 
-      $count += $self->_do_mirror($dist);
+        $count += try   { $self->_do_mirror($dist_spec) }
+                  catch { $self->_handle_error( $_ ) };
 
-#         my $ok = eval { $count += $self->_do_mirror($dist); 1 };
-
-#         if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
-#             $self->add_exception($e);
-#             $self->whine($e);
-#             next;
-#         }
     }
 
     return 0 if not $count;
+
     $self->add_message("Mirrored $count distributions");
 
     return 1;
@@ -78,20 +62,37 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _do_mirror {
-    my ($self, $dist) = @_;
+    my ($self, $dist_spec) = @_;
 
-    my $url = URI->new($dist->source() . '/authors/id/' . $dist->path);
-    my @path_parts = split m{ / }mx, $dist->path();
-    my $archive = file($self->config->root_dir(), qw(authors id), @path_parts);
+    my $url = URI->new($dist_spec->{source} . '/authors/id/' . $dist_spec->{path});
+    my @path_parts = split m{ / }mx, $dist_spec->{path};
+    my $destination = $self->repos->root_dir->file( qw(authors id), @path_parts );
 
-    $self->debug("Skipping $archive: already fetched") and return 0 if -e $archive;
-    $self->fetch(url => $url, to => $archive)   or return 0;
+    $self->fetch(url => $url, to => $destination);
 
-    $DB::single = 1;
-    $self->repos->db->create_distribution($dist);
-    $self->repos->store->add_archive($archive);
+    my $dist = $self->repos->db->new_distribution( %{ $dist_spec } );
+    $self->repos->db->insert_distribution($dist, @{ $dist_spec->{packages} });
+    $self->repos->store->add_archive($destination);
 
     return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub _handle_error {
+    my ($self, $error)  = @_;
+
+    # TODO: Be more selective about which errors we swallow.  Right
+    # now, we swallow any error that came from Pinto.  But all others
+    # are fatal.
+
+    if ( blessed($error) && $error->isa('Pinto::Exception') ) {
+        $self->add_exception($error);
+        $self->whine($error);
+        return 0;
+    }
+
+    $self->fatal($error);
 }
 
 #------------------------------------------------------------------------------
