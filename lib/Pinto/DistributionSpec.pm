@@ -18,7 +18,8 @@ use Pinto::Types qw(Uri);
 has source => (
     is       => 'ro',
     isa      => Uri,
-    required => 1,
+    coerce   => 1,
+    default  => 'LOCAL',
 );
 
 

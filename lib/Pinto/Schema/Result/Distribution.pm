@@ -62,7 +62,7 @@ __PACKAGE__->has_many(
   "packages",
   "Pinto::Schema::Result::Package",
   { "foreign.distribution" => "self.distribution_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 

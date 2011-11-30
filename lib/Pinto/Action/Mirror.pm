@@ -70,8 +70,7 @@ sub _do_mirror {
 
     $self->fetch(url => $url, to => $destination);
 
-    my $dist = $self->repos->db->new_distribution( %{ $dist_spec } );
-    $self->repos->db->insert_distribution($dist, @{ $dist_spec->{packages} });
+    $self->repos->db->insert_distribution($dist_spec);
     $self->repos->store->add_archive($destination);
 
     return 1;

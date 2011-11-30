@@ -6,7 +6,7 @@ use Moose;
 
 use DateTime;
 use Path::Class;
-use Exception::Class::TryCatch;
+use Try::Tiny;
 
 use Pinto::Result;
 
@@ -102,11 +102,13 @@ sub run {
     $self->repos->initialize() unless $self->noinit();
 
     while ( my $action = $self->dequeue() ) {
-        $self->_run_one_action($action);
+        $self->_run_action($action);
     }
 
-    $self->debug('No changes were made') and return $self->_result()
-      unless $self->_result->changes_made();
+    if ( not  $self->_result->changes_made() ) {
+        $self->debug('No changes were made');
+        return $self->_result();
+    }
 
     $self->repos->write_index();
 
@@ -126,26 +128,40 @@ sub run {
 sub message_string {
     my ($self) = @_;
 
-    return join "\n\n", grep { $_ } $self->messages(), "\n";
+    # Setting $/ to empty causes chomp to remove all trailing newlines
+    my @trimmed =  map { local $/ = ''; chomp;  $_ } $self->messages();
+    my $string  = join "\n\n", grep { length } @trimmed, "\n";
+
+    return $string;
 }
 
 #-----------------------------------------------------------------------------
 
-sub _run_one_action {
+sub _run_action {
     my ($self, $action) = @_;
 
-    my $ok = eval { $action->execute() && $self->_result->made_changes(); 1 };
-
-    if ( !$ok && catch my $e, ['Pinto::Exception'] ) {
-        $self->_result->add_exception($e);
-        $self->whine($e);
-        return $self;
-    }
+    try   { $action->execute() && $self->_result->made_changes() }
+    catch { $self->_handle_action_error( $_ ) };
 
     $self->add_message( $action->messages() );
 
     return $self;
 }
+
+#-----------------------------------------------------------------------------
+
+sub _handle_action_error {
+    my ($self, $error) = @_;
+
+    if ( blessed($error) && $error->isa('Pinto::Exception') ) {
+        $self->_result->add_exception($error);
+        $self->whine($error);
+        return $self;
+    }
+
+    $self->fatal($error);
+}
+
 
 #-----------------------------------------------------------------------------
 

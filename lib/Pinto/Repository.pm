@@ -10,6 +10,7 @@ use Path::Class;
 use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
+use Pinto::DistributionSpec;
 use Pinto::Exceptions qw(throw_fatal throw_error);
 use Pinto::Types qw(Dir);
 
@@ -124,7 +125,7 @@ sub add_distribution {
     my $root_dir   = $self->config->root_dir();
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($author);
-    my $path       = $author_dir->file($basename)->as_foreign('Unix');
+    my $path       = $author_dir->file($basename)->as_foreign('Unix')->stringify();
 
     my $where    = {path => $path};
     my $existing = $self->db->select_distributions( $where )->single();
@@ -145,11 +146,11 @@ sub add_distribution {
     my $count = @package_specs;
     $self->info("Adding distribution $path providing $count packages");
 
-    my $dist = $self->db->new_distribution(path => $path);
-    my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
+    my $dist_spec = Pinto::DistributionSpec->new( path     => $path,
+                                                  source   => 'LOCAL',
+                                                  packages => \@package_specs );
 
-    $dist = $self->db->insert_distribution($dist, @packages);
-
+    my $dist = $self->db->insert_distribution($dist_spec);
     $self->store->add_archive( $archive => $dist->archive($root_dir) );
 
     return $dist;
@@ -176,14 +177,33 @@ sub import_distribution {
     my $count = @package_specs;
     $self->info("Importing distribution $url providing $count packages");
 
-    my $dist = $self->db->new_distribution(path => $path, source => $source);
-    my @packages = map { $self->db->new_package(%{$_}) } @package_specs;
+    my $dist_spec = Pinto::DistributionSpec->new( path     => $path,
+                                                  source   => $source,
+                                                  packages => \@package_specs );
 
-    $dist = $self->db->insert_distribution($dist, @packages);
-
+    my $dist = $self->db->insert_distribution( $dist_spec );
     $self->store->add_archive( $archive );
 
     return $dist;
+}
+
+#-------------------------------------------------------------------------------
+
+sub mirror_distribution {
+    my ($self, %args) = @_;
+
+    my $url = $args{url};
+
+    my @path_parts = split m{ / }mx, $url;
+    my $destination = $self->repos->root_dir->file( qw(authors id), @path_parts );
+
+    $self->fetch(url => $url, to => $destination);
+
+    #my $dist = $self->repos->db->new_distribution( %{ $dist_spec } );
+    #$self->repos->db->insert_distribution($dist, @{ $dist_spec->{packages} });
+    #$self->repos->store->add_archive($destination);
+
+    return 1;
 }
 
 #-------------------------------------------------------------------------------

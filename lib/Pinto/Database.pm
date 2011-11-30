@@ -74,56 +74,17 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
-sub new_distribution {
-    my ($self, %attributes) = @_;
-
-    return $self->schema->resultset('Distribution')->new_result(\%attributes);
-
-}
-
-#-------------------------------------------------------------------------------
-
-sub new_package {
-    my ($self, %attributes) = @_;
-
-    return $self->schema->resultset('Package')->new_result(\%attributes);
-}
-
-#-------------------------------------------------------------------------------
-
 sub insert_distribution {
-    my ($self, $dist, @packages) = @_;
+    my ($self, $dist_spec) = @_;
 
-    $self->debug("Inserting distribution $dist into database");
-
-    $self->whine("Developer distribution $dist will not be indexed")
-        if $dist->is_devel() and not $self->config->devel();
+    $self->debug("Inserting distribution $dist_spec into database");
 
     my $txn_guard = $self->schema->txn_scope_guard();
-    $dist->insert();
-
-    for my $pkg ( @packages ) {
-        $pkg->distribution($dist);
-        $self->insert_package($pkg)
-    }
-
+    my $dist = $self->schema->resultset('Distribution')->create( $dist_spec->as_hashref() );
+    $self->_mark_latest_package_with_name($_->name()) for $dist->packages();
     $txn_guard->commit();
 
     return $dist;
-}
-
-#-------------------------------------------------------------------------------
-
-sub insert_package {
-    my ($self, $pkg) = @_;
-
-    $self->debug("Inserting package $pkg into database");
-
-    $pkg->insert();
-
-    $self->_mark_latest_package_with_name( $pkg->name() );
-
-    return $pkg;
 }
 
 #-------------------------------------------------------------------------------
@@ -134,31 +95,30 @@ sub delete_distribution {
     $self->debug("Deleting distribution $dist from database");
 
     my $txn_guard = $self->schema->txn_scope_guard();
-
-    $self->delete_package($_) for $dist->packages();
+    my @packages = $dist->packages();
     $dist->delete();
-
+    $self->_mark_latest_package_with_name($_->name()) for @packages;
     $txn_guard->commit();
 
-    return;
+    return 1;
 }
 
 
-#-------------------------------------------------------------------------------
+# sub delete_distribution {
+#     my ($self, $dist) = @_;
 
-sub delete_package {
-    my ($self, $pkg) = @_;
+#     $self->debug("Deleting distribution $dist from database");
 
-    $self->debug("Deleting package $pkg from database");
+#     my $txn_guard = $self->schema->txn_scope_guard();
 
-    my $name       = $pkg->name();
-    my $was_latest = $pkg->is_latest();
+#     $self->delete_package($_) for $dist->packages();
+#     $dist->delete();
 
-    $pkg->delete();
-    $self->_mark_latest_package_with_name($name) if $was_latest;
+#     $txn_guard->commit();
 
-    return;
-}
+#     return;
+# }
+
 
 #-------------------------------------------------------------------------------
 
