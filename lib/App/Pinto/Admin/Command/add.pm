@@ -146,12 +146,12 @@ The syntax of the NAME depends on the type of VCS you are using.
 Using the 'add' command on a distribution you got from another
 repository (such as CPAN mirror) effectively makes that distribution
 local.  So you become the owner of that distribution, even if the
-repository already contains a copy that was pulled from another
-repository by the 'update' command.
+repository already contains a foreign distribution that was pulled
+from another repository by the C<mirror> or C<import> command.
 
 Local packages are always considered 'later' then any foreign package
 with the same name, even if the foreign package has a higher version
-number.  So a foreign package will not become 'latest' until all
-versions of the local package with that name have been removed.
+number.  This allows you to mask a foreign package with your own
+locally patched version.
 
 =cut

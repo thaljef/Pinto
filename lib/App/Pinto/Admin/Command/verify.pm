@@ -66,7 +66,7 @@ present in that repository (CPAN mirrors are known to do this
 occasionally).
 
 If some foreign distributions are missing from your repository, then
-running a C<update> command will usually fix things.  If local
+running a C<mirror> command will usually fix things.  If local
 distributions are missing, then you need to get a copy of that
 distribution use the C<add> command to put it back in the repository.
 Or, you can just use the C<remove> command to delete the local
