@@ -31,6 +31,12 @@ __END__
   # Add your own distribution to the repository
   pinto-admin --repos=/some/dir add Foo-Bar-1.2.tar.gz
 
+  # Fetch a module and all its dependencies
+  pinto-admin --repos=/some/dir import Plack
+
+  # Fetch the latest version of all modules
+  pinto-admin --repos=/some/dir mirror
+
   # Then install stuff, forcing everything to come from your repository
   cpanm --mirror-only --mirror file:///some/dir Foo::Bar
 
@@ -77,13 +83,14 @@ times for greater effect.
 
 =head1 COMMANDS
 
-L<pinto-admin> supports several commands that perform various operations
-on your repository, or report information about your repository.  To
-get a listing of all the available commands:
+L<pinto-admin> supports several commands that perform various
+operations on your repository, or report information about your
+repository.  To get a listing of all the available commands:
 
   $> pinto-admin commands
 
-Each command has its own options and arguments.  To get a brief summary:
+Each command has its own options and arguments.  To get a brief
+summary:
 
   $> pinto-admin help COMMAND
 
