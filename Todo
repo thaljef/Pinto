@@ -2,11 +2,7 @@
 
 =over 4
 
-=item More resilient version comparison
-
 =item Support dist path and dist URL targets for Import action
-
-=item Get rid of IndexReader class
 
 =item Support --fallback on Package::Locator
 
