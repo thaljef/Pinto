@@ -56,13 +56,13 @@ sub contents {
     for my $index ( $self->locator->indexes() ) {
         for my $dist ( values %{ $index->distributions() } ) {
             next if exists $seen{ $dist->{path} };
+            $dist->{packages} ||= []; # Prevent possible undef
             delete $_->{distribution} for @{ $dist->{packages} };
             $seen{ $dist->{path} } = $dist;
         }
     }
 
-    # TODO: Return hash values sorted by the keys
-    return values %seen;
+    return @seen{ sort keys %seen };
 
 }
 #-------------------------------------------------------------------------------

@@ -70,10 +70,12 @@ sub _do_mirror {
     my $destination = $self->repos->root_dir->file( qw(authors id), @path_parts );
     $self->fetch(from => $url, to => $destination);
 
+    my $pkg_specs = $self->_fix_versions( $dist_spec->{packages} );
+
     my $struct = { path     => $dist_spec->{path},
                    source   => $dist_spec->{source},
                    mtime    => Pinto::Util::mtime($destination),
-                   packages => $dist_spec->{packages} };
+                   packages => $pkg_specs };
 
     $self->repos->add_distribution($struct);
 
@@ -96,6 +98,32 @@ sub _handle_mirror_error {
     }
 
     $self->fatal($error);
+}
+
+#------------------------------------------------------------------------------
+# ARGH!  A handful of arcane packages on CPAN have broken version
+# numbers.  They are probably really old and will never be updated.
+# For the sake of completeness, we don't want to exclude them. But
+# Pinto requires every package to have a sane version number.  So the
+# best we can do is provide a substitute version number.
+
+sub _fix_versions {
+    my ($self, $pkg_specs) = @_;
+
+    my @fixed;
+    for my $pkg_spec ( @{ $pkg_specs || [] } ) {
+
+        my ($pkg_name, $pkg_ver) = ( $pkg_spec->{name}, $pkg_spec->{version} );
+
+        if ( not eval { version->parse( $pkg_ver ); 1} ) {
+            $self->whine("Package $pkg_name-$pkg_ver has invalid version.  Forcing it to 0");
+            $pkg_ver = 0;
+        }
+
+        push @fixed, { name => $pkg_name, version => $pkg_ver };
+    }
+
+    return \@fixed;
 }
 
 #------------------------------------------------------------------------------
