@@ -44,22 +44,6 @@ sub author_dir {                                  ## no critic (ArgUnpacking)
 
 #-------------------------------------------------------------------------------
 
-=func is_url($it)
-
-Returns true if C<$it> is a L<URI> object or looks like a URL string.
-
-=cut
-
-sub is_url {
-    my ($it) = @_;
-
-    return 1 if eval { $it->isa('URI') };
-    return 0 if eval { $it->isa('Path::Class::File') };
-    return $it =~ m/^ (?: http|ftp|file) : /x;
-}
-
-#-------------------------------------------------------------------------------
-
 sub parse_dist_url {
     my ($url, $base_dir) = @_;
 
@@ -161,36 +145,6 @@ sub args_from_fh {
     }
 
     return @args;
-}
-
-#-------------------------------------------------------------------------------
-
-sub numify_version {
-    my ($version) = @_;
-
-    my $numeric_version;
-    try   { $numeric_version = version->parse($version)->numify() }
-    catch { throw_version "Illegal version ($version)" };
-
-    # My perl warns about doing math on an operand that contains
-    # '_', even though that is a perfectly valid value in a
-    # number.  Not sure if other perls have this same problem.
-
-    $numeric_version =~ s{_}{}gx;
-
-    # Adding zero forces numeric context, which gets rid of any
-    # trailing zeros.
-
-    return $numeric_version + 0;
-}
-
-#-------------------------------------------------------------------------------
-
-sub is_devel_version {
-    my ($version) = @_;
-
-    # See CPAN::DistnameInfo for a better regex
-    return $version =~ m/(_|-RC|-TRIAL) \d* $/x;
 }
 
 #-------------------------------------------------------------------------------
