@@ -155,44 +155,77 @@ __END__
 
 =head1 SYNOPSIS
 
-See L<pinto-admin> to create and manage your Pinto repository.
+See L<pinto-admin> to create and manage a Pinto repository.
 
-See L<pinto-server> to allow remote access to your Pinto repository.
+See L<pinto-server> to open remote access to a Pinto repository.
 
 See L<pinto-remote> to interact with a remote Pinto repository.
 
-See L<Pinto::Manual> for detailed information about the Pinto tools.
+See L<Pinto::Manual> for more information about the Pinto tools.
 
 =head1 DESCRIPTION
 
-L<Pinto> is a suite of tools for creating and managing a CPAN-style
-repository of Perl archives.  Pinto is inspired by L<CPAN::Mini> and
-L<CPAN::Mini::Inject>, but adds several novel features:
+L<Pinto> is a suite of tools for creating and managing a CPAN-like
+repository of Perl archives.  Pinto is inspired by L<CPAN::Mini>,
+L<CPAN::Mini::Inject>, and L<MyCPAN::App::DPAN>, but adds a few
+interesting features:
 
 =over 4
 
-=item * Pinto lets you build a repository with only your local archives.
+=item * Pinto supports several usage patterns
 
+With L<Pinto>, you can create a repository to mirror the latest
+distributions from another repository.  Or you can create a "sparse
+repository" with just your own private distributions.  Or you can
+create a "project repository" that has all the distributions required
+for a particular project.  Or you can combine all of the above in some
+way.
 
 =item * Pinto supports adding AND removing archives from the repository.
 
+L<Pinto> gives you the power to precisely tune the contents of your
+repository.  So you can be sure that your downstream clients get
+exactly the stack of dependencies that you want them to have.
 
 =item * Pinto can be integrated with your version control system.
 
+L<Pinto> can automatically commit to your version control system
+whenever the contents of the repository changes.  This gives you
+repeatable and identifiable snapshots of your dependencies, and a
+mechanism for rollback when things go wrong.
 
 =item * Pinto makes it easier to build several local repositories.
 
+Creating new L<Pinto> repositories is easy, and each has its own
+configuration.  So you can have different repositories for each
+department, or each project, or each version of perl, or each
+customer, or whatever you want.
 
 =item * Pinto can pull archives from multiple remote repositories.
 
+L<Pinto> can mirror or import distributions from multiple sources, so
+you can create private (or public) networks of repositories that
+enable separate teams or individuals to collaborate and share
+distributions.
 
-=item * Pinto supports team development (i.e. concurrent users).
+=item * Pinto supports team development.
 
+L<Pinto> is suitable for small to medium-sized development teams,
+where several developers might contribute new distributions at the
+same time.
 
 =item * Pinto has a robust command line interface.
 
+The L<pinto-admin> and L<pinto-remote> command line tools have options
+to control every aspect of your L<Pinto> repository.  They are well
+documented and behave in a DWIM fashion.
 
-=item * Pinto can be extended with new commands.
+=item * Pinto can be extended.
+
+You can extend L<Pinto> by creating L<Pinto::Action> subclasses to
+perform new operations on your repository, such as extracting
+documentation from a distribution, or grepping the source code of
+several distributions.
 
 =back
 
