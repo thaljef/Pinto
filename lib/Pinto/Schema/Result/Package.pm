@@ -135,6 +135,7 @@ __PACKAGE__->belongs_to(
 
 #------------------------------------------------------------------------------
 
+use Carp;
 use String::Format;
 
 use Pinto::Util;
@@ -225,6 +226,9 @@ sub default_format {
 
 sub compare_version {
     my ($pkg_a, $pkg_b) = @_;
+
+    croak "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
+        if $pkg_a->name() ne $pkg_b->name();
 
     my $r =   ( $pkg_a->distribution->is_local() <=> $pkg_b->distribution->is_local() )
            || ( $pkg_a->version()                <=> $pkg_b->version()                )

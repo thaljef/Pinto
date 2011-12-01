@@ -12,6 +12,7 @@ use Try::Tiny;
 use Pinto::PackageExtractor;
 use Pinto::Exceptions qw(throw_error);
 use Pinto::Types qw(Vers);
+use Pinto::Util;
 
 use version;
 use namespace::autoclean;
@@ -111,7 +112,12 @@ sub _find_or_import {
 
     if (my $url = $self->repos->cache->locate( $pkg_name => $pkg_ver ) ) {
         $self->debug("Found $pkg_vname in $url");
-        return if $self->_isa_perl($url);
+
+        if ( Pinto::Util::isa_perl($url) ) {
+            $self->info("Distribution $url is a perl.  Skipping it.");
+            return;
+        }
+
         return $self->_import_distribution($url);
     }
 
@@ -153,9 +159,11 @@ sub _descend_into_prerequisites {
 
       NEW_PREREQ:
         for my $new_prereq ( $self->_extract_prerequisites($required_archive) ) {
-            # Add a prereq to the queue only if greater than the ones we already got
+
+            # Add this prereq to the queue only if greater than the ones we already got
             my $name = $new_prereq->{name};
-            next NEW_PREREQ if exists $done{$name} && ( $new_prereq->{version} <= $done{$name} );
+            next NEW_PREREQ if exists $done{$name}
+                               && $new_prereq->{version} <= $done{$name};
 
             $done{$name} = $new_prereq;
             push @prereq_queue, $new_prereq;
@@ -180,23 +188,6 @@ sub _extract_prerequisites {
                   catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;
-}
-
-#------------------------------------------------------------------------------
-
-sub _isa_perl {
-    my ($self, $url) = @_;
-
-    # TODO: Should we be checking the core list instead?
-    # What should we do if a dist does require a new perl?
-    # Should we ever allow perl itself to be imported?
-
-    if ($url =~ m{ / perl-[\d.]+ \.tar \.gz $ }mx) {
-        $self->debug("$url is a perl.  Skipping it.");
-        return 1;
-    }
-
-    return 0;
 }
 
 #------------------------------------------------------------------------------

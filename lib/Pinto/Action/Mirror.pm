@@ -7,6 +7,8 @@ use Moose;
 use URI;
 use Try::Tiny;
 
+use Pinto::Util;
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -41,9 +43,14 @@ sub execute {
     for my $dist_spec ( $self->repos->cache->contents() ) {
 
         my $path = $dist_spec->{path};
+        if ( Pinto::Util::isa_perl($path) ) {
+            $self->info("Distribution $path is a perl.  Skipping it.");
+            next;
+        }
+
         my $where = { path => $path };
         if ( $self->repos->db->select_distributions( $where )->count() ) {
-            $self->debug("Already have distribution $path.  Skipping it");
+            $self->debug("Already have distribution $path.  Skipping it.");
             next;
         }
 
