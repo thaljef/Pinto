@@ -106,12 +106,12 @@ sub _find_or_import {
     my $got_pkg = $self->repos->select_packages( $where )->single();
 
     if ($got_pkg and $got_pkg->version() >= $pkg_ver) {
-        $self->debug("Already have $pkg_vname or newer as $got_pkg");
+        $self->debug("Already have package $pkg_vname or newer as $got_pkg");
         return $got_pkg->distribution();
     }
 
     if (my $url = $self->repos->cache->locate( $pkg_name => $pkg_ver ) ) {
-        $self->debug("Found $pkg_vname or newer in $url");
+        $self->debug("Found package $pkg_vname or newer in $url");
 
         if ( Pinto::Util::isa_perl($url) ) {
             $self->info("Distribution $url is a perl.  Skipping it.");
