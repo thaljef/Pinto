@@ -5,8 +5,6 @@ package App::Pinto::Admin::Command::clean;
 use strict;
 use warnings;
 
-use IO::Interactive;
-
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -44,9 +42,6 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->prompt_for_confirmation()
-        if IO::Interactive::is_interactive();
-
     $self->pinto->new_batch( %{$opts} );
     $self->pinto->add_action('Clean', %{$opts});
     my $result = $self->pinto->run_actions();
@@ -55,35 +50,6 @@ sub execute {
 }
 
 #------------------------------------------------------------------------------
-
-sub prompt_for_confirmation {
-    my ($self) = @_;
-
-    print <<'END_MESSAGE';
-Cleaning the repository will remove all distributions that are not in
-the current index.  As a result, it will become impossible to install
-older versions of distributions from your repository.
-
-Once cleaned, the only way to get those distributions back in your
-repository is to roll back your VCS (if applicable), or locate the
-original distribution files and use the "add" command to put them
-into to your repository again.
-
-END_MESSAGE
-
-    my $answer = '';
-
-    until ($answer =~ m/^[yn]$/ix) {
-        print "Are you sure you want to proceed? [Y/N]: ";
-        chomp( $answer = uc <STDIN> );
-    }
-
-    exit 0 if $answer eq 'N';
-    return 1;
-}
-
-#------------------------------------------------------------------------------
-
 1;
 
 __END__
@@ -94,12 +60,13 @@ __END__
 
 =head1 DESCRIPTION
 
-
-This command deletes any distribution in the repository that is not
-currently listed in the index.  Beware that running the C<clean>
-command will make it impossible to install outdated distributions from
-your repository, and the only way to get them back is to C<add> or
-C<import> them again (or rollback, if using VCS).
+This command removes any distribution in the repository that is not
+currently listed in the index.  In other words, it removes any
+distribution that doesn't have at least one package that is considered
+to be the latest version of that package.  Beware that running the
+C<clean> command will make it impossible to install outdated
+distributions from your repository, and the only way to get them back
+is to C<add> or C<import> them again (or rollback, if using VCS).
 
 =head1 COMMAND ARGUMENTS
 
@@ -124,11 +91,11 @@ for L<Pinto>.
 =item --nocommit
 
 Prevents L<Pinto> from committing changes in the repository to the VCS
-after the operation.  This is only relevant if you are
-using a VCS-based storage mechanism.  Beware this will leave your
-working copy out of sync with the VCS.  It is up to you to then commit
-or rollback the changes using your VCS tools directly.  Pinto will not
-commit old changes that were left from a previous operation.
+after the operation.  This is only relevant if you are using a
+VCS-based storage mechanism.  Beware this will leave your working copy
+out of sync with the VCS.  It is up to you to then commit or rollback
+the changes using your VCS tools directly.  Pinto will not commit old
+changes that were left from a previous operation.
 
 =item --noinit
 

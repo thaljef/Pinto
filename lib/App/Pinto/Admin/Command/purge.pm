@@ -5,8 +5,6 @@ package App::Pinto::Admin::Command::purge;
 use strict;
 use warnings;
 
-use IO::Interactive;
-
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';
@@ -43,39 +41,11 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->prompt_for_confirmation()
-        if IO::Interactive::is_interactive();
-
     $self->pinto->new_batch( %{$opts} );
     $self->pinto->add_action('Purge');
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub prompt_for_confirmation {
-    my ($self) = @_;
-
-    print <<'END_MESSAGE';
-This will remove all distributions (both foreign and local) from
-your repository.  Assuming you still have (or can produce) the
-archives for you local distributions, you can always add them again.
-But when you use the 'update' command to pull in foreign distributions,
-you may not get the same ones that you had before.
-
-END_MESSAGE
-
-    my $answer = '';
-
-    until ($answer =~ m/^[yn]$/ix) {
-        print "Are you sure you want to proceed? [Y/N]: ";
-        chomp( $answer = uc <STDIN> );
-    }
-
-    exit 0 if $answer eq 'N';
-    return 1;
 }
 
 #------------------------------------------------------------------------------
@@ -90,8 +60,9 @@ __END__
 =head1 DESCRIPTION
 
 This command removes all distributions from the repository.  There is
-no automated way to undo this, so you'll be prompted for confirmation
-before proceeding.
+no automated way to undo this.  But if you are using a VCS-based
+store, you can use VCS commands directly to roll back the state of the
+repository.
 
 =head1 COMMAND ARGUMENTS
 
