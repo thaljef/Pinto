@@ -43,7 +43,7 @@ sub initialize {
 
     $self->debug('Initializing the store');
     my $root_dir = $self->config->root_dir();
-    $self->mkpath($root_dir);
+    $self->mkpath($root_dir); # Why?
 
     return $self;
 }
