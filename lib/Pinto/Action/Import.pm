@@ -111,7 +111,7 @@ sub _find_or_import {
     }
 
     if (my $url = $self->repos->cache->locate( $pkg_name => $pkg_ver ) ) {
-        $self->debug("Found $pkg_vname in $url");
+        $self->debug("Found $pkg_vname or newer in $url");
 
         if ( Pinto::Util::isa_perl($url) ) {
             $self->info("Distribution $url is a perl.  Skipping it.");
@@ -121,7 +121,7 @@ sub _find_or_import {
         return $self->_import_distribution($url);
     }
 
-    $self->whine("Cannot find $pkg_vname anywhere");
+    throw_error "Cannot find $pkg_vname anywhere";
 
     return;
 }
@@ -143,9 +143,10 @@ sub _descend_into_prerequisites {
               $required_dist->archive( $self->config->root_dir() );
         }
         catch {
-             $self->whine("Skipping prerequisite $prereq.  Import failed: $_");
+             my $pretty = "$prereq->{name}-$prereq->{version}";
+             $self->whine("Skipping prerequisite $pretty. $_");
              # Mark the prereq as done so we don't try to import it again
-             $done{ $prereq->name() } = $prereq;
+             $done{ $prereq->{name} } = $prereq;
              undef;  # returned by try{}
         };
 

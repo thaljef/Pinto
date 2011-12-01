@@ -96,7 +96,7 @@ sub is_vcs_file {
 #-------------------------------------------------------------------------------
 
 sub isa_perl {
-    my ($self, $path_or_url) = @_;
+    my ($path_or_url) = @_;
 
     return $path_or_url =~ m{ / perl-[\d.]+ \.tar \.gz $ }mx;
 }

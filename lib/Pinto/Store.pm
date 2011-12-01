@@ -8,7 +8,7 @@ use Try::Tiny;
 use File::Copy;
 use CPAN::Checksums;
 
-use Pinto::Exceptions qw(throw_fatal);
+use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
 
@@ -179,7 +179,7 @@ sub update_checksums {
     $self->debug("Generating $cs_file");
 
     try   { CPAN::Checksums::updatedir($dir) }
-    catch { throw_error("CHECKSUM generation failed for $dir: $_") };
+    catch { throw_error "CHECKSUM generation failed for $dir: $_" };
 
     $self->add_file(file => $cs_file);
 
