@@ -84,53 +84,34 @@ sub tag {
 }
 
 #------------------------------------------------------------------------------
+# TODO: Use named arguments here...
 
 sub add_archive {
 
-    my ($self, @args) = @_;
+    my ($self, $archive_file) = @_;
 
-    my $to   = pop @args;
-    my $from = shift @args;
+    throw_fatal "$archive_file does not exist"
+        if not -e $archive_file;
 
-    throw_fatal "$to does not exist and no source was specified"
-        if not -e $to and not defined $from;
+    throw_fatal "$archive_file is not a file"
+        if not -f $archive_file;
 
-    throw_fatal "$from is not a file"
-        if defined $from and not -f $from;
-
-    if ($from) {
-
-        if ( not -e (my $parent = $to->parent()) ) {
-          $self->mkpath($parent);
-        }
-
-        $self->debug("Copying $from -> $to");
-
-        # NOTE: We have to force stringification of the arguments to
-        # File::Copy, since older versions don't support Path::Class
-        # objects properly.  File::Copy is part of the CORE, and is
-        # not dual-lifed, so upgrading it requires a whole new Perl.
-        # We're going to be kind and accommodate the old versions.
-
-        File::Copy::copy("$from", "$to")
-            or throw_fatal "Failed to copy $from to $to: $!";
-    }
-
-    $self->add_file( file => $to );
-    $self->update_checksums( directory => $to->parent() );
+    $self->add_file( file => $archive_file );
+    $self->update_checksums( directory => $archive_file->parent() );
 
     return $self;
 
 }
 
 #------------------------------------------------------------------------------
+# TODO: Use named arguments here...
 
 sub remove_archive {
-    my ($self, $archive_path) = @_;
+    my ($self, $archive_file) = @_;
 
-    $self->remove_file( file => $archive_path );
+    $self->remove_file( file => $archive_file );
 
-    $self->update_checksums( directory => $archive_path->parent() );
+    $self->update_checksums( directory => $archive_file->parent() );
 
     return $self;
 }
