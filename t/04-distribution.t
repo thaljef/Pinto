@@ -32,7 +32,5 @@ is($dist->source(), 'http://remote', 'Non-local source');
 is($dist->name(), 'Bar', 'dist name');
 is($dist->vname(), 'Bar-4.3_34', 'dist vname');
 is($dist->version(), '4.3_34', 'dist version');
-is($dist->is_local(), q{}, 'is_local is true when origin eq q{LOCAL}');
+is($dist->is_local(), q{}, 'is_local is false when dist is remote');
 is($dist->is_devel(), 1, 'this is a devel dist');
-
-
