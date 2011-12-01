@@ -227,6 +227,9 @@ sub default_format {
 sub compare_version {
     my ($pkg_a, $pkg_b) = @_;
 
+    croak "Can only compare Pinto::Package objects"
+        if __PACKAGE__ ne ref $pkg_a || __PACKAGE__ ne ref $pkg_b;
+
     croak "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name() ne $pkg_b->name();
 
