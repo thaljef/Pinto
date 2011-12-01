@@ -1,0 +1,15 @@
+---
+name: Lettuce
+version: 2.0
+abstract: the Lettuce dist
+author:
+  - SUZY <SUZY@cpan.local>
+generated_by: Module::Faker version 
+license: unknown
+meta-spec: 
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+  version: 1.3
+provides:
+  Lettuce:
+    file: lib/Letuce.pm
+    version: 2.0  
