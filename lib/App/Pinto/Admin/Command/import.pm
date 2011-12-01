@@ -75,6 +75,8 @@ sub execute {
 
 __END__
 
+=for stopwords norecurse
+
 =head1 SYNOPSIS
 
   pinto-admin --repos=/some/dir import [OPTIONS] PACKAGE_NAME ...
@@ -94,6 +96,13 @@ packages that are available available on the remote repositories.  At
 present, Pinto takes the *first* package it can find that satisfies
 the prerequisite.  In the future, you may be able to direct Pinto to
 instead choose the *latest* package that satisfies the prerequisite.
+
+Imported distributions will be assigned to their original author
+(compare this to the C<add> command which makes B<you> the author of
+the distribution).  Also, packages provided by imported distributions
+are still considered foreign, so locally added packages will always
+override ones that you imported, even if the imported package has a
+higher version.
 
 =head1 COMMAND ARGUMENTS
 
@@ -154,14 +163,5 @@ This is only relevant if you are using a VCS-based storage mechanism.
 The syntax of the NAME depends on the type of VCS you are using.
 
 =back
-
-=head1 DISCUSSION
-
-Imported distributions will be assigned to their original author
-(comapre this to the C<add> command which makes B<you> the author of
-the distribution).  Also, packages provided by imported distributions
-are still considered foreign, so locally added packages will always
-override ones that you imported, even if the imported package has a
-higher version.
 
 =cut

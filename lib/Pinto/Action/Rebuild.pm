@@ -41,12 +41,14 @@ sub execute {
 sub _recompute {
     my ($self) = @_;
 
+    # Gotta be a better way to to do this...
     my $attrs   = {select => ['name'], distinct => 1};
     my $cursor  = $self->repos->db->select_packages(undef, $attrs)->cursor();
 
     while (my ($name) = $cursor->next()) {
-        # HACK: calling a private method here!
-        $self->repos->db->_mark_latest_package_with_name( $name );
+        my $where = { name => $name };
+        my $pkg = $self->repos->select_package( $where )->first();
+        $self->repos->db->_mark_latest( $name );  ## no critic qw(Private)
     }
 
     $self->add_message('Recalculated the latest version of all packages');

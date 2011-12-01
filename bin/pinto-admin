@@ -65,7 +65,7 @@ Do not colorize diagnostic messages according to severity.
 
 =item --quiet | -q
 
-Report only fatal errors.  This option siletly overrides the
+Report only fatal errors.  This option silently overrides the
 C<--verbose> options.
 
 =item --verbose | -v
@@ -98,11 +98,10 @@ configuration file named F<pinto.ini>.  This file will be generated
 for you whenever you create a new repository.  Thereafter, it is up to
 you to manually adjust the configuration file as you see fit.
 
-The configuration file is in the typical INI format.  Parameters are
-C<NAME = VALUE> pairs.  Global parameters (which are all the ones
-described below) are at the top of the file. Blank lines are ignored,
-leading and trailing whitespace is discarded.  Comments start with a
-semi-colon (;).
+The configuration file is in the typical INI-file format.  Parameters
+are C<NAME = VALUE> pairs.  Blank lines are ignored, leading and
+trailing whitespace is discarded.  Comments start with a semi-colon
+(;).
 
 =over 4
 
@@ -115,7 +114,7 @@ index.  Defaults to 0.
 
 =item sources = URL [ URL URL ... ]
 
-A space-delimted list of the URLs of the repositories that L<Pinto>
+A space-delimited list of the URLs of the repositories that L<Pinto>
 will pull foreign distributions from.  These could be public CPAN
 mirrors, a private L<CPAN::Mini> mirror, or other Pinto repositories.
 Defaults to L<http://cpan.perl.org>.

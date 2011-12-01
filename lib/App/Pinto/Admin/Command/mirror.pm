@@ -56,6 +56,8 @@ sub execute {
 
 __END__
 
+=for stopwords MacBook
+
 =head1 SYNOPSIS
 
   pinto-admin --repos=/some/dir mirror [OPTIONS]
@@ -125,7 +127,7 @@ The syntax of the NAME depends on the type of VCS you are using.
 
 =back
 
-=head NOTES
+=head1 NOTES
 
 The first time you pull from a CPAN mirror, it will take a few hours
 to download and process all the distributions (over 25,000 of them).

@@ -128,11 +128,7 @@ sub run {
 sub message_string {
     my ($self) = @_;
 
-    # Setting $/ to empty causes chomp to remove all trailing newlines
-    my @trimmed =  map { local $/ = ''; chomp;  $_ } $self->messages();
-    my $string  = join "\n\n", grep { length } @trimmed, "\n";
-
-    return $string;
+    return join "\n\n", grep { length } $self->messages(), "\n";
 }
 
 #-----------------------------------------------------------------------------
@@ -160,6 +156,8 @@ sub _handle_action_error {
     }
 
     $self->fatal($error);
+
+    return $self;  # Should never get here
 }
 
 

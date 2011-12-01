@@ -50,7 +50,6 @@ represents one.
 sub fetch {
     my ($self, %args) = @_;
 
-    $DB::single = 1;
     my $from     = $args{from};
     my $from_uri = _make_uri($from);
     my $to       = eval {$args{to}->isa('Path::Class')} ? $args{to} : file($args{to});

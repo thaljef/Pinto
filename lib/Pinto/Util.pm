@@ -63,9 +63,9 @@ sub is_url {
 sub parse_dist_url {
     my ($url, $base_dir) = @_;
 
-    my $path   = $url->path(); # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
+    my $path = $url->path();  # '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
 
-    $path =~ s{^ (.*) /authors/id/(.*) $}{$2}mx   # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
+    $path =~ s{^ (.*) /authors/id/(.*) $}{$2}mx       # 'A/AU/AUTHOR/Foo-1.2.tar.gz'
         or throw_error 'Unable to parse url: $url';
 
     my $source     = $url->isa('URI::file') ? $1 : $url->authority();

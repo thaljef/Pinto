@@ -105,6 +105,8 @@ sub _handle_mirror_error {
     }
 
     $self->fatal($error);
+
+    return;  # should never get here;
 }
 
 #------------------------------------------------------------------------------
