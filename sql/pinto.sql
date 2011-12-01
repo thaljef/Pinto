@@ -1,7 +1,8 @@
 CREATE TABLE distribution (
        distribution_id INTEGER PRIMARY KEY NOT NULL,
        path TEXT NOT NULL,
-       source TEXT NOT NULL
+       source TEXT NOT NULL,
+       mtime INTEGER NOT NULL
 );
 
 

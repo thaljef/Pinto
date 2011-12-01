@@ -32,26 +32,33 @@ with qw( Pinto::Role::PathMaker
 
 #------------------------------------------------------------------------------
 
-=method fetch(url => 'http://someplace' to => 'some/path')
+=method fetch(from => 'http://someplace' to => 'some/path')
 
-Fetches the file located at the C<url> to the file located at C<to>,
-if the file at C<url> is newer than the file at C<to>.  If the
+Fetches the file located at C<from> to the file located at C<to>, if
+the file at C<from> is newer than the file at C<to>.  If the
 intervening directories do not exist, they will be created for you.
 Returns a true value if the file has changed, returns false if it has
 not changed.  Throws and exception if anything goes wrong.
+
+The C<to> argument can be either a L<URI> or L<Path::Class::File>
+object, or a string that represents either of those.  The C<from>
+attribute can be a L<Path::Class::File> object or a string that
+represents one.
 
 =cut
 
 sub fetch {
     my ($self, %args) = @_;
 
-    my $url = URI->new($args{url})->canonical();
-    my $to  = eval {$args{to}->isa('Path::Class')} ? $args{to} : file($args{to});
+    $DB::single = 1;
+    my $from     = $args{from};
+    my $from_uri = _make_uri($from);
+    my $to       = eval {$args{to}->isa('Path::Class')} ? $args{to} : file($args{to});
 
-    $self->debug("Skipping $url: already fetched to $to") and return 0 if -e $to;
+    $self->debug("Skipping $from: already fetched to $to") and return 0 if -e $to;
 
     $self->mkpath( $to->parent() );
-    my $has_changed = $self->_fetch($url, $to);
+    my $has_changed = $self->_fetch($from_uri, $to);
 
     return $has_changed;
 }
@@ -118,6 +125,23 @@ sub _build_ua {
                                   keep_alive => 5 );
 
     return $ua;
+}
+
+#------------------------------------------------------------------------------
+
+sub _make_uri {
+    my ($it) = @_;
+
+    return $it
+        if eval { $it->isa('URI') };
+
+    return URI::file->new( $it->absolute() )
+        if eval { $it->isa('Path::Class::File') };
+
+    return URI::file->new( file($it)->absolute() )
+        if -e $it;
+
+    return URI->new($it);
 }
 
 #------------------------------------------------------------------------------

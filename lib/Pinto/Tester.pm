@@ -192,8 +192,7 @@ sub package_loaded_ok {
     my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
     return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
 
-    $self->tb->ok(1, "$pkg_name -- $dist_path is loaded");
-    $self->tb->is_eq($pkg->author(), $author,  "$pkg_name has correct author");
+    $self->tb->ok(1, "$pkg is loaded");
     $self->tb->is_eq($pkg->version(), $version, "$pkg_name has correct version");
     return 1;
 }

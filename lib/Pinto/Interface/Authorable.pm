@@ -4,7 +4,6 @@ package Pinto::Interface::Authorable;
 
 use Moose::Role;
 
-use English qw(-no_match_vars);
 use Pinto::Types qw(AuthorID);
 use Pinto::Exceptions qw(throw_fatal);
 
@@ -31,7 +30,7 @@ sub _build_author {                                  ## no critic (FinalReturn)
     }
 
     # Try using pwent.  Probably only works on *nix
-    if (my $name = getpwuid($REAL_USER_ID)) {
+    if (my $name = getpwuid($<)) {
         return uc $name;
     }
 

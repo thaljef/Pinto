@@ -9,7 +9,8 @@ use MooseX::Types::Moose qw(Str Bool);
 
 use Try::Tiny;
 
-use Pinto::PackageSpec;
+use Pinto::PackageExtractor;
+use Pinto::Exceptions qw(throw_error);
 use Pinto::Types qw(Vers);
 
 use version;
@@ -48,6 +49,28 @@ has norecurse => (
    default => 0,
 );
 
+
+has package_extractor => (
+    is         => 'ro',
+    isa        => 'Pinto::PackageExtractor',
+    lazy_build => 1,
+);
+
+#------------------------------------------------------------------------------
+# Roles
+
+with qw( Pinto::Role::FileFetcher );
+
+#------------------------------------------------------------------------------
+# Builders
+
+sub _build_package_extractor {
+    my ($self) = @_;
+
+    return Pinto::PackageExtractor->new( config => $self->config(),
+                                         logger => $self->logger() );
+}
+
 #------------------------------------------------------------------------------
 
 # TODO: Allow the import target to be specified as a package/version,
@@ -58,8 +81,8 @@ has norecurse => (
 sub execute {
     my ($self) = @_;
 
-    my $wanted = Pinto::PackageSpec->new( name    => $self->package_name(),
-                                          version => $self->minimum_version() );
+    my $wanted = { name    => $self->package_name(),
+                   version => $self->minimum_version() };
 
     my $dist = $self->_find_or_import( $wanted );
     return 0 if not $dist;
@@ -75,21 +98,24 @@ sub execute {
 sub _find_or_import {
     my ($self, $pkg_spec) = @_;
 
-    my $where   = {name => $pkg_spec->name(), is_latest => 1};
-    my $got_pkg = $self->repos->db->select_packages( $where )->single();
+    my ($pkg_name, $pkg_ver) = ($pkg_spec->{name}, $pkg_spec->{version});
+    my $pkg_vname = "$pkg_name-$pkg_ver";
 
-    if ($got_pkg and $pkg_spec <= $got_pkg) {
-        $self->debug("Already have $pkg_spec or newer as $got_pkg");
+    my $where   = {name => $pkg_name, is_latest => 1};
+    my $got_pkg = $self->repos->select_packages( $where )->single();
+
+    if ($got_pkg and $got_pkg >= $pkg_ver) {
+        $self->debug("Already have $pkg_vname or newer as $got_pkg");
         return $got_pkg->distribution();
     }
 
-    if (my $url = $self->repos->locate_remotely( $pkg_spec ) ) {
-        $self->debug("Found $pkg_spec in $url");
+    if (my $url = $self->repos->cache->locate( $pkg_name => $pkg_ver ) ) {
+        $self->debug("Found $pkg_vname in $url");
         return if $self->_isa_perl($url);
-        return $self->repos->import_distribution( url => $url );
+        return $self->_import_distribution($url);
     }
 
-    $self->whine("Cannot find $pkg_spec anywhere");
+    $self->whine("Cannot find $pkg_vname anywhere");
 
     return;
 }
@@ -150,7 +176,7 @@ sub _extract_prerequisites {
     # caller should just go on to the next archive.  The user will have
     # to figure out the prerequisites by other means.
 
-    my @prereqs = try   { $self->repos->package_extractor->requires( archive => $archive ) }
+    my @prereqs = try   { $self->package_extractor->requires( archive => $archive ) }
                   catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;
@@ -173,6 +199,32 @@ sub _isa_perl {
     return 0;
 }
 
+#------------------------------------------------------------------------------
+
+sub _import_distribution {
+    my ($self, $url) = @_;
+
+    my ($source, $path, $author, $destination) =
+        Pinto::Util::parse_dist_url( $url, $self->config->root_dir() );
+
+    my $where    = {path => $path};
+    my $existing = $self->repos->select_distributions( $where )->single();
+    throw_error "Distribution $path already exists" if $existing;
+
+    $self->fetch(from => $url, to => $destination);
+
+    my @pkg_specs = $self->package_extractor->provides(archive => $destination);
+    $self->info(sprintf "Importing distribution $url providing %d packages", scalar @pkg_specs);
+
+    my $struct = { path     => $path,
+                   source   => $source,
+                   mtime    => Pinto::Util::mtime($destination),
+                   packages => \@pkg_specs };
+
+    my $dist = $self->repos->add_distribution($struct);
+
+    return $dist;
+}
 #------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable();

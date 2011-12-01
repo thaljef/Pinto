@@ -48,7 +48,7 @@ sub execute {
         }
 
         $count += try   { $self->_do_mirror($dist_spec) }
-                  catch { $self->_handle_error( $_ ) };
+                  catch { $self->_handle_mirror_error($_) };
 
     }
 
@@ -66,19 +66,23 @@ sub _do_mirror {
 
     my $url = URI->new($dist_spec->{source} . '/authors/id/' . $dist_spec->{path});
     my @path_parts = split m{ / }mx, $dist_spec->{path};
+
     my $destination = $self->repos->root_dir->file( qw(authors id), @path_parts );
+    $self->fetch(from => $url, to => $destination);
 
-    $self->fetch(url => $url, to => $destination);
+    my $struct = { path     => $dist_spec->{path},
+                   source   => $dist_spec->{source},
+                   mtime    => Pinto::Util::mtime($destination),
+                   packages => $dist_spec->{packages} };
 
-    $self->repos->db->insert_distribution($dist_spec);
-    $self->repos->store->add_archive($destination);
+    $self->repos->add_distribution($struct);
 
     return 1;
 }
 
 #------------------------------------------------------------------------------
 
-sub _handle_error {
+sub _handle_mirror_error {
     my ($self, $error)  = @_;
 
     # TODO: Be more selective about which errors we swallow.  Right

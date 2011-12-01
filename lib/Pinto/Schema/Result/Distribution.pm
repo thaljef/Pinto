@@ -1,17 +1,21 @@
+use utf8;
 package Pinto::Schema::Result::Distribution;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
+
+=head1 NAME
+
+Pinto::Schema::Result::Distribution
+
+=cut
 
 use strict;
 use warnings;
 
 use base 'DBIx::Class::Core';
 
-
-=head1 NAME
-
-Pinto::Schema::Result::Distribution
+=head1 TABLE: C<distribution>
 
 =cut
 
@@ -35,6 +39,11 @@ __PACKAGE__->table("distribution");
   data_type: 'text'
   is_nullable: 0
 
+=head2 mtime
+
+  data_type: 'integer'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -44,8 +53,34 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "source",
   { data_type => "text", is_nullable => 0 },
+  "mtime",
+  { data_type => "integer", is_nullable => 0 },
 );
+
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</distribution_id>
+
+=back
+
+=cut
+
 __PACKAGE__->set_primary_key("distribution_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<path_unique>
+
+=over 4
+
+=item * L</path>
+
+=back
+
+=cut
+
 __PACKAGE__->add_unique_constraint("path_unique", ["path"]);
 
 =head1 RELATIONS
@@ -66,8 +101,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-11-26 20:10:00
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xfkXV0aoy6Z9yxR9kN9p/Q
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-11-30 13:16:11
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:A9/6kPtFOxbhExC2ncsT5Q
 
 #-------------------------------------------------------------------------------
 
@@ -83,9 +118,7 @@ use String::Format;
 use Pinto::Util;
 use Pinto::Exceptions qw(throw_error);
 
-use overload ( '""'     => 'to_string',
-               '<=>'    => 'compare_version',
-               fallback => undef );
+use overload ( '""' => 'to_string' );
 
 #------------------------------------------------------------------------------
 
@@ -124,15 +157,6 @@ sub version {
     my ($self) = @_;
 
     return $self->_distname_info->version();
-}
-
-#------------------------------------------------------------------------------
-
-sub version_numeric {
-    my ($self) = @_;
-
-    return $self->{__version_numeric__} ||=
-        Pinto::Util::numify_version( $self->version() );
 }
 
 #------------------------------------------------------------------------------
@@ -214,7 +238,6 @@ sub to_formatted_string {
          'd' => sub { $self->name()                           },
          'D' => sub { $self->vname()                          },
          'w' => sub { $self->version()                        },
-         'W' => sub { $self->version_numeric()                },
          'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
          'p' => sub { $self->path()                           },
          'P' => sub { $self->archive()                        },
@@ -235,24 +258,6 @@ sub default_format {
     my ($self) = @_;
 
     return '%p',
-}
-
-#------------------------------------------------------------------------------
-
-sub compare_version {
-    my ($dist_a, $dist_b) = @_;
-
-    throw_error "Cannot compare distributions with different names: $dist_a <=> $dist_b"
-        if $dist_a->name() ne $dist_b->name();
-
-    my $r =   ( $dist_a->is_local()         <=> $dist_b->is_local()        )
-           || ( $dist_a->version_numeric()  <=> $dist_b->version_numeric() );
-
-    # No two dists can be considered equal
-    throw_error "Unable to determine ordering: $dist_a <=> $dist_b" if not $r;
-
-    return $r;
-
 }
 
 #------------------------------------------------------------------------------

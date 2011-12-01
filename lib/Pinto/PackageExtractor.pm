@@ -8,7 +8,6 @@ use Try::Tiny;
 use Dist::Requires;
 use Dist::Metadata 0.922;
 
-use Pinto::PackageSpec;
 use Pinto::Exceptions qw(throw_error);
 
 use namespace::autoclean;
@@ -29,16 +28,19 @@ sub provides {
 
     # Must stringify, cuz D::M doesn't like Path::Class objects
     my $archive = $args{archive}->stringify();
-    $self->debug("Extracting packages from $archive");
+    $self->debug("Extracting packages from archive $archive");
 
     my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
                    catch { throw_error "Unable to extract packages from $archive: $_" };
 
-    my @provides = map { Pinto::PackageSpec->new(name => $_, version => $provides->{$_}) } 
-        keys %{ $provides };
+    my @provides;
+    for my $pkg_name ( sort keys %{ $provides } ) {
+        my $pkg_ver = $provides->{$pkg_name};
+        $self->debug("Archive $archive provides: $pkg_name-$pkg_ver");
+        push @provides, {name => $pkg_name, version => $pkg_ver};
+    }
 
-    $self->debug("Archive $archive provides: " . join ' ', @provides);
-
+    $self->whine("$archive contains no packages") if not @provides;
     return @provides;
 }
 
@@ -53,10 +55,12 @@ sub requires {
     my %prereqs =   try { Dist::Requires->new()->requires(dist => $archive)               }
                   catch { throw_error "Unable to extract prerequisites from $archive: $_" };
 
-    my @prereqs = map { Pinto::PackageSpec->new(name => $_, version => $prereqs{$_}) } 
-        keys %prereqs;
-
-    $self->debug("Archive $archive requires: " . join ' ', @prereqs);
+    my @prereqs;
+    for my $pkg_name ( sort keys %prereqs ) {
+        my $pkg_ver = $prereqs{$pkg_name};
+        $self->debug("Archive $archive requires: $pkg_name-$pkg_ver");
+        push @prereqs, {name => $pkg_name, version => $pkg_ver};
+    }
 
     return @prereqs;
 }

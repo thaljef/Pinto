@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use version;
 
+use Carp;
 use Try::Tiny;
 use Path::Class;
 use Readonly;
@@ -90,6 +91,17 @@ sub is_vcs_file {
     $file = file($file) unless eval { $file->isa('Path::Class::File') };
 
     return exists $VCS_FILES{ $file->basename() };
+}
+
+#-------------------------------------------------------------------------------
+
+sub mtime {
+    my ($file) = @_;
+
+    croak 'Must supply a file' if not $file;
+    croak "$file does not exist" if not -e $file;
+
+    return (stat $file)[9];
 }
 
 #-------------------------------------------------------------------------------

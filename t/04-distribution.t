@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 18);
+use Test::More (tests => 16);
 
 use Path::Class;
 
@@ -17,7 +17,6 @@ is($dist->source(), 'LOCAL', 'Source defaults to q{LOCAL}');
 is($dist->name(), 'Bar', 'dist name');
 is($dist->vname(), 'Bar-1.2', 'dist name');
 is($dist->version(), '1.2', 'dist version');
-is($dist->version_numeric(), '1.2', 'dist version_numeric');
 is($dist->is_local(), 1, 'is_local is true when origin eq q{LOCAL}');
 is($dist->is_devel(), q{}, 'this is not a devel dist');
 is($dist->path(), 'F/FO/FOO/Bar-1.2.tar.gz', 'Logical dist path');
@@ -33,7 +32,6 @@ is($dist->source(), 'http://remote', 'Non-local source');
 is($dist->name(), 'Bar', 'dist name');
 is($dist->vname(), 'Bar-4.3_34', 'dist vname');
 is($dist->version(), '4.3_34', 'dist version');
-is($dist->version_numeric(), 4.334, 'dist version_numeric');
 is($dist->is_local(), q{}, 'is_local is true when origin eq q{LOCAL}');
 is($dist->is_devel(), 1, 'this is a devel dist');
 

@@ -1,17 +1,21 @@
+use utf8;
 package Pinto::Schema::Result::Package;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
+
+=head1 NAME
+
+Pinto::Schema::Result::Package
+
+=cut
 
 use strict;
 use warnings;
 
 use base 'DBIx::Class::Core';
 
-
-=head1 NAME
-
-Pinto::Schema::Result::Package
+=head1 TABLE: C<package>
 
 =cut
 
@@ -38,7 +42,7 @@ __PACKAGE__->table("package");
 =head2 is_latest
 
   data_type: 'boolean'
-  default_value: NULL
+  default_value: null
   is_nullable: 1
 
 =head2 distribution
@@ -57,13 +61,52 @@ __PACKAGE__->add_columns(
   "version",
   { data_type => "text", is_nullable => 0 },
   "is_latest",
-  { data_type => "boolean", default_value => \"NULL", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"null", is_nullable => 1 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
+
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</package_id>
+
+=back
+
+=cut
+
 __PACKAGE__->set_primary_key("package_id");
-__PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<name_distribution_unique>
+
+=over 4
+
+=item * L</name>
+
+=item * L</distribution>
+
+=back
+
+=cut
+
 __PACKAGE__->add_unique_constraint("name_distribution_unique", ["name", "distribution"]);
+
+=head2 C<name_is_latest_unique>
+
+=over 4
+
+=item * L</name>
+
+=item * L</is_latest>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
 
 =head1 RELATIONS
 
@@ -83,8 +126,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07010 @ 2011-09-25 13:47:31
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZgkSh8Qg5GKkwz+GFULT8A
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-11-30 13:16:11
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6f7L4ua8o3VAsv189eFVZQ
 
 #------------------------------------------------------------------------------
 
@@ -126,42 +169,10 @@ sub vname {
 
 #------------------------------------------------------------------------------
 
-sub author {
-    my ($self) = @_;
-
-    return $self->distribution->author();
-}
-
-#------------------------------------------------------------------------------
-
-sub is_local {
-    my ($self) = @_;
-
-    return $self->distribution->is_local();
-}
-
-#------------------------------------------------------------------------------
-
-sub is_devel {
-    my ($self) = @_;
-
-    return $self->distribution->is_devel();
-}
-
-#------------------------------------------------------------------------------
-
 sub index_status {
     my ($self) = @_;
 
     return $self->is_latest() ? '*' : ' ';
-}
-
-#------------------------------------------------------------------------------
-
-sub path {
-    my ($self) = @_;
-
-    return $self->distribution->path();
 }
 
 #------------------------------------------------------------------------------
@@ -178,7 +189,7 @@ sub version_numeric {
 sub to_string {
     my ($self) = @_;
 
-    return $self->distribution->vname() . '/' . $self->vname();
+    return $self->distribution->path() . '~' . $self->vname();
 }
 
 #------------------------------------------------------------------------------
@@ -187,23 +198,22 @@ sub to_formatted_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-         'n' => sub { $self->name()                           },
-         'N' => sub { $self->vname()                          },
-         'v' => sub { $self->version()                        },
-         'V' => sub { $self->version_numeric()                },
-         'm' => sub { $self->is_devel()   ? 'D' : 'R'         },
-         'x' => sub { $self->index_status()                   },
-         'p' => sub { $self->distribution->path()             },
-         'P' => sub { $self->distribution->archive()          },
-         's' => sub { $self->is_local()   ? 'L' : 'F'         },
-         'S' => sub { $self->distribution->source()           },
-         'a' => sub { $self->author()                         },
- #TODO:  'b' => sub { $self->is_blocked() ? 'B' : ' '         },
-         'd' => sub { $self->distribution->name()             },
-         'D' => sub { $self->distribution->vname()            },
-         'w' => sub { $self->distribution->version()          },
-         'W' => sub { $self->distribution->version_numeric()  },
-         'u' => sub { $self->distribution->url()              },
+         'n' => sub { $self->name()                                   },
+         'N' => sub { $self->vname()                                  },
+         'v' => sub { $self->version()                                },
+         'V' => sub { $self->version_numeric()                        },
+         'x' => sub { $self->index_status()                           },
+         'm' => sub { $self->distribution->is_devel()   ? 'D' : 'R'   },
+         'p' => sub { $self->distribution->path()                     },
+         'P' => sub { $self->distribution->archive()                  },
+         's' => sub { $self->distribution->is_local()   ? 'L' : 'F'   },
+         'S' => sub { $self->distribution->source()                   },
+         'a' => sub { $self->distribution->author()                   },
+ #TODO:  'b' => sub { $self->is_blocked() ? 'B' : ' '                     },
+         'd' => sub { $self->distribution->name()                     },
+         'D' => sub { $self->distribution->vname()                    },
+         'w' => sub { $self->distribution->version()                  },
+         'u' => sub { $self->distribution->url()                      },
     );
 
     $format ||= $self->default_format();
@@ -230,9 +240,9 @@ sub compare_version {
     throw_error "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name() ne $pkg_b->name();
 
-    my $r =   ( $pkg_a->is_local()          <=> $pkg_b->is_local()          )
-           || ( $pkg_a->version_numeric()   <=> $pkg_b->version_numeric()   )
-           || ( $pkg_a->distribution()      <=> $pkg_b->distribution()      );
+    my $r =   ( $pkg_a->distribution->is_local() <=> $pkg_b->distribution->is_local() )
+           || ( $pkg_a->version_numeric()        <=> $pkg_b->version_numeric()        )
+           || ( $pkg_a->distribution->mtime()    <=> $pkg_b->distribution->mtime()    );
 
     # No two packages can be considered equal!
     throw_error "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;

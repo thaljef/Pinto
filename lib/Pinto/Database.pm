@@ -74,17 +74,30 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
+sub new_distribution {
+    my ($self, $dist_attrs) = @_;
+
+    return $self->schema->resultset('Distribution')->new_result($dist_attrs);
+}
+
+#-------------------------------------------------------------------------------
+
 sub insert_distribution {
-    my ($self, $dist_spec) = @_;
+    my ($self, $dist) = @_;
 
-    $self->debug("Inserting distribution $dist_spec into database");
+    $self->debug("Inserting distribution $dist into database");
 
-    my $txn_guard = $self->schema->txn_scope_guard();
-    my $dist = $self->schema->resultset('Distribution')->create( $dist_spec->as_hashref() );
-    $self->_mark_latest_package_with_name($_->name()) for $dist->packages();
-    $txn_guard->commit();
+    $self->whine("Developer distribution $dist will not be indexed")
+        if $dist->is_devel() and not $self->config->devel();
 
-    return $dist;
+    my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
+
+    $dist->insert();
+    $self->_mark_latest($_) for $dist->packages();
+
+    $txn_guard->commit(); #END transaction
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -92,13 +105,19 @@ sub insert_distribution {
 sub delete_distribution {
     my ($self, $dist) = @_;
 
+
     $self->debug("Deleting distribution $dist from database");
 
-    my $txn_guard = $self->schema->txn_scope_guard();
+    my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
+
+    # NOTE: must fetch the packages before we delete the dist,
+    # otherwise they won't be there any more!
     my @packages = $dist->packages();
+
     $dist->delete();
-    $self->_mark_latest_package_with_name($_->name()) for @packages;
-    $txn_guard->commit();
+    $self->_mark_latest($_) for @packages;
+
+    $txn_guard->commit(); # END transaction
 
     return 1;
 }
@@ -122,11 +141,12 @@ sub delete_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub _mark_latest_package_with_name {
-    my ($self, $pkg_name) = @_;
+sub _mark_latest {
+    my ($self, $pkg) = @_;
 
-    my @sisters  = $self->select_packages( {name => $pkg_name} )->all();
-    @sisters = grep { not $_->is_devel() } @sisters unless $self->config->devel();
+    my $where = { name => $pkg->name() };
+    my @sisters  = $self->select_packages( $where )->all();
+    @sisters = grep { not $_->distribution->is_devel() } @sisters unless $self->config->devel();
     return $self if not @sisters;
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
@@ -134,8 +154,8 @@ sub _mark_latest_package_with_name {
     # If the latest package is already marked as latest, then we can bail
     return $self if $latest->is_latest();
 
-    # Mark older packages as 'undef' first, to prevent contraint violation.
-    # The schema only allows one package to be marked latest at a time.
+    # Mark older packages as 'undef' first, to prevent constraint violation.
+    # The schema only permits one package to be marked as latest at a time.
     $_->is_latest(undef) for @older;
     $_->update() for @older;
 

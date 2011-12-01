@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 27);
+use Test::More (tests => 25);
 
 use Path::Class;
 use FindBin qw($Bin);
