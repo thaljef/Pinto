@@ -104,7 +104,7 @@ sub _find_or_import {
     my $where   = {name => $pkg_name, is_latest => 1};
     my $got_pkg = $self->repos->select_packages( $where )->single();
 
-    if ($got_pkg and $got_pkg >= $pkg_ver) {
+    if ($got_pkg and $got_pkg->version() >= $pkg_ver) {
         $self->debug("Already have $pkg_vname or newer as $got_pkg");
         return $got_pkg->distribution();
     }
@@ -154,8 +154,8 @@ sub _descend_into_prerequisites {
       NEW_PREREQ:
         for my $new_prereq ( $self->_extract_prerequisites($required_archive) ) {
             # Add a prereq to the queue only if greater than the ones we already got
-            my $name = $new_prereq->name();
-            next NEW_PREREQ if exists $done{$name} && ( $new_prereq <= $done{$name} );
+            my $name = $new_prereq->{name};
+            next NEW_PREREQ if exists $done{$name} && ( $new_prereq->{version} <= $done{$name} );
 
             $done{$name} = $new_prereq;
             push @prereq_queue, $new_prereq;

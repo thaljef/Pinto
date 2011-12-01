@@ -10,6 +10,7 @@ use Dist::Metadata 0.922;
 
 use Pinto::Exceptions qw(throw_error);
 
+use version;
 use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ sub provides {
 
     my @provides;
     for my $pkg_name ( sort keys %{ $provides } ) {
-        my $pkg_ver = $provides->{$pkg_name};
+        my $pkg_ver = version->parse( $provides->{$pkg_name} );
         $self->debug("Archive $archive provides: $pkg_name-$pkg_ver");
         push @provides, {name => $pkg_name, version => $pkg_ver};
     }
@@ -57,7 +58,7 @@ sub requires {
 
     my @prereqs;
     for my $pkg_name ( sort keys %prereqs ) {
-        my $pkg_ver = $prereqs{$pkg_name};
+        my $pkg_ver = version->parse( $prereqs{$pkg_name} );
         $self->debug("Archive $archive requires: $pkg_name-$pkg_ver");
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
     }

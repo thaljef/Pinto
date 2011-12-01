@@ -184,6 +184,9 @@ sub author {
 sub url {
     my ($self, $base) = @_;
 
+    # TODO: can we come up with a sensible URL for local dists?
+    return 'UNKNOWN' if $self->is_local();
+
     $base ||= $self->source();
 
     return URI->new( "$base/authors/id/" . $self->path() )->canonical();

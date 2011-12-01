@@ -159,7 +159,7 @@ sub _mark_latest {
     $_->is_latest(undef) for @older;
     $_->update() for @older;
 
-    $self->debug("Marking $latest as latest");
+    $self->debug("Marking package $latest as latest");
     $latest->is_latest(1);
     $latest->update();
 

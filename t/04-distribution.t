@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 16);
+use Test::More (tests => 25);
 
 use Path::Class;
 
@@ -34,3 +34,24 @@ is($dist->vname(), 'Bar-4.3_34', 'dist vname');
 is($dist->version(), '4.3_34', 'dist version');
 is($dist->is_local(), q{}, 'is_local is false when dist is remote');
 is($dist->is_devel(), 1, 'this is a devel dist');
+
+#------------------------------------------------------------------------------
+
+$dist = make_dist(path => 'A/AU/AUTHOR/Foo-2.0.tar.gz');
+
+my %formats = (
+    'm' => 'R',
+    'p' => 'A/AU/AUTHOR/Foo-2.0.tar.gz',
+    's' => 'L',
+    'S' => 'LOCAL',
+    'a' => 'AUTHOR',
+    'd' => 'Foo',
+    'D' => 'Foo-2.0',
+    'w' => '2.0',
+    'u' => 'UNKNOWN',
+);
+
+while ( my ($placeholder, $expected) = each %formats ) {
+    my $got = $dist->to_formatted_string("%$placeholder");
+    is($got, $expected, "Placeholder: %$placeholder");
+}

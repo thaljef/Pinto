@@ -150,10 +150,17 @@ use overload ( '""'     => 'to_string',
 
 #------------------------------------------------------------------------------
 
+
+__PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0]) },
+                                            deflate => sub { $_[0]->stringify() } }
+);
+
+#------------------------------------------------------------------------------
+
 sub new {
     my ($class, $attrs) = @_;
 
-    $attrs->{version} = 'undef'
+    $attrs->{version} = 0
         if not defined $attrs->{version};
 
     return $class->SUPER::new($attrs);
@@ -165,23 +172,6 @@ sub vname {
     my ($self) = @_;
 
     return $self->name() . '-' . $self->version();
-}
-
-#------------------------------------------------------------------------------
-
-sub index_status {
-    my ($self) = @_;
-
-    return $self->is_latest() ? '*' : ' ';
-}
-
-#------------------------------------------------------------------------------
-
-sub version_numeric {
-    my ($self) = @_;
-
-    return $self->{__version_numeric__} ||=
-        Pinto::Util::numify_version( $self->version() );
 }
 
 #------------------------------------------------------------------------------
@@ -200,9 +190,8 @@ sub to_formatted_string {
     my %fspec = (
          'n' => sub { $self->name()                                   },
          'N' => sub { $self->vname()                                  },
-         'v' => sub { $self->version()                                },
-         'V' => sub { $self->version_numeric()                        },
-         'x' => sub { $self->index_status()                           },
+         'v' => sub { $self->version->stringify()                     },
+         'x' => sub { $self->is_latest()                ? '*' : ' '   },
          'm' => sub { $self->distribution->is_devel()   ? 'D' : 'R'   },
          'p' => sub { $self->distribution->path()                     },
          'P' => sub { $self->distribution->archive()                  },
@@ -237,11 +226,8 @@ sub default_format {
 sub compare_version {
     my ($pkg_a, $pkg_b) = @_;
 
-    throw_error "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
-        if $pkg_a->name() ne $pkg_b->name();
-
     my $r =   ( $pkg_a->distribution->is_local() <=> $pkg_b->distribution->is_local() )
-           || ( $pkg_a->version_numeric()        <=> $pkg_b->version_numeric()        )
+           || ( $pkg_a->version()                <=> $pkg_b->version()                )
            || ( $pkg_a->distribution->mtime()    <=> $pkg_b->distribution->mtime()    );
 
     # No two packages can be considered equal!
