@@ -3,6 +3,7 @@ package Pinto::PackageExtractor;
 # ABSTRACT: Extract packages provided/required by a distribution archive
 
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
 use Try::Tiny;
 use Dist::Requires;
@@ -18,18 +19,32 @@ use namespace::autoclean;
 # VERSION
 
 #-----------------------------------------------------------------------------
+# Attributes
+
+has lax => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+#-----------------------------------------------------------------------------
+# Roles
 
 with qw( Pinto::Interface::Configurable
          Pinto::Interface::Loggable );
 
 #-----------------------------------------------------------------------------
+# NB: Dist::Metadata uses CPAN::Meta, which silently normalizes all
+# invalid or undefined version numbers to zero.  I think I would
+# prefer if it just reported them as they are, and let me decide what
+# to do about the invalid ones.  At least, that was the idea with the
+# lax() option.  But I'm not sure it makes sense.
 
 sub provides {
     my ($self, %args) = @_;
 
     # Must stringify, cuz D::M doesn't like Path::Class objects
     my $archive = $args{archive}->stringify();
-    my $croak   = $args{croak} || 0;
 
     $self->debug("Extracting packages from archive $archive");
 
@@ -45,16 +60,18 @@ sub provides {
 
     $self->whine("$archive contains no packages") if not @provides;
 
-    return $self->_versionize($croak, @provides);
+    return $self->_versionize(@provides);
 }
 
 #-----------------------------------------------------------------------------
+# NB: Likewise, Dist::Requires uses Module::Build and MakeMaker to
+# discover the prerequisites.  And they might be doing weird stuff to
+# the version numbers when they try to produce a valid MYMETA files.
 
 sub requires {
     my ($self, %args) = @_;
 
     my $archive = $args{archive};
-    my $croak   = $args{croak} || 0;
 
     $self->debug("Extracting prerequisites from $archive");
 
@@ -68,13 +85,13 @@ sub requires {
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
     }
 
-    return $self->_versionize($croak, @prereqs);
+    return $self->_versionize(@prereqs);
 }
 
 #-----------------------------------------------------------------------------
 
 sub _versionize {
-    my ($self, $croak, @pkg_specs) = @_;
+    my ($self, @pkg_specs) = @_;
 
     my @versionized;
     for my $pkg_spec_ref (@pkg_specs) {
@@ -87,11 +104,11 @@ sub _versionize {
             $pkg_spec{version} = $version;
             push @versionized, \%pkg_spec;
         }
-        elsif ($croak) {
-            throw_error "Package $vname has invalid version: $@";
+        elsif ( $self->lax() ) {
+            $self->whine("Package $vname has invalid version. Ignoring it");
         }
         else {
-            $self->whine("Package $vname has invalid version. Ignoring it");
+            throw_error "Package $vname has invalid version: $@";
         }
     }
 

@@ -51,7 +51,7 @@ has norecurse => (
 );
 
 
-has package_extractor => (
+has extractor => (
     is         => 'ro',
     isa        => 'Pinto::PackageExtractor',
     lazy_build => 1,
@@ -65,7 +65,7 @@ with qw( Pinto::Role::FileFetcher );
 #------------------------------------------------------------------------------
 # Builders
 
-sub _build_package_extractor {
+sub _build_extractor {
     my ($self) = @_;
 
     return Pinto::PackageExtractor->new( config => $self->config(),
@@ -110,15 +110,18 @@ sub _find_or_import {
         return $got_pkg->distribution();
     }
 
-    if (my $url = $self->repos->cache->locate( $pkg_name => $pkg_ver ) ) {
-        $self->debug("Found package $pkg_vname or newer in $url");
+    my $dist_url = $self->repos->cache->locate( package => $pkg_name,
+                                                version => $pkg_ver,
+                                                latest  => 1 );
+    if ($dist_url) {
+        $self->debug("Found package $pkg_vname or newer in $dist_url");
 
-        if ( Pinto::Util::isa_perl($url) ) {
-            $self->info("Distribution $url is a perl.  Skipping it.");
+        if ( Pinto::Util::isa_perl($dist_url) ) {
+            $self->info("Distribution $dist_url is a perl.  Skipping it.");
             return;
         }
 
-        return $self->_import_distribution($url);
+        return $self->_import_distribution($dist_url);
     }
 
     throw_error "Cannot find $pkg_vname anywhere";
@@ -143,8 +146,8 @@ sub _descend_into_prerequisites {
               $required_dist->archive( $self->config->root_dir() );
         }
         catch {
-             my $pretty = "$prereq->{name}-$prereq->{version}";
-             $self->whine("Skipping prerequisite $pretty. $_");
+             my $prereq_vname = "$prereq->{name}-$prereq->{version}";
+             $self->whine("Skipping prerequisite $prereq_vname. $_");
              # Mark the prereq as done so we don't try to import it again
              $done{ $prereq->{name} } = $prereq;
              undef;  # returned by try{}
@@ -166,7 +169,7 @@ sub _descend_into_prerequisites {
             next NEW_PREREQ if exists $done{$name}
                                && $new_prereq->{version} <= $done{$name};
 
-            $done{$name} = $new_prereq;
+            $done{$name} = $new_prereq->{version};
             push @prereq_queue, $new_prereq;
         }
 
@@ -185,7 +188,7 @@ sub _extract_prerequisites {
     # caller should just go on to the next archive.  The user will have
     # to figure out the prerequisites by other means.
 
-    my @prereqs = try   { $self->package_extractor->requires( archive => $archive ) }
+    my @prereqs = try   { $self->extractor->requires( archive => $archive ) }
                   catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;
@@ -205,7 +208,7 @@ sub _import_distribution {
 
     $self->fetch(from => $url, to => $destination);
 
-    my @pkg_specs = $self->package_extractor->provides(archive => $destination);
+    my @pkg_specs = $self->extractor->provides(archive => $destination);
     $self->info(sprintf "Importing distribution $url providing %d packages", scalar @pkg_specs);
 
     my $struct = { path     => $path,

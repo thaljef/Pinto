@@ -39,7 +39,6 @@ has extractor => (
     lazy_build => 1,
 );
 
-
 #------------------------------------------------------------------------------
 # Roles
 
@@ -102,13 +101,7 @@ override execute => sub {
 sub _extract_packages_and_check_authorship {
     my ($self, $archive, $author) = @_;
 
-    # This is a local distribution, so we can get away with insisting
-    # that it should have valid version numbers (hence croak => 1).
-    # Even if this is just a local patch of someone else's code, I
-    # think you should take responsibility to make it sane.
-
-    my @pkg_specs = $self->extractor->provides( archive => $archive,
-                                                croak   => 1 );
+    my @pkg_specs = $self->extractor->provides( archive => $archive );
 
     for my $pkg (@pkg_specs) {
         my $attrs = { prefetch => 'distribution' };
