@@ -34,11 +34,10 @@ has out => (
 sub execute {
     my ($self) = @_;
 
-    my $repos = $self->config()->repos();
-    my $rs    = $self->db->select_distributions();
+    my $rs    = $self->repos->select_distributions();
 
     while ( my $dist = $rs->next() ) {
-        my $archive = $dist->archive($repos);
+        my $archive = $dist->archive( $self->repos->root_dir() );
         print { $self->out } "Missing distribution $archive\n" if not -e $archive;
     }
 
