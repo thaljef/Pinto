@@ -4,21 +4,24 @@ package Pinto::Tester;
 
 use Moose;
 use MooseX::NonMoose;
-use IO::String;
+use MooseX::Types::Moose qw(ScalarRef HashRef);
 
+use Carp;
+use IO::String;
 use Path::Class;
 
 use Pinto;
 use Pinto::Util;
 use Pinto::Creator;
 use Pinto::Types qw(Dir);
-use MooseX::Types::Moose qw(ScalarRef HashRef);
-
-extends 'Test::Builder::Module';
 
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+
+extends 'Test::Builder::Module';
 
 #------------------------------------------------------------------------------
 
@@ -107,9 +110,9 @@ sub path_exists_ok {
     my ($self, $path, $name) = @_;
 
     $path = file( $self->root_dir(), @{$path} );
-    $name ||= "$path exists";
+    $name ||= "Path $path exists";
 
-    return $self->tb->ok(-e $path, $name);
+    $self->tb->ok(-e $path, $name);
 }
 
 #------------------------------------------------------------------------------
@@ -118,100 +121,59 @@ sub path_not_exists_ok {
     my ($self, $path, $name) = @_;
 
     $path = file( $self->root_dir(), @{$path} );
-    $name ||= "$path does not exist";
+    $name ||= "Path $path does not exist";
 
-    return $self->tb->ok(! -e $path, $name);
-}
-
-#------------------------------------------------------------------------------
-
-sub dist_exists_ok {
-    my ($self, $dist_basename, $author, $test_name) = @_;
-
-    my $author_dir = Pinto::Util::author_dir($self->root_dir(), qw(authors id), $author);
-    my $dist_path = $author_dir->file($dist_basename);
-    $test_name ||= "Distribution $dist_path exists in repository";
-
-    return $self->tb->ok(-e $dist_path, $test_name);
-}
-
-#------------------------------------------------------------------------------
-
-sub dist_not_exists_ok {
-    my ($self, $dist_basename, $author, $test_name) = @_;
-
-    my $author_dir = Pinto::Util::author_dir($self->root_dir(), qw(authors id), $author);
-    my $dist_path = $author_dir->file($dist_basename);
-    $test_name ||= "Distribution $dist_path does not exist in repository";
-
-    return $self->tb->ok(! -e $dist_path, $test_name);
-}
-
-#------------------------------------------------------------------------------
-
-sub package_is_latest_ok {
-    my ($self, $pkg_name, $dist_basename, $author) = @_;
-
-    my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
-
-    my $attrs = { prefetch  => 'distribution' };
-    my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
-
-    return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
-    return $self->tb->is_eq($pkg->is_latest(), 1, "$pkg_name -- $dist_path is the latest");
-}
-
-#------------------------------------------------------------------------------
-
-sub package_not_latest_ok {
-    my ($self, $pkg_name, $dist_basename, $author) = @_;
-
-    my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
-
-    my $attrs = { prefetch  => 'distribution' };
-    my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
-
-    return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
-    return $self->tb->is_eq($pkg->is_latest(), undef, "$pkg_name -- $dist_path is not the latest");
+    $self->tb->ok(! -e $path, $name);
 }
 
 #------------------------------------------------------------------------------
 
 sub package_loaded_ok {
-    my ($self, $pkg_name, $dist_basename, $author, $version) = @_;
+    my ($self, $pkg_spec, $latest) = @_;
+
+    my ($author, $dist_file, $pkg_name, $pkg_ver) = parse_pkg_spec($pkg_spec);
 
     my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
+    my $dist_path = $author_dir->file($dist_file)->as_foreign('Unix');
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
     my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
-    return $self->tb->ok(0, "$pkg_name -- $dist_path is not loaded at all") if not $pkg;
+    return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $pkg;
 
-    $self->tb->ok(1, "$pkg is loaded");
-    $self->tb->is_eq($pkg->version(), $version, "$pkg_name has correct version");
-    return 1;
+    $self->tb->ok(1, "$pkg_spec is loaded");
+    $self->tb->is_eq($pkg->version(), $pkg_ver, "$pkg_name has correct version");
+
+    my $archive = $pkg->distribution->archive( $self->root_dir() );
+    $self->tb->ok(-e $archive, "Archive $archive exists");
+
+    $self->tb->is_eq( $pkg->is_latest(), 1, "$pkg_spec is latest" )
+        if $latest;
+
+    $self->tb->is_eq( $pkg->is_latest(), undef, "$pkg_spec is not latest" )
+        if not $latest;
 }
 
 #------------------------------------------------------------------------------
 
 sub package_not_loaded_ok {
-    my ($self, $pkg_name, $dist_basename, $author) = @_;
+    my ($self, $pkg_spec) = @_;
+
+    my ($author, $dist_file, $pkg_name, $pkg_ver) = parse_pkg_spec($pkg_spec);
 
     my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_basename)->as_foreign('Unix');
+    my $dist_path = $author_dir->file($dist_file)->as_foreign('Unix');
+    my $archive   = $self->root_dir()->file(qw(authors id), $author_dir, $dist_file);
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
+    my $pkg = $self->pinto->repos->select_packages($where, $attrs)->single();
 
-    return $self->tb->ok(0, "$pkg_name -- $dist_path is still loaded") if $pkg;
+    return $self->tb->ok(0, "$pkg_spec is still loaded") if $pkg;
 
-    return $self->tb->ok(1, "$pkg_name -- $dist_path is not loaded");
+    $self->tb->ok(1, "$pkg_spec is not loaded");
+
+    $self->tb->ok(! -e $archive, "Archive $archive does not exist");
 }
 
 #------------------------------------------------------------------------------
@@ -229,7 +191,58 @@ sub result_ok {
 sub result_not_ok {
     my ($self, $result) = @_;
 
-    return $self->tb->ok( !$result->is_success(), 'Result was not succesful' );
+    $self->tb->ok( !$result->is_success(), 'Result was not succesful' );
+}
+
+#------------------------------------------------------------------------------
+
+sub repository_empty_ok {
+    my ($self) = @_;
+
+    my @dists = $self->pinto->repos->select_distributions()->all();
+    $self->tb->is_eq(scalar @dists, 0, 'Database has no distributions');
+
+    my @pkgs = $self->pinto->repos->select_packages()->all();
+    $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
+
+    my $dir = dir( $self->root_dir(), qw(authors id) );
+    $self->tb->ok(! -e $dir, 'Repository has no archives');
+
+}
+
+#------------------------------------------------------------------------------
+
+sub log_like {
+    my ($self, $rx, $name) = @_;
+
+    $name ||= 'Log output matches';
+
+    $self->tb->like( $self->bufferstr(), $rx, $name );
+}
+
+#------------------------------------------------------------------------------
+
+sub log_unlike {
+    my ($self, $rx, $name) = @_;
+
+    $name ||= 'Log output does not match';
+
+    $self->tb->unlike( $self->bufferstr(), $rx, $name );
+}
+
+#------------------------------------------------------------------------------
+
+sub parse_pkg_spec {
+    my ($spec) = @_;
+
+    # Looks like "AUTHOR/Foo-1.2.tar.gz/Foo::Bar-1.2"
+    $spec =~ m{ ^ ([^/]+) / ([^/]+) / ([^-]+) - (.+) $ }mx
+        or croak "Could not parse pkg spec: $spec";
+
+    # TODO: use sexy named captures instead
+    my ($author, $dist_file, $pkg_name, $pkg_ver) = ($1, $2, $3, $4);
+
+    return ($author, $dist_file, $pkg_name, $pkg_ver);
 }
 
 #------------------------------------------------------------------------------
