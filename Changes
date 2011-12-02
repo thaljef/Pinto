@@ -9,9 +9,10 @@
 
      Otherwise, you'll have to create a new repository and 'add' each
      of your local distributions again.  If you have foreign
-     distributions in your repository then you'll have to 'update'
+     distributions in your repository then you'll have to 'mirror'
      them again too, but you might not get exactly the same versions
-     that you used to have.
+     that you used to have (because they are no longer the 'latest'
+     version on CPAN).
 
      I know this sucks, but it is definitely worth the upgrade.  This
      version of Pinto is faster, more reliable, and packed with new
@@ -29,33 +30,37 @@
 
      Pinto now behaves more like PAUSE, and will accept distributions
      with overlapping packages.  As always, only the 'latest' version
-     of a package appears in the 02packages.details.txt file.
-
-     Pinto also tries hard to figure out the lineage of packages (i.e.
-     which version came first, second, third, etc.)  So you can throw
-     a pile of archives at it without having to think about putting
-     them in a certain order (See POD for details).
+     of a package appears in the index file.  And just like PAUSE,
+     Pinto tries to figure out the lineage of packages (i.e.  which
+     version came first, second, third, etc.) by looking at version
+     numbers and file timestamps.  So you can throw a pile of archives
+     at it without having to think about putting them in a certain
+     order (See POD for details).  You can also remove a distribution,
+     and the "prior" versions of its packages will automatically become
+     the latest.
 
      A Pinto repository can now be used with the cpan[1] utility.  It
      should also work with cpanp[1], but I haven't tried it.  And of
-     course it still works with cpanm[1].
+     course it still works with cpanm[1].  However, Pinto does not
+     provide a full 01mailrc.txt.gz or 03modlist.data.gz file.  So
+     cpan[1] features that rely on those files may not work.
 
      Pinto can now pull foreign distributions from multiple
      repositories.  You can use this to fall back to another
      repository if one of them is offline (which sometimes happens
      with CPAN mirrors).  Or you can use this to create a network of
      repositories that may each have different sets of distributions.
+     I'm not sure if this is actually a good idea, but we'll see.
 
-     Pinto does the-right-thing with development packages and
-     distributions (See POD for details).
+     Pinto does the-right-thing with development distributions (See
+     POD for details).  And each Pinto repository now has a 'devel'
+     configuration parameter.  Setting this to a true value instructs
+     Pinto to include development releases in the index.  The default
+     is false.
 
-     Each Pinto repository now has a 'devel' configuration parameter.
-     Setting this to a true value instructs Pinto to include
-     development releases in the index.  The default is false.
-
-     The 'create' command for pinto-admin now accepts options to set
-     the parameters in the config file that will be generated for the
-     new repository.
+     The 'create' command for pinto-admin now accepts options that set
+     the parameters in the config file that is generated for the new
+     repository.
 
      The 'list' command for pinto-admin now accepts a --format option
      that can be used to customize what/how information is displayed.
@@ -82,19 +87,21 @@
      recursively) and puts all of them in your local repository.
 
      Most of the pinto-admin commands now have aliases.  Thanks to the
-     awesomeness of App::Cmd, you can say 'pinto-admin up' instead of
-     'pinto-admin update' or 'pinto-admin rm' instead of 'pinto-admin
-     remove'.  The aliases are listed in the manual for each command.
+     awesomeness of App::Cmd, you can say 'pinto-admin rm' instead of
+     'pinto-admin remove'.  The aliases are listed in the manual for
+     each command.
 
      * Other Changes:
 
      The config files for each Pinto repsoitory are now located in
      $REPOS/.pinto/config.
 
-     The 'list' command for pinto-admin has been neutered a bit.  You
-     can no longer specify the --type or --indexed options.  However,
-     the output does show whether the package is local/foreign and
+     The 'list' command for pinto-admin has been neutered.  You can no
+     longer specify the --type or --indexed options.  However, the
+     output does show whether the package is local/foreign and
      indexed/unindexed, so you can grep on that to narrow the results.
+     I'm thinking of developing a query interface to let you select
+     which packages/distributions you want to list.
 
      The VCS tagging mechanism has changed.  Instead of making a tag for
      every commit, a tag is made only when you specify the --tag option.
@@ -103,16 +110,16 @@
      The 'noclobber' configuration setting has been removed, since it
      was never implemented anyway.
 
-     The 'nocleanup' configuration setting has been changed to 'cleanup'
-     and it now defaults to 0.  This is the opposite of the old behavior.
-     So if you want your repository to contain only the latest dists,
-     then set cleanup=1 in your configuration.  NOTE: the cleanup
-     feature is currently disabled, since I haven't decided how it
-     should work.
+     The 'nocleanup' configuration setting is gone, and we no longer
+     support automatic cleanup.  Instead, you have to run the 'clean'
+     action separately.  You might want to setup a cron job for this.
 
-     The --force option of the 'update' command for pinto-admin is no
-     longer supported.  I'm thinking of changing the meaning of "force"
-     and might bring it back in a future release.
+     The 'update' command is now called 'mirror'.  I know, I keep
+     flip-flopping on that.  But I think I've finally settled now.
+
+     The --force option on the 'mirror' (formerly 'update') command is
+     no longer supported.  I'm thinking of changing the meaning of
+     "force" and might bring it back in a future release.
 
      pinto-admin is less noisy.  You won't see any output on the
      command line unless you set the --verbose switch or there is some
