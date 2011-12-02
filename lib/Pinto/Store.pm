@@ -139,14 +139,9 @@ sub remove_file {
 
     my $file = $args{file};
 
-    throw_fatal "$file does not exist"
-        if not -e $file;
-
-    throw_fatal "$file is not a file"
-        if not -f $file;
-
-    $file->remove()
-        or throw_fatal "Failed to remove file $file: $!";
+    if ( -e $file ) {
+        $file->remove() or throw_fatal "Failed to remove file $file: $!";
+    }
 
     while (my $dir = $file->parent()) {
         last if $dir->children();
