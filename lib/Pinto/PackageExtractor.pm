@@ -29,6 +29,8 @@ sub provides {
 
     # Must stringify, cuz D::M doesn't like Path::Class objects
     my $archive = $args{archive}->stringify();
+    my $croak   = $args{croak} || 0;
+
     $self->debug("Extracting packages from archive $archive");
 
     my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
@@ -42,7 +44,8 @@ sub provides {
     }
 
     $self->whine("$archive contains no packages") if not @provides;
-    return @provides;
+
+    return $self->_versionize($croak, @provides);
 }
 
 #-----------------------------------------------------------------------------
@@ -51,6 +54,8 @@ sub requires {
     my ($self, %args) = @_;
 
     my $archive = $args{archive};
+    my $croak   = $args{croak} || 0;
+
     $self->debug("Extracting prerequisites from $archive");
 
     my %prereqs =   try { Dist::Requires->new()->requires(dist => $archive)               }
@@ -63,7 +68,34 @@ sub requires {
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
     }
 
-    return @prereqs;
+    return $self->_versionize($croak, @prereqs);
+}
+
+#-----------------------------------------------------------------------------
+
+sub _versionize {
+    my ($self, $croak, @pkg_specs) = @_;
+
+    my @versionized;
+    for my $pkg_spec_ref (@pkg_specs) {
+
+        my %pkg_spec = %{ $pkg_spec_ref };  # Making a copy
+        my $vname    = "$pkg_spec{name}-$pkg_spec{version}";
+        my $version  = eval { version->parse($pkg_spec{version}) };
+
+        if ( defined $version ) {
+            $pkg_spec{version} = $version;
+            push @versionized, \%pkg_spec;
+        }
+        elsif ($croak) {
+            throw_error "Package $vname has invalid version: $@";
+        }
+        else {
+            $self->whine("Package $vname has invalid version. Ignoring it");
+        }
+    }
+
+    return @versionized;
 }
 
 #-----------------------------------------------------------------------------
