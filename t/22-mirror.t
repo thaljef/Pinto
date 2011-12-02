@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 36);
+use Test::More;
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -15,17 +15,9 @@ use Pinto::Tester;
 my $fakes     = dir( $Bin, qw(data fakepan repos a) );
 my $source    = URI->new("file://$fakes");
 my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
-my $dist_name = 'FooOnly-0.01.tar.gz';
-my $archive   = $auth_dir->file($dist_name);
 
-# A local author...
-my $LOCAL1 = 'LOCAL1';
-
-# This is a bit confusing.  CPAN::Faker creates all the packages under
-# the author 'LOCAL'.  But we are treating the fake CPAN as a
-# foreign source.  So the author seems "foreign" to Pinto, but is
-# "local" to the fake CPAN.  Just pretend you didn't see this next line.
-my $FOREIGN = 'LOCAL';
+my $us   = 'US';     # The local author
+my $them = 'LOCAL';  # The foreign author (CPAN::Faker assigns them all to 'LOCAL');
 
 #------------------------------------------------------------------------------
 # Setup...
@@ -33,66 +25,48 @@ my $FOREIGN = 'LOCAL';
 my $t = Pinto::Tester->new( creator_args => {sources => $source} );
 my $pinto = $t->pinto();
 
-# Make sure we have clean slate
-$t->package_not_loaded_ok('Foo', $dist_name, $LOCAL1);
-$t->dist_not_exists_ok($dist_name, $LOCAL1);
+$t->repository_empty_ok();
 
 #------------------------------------------------------------------------------
 # Updating from a foreign repository...
 
 $pinto->new_batch();
 $pinto->add_action('Mirror', source => $source);
+
 $t->result_ok( $pinto->run_actions() );
-
-$t->dist_exists_ok('BarAndBaz-0.04.tar.gz',   $FOREIGN);
-$t->dist_exists_ok('Fee-0.02_1.tar.gz',       $FOREIGN);
-$t->dist_exists_ok('FooAndBar-0.02.tar.gz',   $FOREIGN);
-$t->dist_exists_ok('Foo-Bar-Baz-0.03.tar.gz', $FOREIGN);
-
-$t->package_loaded_ok( 'Bar',             'BarAndBaz-0.04.tar.gz', $FOREIGN, '0.04'    );
-$t->package_loaded_ok( 'Baz',             'BarAndBaz-0.04.tar.gz', $FOREIGN, '0.04'    );
-$t->package_loaded_ok( 'Fee',             'Fee-0.02_1.tar.gz',     $FOREIGN, '0.02_1'  );
-$t->package_loaded_ok( 'Foo',             'FooAndBar-0.02.tar.gz', $FOREIGN, '0.02'    );
-$t->package_loaded_ok( 'Foo::Bar::Baz', 'Foo-Bar-Baz-0.03.tar.gz', $FOREIGN, '0.03'    );
-
-$t->package_is_latest_ok( 'Foo',  'FooAndBar-0.02.tar.gz', $FOREIGN );
-$t->package_is_latest_ok( 'Bar',  'BarAndBaz-0.04.tar.gz', $FOREIGN );
-$t->package_is_latest_ok( 'Baz',  'BarAndBaz-0.04.tar.gz', $FOREIGN );
-
-# Developer release should never be latest
-$t->package_not_latest_ok( 'Fee',  'Fee-0.02_1.tar.gz',    $FOREIGN );
-like $t->bufferstr(), qr{L/LO/LOCAL/Fee-0.02_1.tar.gz will not be indexed};
+$t->package_loaded_ok( "$them/BarAndBaz-0.04.tar.gz/Bar-0.04",  1 );
+$t->package_loaded_ok( "$them/BarAndBaz-0.04.tar.gz/Baz-0.04",  1 );
+$t->package_loaded_ok( "$them/Fee-0.02_1.tar.gz/Fee-0.02_1",    0 );
+$t->package_loaded_ok( "$them/FooAndBar-0.02.tar.gz/Foo-0.02",  1 );
 
 #------------------------------------------------------------------------------
 # Adding a local version of an existing foreign package...
 
-$dist_name = 'BarAndBaz-0.04.tar.gz';
-$archive   =  $auth_dir->file($dist_name);
+my $dist    = 'BarAndBaz-0.04.tar.gz';
+my $archive =  $auth_dir->file($dist);
 
 $pinto->new_batch();
-$pinto->add_action('Add', archive => $archive, author => $LOCAL1);
-$pinto->run_actions();
+$pinto->add_action('Add', archive => $archive, author => $us);
 
-$t->dist_exists_ok( $dist_name, $LOCAL1 );
-$t->package_loaded_ok('Bar', $dist_name, $LOCAL1, '0.04');
-$t->package_loaded_ok('Baz', $dist_name, $LOCAL1, '0.04');
+$t->result_ok( $pinto->run_actions() );
+$t->package_loaded_ok( "$us/$dist/Bar-0.04", 1 );
+$t->package_loaded_ok( "$us/$dist/Baz-0.04", 1 );
 
-$t->package_is_latest_ok('Bar', $dist_name, $LOCAL1);
-$t->package_is_latest_ok('Baz', $dist_name, $LOCAL1);
-
-$t->package_not_latest_ok('Bar', $dist_name, $FOREIGN);
-$t->package_not_latest_ok('Baz', $dist_name, $FOREIGN);
+# The foreign versions should no longer be latest
+$t->package_loaded_ok( "$them/$dist/Bar-0.04",  0 );
+$t->package_loaded_ok( "$them/$dist/Baz-0.04",  0 );
 
 #------------------------------------------------------------------------------
 # After removing our local version, the foreign version should become latest...
 
 $pinto->new_batch();
-$pinto->add_action('Remove', path => $dist_name, author => $LOCAL1 );
-$pinto->run_actions();
+$pinto->add_action('Remove', path => $dist, author => $us );
 
-$t->package_not_loaded_ok('Bar', $dist_name, $LOCAL1);
-$t->package_not_loaded_ok('Baz', $dist_name, $LOCAL1);
-$t->dist_not_exists_ok($dist_name, $LOCAL1);
+$t->result_ok( $pinto->run_actions() );
+$t->package_not_loaded_ok( "$us/$dist/Bar-0.04" );
+$t->package_not_loaded_ok( "$us/$dist/Baz-0.04" );
 
-$t->package_is_latest_ok('Bar', $dist_name, $FOREIGN);
-$t->package_is_latest_ok('Baz', $dist_name, $FOREIGN);
+$t->package_loaded_ok( "$them/$dist/Bar-0.04",  1 );
+$t->package_loaded_ok( "$them/$dist/Baz-0.04",  1 );
+
+done_testing();

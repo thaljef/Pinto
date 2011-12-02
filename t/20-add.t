@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 24);
+use Test::More;
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -93,3 +93,6 @@ $t->result_ok( $pinto->run_actions() );
 $t->package_loaded_ok( "$auth1/$dist/$pkg", 1 );
 $t->log_unlike( qr/Developer distribution .* will not be indexed/,
                 'Did not get warning about devel dist');
+
+
+done_testing();

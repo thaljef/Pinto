@@ -169,11 +169,9 @@ sub package_not_loaded_ok {
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
     my $pkg = $self->pinto->repos->select_packages($where, $attrs)->single();
 
-    return $self->tb->ok(0, "$pkg_spec is still loaded") if $pkg;
+    $self->tb->ok(!$pkg, "$pkg_spec is still loaded");
 
-    $self->tb->ok(1, "$pkg_spec is not loaded");
-
-    $self->tb->ok(! -e $archive, "Archive $archive does not exist");
+    $self->tb->ok(! -e $archive, "Archive $archive still exists");
 }
 
 #------------------------------------------------------------------------------

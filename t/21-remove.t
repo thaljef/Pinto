@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 29);
+use Test::More;
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -77,3 +77,4 @@ $t->package_not_loaded_ok( "$auth1/$dist/$pkg" );
 $t->path_not_exists_ok( [ qw( authors id A AU AUTHOR ) ] );
 $t->repository_empty_ok();
 
+done_testing();

@@ -1,0 +1,27 @@
+# CHECKSUMS file written on Fri Dec  2 09:16:18 2011 GMT by CPAN::Checksums (v2.08)
+$cksum = {
+  'Lettuce-2.0.tar.gz' => {
+    'md5' => '08dd0c18abe55fc8014ee74143ff36f5',
+    'md5-ungz' => 'ebca957b8a235fbcfbadeede5c99b815',
+    'mtime' => '2011-12-02',
+    'sha256' => '17bf3bad0a0f074a2c85a393e6e83a3f334aea0cb55b8b411da7922f56a5558e',
+    'sha256-ungz' => 'cea1a13a66e4fdab2472adc97685063cd38e0b07387cb2fccf1dfc1fc797f9ac',
+    'size' => 634
+  },
+  'Oil-4.0.tar.gz' => {
+    'md5' => '1f486e6e7b1fdb3c0415c82110b675b5',
+    'md5-ungz' => '23a5da3caffd71e971f4edde5225eacf',
+    'mtime' => '2011-12-02',
+    'sha256' => '5ebf755254f356c6ba2223b8c1a70230aa2d29ba645b4af46152357b7b6f95bd',
+    'sha256-ungz' => 'a99b7568c461643a446bae24a9beda786e46990b35e02f3e1050da96cbcd8ba2',
+    'size' => 631
+  },
+  'Vinegar-v5.1.3.tar.gz' => {
+    'md5' => '0ef3c47567c8c2b333696e08d0f46a21',
+    'md5-ungz' => '1746afd990ad97e1296ccff9896535c5',
+    'mtime' => '2011-12-02',
+    'sha256' => 'd38f4fc98aee80bac4dc77ee35cfb2e856319444fc371b6a4dbe0742986650ca',
+    'sha256-ungz' => 'a90a5809b534f3f6ee81be7304cd4124d1af40844f8137325299ebdb3c424ddc',
+    'size' => 642
+  }
+};

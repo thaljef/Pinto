@@ -1,75 +1,43 @@
-# CHECKSUMS file written on Thu Dec  1 07:30:53 2011 GMT by CPAN::Checksums (v2.08)
+# CHECKSUMS file written on Fri Dec  2 09:16:16 2011 GMT by CPAN::Checksums (v2.08)
 $cksum = {
   'BarAndBaz-0.04.tar.gz' => {
-    'md5' => '94ed5871b0ddf2332fdd9ff98ef8106b',
-    'md5-ungz' => '0323d6af0c27e73516364d084fa284e9',
-    'mtime' => '2011-12-01',
-    'sha256' => '18c301455ca530f2da01ae65b7eb16c0516a07ada787ac8668edc15c885558af',
-    'sha256-ungz' => 'd0c333f3b276931792b9d2caeae8ab7d09b02a0077f9c8027ffae3dc146a267c',
+    'md5' => '0620ef590cfe8a3376ca3c52b8c07a7b',
+    'md5-ungz' => 'cd8df5afb8f71fa34e5da2da2b12dff9',
+    'mtime' => '2011-12-02',
+    'sha256' => 'afa6bf3a5f58c1574bcf26a80ad891d8c0e9cd402df0d0ef05d1c1b1856ff5d9',
+    'sha256-ungz' => 'f80843d07e5373109733ddaa7a42a98bdb055e223145cc45561b1483c121417b',
     'size' => 674
   },
-  'Dressing-v1.9.0.tar.gz' => {
-    'md5' => '986b3feed045869f2879e9b27fab18ad',
-    'md5-ungz' => '91603bffbe0561c26c0056a12484606f',
-    'mtime' => '2011-12-01',
-    'sha256' => '3cc099fba596e3b733b50b7af3f6eabf9f5c417cd90f74726263e057e7aade55',
-    'sha256-ungz' => '280accc30f1522280cd79a51d561864dd1bd087cdbe5027b017926da11195af1',
-    'size' => 697
-  },
   'Fee-0.02_1.tar.gz' => {
-    'md5' => '6256e4f872261afb5f95e3ca938269df',
-    'md5-ungz' => 'caaad84b79e1bd0d0725159d425e4aaa',
-    'mtime' => '2011-12-01',
-    'sha256' => 'bab9b9326c901713e35c553c4e5c69669cdcc83bafa5ad2943b1cac6cf0bead6',
-    'sha256-ungz' => 'a5f44977c60ba3537c5d96d576264fa5c2f7135b25f37eaaf1e639133e744336',
-    'size' => 636
+    'md5' => '2242e121f45c290a70d861ed130e93bb',
+    'md5-ungz' => '3e233d0f012f75778801f940f2a383f5',
+    'mtime' => '2011-12-02',
+    'sha256' => 'eb67d60dc202e7a8d189c61f6e349d6da047926ab32e5afcfb6005ffaa26e372',
+    'sha256-ungz' => '98ee5b9211f5a96662a22f6dbf3c0847473eb0d916b538496b21efcaddce37cd',
+    'size' => 635
   },
   'Foo-Bar-Baz-0.03.tar.gz' => {
-    'md5' => '8654cd601af42ebd6112805d451e8247',
-    'md5-ungz' => 'ce675aa7d97a8840a0c521795c4f207c',
-    'mtime' => '2011-12-01',
-    'sha256' => '5f4b68d5dc43a71df19ee3ab4a54bfe8b045d3d651eb4a207eb1389efdbe6e25',
-    'sha256-ungz' => '7899a9c1381b2bc85f8ce6ff16553a7bd2c2c8b9254696a0b0467f2bd2686750',
-    'size' => 661
-  },
-  'FooAndBar-0.02.tar.gz' => {
-    'md5' => '3522a58209c706d8da3acef42b1b9c80',
-    'md5-ungz' => 'a955287a567d44cd71004e4cf9df3f22',
-    'mtime' => '2011-12-01',
-    'sha256' => '398fc85773fe4e1777768fa00f758debf33b9dbc2628bd10c54844161dfd7f8d',
-    'sha256-ungz' => '872bdd8f29f8f420665a6121e73f8763b632a70adad6180e2b2a0c0f5d1b790f',
+    'md5' => '7488aca674c6184f9aca9ee03ac2c64f',
+    'md5-ungz' => '886bc74a9052da5f22c9f36f4fdccfa1',
+    'mtime' => '2011-12-02',
+    'sha256' => '11d6c68d1a6017ef9e100ca98ebed4802e37def5971710731609fcf1202cf3db',
+    'sha256-ungz' => 'ca6082d408adfa9b0dd3c9ab3a8381a86ce27b7aff338611300123d74ee42d0f',
     'size' => 673
   },
+  'FooAndBar-0.02.tar.gz' => {
+    'md5' => '656425cf1d98216f4db314810025b4f7',
+    'md5-ungz' => '884c5fbacef0d18d0f84d4067489940c',
+    'mtime' => '2011-12-02',
+    'sha256' => 'ada9540bf19c2df4e670b48fb72ac905df217eac4aac027be55488eee4e1b065',
+    'sha256-ungz' => '768f8e526bf4ae54d962e013e6b693123f5cd128500c58187942be9f28b2ec70',
+    'size' => 674
+  },
   'FooOnly-0.01.tar.gz' => {
-    'md5' => '8cb7095f51395a685e2ee9c803fbf363',
-    'md5-ungz' => '2b4f7bee7dacd7c16e32712c1f414251',
-    'mtime' => '2011-12-01',
-    'sha256' => '1a5129c9f88cac3a93fbc35f9372333bc095d2e1d15b8367192e603e8148a558',
-    'sha256-ungz' => '36e93da8b471b77c22bf6f71e78a3b923e9528946e3780fef298624f2cdec879',
+    'md5' => '44e34320b732ce925d3b71bf2153cdd6',
+    'md5-ungz' => '68e040f2302fa3226cc76280a0cb41fa',
+    'mtime' => '2011-12-02',
+    'sha256' => '3c7d45a86e809c59fae806e09443a0d381b1fab4fee3e6b3285e043d58a700c2',
+    'sha256-ungz' => '9c4dc14fdb1232f2d1604b62f87573730b02b55dbbda24fb5f098b352dc5e3c5',
     'size' => 648
-  },
-  'Lettuce-0.8.tar.gz' => {
-    'md5' => '35c76746eafc00d73bc37ea6b1e163a2',
-    'md5-ungz' => '33843dfb30ffa8c481e2cff06ecb6859',
-    'mtime' => '2011-12-01',
-    'sha256' => 'd77b73c39641575efd0485b7bff0a8f50f444d412c385416de86a81aac8afd1e',
-    'sha256-ungz' => '39c465f0556aa800012445a2d46de013c3fdd8dad3704218fbe952ca00767dad',
-    'size' => 637
-  },
-  'Oil-3.0.tar.gz' => {
-    'md5' => '3277a9e630ca7a09bbae816f3cca3b5f',
-    'md5-ungz' => 'ca0241cc06169b5cbf50d05f0940a25f',
-    'mtime' => '2011-12-01',
-    'sha256' => 'ab5d8b967e84acdfdce4cf9c8a4715967da37f8432065fe6a6d436e112bc12aa',
-    'sha256-ungz' => 'c2b5718537db2c840a4b06c5102ee83fbc32bbd3b4ce79d3b9b1ec56e6fc41f3',
-    'size' => 646
-  },
-  'Salad-1.0.0.tar.gz' => {
-    'md5' => '2aceefa548b64575ab979dfa3273f9b0',
-    'md5-ungz' => 'b64a8e9892f7397f9416ac1df2e44d62',
-    'mtime' => '2011-12-01',
-    'sha256' => '1bc4421296cfba900c3ec9da556d3855b48ac373d9a916a86e9d4e5744a8bbc8',
-    'sha256-ungz' => '2d2509330005a63d83b0da0678df44458ce4031d14a8781859111c72c0969184',
-    'size' => 686
   }
 };

@@ -14,8 +14,9 @@
 #
 ##########################################################################
 
-rm -rf repos/a/*
-cpanfaker -s specs/a -d repos/a
+for d in repos/*; do 
+    d=`basename $d`; 
+    rm -rf repos/$d; 
+    cpanfaker -s specs/$d -d repos/$d;
+done 
 
-rm -rf repos/b/*
-cpanfaker -s specs/b -d repos/b
