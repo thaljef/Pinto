@@ -44,7 +44,7 @@ sub execute {
 
         my $path = $dist_spec->{path};
         if ( Pinto::Util::isa_perl($path) ) {
-            $self->info("Distribution $path is a perl.  Skipping it.");
+            $self->debug("Distribution $path is a perl.  Skipping it.");
             next;
         }
 
