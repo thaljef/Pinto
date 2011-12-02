@@ -93,7 +93,7 @@ sub insert_distribution {
     my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
 
     $dist->insert();
-    $self->_mark_latest($_) for $dist->packages();
+    $self->mark_latest($_) for $dist->packages();
 
     $txn_guard->commit(); #END transaction
 
@@ -105,7 +105,6 @@ sub insert_distribution {
 sub delete_distribution {
     my ($self, $dist) = @_;
 
-
     $self->debug("Deleting distribution $dist from database");
 
     my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
@@ -115,39 +114,21 @@ sub delete_distribution {
     my @packages = $dist->packages();
 
     $dist->delete();
-    $self->_mark_latest($_) for @packages;
+    $self->mark_latest($_) for @packages;
 
     $txn_guard->commit(); # END transaction
 
-    return 1;
+    return $self;
 }
-
-
-# sub delete_distribution {
-#     my ($self, $dist) = @_;
-
-#     $self->debug("Deleting distribution $dist from database");
-
-#     my $txn_guard = $self->schema->txn_scope_guard();
-
-#     $self->delete_package($_) for $dist->packages();
-#     $dist->delete();
-
-#     $txn_guard->commit();
-
-#     return;
-# }
-
 
 #-------------------------------------------------------------------------------
 
-sub _mark_latest {
+sub mark_latest {
     my ($self, $pkg) = @_;
 
-    my $where = { name => $pkg->name() };
-    my @sisters  = $self->select_packages( $where )->all();
+    my @sisters = $self->select_packages( {name => $pkg->name()} )->all();
     @sisters = grep { not $_->distribution->is_devel() } @sisters unless $self->config->devel();
-    return $self if not @sisters;
+    return if not @sisters;
 
     my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
 
@@ -163,7 +144,7 @@ sub _mark_latest {
     $latest->is_latest(1);
     $latest->update();
 
-    return $self;
+    return $latest;
 }
 
 #-------------------------------------------------------------------------------
