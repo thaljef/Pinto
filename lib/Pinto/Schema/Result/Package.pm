@@ -180,7 +180,9 @@ sub vname {
 sub to_string {
     my ($self) = @_;
 
-    return $self->distribution->path() . '~' . $self->vname();
+    return sprintf '%s/%s/%s', $self->distribution->author(),
+                               $self->distribution->vname(),
+                               $self->vname();
 }
 
 #------------------------------------------------------------------------------
