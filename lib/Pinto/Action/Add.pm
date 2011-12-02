@@ -33,7 +33,7 @@ has archive => (
 );
 
 
-has package_extractor => (
+has extractor => (
     is         => 'ro',
     isa        => 'Pinto::PackageExtractor',
     lazy_build => 1,
@@ -49,7 +49,7 @@ with qw( Pinto::Interface::Authorable
 #------------------------------------------------------------------------------
 # Builders
 
-sub _build_package_extractor {
+sub _build_extractor {
     my ($self) = @_;
 
     return Pinto::PackageExtractor->new( config => $self->config(),
@@ -102,7 +102,13 @@ override execute => sub {
 sub _extract_packages_and_check_authorship {
     my ($self, $archive, $author) = @_;
 
-    my @pkg_specs = $self->package_extractor->provides(archive => $archive);
+    # This is a local distribution, so we can get away with insisting
+    # that it should have valid version numbers (hence croak => 1).
+    # Even if this is just a local patch of someone else's code, I
+    # think you should take responsibility to make it sane.
+
+    my @pkg_specs = $self->extractor->provides( archive => $archive,
+                                                croak   => 1 );
 
     for my $pkg (@pkg_specs) {
         my $attrs = { prefetch => 'distribution' };
