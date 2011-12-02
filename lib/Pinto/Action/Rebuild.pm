@@ -42,13 +42,14 @@ sub _recompute {
     my ($self) = @_;
 
     # Gotta be a better way to to do this...
-    my $attrs   = {select => ['name'], distinct => 1};
-    my $cursor  = $self->repos->db->select_packages(undef, $attrs)->cursor();
+    my $attrs  = {select => ['name'], distinct => 1};
+    my $cursor = $self->repos->select_packages(undef, $attrs)->cursor();
 
     while (my ($name) = $cursor->next()) {
-        my $where = { name => $name };
-        my $pkg = $self->repos->select_package( $where )->first();
-        $self->repos->db->_mark_latest( $name );  ## no critic qw(Private)
+        my $rs  = $self->repos->select_packages( {name => $name} );
+        next if $rs->count() == 1;  # Only need to recompute if more than 1
+        $self->debug("Recomputing latest version of package $name");
+        $self->repos->db->mark_latest( $rs->first() );
     }
 
     $self->add_message('Recalculated the latest version of all packages');
