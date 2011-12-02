@@ -18,7 +18,7 @@ is($pkg->name(), 'Foo', 'name attribute');
 is($pkg->vname(), 'Foo-2.001_02', 'vname attribute');
 is($pkg->version(), '2.001_02', 'version attribute');
 isa_ok($pkg->version(), 'version', 'version attribute isa version object');
-is("$pkg", 'A/AU/AUTHOR/Foo-2.001_02.tar.gz~Foo-2.001_02', 'default strigification');
+is("$pkg", 'AUTHOR/Foo-2.001_02/Foo-2.001_02', 'default strigification');
 
 #------------------------------------------------------------------------------
 
