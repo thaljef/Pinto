@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+     Fixed bugs in the Rebuild action.
+
+     Changed some log messages to be more helpful.
+
 0.025_001 2011-12-02 03:18:26 America/Los_Angeles
 
      ===============================================================
