@@ -75,7 +75,7 @@ sub requires {
 
     $self->debug("Extracting prerequisites from $archive");
 
-    my %prereqs =   try { Dist::Requires->new()->requires(dist => $archive)               }
+    my %prereqs =   try { Dist::Requires->new()->prerequisites(dist => $archive)          }
                   catch { throw_error "Unable to extract prerequisites from $archive: $_" };
 
     my @prereqs;
