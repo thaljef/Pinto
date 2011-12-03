@@ -180,6 +180,10 @@ sub vname {
 sub to_string {
     my ($self) = @_;
 
+    # Some attributes are just undefined, usually because of
+    # oddly named distributions and other old stuff on CPAN.
+    no warnings 'uninitialized';  ## no critic qw(NoWarnings);
+
     return sprintf '%s/%s/%s', $self->distribution->author(),
                                $self->distribution->vname(),
                                $self->vname();
@@ -207,6 +211,10 @@ sub to_formatted_string {
          'w' => sub { $self->distribution->version()                  },
          'u' => sub { $self->distribution->url()                      },
     );
+
+    # Some attributes are just undefined, usually because of
+    # oddly named distributions and other old stuff on CPAN.
+    no warnings 'uninitialized';  ## no critic qw(NoWarnings);
 
     $format ||= $self->default_format();
     return String::Format::stringf($format, %fspec);
