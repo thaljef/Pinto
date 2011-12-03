@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.025_003 2011-12-03 04:12:56 America/Los_Angeles
+
      Now needs newer versions of Dist::Requires and
      Dist::Metadata.  Thanks CPAN Testers for shaking that out.
 
