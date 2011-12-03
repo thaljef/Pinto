@@ -1,7 +1,9 @@
 {{$NEXT}}
 
-     Needs newer versions of Dist::Requires and
+     Now needs newer versions of Dist::Requires and
      Dist::Metadata.  Thanks CPAN Testers for shaking that out.
+
+     Prevent uninitialized warning when using the 'list' command.
 
 0.025_002 2011-12-02 04:39:19 America/Los_Angeles
 
