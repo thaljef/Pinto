@@ -23,7 +23,7 @@ override execute => sub {
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
-        $self->repos->remove_distribution(path => $dist);
+        $self->repos->remove_distribution($dist);
         $removed++
     }
 
