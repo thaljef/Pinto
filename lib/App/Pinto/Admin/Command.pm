@@ -49,7 +49,6 @@ sub execute {
 sub action_name {
     my ($self) = @_;
 
-    $DB::single = 1;
     my $class = ref $self || $self;
 
     $class =~ m{ ([^:]+) $ }mx
