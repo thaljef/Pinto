@@ -1,4 +1,4 @@
-=head1 PRIORITIZE...
+=head1 PRIORITIES
 
 =over 4
 
@@ -8,8 +8,11 @@
 
 =item Exception hierarchy/handling
 
+=back
 
+=head1 A LITTLE LESS IMPORTANT
 
+=over 
 
 =item Documentation review
 
@@ -23,18 +26,29 @@
 
 =item Query language?
 
+=back
 
+=head1 IDEAS FOR COOL NEW ACTIONS
+
+=over
+
+=item look: Unpack archive in temp dir and launch shell there
+
+=item ack: Do an ack command across all distributions
+
+=item news: list recent additions. maybe something from Changes file
 
 =back
 
-
-=head1 STUFF TODO
+=head1 OTHER STUFF TODO
 
 In no particular order...
 
 =over 4
 
-=item Implement --force option for the update command.
+=item Implement --force option for the mirror command (always fetch new index)  WHY?
+
+=item Implement --soft option for the mirror command (never fetch new index): WHY?
 
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
 CPAN::Mini::Visit.
@@ -65,7 +79,12 @@ my home-grown interface to Subversion.
 
 =item Consider using MooseX::Params::Validate on methods.
 
+=item Consider MooseX::Declare for method signatures.
+
 =item Profile and look for performance optimizations.
+
+=item Add --package option to the Add action, to excplicitly 
+declare what the archive provides (in case META is whack).
 
 =back
 
