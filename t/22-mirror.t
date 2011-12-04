@@ -31,7 +31,7 @@ $t->repository_empty_ok();
 # Updating from a foreign repository...
 
 $pinto->new_batch();
-$pinto->add_action('Mirror', source => $source);
+$pinto->add_action('Mirror');
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_loaded_ok( "$them/BarAndBaz-0.04.tar.gz/Bar-0.04",  1 );
