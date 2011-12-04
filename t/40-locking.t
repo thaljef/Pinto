@@ -3,24 +3,20 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 4);
+use Test::More;
 use Test::Exception;
 
-use File::Temp;
-use Path::Class;
-
-use Pinto;
+use Pinto::Tester;
 
 #------------------------------------------------------------------------------
+# Setup a repository...
 
-my $buffer = '';
-my $root_dir  = File::Temp::tempdir(CLEANUP => 1);
-my $pinto  = Pinto->new(root_dir => $root_dir, out => \$buffer, verbose => 2);
+my $t = Pinto::Tester->new();
+my $pinto = $t->pinto();
 $pinto->new_batch();
 
 #------------------------------------------------------------------------------
-# Finally, we can do a test now..
-
+# Now fork and have two processes run an action at the same time...
 
 my $pid = fork();
 die "fork failed: $!" unless defined $pid;
@@ -50,6 +46,6 @@ else {
     exit 0;
 }
 
+#------------------------------------------------------------------------------
 
-
-
+done_testing();
