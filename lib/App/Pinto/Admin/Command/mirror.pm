@@ -39,19 +39,6 @@ sub validate_args {
 
 #------------------------------------------------------------------------------
 
-sub execute {
-    my ($self, $opts, $args) = @_;
-
-    $self->pinto->new_batch( %{$opts} );
-    my @sources = $self->pinto->config->sources_list();
-    $self->pinto->add_action('Mirror', %{$opts}, source => $_) for @sources;
-    my $result = $self->pinto->run_actions();
-
-    return $result->is_success() ? 0 : 1;
-}
-
-#------------------------------------------------------------------------------
-
 1;
 
 __END__

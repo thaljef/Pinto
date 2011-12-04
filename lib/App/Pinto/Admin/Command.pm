@@ -5,6 +5,8 @@ package App::Pinto::Admin::Command;
 use strict;
 use warnings;
 
+use Carp;
+
 #-----------------------------------------------------------------------------
 
 use App::Cmd::Setup -command;
@@ -28,6 +30,32 @@ sub usage_desc {
 sub pinto {
     my ($self) = @_;
     return $self->app->pinto();
+}
+
+#-----------------------------------------------------------------------------
+
+sub execute {
+    my ($self, $opts, $args) = @_;
+
+    $self->pinto->new_batch( %{$opts} );
+    $self->pinto->add_action( $self->action_name(), %{$opts} );
+    my $result = $self->pinto->run_actions();
+
+    return $result->is_success() ? 0 : 1;
+}
+
+#-----------------------------------------------------------------------------
+
+sub action_name {
+    my ($self) = @_;
+
+    $DB::single = 1;
+    my $class = ref $self || $self;
+
+    $class =~ m{ ([^:]+) $ }mx
+      or croak "Unable to parse Action name from $class";
+
+    return ucfirst $1;
 }
 
 #-----------------------------------------------------------------------------
