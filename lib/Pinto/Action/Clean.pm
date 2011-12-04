@@ -3,9 +3,9 @@ package Pinto::Action::Clean;
 # ABSTRACT: Remove all outdated distributions from the repository
 
 use Moose;
-
 use MooseX::Types::Moose qw(Bool);
 
+use List::MoreUtils qw(none);
 use IO::Interactive;
 
 use namespace::autoclean;
@@ -34,18 +34,16 @@ override execute => sub {
     my ($self) = @_;
 
     my $outdated = $self->_select_outdated_distributions();
-
     my $removed  = 0;
+
     while ( my $dist = $outdated->next() ) {
-        my $path = $dist->path();
-        my $archive = $dist->archive( $self->config->root_dir() );
 
         if ( $self->confirm() && IO::Interactive::is_interactive() ) {
-            next if not $self->_prompt_for_confirmation($archive);
+            next if not $self->_prompt_for_confirmation($dist);
         }
 
-        $self->repos->remove_distribution(path => $dist);
-        $self->add_message( "Removed distribution $path" );
+        $self->repos->remove_distribution($dist);
+        $self->add_message( "Removed outdated distribution $dist" );
         $removed++;
     }
 
@@ -57,15 +55,19 @@ override execute => sub {
 sub _select_outdated_distributions {
     my ($self) = @_;
 
+    # TODO: This operation is pretty slow.  Find a way to make it
+    # faster (i.e. smarter query, slurp and filter).
+
     my $attrs = { prefetch => 'packages', order_by => {-asc => 'path'} };
-    my $rs = $self->db->select_distributions(undef, $attrs);
+    my $rs = $self->repos->select_distributions(undef, $attrs);
 
     my @outdated;
     while ( my $dist = $rs->next() ) {
-        push @outdated, $dist if none { $_->is_latest() } $dist->packages();
+        my @packages = $dist->packages->all();
+        push @outdated, $dist if none { $_->is_latest() } @packages;
     }
 
-    my $new_rs = $self->result_source->resultset();
+    my $new_rs = $rs->result_source->resultset();
     $new_rs->set_cache(\@outdated);
 
     return $new_rs;
