@@ -65,6 +65,21 @@ sub BUILDARGS {
     return \%args;
 }
 
+#------------------------------------------------------------------------------
+
+sub BUILD {
+    my ($self) = @_;
+
+    unless (    -e $self->config->db_file()
+             && -e $self->config->modules_dir()
+             && -e $self->config->authors_dir() ) {
+
+      my $root_dir = $self->config->root_dir();
+      $self->fatal("Directory $root_dir does not look like a Pinto repository");
+    }
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 # Builders
