@@ -6,8 +6,6 @@
 
 =item Support --fallback on Package::Locator
 
-=item Support --latest option on Import action
-
 =item Exception hierarchy/handling
 
 
