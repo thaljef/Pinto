@@ -277,14 +277,14 @@ sub to_formatted_string {
          'n' => sub { $self->name()                                   },
          'N' => sub { $self->vname()                                  },
          'v' => sub { $self->version->stringify()                     },
-         'x' => sub { $self->is_latest()                ? '*' : ' '   },
-         'm' => sub { $self->distribution->is_devel()   ? 'D' : 'R'   },
+         'x' => sub { $self->is_latest()                ? '@' : ' '   },
+         'y' => sub { $self->is_pinned()                ? '+' : ' '   },
+         'm' => sub { $self->distribution->is_devel()   ? 'd' : 'r'   },
          'p' => sub { $self->distribution->path()                     },
          'P' => sub { $self->distribution->archive()                  },
-         's' => sub { $self->distribution->is_local()   ? 'L' : 'F'   },
+         's' => sub { $self->distribution->is_local()   ? 'l' : 'f'   },
          'S' => sub { $self->distribution->source()                   },
          'a' => sub { $self->distribution->author()                   },
- #TODO:  'b' => sub { $self->is_blocked() ? 'B' : ' '                     },
          'd' => sub { $self->distribution->name()                     },
          'D' => sub { $self->distribution->vname()                    },
          'w' => sub { $self->distribution->version()                  },
@@ -322,9 +322,10 @@ sub compare_version {
     croak "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name() ne $pkg_b->name();
 
-    my $r =   ( $pkg_a->distribution->is_local() <=> $pkg_b->distribution->is_local() )
-           || ( $pkg_a->version()                <=> $pkg_b->version()                )
-           || ( $pkg_a->distribution->mtime()    <=> $pkg_b->distribution->mtime()    );
+    my $r =   ( ($pkg_a->is_pinned() || 0)        <=> ($pkg_b->is_pinned() || 0)        )
+           || ( $pkg_a->distribution->is_local()  <=> $pkg_b->distribution->is_local()  )
+           || ( $pkg_a->version()                 <=> $pkg_b->version()                 )
+           || ( $pkg_a->distribution->mtime()     <=> $pkg_b->distribution->mtime()     );
 
     # No two packages can be considered equal!
     throw_error "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
