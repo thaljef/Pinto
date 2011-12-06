@@ -1,14 +1,15 @@
 #!/bin/bash -x
 
-# Run this command from inside the sql/ directory to generate the
-# schema classes.  You must install DBIx::Class::Schema::Loader first.
+# Run this command from the root directory of the distribution.  You
+# must install DBIx::Class::Schema::Loader first.
 
-rm -rf pinto.db
+rm -rf sql/pinto.db
 
-sqlite3 pinto.db < pinto.sql
+sqlite3 sql/pinto.db < sql/pinto.sql
 
-dbicdump -o dump_directory=../lib \
+dbicdump -Ilib \
+         -o dump_directory=lib \
          -o 'relationship_attrs={ has_many => {cascade_delete => 1} }' \
          Pinto::Schema \
-         dbi:SQLite:pinto.db
+         dbi:SQLite:sql/pinto.db
 
