@@ -11,6 +11,7 @@ CREATE TABLE package (
        name TEXT NOT NULL,
        version TEXT NOT NULL,
        is_latest BOOLEAN DEFAULT NULL,
+       is_pinned BOOLEAN DEFAULT NULL,
        distribution INTEGER NOT NULL,
        FOREIGN KEY(distribution) REFERENCES distribution(distribution_id)
 );
