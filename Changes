@@ -1,5 +1,21 @@
 {{$NEXT}}
 
+     Added the 'pin' and 'unpin' commands, which can be used to tie
+     the index file to a specific version of a package.  This lets you
+     evolve your repository while keeping certain dependencies fixed.
+     Very cool!  See POD for details.
+
+     Pinto->new() will now blow up if you specify a root_dir that
+     doesn't actually look like a repository directory.  To be valid,
+     it must have a database file, a modules directory, and an authors
+     directory.
+
+     Some refactoring of duplicate code in App::Pinto::Admin::Command
+     subclasses.
+
+     Fixed broken code (e.g. calling undefined methods) in several
+     places.  Added more regression testing to catch this stuff.
+
 0.025_003 2011-12-03 04:12:56 America/Los_Angeles
 
      Now needs newer versions of Dist::Requires and
