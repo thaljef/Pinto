@@ -21,7 +21,8 @@ use namespace::autoclean;
 Readonly my $LEVEL_QUIET => -1;
 Readonly my $LEVEL_WARN  =>  0;
 Readonly my $LEVEL_INFO  =>  1;
-Readonly my $LEVEL_DEBUG =>  2;
+Readonly my $LEVEL_NOTE  =>  2;
+Readonly my $LEVEL_DEBUG =>  3;
 
 #-----------------------------------------------------------------------------
 # Moose attributes
@@ -29,7 +30,7 @@ Readonly my $LEVEL_DEBUG =>  2;
 has verbose  => (
     is       => 'ro',
     isa      => Int,
-    default  => $LEVEL_WARN,
+    default  => $LEVEL_INFO,
 );
 
 has out => (
@@ -78,6 +79,23 @@ sub debug {
 
     chomp $message;
     $self->_logit($message) if $self->verbose() >= $LEVEL_DEBUG;
+
+    return 1;
+}
+
+#-----------------------------------------------------------------------------
+
+=method note( $message )
+
+Logs a message if C<verbose> is 2 or higher.
+
+=cut
+
+sub note {
+    my ($self, $message) = @_;
+
+    chomp $message;
+    $self->_logit($message) if $self->verbose() >= $LEVEL_NOTE;
 
     return 1;
 }

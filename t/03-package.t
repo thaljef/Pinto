@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 19);
+use Test::More;
 
 use Path::Class;
 
@@ -30,16 +30,17 @@ is($pkg->vname(), 'Foo-0', 'vname with undef version');
 #------------------------------------------------------------------------------
 
 $dist = make_dist(path => 'A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz', source => 'http://remote');
-$pkg  = make_pkg(name => 'Foo', distribution => $dist, version => 1.2, is_latest => 1);
+$pkg  = make_pkg(name => 'Foo', distribution => $dist, version => 1.2, is_latest => 1, is_pinned => 1);
 
 my %formats = (
     'n' => 'Foo',
     'N' => 'Foo-1.2',
     'v' => '1.2',
-    'x' => '*',
-    'm' => 'D',
+    'x' => '@',
+    'y' => '+',
+    'm' => 'd',
     'p' => 'A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz',
-    's' => 'F',
+    's' => 'f',
     'S' => 'http://remote',
     'a' => 'AUTHOR',
     'd' => 'Foo',
@@ -54,3 +55,6 @@ while ( my ($placeholder, $expected) = each %formats ) {
 }
 
 #------------------------------------------------------------------------------
+
+done_testing();
+

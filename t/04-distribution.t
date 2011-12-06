@@ -40,9 +40,9 @@ is($dist->is_devel(), 1, 'this is a devel dist');
 $dist = make_dist(path => 'A/AU/AUTHOR/Foo-2.0.tar.gz');
 
 my %formats = (
-    'm' => 'R',
+    'm' => 'r',
     'p' => 'A/AU/AUTHOR/Foo-2.0.tar.gz',
-    's' => 'L',
+    's' => 'l',
     'S' => 'LOCAL',
     'a' => 'AUTHOR',
     'd' => 'Foo',
