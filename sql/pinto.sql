@@ -18,9 +18,7 @@ CREATE TABLE package (
 
 
 CREATE UNIQUE INDEX distribution_idx ON distribution(path);
-CREATE INDEX package_name_idx ON package(name);
-
-
 CREATE UNIQUE INDEX package_idx ON package(name, distribution);
 CREATE UNIQUE INDEX package_is_latest_idx ON package(name, is_latest);
-
+CREATE UNIQUE INDEX package_is_pinned_idx ON package(name, is_pinned);
+CREATE INDEX package_name_idx ON package(name);
