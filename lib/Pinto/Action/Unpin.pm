@@ -35,13 +35,17 @@ sub execute {
     my $pkg   = $self->repos->select_packages($where)->first();
 
     if (not $pkg) {
-        $self->whine("Package $name does not exist or is not pinned");
+        $self->whine("Package $name does not exist in the repository, or is not pinned");
         return 0;
     }
 
+    $self->debug("Unpinning package $pkg");
+
     $pkg->is_pinned(undef);
     $pkg->update();
-    $self->repos->db->mark_latest($pkg);
+    my $latest = $self->repos->db->mark_latest($pkg);
+
+    $self->add_message("Unpinned package $name. Latest is now $latest");
 
     return 1;
 }

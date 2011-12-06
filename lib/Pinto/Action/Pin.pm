@@ -38,8 +38,11 @@ sub execute {
     my ($self) = @_;
 
     my $pkg = $self->_get_package() or return 0;
-    $self->whine("$pkg is already pinned") and return 0 if $pkg->is_pinned();
+    $self->whine("Package $pkg is already pinned") and return 0 if $pkg->is_pinned();
     $self->_do_pin($pkg);
+
+    my $name = $pkg->name();
+    $self->add_message("Pinned package $name. Latest is now $pkg");
 
     return 1;
 }
@@ -60,7 +63,7 @@ sub _get_package {
     my $pkg_vname = $self->package() . $vname_suffix;
 
     if (not $pkg_count) {
-        $self->whine("Repository does not contain package $pkg_vname");
+        $self->whine("Package $pkg_vname does not exist in the repository");
         return;
     }
     elsif ( $pkg_count > 1) {
@@ -79,6 +82,8 @@ sub _get_package {
 
 sub _do_pin {
     my ($self, $pkg) = @_;
+
+    $self->debug("Pinning package $pkg");
 
     # Only one version of a package can be pinned at a time.
     # So first, we unpin all the packages with that name...
