@@ -262,7 +262,7 @@ applications.
 
 PAUSE has a system of assigning ownership and co-maintenance
 permission to individuals or groups.  But Pinto only has a basic
-"first-come" system of ownership.  The ownerhsip controls are only
+"first-come" system of ownership.  The ownership controls are only
 advisory and can easily be bypassed (see next item below).
 
 
@@ -270,7 +270,7 @@ advisory and can easily be bypassed (see next item below).
 
 PAUSE requires authors to authenticate themselves before they can
 upload or remove distributions.  However, Pinto does not authenticate
-and permits users masquarade as anybody they want to be.  This is
+and permits users masquerade as anybody they want to be.  This is
 actually intentional and designed to encourage collaboration among
 developers.
 
@@ -280,6 +280,6 @@ developers.
 
 For now, the Pinto API is private, undocumented, and subject to
 radical change without notice.  In the meantime, the command line
-utilties mentioned in the C</SYNOPSIS> are your public interface.
+utilities mentioned in the C</SYNOPSIS> are your public interface.
 
 =cut

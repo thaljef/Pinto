@@ -75,7 +75,7 @@ __END__
 
 This command unpins a package from the index, so that the latest
 version will appear in the index.  Note that local packages still have
-prededence over foreign packages.
+precedence over foreign packages.
 
 =head1 COMMAND ARGUMENTS
 
