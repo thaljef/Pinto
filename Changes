@@ -1,43 +1,5 @@
 {{$NEXT}}
 
-0.025_004 2011-12-06 21:11:00 America/Los_Angeles
-
-     Added the 'pin' and 'unpin' commands, which can be used to tie
-     the index file to a specific version of a package.  This lets you
-     evolve your repository while keeping certain dependencies fixed.
-     Very cool!  See POD for details.
-
-     Pinto->new() will now blow up if you specify a root_dir that
-     doesn't actually look like a repository directory.  To be valid,
-     it must have a database file, a modules directory, and an authors
-     directory.
-
-     pinto-admin now outputs diagnostic messages at the "info" level.
-     Being completely silent by default was just too much to bear,
-     especially for long running processes.  Use the --quiet option
-     to get less output, or use the --verbose option to get more.
-     
-     Some refactoring of duplicate code in App::Pinto::Admin::Command
-     subclasses.
-
-     Fixed broken code (e.g. calling undefined methods) in several
-     places.  Added more regression testing to catch this stuff.
-
-0.025_003 2011-12-03 04:12:56 America/Los_Angeles
-
-     Now needs newer versions of Dist::Requires and
-     Dist::Metadata.  Thanks CPAN Testers for shaking that out.
-
-     Prevent uninitialized warning when using the 'list' command.
-
-0.025_002 2011-12-02 04:39:19 America/Los_Angeles
-
-     Fixed bugs in the Rebuild action.
-
-     Changed some log messages to be more helpful
-     and/or less noisy.
-
-0.025_001 2011-12-02 03:18:26 America/Los_Angeles
 
      ===============================================================
      IMPORTANT: This version of Pinto is not compatible with
@@ -119,11 +81,16 @@
      information.
 
      pinto-admin now has a 'purge' command that removes everything
-     from your repository.  You'll be prompted for confirmation.
+     from your repository.
 
      pinto-admin now has an experimental 'import' command that fetches
      a remote package or distribution (and its dependencies,
      recursively) and puts all of them in your local repository.
+
+     pinto-admin now has the 'pin' and 'unpin' commands, which can be
+     used to tie the index file to a specific version of a package.
+     This lets you evolve your repository while keeping certain
+     packages fixed.  Very cool!  See POD for details.
 
      Most of the pinto-admin commands now have aliases.  Thanks to the
      awesomeness of App::Cmd, you can say 'pinto-admin rm' instead of
@@ -160,16 +127,37 @@
      no longer supported.  I'm thinking of changing the meaning of
      "force" and might bring it back in a future release.
 
-     pinto-admin is less noisy.  You won't see any output on the
-     command line unless you set the --verbose switch or there is some
-     kind of error or warning.  Setting the --quiet switch will still
-     suppress any non-fatal warnings.
+     pinto-admin is a little less noisy by default.  You can increase
+     the verbosity by repeating the '-v' option up to three times.
+
+     Now needs newer versions of Dist::Requires and
+     Dist::Metadata.  Thanks CPAN Testers for shaking that out.
+
+     Pinto->new() will now blow up if you specify a root_dir that
+     doesn't actually look like a repository directory.  To be valid,
+     it must have a database file, a modules directory, and an authors
+     directory.
+
+     Changed some log messages to be more helpful
+     and/or less noisy.
 
      * Bug Fixes:
 
      Fixed bug where Pinto might blow up with 'too many args' error
-     the first time you update from a CPAN mirror.
+     the first time you update from a CPAN mirror using the Svn store.
 
+     Fixed broken code (e.g. calling undefined methods) in several
+     places.  Added more regression testing to catch this stuff.
+
+     Prevent uninitialized warning when using the 'list' command.
+
+
+0.025_004 2011-12-06 21:11:00 America/Los_Angeles
+0.025_003 2011-12-03 04:12:56 America/Los_Angeles
+0.025_002 2011-12-02 04:39:19 America/Los_Angeles
+0.025_001 2011-12-02 03:18:26 America/Los_Angeles
+
+     Net changes aggregated above in 0.026
 
 0.024     2011-09-01 15:23:48 America/Los_Angeles
 
