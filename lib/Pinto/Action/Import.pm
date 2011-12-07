@@ -218,6 +218,8 @@ sub _import_distribution {
 
     my $dist = $self->repos->add_distribution($struct);
 
+    $self->add_message( Pinto::Util::imported_dist_message($dist) );
+
     return $dist;
 }
 #------------------------------------------------------------------------------

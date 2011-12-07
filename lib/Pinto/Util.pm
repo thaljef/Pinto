@@ -114,10 +114,10 @@ sub removed_dist_message {
 
 #-------------------------------------------------------------------------------
 
-sub reindexed_dist_message {
+sub imported_dist_message {
     my ($distribution) = @_;
 
-    return _dist_message($distribution, 'Reindexed');
+    return _dist_message($distribution, 'Imported');
 }
 
 #-------------------------------------------------------------------------------

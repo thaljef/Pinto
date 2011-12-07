@@ -42,6 +42,7 @@ override execute => sub {
             next if not $self->_prompt_for_confirmation($dist);
         }
 
+        $self->info("Removing distribution $dist");
         $self->repos->remove_distribution($dist);
         $self->add_message( "Removed outdated distribution $dist" );
         $removed++;
