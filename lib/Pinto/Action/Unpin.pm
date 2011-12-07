@@ -39,7 +39,7 @@ sub execute {
         return 0;
     }
 
-    $self->debug("Unpinning package $pkg");
+    $self->info("Unpinning package $pkg");
 
     $pkg->is_pinned(undef);
     $pkg->update();

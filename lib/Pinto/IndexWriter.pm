@@ -33,7 +33,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
     my $file = $args{file};
-    $self->info("Writing index at $file");
+    $self->note("Writing index at $file");
 
     open my $fh, '>:gzip', $file or throw_fatal "Cannot open $file: $!";
     $self->_write_header($fh, $file);

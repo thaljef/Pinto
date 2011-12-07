@@ -83,7 +83,7 @@ sub _get_package {
 sub _do_pin {
     my ($self, $pkg) = @_;
 
-    $self->debug("Pinning package $pkg");
+    $self->info("Pinning package $pkg");
 
     # Only one version of a package can be pinned at a time.
     # So first, we unpin all the packages with that name...

@@ -82,8 +82,6 @@ override execute => sub {
     my @pkg_specs = $self->_extract_packages_and_check_authorship();
     $self->info(sprintf "Adding distribution $path with %d packages", scalar @pkg_specs);
 
-    # TODO: must copy archive into the repository.  But I'm not sure where that code should go.
-
     my $struct = { path     => $path,
                    source   => 'LOCAL',
                    mtime    => Pinto::Util::mtime($archive),

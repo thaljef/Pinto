@@ -46,7 +46,7 @@ sub provides {
     # Must stringify, cuz D::M doesn't like Path::Class objects
     my $archive = $args{archive}->stringify();
 
-    $self->debug("Extracting packages from archive $archive");
+    $self->note("Extracting packages from archive $archive");
 
     my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
                    catch { throw_error "Unable to extract packages from $archive: $_" };
@@ -73,7 +73,7 @@ sub requires {
 
     my $archive = $args{archive};
 
-    $self->debug("Extracting prerequisites from $archive");
+    $self->note("Extracting prerequisites from $archive");
 
     my %prereqs =   try { Dist::Requires->new()->prerequisites(dist => $archive)          }
                   catch { throw_error "Unable to extract prerequisites from $archive: $_" };

@@ -48,7 +48,8 @@ override execute => sub {
     my $dist  = $self->repos->select_distributions( $where )->single();
     throw_error "Distribution $path does not exist" if not $dist;
 
-    $self->info(sprintf "Removing distribution $dist with %d packages", $dist->package_count());
+    my $count = $dist->package_count();
+    $self->info("Removing distribution $dist with $count packages");
 
     $self->repos->remove_distribution($dist);
 

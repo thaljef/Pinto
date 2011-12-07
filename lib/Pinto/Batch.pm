@@ -106,7 +106,7 @@ sub run {
     }
 
     if ( not  $self->_result->changes_made() ) {
-        $self->debug('No changes were made');
+        $self->note('No changes were made');
         return $self->_result();
     }
 
