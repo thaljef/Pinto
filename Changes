@@ -10,6 +10,11 @@
      it must have a database file, a modules directory, and an authors
      directory.
 
+     pinto-admin now outputs diagnostic messages at the "info" level.
+     Being completely silent by default was just too much to bear,
+     especially for long running processes.  Use the --quiet option
+     to get less output, or use the --verbose option to get more.
+     
      Some refactoring of duplicate code in App::Pinto::Admin::Command
      subclasses.
 
