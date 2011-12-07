@@ -74,6 +74,10 @@ sub _select_outdated_distributions {
 
 }
 
+# TODO: Do not clean the following...
+# Latest version of any foreign pkg that is blocked by a local pkg
+# Latest version of any pkg that is blocked by a pin
+
 #------------------------------------------------------------------------------
 
 sub _prompt_for_confirmation {
