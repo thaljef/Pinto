@@ -103,58 +103,6 @@ __PACKAGE__->has_many(
 
 # Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-06 11:01:04
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oaRV9jWYq0VgLnIU/he+sA
-# These lines were loaded from '/Users/jeff/opt/local/lib/perl5/site_perl/5.14.1/Pinto/Schema/Result/Distribution.pm' found in @INC.
-# They are now part of the custom portion of this file
-# for you to hand-edit.  If you do not either delete
-# this section or remove that file from @INC, this section
-# will be repeated redundantly when you re-create this
-# file again via Loader!  See skip_load_external to disable
-# this feature.
-
-use utf8;
-package Pinto::Schema::Result::Distribution;
-
-# Created by DBIx::Class::Schema::Loader
-# DO NOT MODIFY THE FIRST PART OF THIS FILE
-
-
-use strict;
-use warnings;
-
-use base 'DBIx::Class::Core';
-
-
-__PACKAGE__->table("distribution");
-
-
-__PACKAGE__->add_columns(
-  "distribution_id",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "path",
-  { data_type => "text", is_nullable => 0 },
-  "source",
-  { data_type => "text", is_nullable => 0 },
-  "mtime",
-  { data_type => "integer", is_nullable => 0 },
-);
-
-
-__PACKAGE__->set_primary_key("distribution_id");
-
-
-__PACKAGE__->add_unique_constraint("path_unique", ["path"]);
-
-
-__PACKAGE__->has_many(
-  "packages",
-  "Pinto::Schema::Result::Package",
-  { "foreign.distribution" => "self.distribution_id" },
-  { cascade_copy => 0, cascade_delete => 1 },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-11-30 13:16:11
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:A9/6kPtFOxbhExC2ncsT5Q
 
 #-------------------------------------------------------------------------------
 
