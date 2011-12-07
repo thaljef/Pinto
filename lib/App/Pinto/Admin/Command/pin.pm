@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::pin;
 
-# ABSTRACT: tie the index to a particular package
+# ABSTRACT: force a package into the index
 
 use strict;
 use warnings;
@@ -79,9 +79,16 @@ __END__
 =head1 DESCRIPTION
 
 This command pins a package so that it will always appear in the index
-even if a newer version is mirrored or imported.  To unpin a package,
-so that the latest version appears in the index see the C<unpin>
-command.
+even if it is not the latest version, or a newer version is
+subsequently mirrored or imported.  You can pin the latest version of
+the package, or any arbitrary version of the package.
+
+Only one version of a package can be pinned at any one time.  If you
+pin C<Foo::Bar-1.0>, and then later pin <Foo::Bar-2.0>, then
+C<Foo::Bar-1.0> immediately becomes unpinned.
+
+To forcibly unpin a package, so that the latest version appears in the
+index, please see the C<unpin> command.
 
 =head1 COMMAND ARGUMENTS
 

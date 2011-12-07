@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::unpin;
 
-# ABSTRACT: untie the index from a particular package
+# ABSTRACT: loosen a package that has been pinned
 
 use strict;
 use warnings;

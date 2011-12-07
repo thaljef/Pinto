@@ -1,6 +1,6 @@
 package Pinto::Action::Pin;
 
-# ABSTRACT: Tie the index to a particular package
+# ABSTRACT: Force a package into the index
 
 use Moose;
 use MooseX::Types::Moose qw(Str);

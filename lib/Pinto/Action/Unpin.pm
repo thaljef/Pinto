@@ -1,6 +1,6 @@
 package Pinto::Action::Unpin;
 
-# ABSTRACT: Untie the index from a particular package
+# ABSTRACT: Loosen a package that has been pinned
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
