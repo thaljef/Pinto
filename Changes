@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.025_004 2011-12-06 21:11:00 America/Los_Angeles
+
      Added the 'pin' and 'unpin' commands, which can be used to tie
      the index file to a specific version of a package.  This lets you
      evolve your repository while keeping certain dependencies fixed.
