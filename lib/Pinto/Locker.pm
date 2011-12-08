@@ -32,14 +32,6 @@ has _lockmgr => (
     lazy_build => 1,
 );
 
-has _lockfile => (
-    is         => 'ro',
-    isa        => File,
-    init_arg   => undef,
-    default    => sub { $_[0]->config->root_dir->file('.lock') },
-    lazy       => 1,
-);
-
 #-----------------------------------------------------------------------------
 # Moose roles
 
