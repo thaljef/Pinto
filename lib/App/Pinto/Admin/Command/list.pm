@@ -27,8 +27,12 @@ sub opt_spec {
 
     return (
 
-        [ 'noinit'   => 'Do not pull/update from VCS' ],
-        [ 'format=s' => 'Format specification (See POD for details)' ],
+        [ 'distributions|d=s' => 'Limit to matching distribution paths' ],
+        [ 'noinit'            => 'Do not pull/update from VCS' ],
+        [ 'packages|p=s'      => 'Limit to matching package names' ],
+        [ 'format=s'          => 'Format specification (See POD for details)' ],
+
+
 
     );
 }
@@ -38,11 +42,20 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Arguments are not allowed') if @{ $args };
+    $self->usage_error('Arguments are not allowed')
+        if @{ $args };
 
-    ## no critic qw(StringyEval)
-    ## Double-interpolate, to expand \n, \t, etc.
-    $opts->{format} = eval qq{"$opts->{format}"} if $opts->{format};
+    $self->usage_error('Cannot specify packages and distributions together')
+        if $opts->{packages} and $opts->{distributions};
+
+    $opts->{format} = eval qq{"$opts->{format}"}
+        if $opts->{format};  ## no critic qw(StringyEval)
+
+    my $pkg_name = delete $opts->{packages};
+    $opts->{where}->{name} = { like => "%$pkg_name%" } if $pkg_name;
+
+    my $dist_path = delete $opts->{distributions};
+    $opts->{where}->{path} = { like => "%$dist_path%" } if $dist_path;
 
     return 1;
 }
@@ -59,11 +72,14 @@ __END__
 
 =head1 DESCRIPTION
 
-This command lists the distributions and packages that are indexed in
-your repository.  You can format the output to see the specific bits
-of information that you want.
+This command lists the distributions and packages that are in your
+repository.  You can format the output to see the specific bits of
+information that you want.
 
-Note this command never changes the state of your repository.
+For a large repository, it can take fair amount of time to list
+everything.  You might consider using the C<--packages> or
+C<--distributions> options to narrow the scope.  If you need even more
+precise filtering, consider running the output through C<grep>.
 
 =head1 COMMAND ARGUMENTS
 
@@ -72,6 +88,15 @@ None.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item -d=PATTERN
+
+=item --distributions=PATTERN
+
+Limits the listing to records where the distributions path matches
+C<PATTERN>.  Note that C<PATTERN> is just a plain string, not a regular
+expression.  The C<PATTERN> will match if it appears anywhere in the
+distribution path.
 
 =item --format=FORMAT_SPECIFICATION
 
@@ -118,6 +143,15 @@ VCS-based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
+
+=item -p=PATTERN
+
+=item --packages=PATTERN
+
+Limits the listing to records where the package name matches
+C<PATTERN>.  Note that C<PATTERN> is just a plain string, not a
+regular expression.  The C<PATTERN> will match if it appears anywhere
+in the package name.
 
 =back
 

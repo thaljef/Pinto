@@ -6,7 +6,7 @@ use Moose;
 
 use Carp qw(croak);
 
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::Types::Moose qw(Str HashRef);
 use Pinto::Types qw(IO);
 
 use namespace::autoclean;
@@ -36,15 +36,24 @@ has format => (
     default => '',
 );
 
+
+has where => (
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub { {} },
+);
+
 #------------------------------------------------------------------------------
 
 override execute => sub {
     my ($self) = @_;
 
+    my $where = $self->where();
+
     my $attrs = { order_by => [ qw(name version path) ],
                   prefetch => 'distribution' };
 
-    my $rs = $self->repos->db->select_packages(undef, $attrs);
+    my $rs = $self->repos->db->select_packages($where, $attrs);
 
     my $format = $self->format();
     while( my $package = $rs->next() ) {
