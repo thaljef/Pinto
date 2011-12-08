@@ -32,9 +32,6 @@ if ($pid) {
     print "Starting: $$\n";
     $pinto->add_action('Nop');
 
-    my $lockfile = $pinto->locker->_lockfile();
-    is -e $lockfile, 1, 'Lockfile is present';
-
     throws_ok { $pinto->run_actions() } qr/Unable to lock/,
       'Refused access to locked repository';
 
@@ -45,9 +42,6 @@ if ($pid) {
     $pinto->add_action('Nop');
     lives_ok { $pinto->run_actions() }
       'Got access after the sleeper died';
-
-    $pinto = undef;
-    is -e $lockfile, undef, 'Lockfile is gone when pinto is destroyed';
 }
 else {
     # child
