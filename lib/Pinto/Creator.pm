@@ -85,6 +85,8 @@ sub create {
     # Write authors index
     $self->_write_mailrc();
 
+    $self->info("Created new repository at directory $root_dir");
+
     return $self;
 }
 
