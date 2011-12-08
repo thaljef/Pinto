@@ -38,21 +38,14 @@ has format => (
 
 #------------------------------------------------------------------------------
 
-sub package_rs {
+override execute => sub {
     my ($self) = @_;
 
     my $attrs = { order_by => [ qw(name version path) ],
                   prefetch => 'distribution' };
 
-    return $self->repos->db->select_packages(undef, $attrs);
-}
+    my $rs = $self->repos->db->select_packages(undef, $attrs);
 
-#------------------------------------------------------------------------------
-
-override execute => sub {
-    my ($self) = @_;
-
-    my $rs = $self->package_rs();
     my $format = $self->format();
     while( my $package = $rs->next() ) {
         print { $self->out() } $package->to_formatted_string($format);
