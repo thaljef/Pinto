@@ -121,13 +121,10 @@ sub remove_archive {
 sub add_file {
     my ($self, %args) = @_;
 
-    my $file   = $args{file};
+    my $path = $args{file};
 
-    throw_fatal "$file does not exist"
-        if not -e $file;
-
-    throw_fatal "$file is not a file"
-        if not -f $file;
+    throw_fatal "$path does not exist"
+        if not -e $path;
 
     return $self;
 }
