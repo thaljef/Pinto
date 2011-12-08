@@ -21,7 +21,8 @@ use namespace::autoclean;
 has _lock => (
     is         => 'rw',
     isa        => 'LockFile::Lock',
-    predicate  => '_has_lock',
+    predicate  => 'is_locked',
+    clearer    => '_clear_lock',
     init_arg   => undef,
 );
 
@@ -98,15 +99,29 @@ get to work.
 sub unlock {
     my ($self) = @_;
 
-    return $self if not $self->_has_lock();
+    return $self if not $self->is_locked();
 
     $self->_lock->release() or $self->fatal('Unable to unlock repository');
+    $self->_clear_lock();
 
     my $root_dir = $self->config->root_dir();
     $self->debug("Process $$ released the lock on $root_dir");
 
     return $self;
 }
+
+#------------------------------------------------------------------------------
+
+sub DEMOLISH {
+    my ($self) = @_;
+
+    $self->unlock();
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
 
 #-----------------------------------------------------------------------------
 

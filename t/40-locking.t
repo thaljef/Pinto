@@ -16,7 +16,12 @@ my $pinto = $t->pinto();
 $pinto->new_batch();
 
 #------------------------------------------------------------------------------
+
+is($pinto->locker->is_locked(), '', 'Repository is not locked initially');
+
+#------------------------------------------------------------------------------
 # Now fork and have two processes run an action at the same time...
+
 
 my $pid = fork();
 die "fork failed: $!" unless defined $pid;
@@ -37,6 +42,9 @@ if ($pid) {
     $pinto->add_action('Nop');
     lives_ok { $pinto->run_actions() }
       'Got lock after the sleeper died';
+
+    is $pinto->locker->is_locked(), '',
+       'Repository is not locked when batch is completed';
 }
 else {
     # child
