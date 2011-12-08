@@ -31,7 +31,7 @@ $t->result_ok( $pinto->run_actions() );
 #------------------------------------------------------------------------------
 # Now delete the index file
 
-my $index = $t->pinto->config->packages_details_file();
+my $index = $t->pinto->config->index_file();
 ok( -e $index, "Index file $index exists");
 
 $index->remove();

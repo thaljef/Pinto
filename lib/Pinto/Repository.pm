@@ -31,7 +31,7 @@ has db => (
 has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
-    handles    => [ qw(initialize commit tag) ],
+    handles    => [ qw(initialize tag) ],
     lazy_build => 1,
 );
 
@@ -115,6 +115,17 @@ sub remove_distribution {
     $self->store->remove_archive( $dist->archive( $self->root_dir() ) );
 
     return $dist;
+}
+
+#-------------------------------------------------------------------------------
+
+sub commit {
+    my ($self) = @_;
+
+    $self->store->add_file( $self->config->pinto_dir() );
+    $self->store->commit();
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------

@@ -155,7 +155,7 @@ sub write_index {
     my $writer = Pinto::IndexWriter->new( logger => $self->logger(),
                                           db     => $self );
 
-    my $index_file = $self->config->packages_details_file();
+    my $index_file = $self->config->index_file();
     $writer->write(file => $index_file);
 
     return $self;

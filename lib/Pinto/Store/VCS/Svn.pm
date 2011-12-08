@@ -57,7 +57,7 @@ override add_file => sub {
         $path = $path->parent();
     }
 
-    $self->debug("Scheduling $original_path for addition");
+    $self->debug("Scheduling $original_path for addition to VCS");
     Pinto::Util::Svn::svn_add(path => $path);
     $self->mark_path_as_added($path);
 
@@ -72,7 +72,7 @@ override remove_file => sub {
     my $file  = $args{file};
     return $self if not -e $file;
 
-    $self->debug("Scheduling $file for removal");
+    $self->debug("Scheduling $file for removal from VCS");
     my $removed = Pinto::Util::Svn::svn_remove(path => $file);
     $self->mark_path_as_removed($removed);
 

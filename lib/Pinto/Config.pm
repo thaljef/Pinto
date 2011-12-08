@@ -45,7 +45,7 @@ has modules_dir => (
 );
 
 
-has packages_details_file => (
+has index_file => (
     is        => 'ro',
     isa       => File,
     init_arg  => undef,

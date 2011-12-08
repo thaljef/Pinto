@@ -7,7 +7,7 @@ use Moose;
 use Path::Class;
 use LockFile::Simple;
 
-use Pinto::Types qw(Dir);
+use Pinto::Types qw(File);
 
 use namespace::autoclean;
 
@@ -22,7 +22,6 @@ has _lock => (
     is         => 'rw',
     isa        => 'LockFile::Lock',
     predicate  => 'is_locked',
-    clearer    => '_clear_lock',
     init_arg   => undef,
 );
 
@@ -31,7 +30,14 @@ has _lockmgr => (
     isa        => 'LockFile::Simple',
     init_arg   => undef,
     lazy_build => 1,
+);
 
+has _lockfile => (
+    is         => 'ro',
+    isa        => File,
+    init_arg   => undef,
+    default    => sub { $_[0]->config->root_dir->file('.lock') },
+    lazy       => 1,
 );
 
 #-----------------------------------------------------------------------------
@@ -102,7 +108,6 @@ sub unlock {
     return $self if not $self->is_locked();
 
     $self->_lock->release() or $self->fatal('Unable to unlock repository');
-    $self->_clear_lock();
 
     my $root_dir = $self->config->root_dir();
     $self->debug("Process $$ released the lock on $root_dir");
@@ -115,7 +120,7 @@ sub unlock {
 sub DEMOLISH {
     my ($self) = @_;
 
-    $self->unlock();
+    try { $self->_lockfile->remove() };
 
     return;
 }

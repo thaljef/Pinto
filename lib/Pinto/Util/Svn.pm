@@ -42,7 +42,7 @@ sub svn_add {
     my %args = @_;
     my $path = $args{path};
 
-    return _svn( command => ['add', $path] );
+    return _svn( command => ['add', '--force', $path] );
 }
 
 #--------------------------------------------------------------------------

@@ -32,8 +32,11 @@ if ($pid) {
     print "Starting: $$\n";
     $pinto->add_action('Nop');
 
+    my $lockfile = $pinto->locker->_lockfile();
+    is -e $lockfile, 1, 'Lockfile is present';
+
     throws_ok { $pinto->run_actions() } qr/Unable to lock/,
-      'Repository is locked by sleeper';
+      'Refused access to locked repository';
 
     my $kid = wait; # Let the child finish
     is($kid, $pid, "reaped correct child");
@@ -41,10 +44,10 @@ if ($pid) {
 
     $pinto->add_action('Nop');
     lives_ok { $pinto->run_actions() }
-      'Got lock after the sleeper died';
+      'Got access after the sleeper died';
 
-    is $pinto->locker->is_locked(), '',
-       'Repository is not locked when batch is completed';
+    $pinto = undef;
+    is -e $lockfile, undef, 'Lockfile is gone when pinto is destroyed';
 }
 else {
     # child
