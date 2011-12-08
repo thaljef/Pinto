@@ -17,7 +17,7 @@ use namespace::autoclean;
 #-------------------------------------------------------------------------------
 # ISA
 
-extends 'Pinto::Store::VCS';
+extends qw( Pinto::Store::VCS );
 
 #-------------------------------------------------------------------------------
 # Attributes
@@ -35,22 +35,22 @@ has svn_location => (
 #-------------------------------------------------------------------------------
 # Methods
 
-override initialize => sub {
+augment initialize => sub {
     my ($self) = @_;
 
     my $root_dir = $self->config->root_dir();
     $self->note('Updating working copy');
     Pinto::Util::Svn::svn_update(dir => $root_dir);
 
-    return 1;
+    return $self;
 };
 
 #-------------------------------------------------------------------------------
 
-override add_file => sub {
+augment add_path => sub {
     my ($self, %args) = @_;
 
-    my $path = $args{file};
+    my $path = $args{path};
     my $original_path = $path;
 
     while (not -e $path->parent->file('.svn') ) {
@@ -59,37 +59,31 @@ override add_file => sub {
 
     $self->debug("Scheduling $original_path for addition to VCS");
     Pinto::Util::Svn::svn_add(path => $path);
-    $self->mark_path_as_added($path);
+    $self->mark_path_for_commit($path);
 
     return $self;
 };
 
 #-------------------------------------------------------------------------------
 
-override remove_file => sub {
+augment remove_path => sub {
     my ($self, %args) = @_;
 
-    my $file  = $args{file};
-    return $self if not -e $file;
-
-    $self->debug("Scheduling $file for removal from VCS");
-    my $removed = Pinto::Util::Svn::svn_remove(path => $file);
-    $self->mark_path_as_removed($removed);
+    my $path  = $args{path};
+    $self->debug("Scheduling $path for removal from VCS");
+    my $removed = Pinto::Util::Svn::svn_remove(path => $path);
+    $self->mark_path_for_commit($removed);
 
     return $self;
 };
 
 #-------------------------------------------------------------------------------
 
-override commit => sub {
+augment commit => sub {
     my ($self, %args) = @_;
-    super();
 
-    my $message   = $args{message} || 'NO MESSAGE WAS GIVEN';
-
-    my $paths = [ $self->added_paths(),
-                  $self->removed_paths(),
-                  $self->modified_paths() ];
+    my $message = $args{message} || 'NO MESSAGE WAS GIVEN';
+    my $paths   = $self->paths_to_commit();
 
     $self->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
@@ -100,7 +94,7 @@ override commit => sub {
 #-------------------------------------------------------------------------------
 # TODO: allow users to specify a tag template.
 
-override tag => sub {
+augment tag => sub {
     my ($self, %args) = @_;
 
     my $now = DateTime->now();
@@ -113,7 +107,7 @@ override tag => sub {
     my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();
     Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $msg);
 
-    return 1;
+    return $self;
 };
 
 #-------------------------------------------------------------------------------

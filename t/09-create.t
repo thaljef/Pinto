@@ -22,7 +22,7 @@ $t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
 $t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
 
 is $pinto->config->noinit(),    0, 'Got default noinit';
-is $pinto->config->store(),     'Pinto::Store', 'Got default store';
+is $pinto->config->store(),     'Pinto::Store::File', 'Got default store';
 is $pinto->config->sources(),   'http://cpan.perl.org', 'Got default source';
 
 #------------------------------------------------------------------------------

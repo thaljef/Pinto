@@ -20,7 +20,7 @@ use Pinto::Config;
     my %default_cases = (
         root_dir  => 'nowhere',
         sources   => 'http://cpan.perl.org',
-        store     => 'Pinto::Store',
+        store     => 'Pinto::Store::File',
         noinit    => 0,
         devel     => 0,
     );

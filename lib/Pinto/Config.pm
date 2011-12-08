@@ -148,7 +148,7 @@ has store => (
     is        => 'ro',
     isa       => Str,
     key       => 'store',
-    default   => 'Pinto::Store',
+    default   => 'Pinto::Store::File',
     documentation => 'Name of class that handles storage of your repository',
 );
 
