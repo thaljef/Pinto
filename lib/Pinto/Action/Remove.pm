@@ -48,7 +48,12 @@ override execute => sub {
     my $dist  = $self->repos->select_distributions( $where )->single();
     throw_error "Distribution $path does not exist" if not $dist;
 
-    my $count = $dist->package_count();
+    # Must call accessor to ensure the package objects are attached
+    # to the dist object before we delete.  Otherwise, we can't log
+    # which packages were deleted, because they'll already be gone.
+    my @pkgs = $dist->packages();
+    my $count = @pkgs;
+
     $self->info("Removing distribution $dist with $count packages");
 
     $self->repos->remove_distribution($dist);
