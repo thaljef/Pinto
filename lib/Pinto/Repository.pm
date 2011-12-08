@@ -122,7 +122,8 @@ sub remove_distribution {
 sub commit {
     my ($self) = @_;
 
-    $self->store->add_file( $self->config->pinto_dir() );
+    $self->store->add_file( file => $self->config->pinto_dir() );
+    $self->store->add_file( file => $self->config->modules_dir() );
     $self->store->commit();
 
     return $self;
