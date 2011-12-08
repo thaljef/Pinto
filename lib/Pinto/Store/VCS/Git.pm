@@ -14,35 +14,35 @@ extends 'Pinto::Store::VCS';
 
 #-------------------------------------------------------------------------------
 
-override initialize => sub {
+augment initialize => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git clone or git pull
 };
 
 #-------------------------------------------------------------------------------
 
-override commit => sub {
+augment commit => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git commit and push
 };
 
 #-------------------------------------------------------------------------------
 
-override tag => sub {
+augment tag => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git tag
 };
 
 #-------------------------------------------------------------------------------
 
-override add_file => sub {
+augment add_path => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git add
 };
 
 #-------------------------------------------------------------------------------
 
-override remove_file => sub {
+augment remove_path => sub {
     croak __PACKAGE__ . 'is not implemented yet';
     # git rm
 };
