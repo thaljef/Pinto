@@ -51,15 +51,9 @@ augment add_path => sub {
     my ($self, %args) = @_;
 
     my $path = $args{path};
-    my $original_path = $path;
-
-    while (not -e $path->parent->file('.svn') ) {
-        $path = $path->parent();
-    }
-
-    $self->debug("Scheduling $original_path for addition to VCS");
-    Pinto::Util::Svn::svn_add(path => $path);
-    $self->mark_path_for_commit($path);
+    $self->debug("Scheduling $path for addition to VCS");
+    my $added = Pinto::Util::Svn::svn_add(path => $path);
+    $self->mark_path_for_commit($added);
 
     return $self;
 };
