@@ -58,6 +58,21 @@ sub index_packages {
 
     return $self->db->select_packages( $where )->count();
 }
+
+#------------------------------------------------------------------------------
+
+# TODO: Other statistics to consider...
+#
+# foreign packages (total/indexed)
+# local   packages (total/indexed)
+# foreign dists    (total/indexed)
+# local   dists    (total/indexed)
+# avg pkgs per dist
+# avg # pkg revisions
+# authors
+# most prolific author
+# N most recently added dist
+
 #------------------------------------------------------------------------------
 
 sub to_formatted_string {
