@@ -116,9 +116,9 @@ sub run {
 
     return $self->_result() if $self->nocommit();
 
-    $self->repos->commit( message => $self->message_string() );
-
-    $self->repos->tag( tag => $self->tag() ) if $self->has_tag();
+    my $msg = $self->message_string();
+    $self->repos->commit( message => $msg );
+    $self->repos->tag( tag => $self->tag(), message => $msg ) if $self->has_tag();
 
     return $self->_result();
 }

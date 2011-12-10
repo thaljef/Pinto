@@ -86,14 +86,13 @@ augment commit => sub {
 augment tag => sub {
     my ($self, %args) = @_;
 
-    my $now = DateTime->now();
-    my $tag = $now->strftime( $args{tag} );
-
+    my $now    = DateTime->now();
+    my $tag    = $now->strftime( $args{tag} );
+    my $msg    = $args{mmessage};
     my $origin = $self->svn_location();
 
     $self->info("Tagging at $tag");
 
-    my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();
     Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $msg);
 
     return $self;

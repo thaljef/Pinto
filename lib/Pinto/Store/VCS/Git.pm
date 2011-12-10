@@ -86,12 +86,10 @@ augment tag => sub {
 
     my $now = DateTime->now();
     my $tag = $now->strftime( $args{tag} );
-
-    my $origin = $self->svn_location();
+    my $msg = $args{message};
 
     $self->info("Tagging at $tag");
 
-    my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();
     $self->_git->run( 'tag' => '-m', $msg, $tag );
 
     return $self;
