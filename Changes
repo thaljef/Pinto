@@ -5,6 +5,19 @@
      repository got bigger (like when mirroring the CPAN).  I've fixed
      this now.
 
+     pinto-admin now has a 'statistics' command that will report
+     some basic stats about your repository.  I plan to add more
+     stats in the future.
+
+     I've implemented the Store::VCS::Git.  But I'm not entirely
+     happy with it, so I haven't documented it as being ready.
+
+     The VCS log message used for the commit is now also used
+     as the message for the tag operation.
+
+     Pinning a devel package is only allowed if this repository
+     is configured to index devel packages.
+
 0.027     2011-12-08 15:23:00 America/Los_Angeles
 
      The 'list' command now has options to filter the output
