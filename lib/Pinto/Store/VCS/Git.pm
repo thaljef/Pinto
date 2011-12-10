@@ -60,11 +60,17 @@ augment commit => sub {
 #-------------------------------------------------------------------------------
 
 augment tag => sub {
-    my ($self, $tag) = @_;
+    my ($self, %args) = @_;
 
-    my $message = 'Tagging repository as of...';
+    my $now = DateTime->now();
+    my $tag = $now->strftime( $args{tag} );
 
-    $self->_git->run( 'tag' => '-m', $message, $tag );
+    my $origin = $self->svn_location();
+
+    $self->info("Tagging at $tag");
+
+    my $msg = sprintf 'Tagging Pinto repository as of %s.', $now->datetime();
+    $self->_git->run( 'tag' => '-m', $msg, $tag );
 
     return $self;
 };
