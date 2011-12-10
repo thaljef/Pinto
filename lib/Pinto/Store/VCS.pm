@@ -29,6 +29,42 @@ has _paths => (
 #------------------------------------------------------------------------------
 # Methods
 
+augment initialize => sub {
+    my ($self) = @_;
+
+    $self->note('Updating working copy');
+
+    inner();
+
+    return $self;
+};
+
+#------------------------------------------------------------------------------
+
+augment add_path {
+    my ($self, %args) = @_;
+
+    $self->debug("Scheduling $args{path} for addition to VCS");
+
+    inner();
+
+    return $self;
+};
+
+#------------------------------------------------------------------------------
+
+augment remove_path => sub {
+    my ($self, %args) = @_;
+
+    $self->debug("Scheduling $args{path} for removal from VCS");
+
+    inner();
+
+    return $self;
+};
+
+#------------------------------------------------------------------------------
+
 augment commit => sub {
     my ($self) = @_;
 

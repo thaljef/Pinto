@@ -39,7 +39,6 @@ augment initialize => sub {
     my ($self) = @_;
 
     my $root_dir = $self->config->root_dir();
-    $self->note('Updating working copy');
     Pinto::Util::Svn::svn_update(dir => $root_dir);
 
     return $self;
@@ -50,9 +49,7 @@ augment initialize => sub {
 augment add_path => sub {
     my ($self, %args) = @_;
 
-    my $path = $args{path};
-    $self->debug("Scheduling $path for addition to VCS");
-    my $added = Pinto::Util::Svn::svn_add(path => $path);
+    my $added = Pinto::Util::Svn::svn_add(path => $args{path});
     $self->mark_path_for_commit($added);
 
     return $self;
@@ -63,9 +60,8 @@ augment add_path => sub {
 augment remove_path => sub {
     my ($self, %args) = @_;
 
-    my $path  = $args{path};
-    $self->debug("Scheduling $path for removal from VCS");
-    my $removed = Pinto::Util::Svn::svn_remove(path => $path);
+
+    my $removed = Pinto::Util::Svn::svn_remove(path => $args{path});
     $self->mark_path_for_commit($removed);
 
     return $self;

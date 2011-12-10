@@ -30,9 +30,33 @@ has _git => (
 augment initialize => sub {
     my ($self) = @_;
 
-    my $root_dir = $self->config->root_dir();
-    $self->note('Updating working copy');
     $self->_git->run( qw(pull) );
+
+    return $self;
+};
+
+#-------------------------------------------------------------------------------
+
+augment add_path => sub {
+    my ($self, %args) = @_;
+
+    # With git, all paths must be relative to the top of the work tree
+    my $path = $args{path}->relative( $self->config->root_dir() );
+    $self->_git->run( 'add' => $path->stringify() );
+    $self->mark_path_for_commit($path);
+
+    return $self;
+};
+
+#-------------------------------------------------------------------------------
+
+augment remove_path => sub {
+    my ($self, %args) = @_;
+
+    # With git, all paths must be relative to the top of the work tree
+    my $path = $args{path}->relative( $self->config->root_dir() );
+    $self->_git->run( 'rm' => '-f',  $path->stringify() );
+    $self->mark_path_for_commit($path);
 
     return $self;
 };
@@ -49,9 +73,7 @@ augment commit => sub {
     # pass the paths over STDIN (via that 'input' paramter).
 
     my $paths   = join "\n", map { $_->stringify() } @{ $self->paths_to_commit() };
-
     $self->_git->run( 'commit' => '-m', $message, {input => $paths} );
-
     $self->_git->run( qw(push -u origin master) );
 
     return $self;
@@ -77,42 +99,6 @@ augment tag => sub {
 
 #-------------------------------------------------------------------------------
 
-augment add_path => sub {
-    my ($self, %args) = @_;
-
-
-    my $path = $args{path};
-    $self->debug("Scheduling $path for addition to VCS");
-
-    # With git, all paths must be relative to the top of the work tree
-    $path = $path->relative( $self->config->root_dir() );
-
-    $self->_git->run( 'add' => $path->stringify() );
-
-    $self->mark_path_for_commit($path);
-
-    return $self;
-};
-
-#-------------------------------------------------------------------------------
-
-augment remove_path => sub {
-    my ($self, %args) = @_;
-
-    my $path  = $args{path};
-    $self->debug("Scheduling $path for removal from VCS");
-
-    # With git, all paths must be relative to the top of the work tree
-    $path = $path->relative( $self->config->root_dir() );
-
-    $self->_git->run( 'rm' => '-f',  $path->stringify() );
-
-    $self->mark_path_for_commit($path);
-
-    return $self;
-};
-
-#-------------------------------------------------------------------------------
 1;
 
 __END__
