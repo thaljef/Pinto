@@ -79,7 +79,6 @@ augment commit => sub {
     my $message = $args{message} || 'NO MESSAGE WAS GIVEN';
     my $paths   = $self->paths_to_commit();
 
-    $self->info("Committing changes");
     Pinto::Util::Svn::svn_commit(paths => $paths, message => $message);
 
     return $self;

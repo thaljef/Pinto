@@ -32,6 +32,8 @@ has _paths => (
 augment commit => sub {
     my ($self) = @_;
 
+    $self->info('Committing changes to VCS');
+
     inner();
 
     $self->_clear_paths();
