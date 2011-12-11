@@ -1,6 +1,6 @@
 package Pinto::Store::VCS::Git;
 
-# ABSTRACT: Store your Pinto repository with Git
+# ABSTRACT: Store your Pinto repository locally with Git
 
 use Moose;
 
@@ -27,16 +27,6 @@ has _git => (
 
 #-------------------------------------------------------------------------------
 
-augment initialize => sub {
-    my ($self) = @_;
-
-    $self->_git->run( qw(pull) );
-
-    return $self;
-};
-
-#-------------------------------------------------------------------------------
-
 augment add_path => sub {
     my ($self, %args) = @_;
 
@@ -44,6 +34,8 @@ augment add_path => sub {
     my $path = $args{path}->relative( $self->config->root_dir() );
     $self->_git->run( 'add' => $path->stringify() );
     $self->mark_path_for_commit($path);
+
+    inner();
 
     return $self;
 };
@@ -55,8 +47,10 @@ augment remove_path => sub {
 
     # With git, all paths must be relative to the top of the work tree
     my $path = $args{path}->relative( $self->config->root_dir() );
-    $self->_git->run( 'rm' => '-f',  $path->stringify() );
+    $self->_git->run( rm => '-f',  $path->stringify() );
     $self->mark_path_for_commit($path);
+
+    inner();
 
     return $self;
 };
@@ -74,7 +68,8 @@ augment commit => sub {
 
     my $paths   = join "\n", map { $_->stringify() } @{ $self->paths_to_commit() };
     $self->_git->run( 'commit' => '-m', $message, {input => $paths} );
-    $self->_git->run( qw(push -u origin master) );
+
+    inner();
 
     return $self;
 };
@@ -90,7 +85,9 @@ augment tag => sub {
 
     $self->info("Tagging at $tag");
 
-    $self->_git->run( 'tag' => '-m', $msg, $tag );
+    $self->_git->run( tag => '-m', $msg, $tag );
+
+    inner();
 
     return $self;
 };
