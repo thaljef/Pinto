@@ -91,6 +91,11 @@ sub execute {
     my $archive = $dist->archive( $self->repos->root_dir() );
     $self->_descend_into_prerequisites($archive) unless $self->norecurse();
 
+    # TODO: Need to keep track of how many distributions we actually
+    # imported.  If none (meaning all the prereqs were already in this
+    # repository) then we need to return zero so that we don't cause a
+    # VCS commit.
+
     return 1;
 }
 
