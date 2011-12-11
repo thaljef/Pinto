@@ -91,12 +91,18 @@ sub execute {
     my $archive = $dist->archive( $self->repos->root_dir() );
     $self->_descend_into_prerequisites($archive) unless $self->norecurse();
 
-    # TODO: Need to keep track of how many distributions we actually
-    # imported.  If none (meaning all the prereqs were already in this
-    # repository) then we need to return zero so that we don't cause a
-    # VCS commit.
+    # HACK: We need to return true only if we actually imported
+    # something.  If we didn't import anything (i.e. couldn't find
+    # anything or we already have everything) then we must return
+    # false so that we don't cause an unnecessary VCS commit.
+    # Checking the message count is a sleazy way of figuring out how
+    # many distributions we actually imported.  TODO: consider using a
+    # counter attribute, or refactor _find_or_import so that it can
+    # tell you whether or not it actually imported something.
 
-    return 1;
+    $DB::single = 1;
+    my @msgs = $self->messages();
+    return scalar @msgs;
 }
 
 #------------------------------------------------------------------------------
@@ -106,6 +112,8 @@ sub _find_or_import {
 
     my ($pkg_name, $pkg_ver) = ($pkg_spec->{name}, $pkg_spec->{version});
     my $pkg_vname = "$pkg_name-$pkg_ver";
+
+    $self->note("Looking for package $pkg_vname");
 
     my $where   = {name => $pkg_name, is_latest => 1};
     my $got_pkg = $self->repos->select_packages( $where )->single();
