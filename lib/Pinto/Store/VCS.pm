@@ -41,7 +41,7 @@ augment initialize => sub {
 
 #------------------------------------------------------------------------------
 
-augment add_path {
+augment add_path => sub {
     my ($self, %args) = @_;
 
     $self->debug("Scheduling $args{path} for addition to VCS");
@@ -91,6 +91,9 @@ sub mark_path_for_commit {
 
 sub paths_to_commit {
     my ($self) = @_;
+
+    # TODO: consider reducing this to the shortest list of stems, then
+    # just allow the VCS to descend into those paths recursively.
 
     return [ sort values %{ $self->_paths() } ];
 }
