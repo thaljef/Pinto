@@ -18,11 +18,11 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-Readonly my $LEVEL_QUIET => -1;
-Readonly my $LEVEL_WARN  =>  0;
-Readonly my $LEVEL_INFO  =>  1;
-Readonly my $LEVEL_NOTE  =>  2;
-Readonly my $LEVEL_DEBUG =>  3;
+Readonly my $LEVEL_QUIET => -2;
+Readonly my $LEVEL_WARN  => -1;
+Readonly my $LEVEL_INFO  =>  0;
+Readonly my $LEVEL_NOTE  =>  1;
+Readonly my $LEVEL_DEBUG =>  2;
 
 #-----------------------------------------------------------------------------
 # Moose attributes
