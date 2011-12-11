@@ -140,7 +140,7 @@ F<~/PINTO> in the example above).
 L<Pinto::Store::VCS::Git> is a back-end for L<Pinto> that stores the
 repository inside a local Git repository.  Before you can effectively
 use this Store, you must initialize or clone a Git repository that
-contains your Pinto repository (see L</"SYNOPSIS"> for the typical
+contains your Pinto repository (see L</SYNOPSIS> for the typical
 procedure).
 
 Note this Store only works with a local Git repository (i.e. one that

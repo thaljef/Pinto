@@ -86,7 +86,7 @@ that it performs a C<pull> during initialization, and does a C<push>
 after each commit and tag operation.  Before you can effectively use
 this Store, you must initialize or clone a Git repository that
 contains your Pinto repository.  Also, you must establish a remote
-repository that you can pull/push to (see L</"SYNOPSIS"> for the
+repository that you can pull/push to (see L</SYNOPSIS> for the
 typical procedure).
 
 If you don't need to pull/push to a remote repository, then use

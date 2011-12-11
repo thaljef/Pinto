@@ -134,7 +134,7 @@ F<~/srv/PINTO> in the example above).
 L<Pinto::Store::VCS::Svn> is a back-end for L<Pinto> that stores the
 repository inside Subversion.  Before you can effectively use this
 Store, you must first place your Pinto repository somewhere in
-Subversion (see L</"SYNOPSIS"> for the typical procedure).
+Subversion (see L</SYNOPSIS> for the typical procedure).
 
 =head1 CAVEATS
 
