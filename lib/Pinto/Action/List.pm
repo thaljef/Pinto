@@ -1,6 +1,6 @@
 package Pinto::Action::List;
 
-# ABSTRACT: An abstract action for listing packages in a repository
+# ABSTRACT: An action for listing contents of a repository
 
 use Moose;
 
