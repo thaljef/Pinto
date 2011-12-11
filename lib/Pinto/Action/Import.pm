@@ -111,7 +111,7 @@ sub _find_or_import {
     my $got_pkg = $self->repos->select_packages( $where )->single();
 
     if ($got_pkg and $got_pkg->version() >= $pkg_ver) {
-        $self->debug("Already have package $pkg_vname or newer as $got_pkg");
+        $self->note("Already have package $pkg_vname or newer as $got_pkg");
         return $got_pkg->distribution();
     }
 
