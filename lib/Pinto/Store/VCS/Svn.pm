@@ -143,7 +143,7 @@ Subversion (see L</"SYNOPSIS"> for the typical procedure).
 =item The C<svn> program is required.
 
 At present, you must have the binary C<svn> client installed somewhere
-in your C<$PATH> for this module to work.  In future versions, we may
+in your C<$PATH> for this Store to work.  In future versions, we may
 try using L<SVN::Client> or some other interface.
 
 =item No built-in support for authentication.
