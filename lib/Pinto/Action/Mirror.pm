@@ -39,6 +39,15 @@ with qw(Pinto::Role::FileFetcher);
 sub execute {
     my ($self) = @_;
 
+    # For speed, we're going to just make a hash table of all the dist
+    # paths in the database.  Then we'll use the hash to decide which
+    # dists we need to import and which ones we already have.  This is
+    # a lot faster than querying the database for each and every path.
+    my $attrs = {select => 'path'};
+    my $rs    = $self->repos->select_distributions(undef, $attrs);
+    my %seen  = map { $_ => 1 } $rs->all();
+
+
     my $count = 0;
     for my $dist_spec ( $self->repos->cache->contents() ) {
 
@@ -48,19 +57,7 @@ sub execute {
             next;
         }
 
-        # TODO: Make this faster! Just checking for the presence of
-        # the archive files is a lot faster than looking them up in
-        # the database.  But that probably isn't what we really want
-        # to do.  For example, we might have the archive file, but
-        # didn't load it in the db for some reason.  In that case, we
-        # really do want to mirror it, just to load the DB.  So
-        # checking for the presence of the archive file would lead us
-        # to do the wrong thing.  But we might be able to make this
-        # faster by going with a raw SQL query, instead of using the
-        # DBIx abstraction layers.
-
-        my $where = { path => $path };
-        if ( $self->repos->db->select_distributions( $where )->count() ) {
+        if ($seen{$path}) {
             $self->debug("Already have distribution $path.  Skipping it.");
             next;
         }
