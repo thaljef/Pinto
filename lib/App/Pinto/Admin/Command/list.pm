@@ -27,9 +27,11 @@ sub opt_spec {
 
     return (
 
+        [ 'index!'            => 'Limit to packages in the index (negatable)' ],
         [ 'distributions|d=s' => 'Limit to matching distribution paths' ],
         [ 'noinit'            => 'Do not pull/update from VCS' ],
         [ 'packages|p=s'      => 'Limit to matching package names' ],
+        [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'format=s'          => 'Format specification (See POD for details)' ],
 
 
@@ -56,6 +58,12 @@ sub validate_args {
 
     my $dist_path = delete $opts->{distributions};
     $opts->{where}->{path} = { like => "%$dist_path%" } if $dist_path;
+
+    my $index = delete $opts->{index};
+    $opts->{where}->{is_latest} = $index ? 1 : undef if defined $index;
+
+    my $pinned = delete $opts->{pinned};
+    $opts->{where}->{is_pinned} = $pinned ? 1 : undef if defined $pinned;
 
     return 1;
 }
@@ -88,6 +96,12 @@ None.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --index
+
+Limits the listing to records for packages that are in the index.  Using
+the C<--noindex> option has the opposite effect of limiting the listing
+to records for packages that are not in the index.
 
 =item -d=PATTERN
 
@@ -154,5 +168,11 @@ regular expression.  The C<PATTERN> will match if it appears anywhere
 in the package name.
 
 =back
+
+=item --pinned
+
+Limits the listing to records for packages that are pinned.  Using the
+option C<--nopinned> has the opposite effect of limiting the listing
+to records for packages that are not pinned.
 
 =cut

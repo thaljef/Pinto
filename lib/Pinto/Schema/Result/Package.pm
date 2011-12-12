@@ -251,7 +251,7 @@ sub default_format {
     my $width = 38 - length $self->version();
     $width = length $self->name() if $width < length $self->name();
 
-    return "%x%m%s %-${width}n %v  %p\n",
+    return "%x%m%s%y %-${width}n %v  %p\n",
 }
 
 #-------------------------------------------------------------------------------

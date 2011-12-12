@@ -1,5 +1,16 @@
 {{$NEXT}}
 
+     The 'list' command now has --index and --noindex options to
+     filter the output to packages that are in the index, or not
+     in the index, respectively.
+
+     The 'list' command now has --pinned and --nopinned options to
+     filter the output to packages that are pinned, or not pinned,
+     respectively.
+
+     The default output format for the 'list' command now includes a
+     '+' character to indicate whether a package is pinned.
+ 
 0.028     2011-12-12 01:22:02 America/Los_Angeles
 
      I discovered that Subversion 1.7 changed the working copy layout
