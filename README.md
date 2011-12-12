@@ -109,7 +109,7 @@ developers.
 
 For now, the Pinto API is private, undocumented, and subject to
 radical change without notice.  In the meantime, the command line
-utilities mentioned in the `/SYNOPSIS` are your public interface.
+utilities mentioned in the ["SYNOPSIS"](#SYNOPSIS) are your public interface.
 
 # SUPPORT
 
