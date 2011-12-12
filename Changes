@@ -9,8 +9,9 @@
      some basic stats about your repository.  I plan to add more
      stats in the future.
 
-     I've implemented the Store::VCS::Git.  But I'm not entirely
-     happy with it, so I haven't documented it as being ready.
+     You can now store your repository with Git using either
+     Pinto::Store::VCS::Git or Pinto::Store::VCS::Git::Remote.
+     These are both experimental, so use with caution.
 
      The VCS log message used for the commit is now also used
      as the message for the tag operation.
