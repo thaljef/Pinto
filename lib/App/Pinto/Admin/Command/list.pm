@@ -167,12 +167,12 @@ C<PATTERN>.  Note that C<PATTERN> is just a plain string, not a
 regular expression.  The C<PATTERN> will match if it appears anywhere
 in the package name.
 
-=back
-
 =item --pinned
 
 Limits the listing to records for packages that are pinned.  Using the
 option C<--nopinned> has the opposite effect of limiting the listing
 to records for packages that are not pinned.
+
+=back
 
 =cut
