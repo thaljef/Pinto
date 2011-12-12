@@ -13,6 +13,10 @@
      Pinto::Store::VCS::Git or Pinto::Store::VCS::Git::Remote.
      These are both experimental, so use with caution.
 
+     Mirror actions are now a bit faster, espeically when you
+     already have most of the distributions in the source
+     repository.
+
      The VCS log message used for the commit is now also used
      as the message for the tag operation.
 
