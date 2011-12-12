@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.028     2011-12-12 01:22:02 America/Los_Angeles
+
      I discovered that Subversion 1.7 changed the working copy layout
      in a way that caused Pinto to run exponentially slower as the
      repository got bigger (like when mirroring the CPAN).  I've fixed
