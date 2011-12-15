@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.029     2011-12-15 00:24:11 America/Los_Angeles
+
      The 'list' command now has --index and --noindex options to
      filter the output to packages that are in the index, or not
      in the index, respectively.
