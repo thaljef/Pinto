@@ -10,6 +10,9 @@
 
      The default output format for the 'list' command now includes a
      '+' character to indicate whether a package is pinned.
+
+     Some improvements to Pinto::Store::VCS::Git, which allow you
+     to place your Pinto repository anywhere inside a Git repository.
  
 0.028     2011-12-12 01:22:02 America/Los_Angeles
 
