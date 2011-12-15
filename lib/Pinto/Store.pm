@@ -62,7 +62,7 @@ sub commit {
 
     $self->add_path( path => $self->config->pinto_dir() );
     $self->add_path( path => $self->config->modules_dir() );
-
+    $self->add_path( path => $self->config->mailrc_file() );
     inner();
 
     return $self;

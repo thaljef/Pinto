@@ -54,6 +54,15 @@ has index_file => (
 );
 
 
+has mailrc_file => (
+    is        => 'ro',
+    isa       => File,
+    init_arg  => undef,
+    default   => sub { return $_[0]->authors_dir->file('01mailrc.txt.gz') },
+    lazy      => 1,
+);
+
+
 has db_dir => (
     is        => 'ro',
     isa       => Dir,
