@@ -146,28 +146,34 @@ sub remove_path {
 
 #------------------------------------------------------------------------------
 
-sub update_checksums {
+ub update_checksums {
     my ($self, %args) = @_;
-    my $dir = $args{directory};
 
-    #return 0 if not -e $dir;  # Smells fishy
-
-    my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children();
-    return 0 if not @children;
-
-    my $cs_file = $dir->file('CHECKSUMS');
-
-    if ( -e $cs_file && @children == 1 ) {
-        $self->remove_path(path => $cs_file);
-        return 0;
+    my $path = $args{directory};
+    my @dirs;
+    for ( 0 .. 2 ) {
+        push @dirs, $path;
+        $path = $path->parent();
     }
 
-    $self->debug("Generating $cs_file");
+    for my $dir ( @dirs ) {
+        my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children();
+        next if not @children;
 
-    try   { CPAN::Checksums::updatedir($dir) }
-    catch { throw_error "CHECKSUM generation failed for $dir: $_" };
+        my $cs_file = $dir->file('CHECKSUMS');
 
-    $self->add_path(path => $cs_file);
+        if ( -e $cs_file && @children == 1 ) {
+            $self->remove_path(path => $cs_file);
+            next;
+        }
+
+        $self->debug("Generating $cs_file");
+
+        try   { CPAN::Checksums::updatedir($dir) }
+        catch { throw_error "CHECKSUM generation failed for $dir: $_" };
+
+        $self->add_path(path => $cs_file);
+    }
 
     return $self;
 }
