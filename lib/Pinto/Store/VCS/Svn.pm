@@ -111,7 +111,7 @@ __END__
 =head1 SYNOPSIS
 
   # If you don't already have a Pinto repository, create one (notice the --store option here)
-  $> pinto-admin --repos=~/tmp/PINTO create --store=Pinto::Store::VCS::Svn
+  $> pinto-admin --root=~/tmp/PINTO create --store=Pinto::Store::VCS::Svn
 
   # If you do already have a repository, edit its config (at $REPOS/.pinto/config/pinto.ini)
   store = Pinto::Store::VCS::Svn
@@ -126,7 +126,7 @@ __END__
   $> rm -rf ~/tmp/PINTO
 
 Now run L<pinto-admin> or L<pinto-server> as you normally would,
-setting the C<--repos> to the path of the working copy (which would be
+setting the C<--root> to the path of the working copy (which would be
 F<~/srv/PINTO> in the example above).
 
 =head1 DESCRIPTION

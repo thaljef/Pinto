@@ -1,4 +1,4 @@
-package Pinto::Action;
+	package Pinto::Action;
 
 # ABSTRACT: Base class for Actions
 

@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] ARCHIVE_FILE_OR_URL ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_ARCHIVE_FILES_OR_URLS
+%c --root=PATH $command [OPTIONS] ARCHIVE_FILE_OR_URL ...
+%c --root=PATH $command [OPTIONS] < LIST_OF_ARCHIVE_FILES_OR_URLS
 END_USAGE
 
     chomp $usage;
@@ -72,8 +72,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir add [OPTIONS] ARCHIVE_FILE_OR_URL ...
-  pinto-admin --repos=/some/dir add [OPTIONS] < LIST_OF_ARCHIVE_FILES_OR_URLS
+  pinto-admin --root=/some/dir add [OPTIONS] ARCHIVE_FILE_OR_URL ...
+  pinto-admin --root=/some/dir add [OPTIONS] < LIST_OF_ARCHIVE_FILES_OR_URLS
 
 =head1 DESCRIPTION
 

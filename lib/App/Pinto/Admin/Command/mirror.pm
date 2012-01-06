@@ -46,7 +46,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir mirror [OPTIONS]
+  pinto-admin --root=/some/dir mirror [OPTIONS]
 
 =head1 DESCRIPTION
 

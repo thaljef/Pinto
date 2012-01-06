@@ -41,7 +41,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir verify
+  pinto-admin --root=/some/dir verify
 
 =head1 DESCRIPTION
 

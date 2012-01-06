@@ -47,7 +47,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir nop [OPTIONS]
+  pinto-admin --root=/some/dir nop [OPTIONS]
 
 =head1 DESCRIPTION
 

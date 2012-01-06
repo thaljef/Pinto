@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
  my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] DISTRIBUTION_PATH ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_DISTRIBUTION_PATHS
+%c --root=PATH $command [OPTIONS] DISTRIBUTION_PATH ...
+%c --root=PATH $command [OPTIONS] < LIST_OF_DISTRIBUTION_PATHS
 END_USAGE
 
     chomp $usage;
@@ -73,8 +73,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir remove [OPTIONS] ARCHIVE_PATH ...
-  pinto-admin --repos=/some/dir remove [OPTIONS] < LIST_OF_ARCHIVE_PATHS
+  pinto-admin --root=/some/dir remove [OPTIONS] ARCHIVE_PATH ...
+  pinto-admin --root=/some/dir remove [OPTIONS] < LIST_OF_ARCHIVE_PATHS
 
 =head1 DESCRIPTION
 
@@ -96,8 +96,8 @@ explicitly specify the full path of the archive (note that paths are
 always expressed with forward slashes).  So the following two examples
 are equivalent:
 
-  $> pinto-admin --repos=/some/dir remove --author=SUSAN Foo-1.0.tar.gz
-  $> pinto-admin --repos=/some/dir remove S/SU/SUSAN/Foo-1.0.tar.gz
+  $> pinto-admin --root=/some/dir remove --author=SUSAN Foo-1.0.tar.gz
+  $> pinto-admin --root=/some/dir remove S/SU/SUSAN/Foo-1.0.tar.gz
 
 You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"

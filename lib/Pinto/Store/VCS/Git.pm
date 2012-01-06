@@ -129,7 +129,7 @@ __END__
 =head1 SYNOPSIS
 
   # If you don't already have a Pinto repository, create one (notice the --store option here)
-  $> pinto-admin --repos=~/PINTO create --store=Pinto::Store::VCS::Git
+  $> pinto-admin --root=~/PINTO create --store=Pinto::Store::VCS::Git
 
   # If you do already have a repository, edit its config (at $REPOS/.pinto/config/pinto.ini)
   store = Pinto::Store::VCS::Git
@@ -143,7 +143,7 @@ __END__
   $> git commit -a -m 'New Pinto repos'
 
 Now run L<pinto-admin> or L<pinto-server> as you normally would,
-setting the C<--repos> to the path of the working copy (which would be
+setting the C<--root> to the path of the working copy (which would be
 F<~/PINTO> in the example above).
 
 =head1 DESCRIPTION

@@ -22,7 +22,7 @@ sub usage_desc {
 
     my ($command) = $self->command_names();
 
-    return '%c --repos=PATH $command [OPTIONS] [ARGS]'
+    return '%c --root=PATH $command [OPTIONS] [ARGS]'
 }
 
 #-----------------------------------------------------------------------------

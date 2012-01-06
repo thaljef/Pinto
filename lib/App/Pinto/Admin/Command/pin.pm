@@ -36,8 +36,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --repos=PATH $command [OPTIONS] PACKAGE_NAME ...
-%c --repos=PATH $command [OPTIONS] < LIST_OF_PACKAGE_NAMES
+%c --root=PATH $command [OPTIONS] PACKAGE_NAME ...
+%c --root=PATH $command [OPTIONS] < LIST_OF_PACKAGE_NAMES
 END_USAGE
 
     chomp $usage;
@@ -73,8 +73,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir pin [OPTIONS] PACKAGE_NAME ...
-  pinto-admin --repos=/some/dir pin [OPTIONS] < LIST_OF_PACKAGE_NAMES
+  pinto-admin --root=/some/dir pin [OPTIONS] PACKAGE_NAME ...
+  pinto-admin --root=/some/dir pin [OPTIONS] < LIST_OF_PACKAGE_NAMES
 
 =head1 DESCRIPTION
 

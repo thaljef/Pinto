@@ -49,7 +49,7 @@ has pinto => (
 );
 
 
-has root_dir => (
+has root => (
    is       => 'ro',
    isa      => Dir,
    default  => sub { dir( File::Temp::tempdir(CLEANUP => 1) ) },
@@ -76,10 +76,10 @@ has tb => (
 sub _build_pinto {
     my ($self) = @_;
 
-    my $creator = Pinto::Creator->new( root_dir => $self->root_dir() );
+    my $creator = Pinto::Creator->new( root => $self->root() );
     $creator->create( $self->creator_args() );
 
-    my %defaults = (out => $self->buffer(), verbose => 3, root_dir => $self->root_dir());
+    my %defaults = ( out => $self->buffer(), verbose => 3, root => $self->root() );
 
     return Pinto->new(%defaults, $self->pinto_args());
 }
@@ -109,7 +109,7 @@ sub reset_buffer {
 sub path_exists_ok {
     my ($self, $path, $name) = @_;
 
-    $path = file( $self->root_dir(), @{$path} );
+    $path = file( $self->root(), @{$path} );
     $name ||= "Path $path exists";
 
     $self->tb->ok(-e $path, $name);
@@ -120,7 +120,7 @@ sub path_exists_ok {
 sub path_not_exists_ok {
     my ($self, $path, $name) = @_;
 
-    $path = file( $self->root_dir(), @{$path} );
+    $path = file( $self->root(), @{$path} );
     $name ||= "Path $path does not exist";
 
     $self->tb->ok(! -e $path, $name);
@@ -144,7 +144,7 @@ sub package_loaded_ok {
     $self->tb->ok(1, "$pkg_spec is loaded");
     $self->tb->is_eq($pkg->version(), $pkg_ver, "$pkg_name has correct version");
 
-    my $archive = $pkg->distribution->archive( $self->root_dir() );
+    my $archive = $pkg->distribution->archive( $self->root() );
     $self->tb->ok(-e $archive, "Archive $archive exists");
 
     $self->tb->is_eq( $pkg->is_latest(), 1, "$pkg_spec is latest" )
@@ -163,7 +163,7 @@ sub package_not_loaded_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_file)->as_foreign('Unix');
-    my $archive   = $self->root_dir()->file(qw(authors id), $author_dir, $dist_file);
+    my $archive   = $self->root()->file(qw(authors id), $author_dir, $dist_file);
 
     my $attrs = { prefetch  => 'distribution' };
     my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
@@ -203,7 +203,7 @@ sub repository_empty_ok {
     my @pkgs = $self->pinto->repos->select_packages()->all();
     $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
 
-    my $dir = dir( $self->root_dir(), qw(authors id) );
+    my $dir = dir( $self->root(), qw(authors id) );
     $self->tb->ok(! -e $dir, 'Repository has no archives');
 
 }

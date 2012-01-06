@@ -59,9 +59,6 @@ with qw( Pinto::Interface::Configurable
 sub BUILDARGS {
     my ($class, %args) = @_;
 
-    # For compatibility with Pinto::Remote API
-    $args{root_dir} ||= delete $args{repos};
-
     $args{logger} ||= Pinto::Logger->new( %args );
     $args{config} ||= Pinto::Config->new( %args );
 

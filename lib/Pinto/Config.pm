@@ -19,11 +19,20 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 # Moose attributes
 
-has root_dir   => (
+has root       => (
     is         => 'ro',
     isa        => Dir,
     required   => 1,
     coerce     => 1,
+);
+
+
+has root_dir   => (            # An alias for 'root'
+    is         => 'ro',
+    isa        => Dir,
+    init_arg   => undef,
+    default    => sub { return $_[0]->root() },
+    lazy       => 1,
 );
 
 

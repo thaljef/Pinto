@@ -67,7 +67,7 @@ sub validate_args {
 
     return 1;
 }
-
+:
 #------------------------------------------------------------------------------
 
 1;
@@ -76,7 +76,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --path=/some/dir list [OPTIONS]
+  pinto-admin --root=/some/dir list [OPTIONS]
 
 =head1 DESCRIPTION
 

@@ -44,7 +44,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir rebuild [OPTIONS]
+  pinto-admin --root=/some/dir rebuild [OPTIONS]
 
 =head1 DESCRIPTION
 

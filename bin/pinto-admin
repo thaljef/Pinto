@@ -21,21 +21,21 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/path/to/repos [global options] COMMAND [command options] [ARGS]
+  pinto-admin --root=/path/to/repos [global options] COMMAND [command options] [ARGS]
 
 =head1 BASIC USAGE
 
   # Create an empty repository at /some/dir
-  pinto-admin --repos=/some/dir create
+  pinto-admin --root=/some/dir create
 
   # Add your own distribution to the repository
-  pinto-admin --repos=/some/dir add Foo-Bar-1.2.tar.gz
+  pinto-admin --root=/some/dir add Foo-Bar-1.2.tar.gz
 
   # Fetch a module and all its dependencies
-  pinto-admin --repos=/some/dir import Plack
+  pinto-admin --root=/some/dir import Plack
 
   # Fetch the latest version of all modules
-  pinto-admin --repos=/some/dir mirror
+  pinto-admin --root=/some/dir mirror
 
   # Then install stuff, forcing everything to come from your repository
   cpanm --mirror-only --mirror file:///some/dir Foo::Bar
@@ -59,7 +59,7 @@ The following options are available for all commands.
 
 =over 4
 
-=item  --repos=/path/to/your/repository
+=item  --root=/path/to/your/repository
 
 Specifies the path to the root directory of your repository.  This is
 mandatory for all commands unless you've set the C<PINTO_REPOSITORY>

@@ -43,7 +43,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir purge
+  pinto-admin --root=/some/dir purge
 
 =head1 DESCRIPTION
 

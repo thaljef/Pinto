@@ -49,14 +49,14 @@ sub execute {
 
     my $global_opts = $self->app->global_options();
 
-    my $root_dir = delete $global_opts->{repos}
-        or die 'Must specify a repository directory';    ## no critic qw(Carp)
+    $global_opts->{root}
+        or die 'Must specify a repository root directory';    ## no critic qw(Carp)
 
     # Combine repeatable "source" options into one space-delimited "sources" option.
     # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
     $opts->{sources} = join ' ', @{ delete $opts->{source} } if defined $opts->{source};
 
-    my $creator = Pinto::Creator->new( root_dir => $root_dir, %{$global_opts} );
+    my $creator = Pinto::Creator->new( $global_opts );
     $creator->create( %{$opts} );
     return 0;
 }
@@ -71,7 +71,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --repos=/some/dir create [OPTIONS]
+  pinto-admin --root=/some/dir create [OPTIONS]
 
 =head1 DESCRIPTION
 

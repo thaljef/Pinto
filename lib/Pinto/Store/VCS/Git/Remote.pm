@@ -61,7 +61,7 @@ __END__
   # constructed a bare repository at git://some_server/PINTO.git
 
   # If you don't already have a Pinto repository, create one (notice the --store option here)
-  $> pinto-admin --repos=~/PINTO create --store=Pinto::Store::VCS::Git::Remote
+  $> pinto-admin --root=~/PINTO create --store=Pinto::Store::VCS::Git::Remote
 
   # If you do already have a repository, edit its config (at $REPOS/.pinto/config/pinto.ini)
   store = Pinto::Store::VCS::Git::Remote
