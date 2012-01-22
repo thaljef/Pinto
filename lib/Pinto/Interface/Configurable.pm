@@ -17,7 +17,7 @@ use namespace::autoclean;
 has config => (
     is         => 'ro',
     isa        => 'Pinto::Config',
-    handles    => [ qw( root_dir ) ],
+    handles    => [ qw( root root_dir ) ],
     required   => 1,
 );
 
