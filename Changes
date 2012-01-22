@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+     The --repos option for pinto-admin has been officially 
+     renamed to --root.  This was done to create a symmetrical
+     API between Pinto and Pinto::Admin.  The old --repos option
+     will *not* be supported for backward compatibility.
+
 0.029     2011-12-15 00:24:11 America/Los_Angeles
 
      The 'list' command now has --index and --noindex options to
