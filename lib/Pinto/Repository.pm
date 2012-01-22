@@ -43,14 +43,6 @@ has cache => (
 );
 
 
-has root_dir => (
-    is         => 'ro',
-    isa        => Dir,
-    default    => sub { $_[0]->config->root_dir },
-    init_arg   => undef,
-    lazy       => 1,
-);
-
 #-------------------------------------------------------------------------------
 # Roles
 
