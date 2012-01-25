@@ -232,7 +232,7 @@ time.  Pinto ensures that concurrent users don't step on each other.
 
 The L<pinto-admin> and L<pinto-remote> command line tools have options
 to control every aspect of your Pinto repository.  They are well
-documented and behave in a DWIM fashion.
+documented and behave in the customary UNIX fashion.
 
 =item * Pinto can be extended.
 
