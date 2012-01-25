@@ -156,7 +156,7 @@ procedure).
 
 Note this Store only works with a local Git repository (i.e. one that
 does not push or pull to another repository).  If you want to do that,
-see L<Pinto::Store::VCS::Git::Remote).
+see L<Pinto::Store::VCS::Git::Remote>).
 
 =head1 CAVEATS
 
