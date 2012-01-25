@@ -98,7 +98,7 @@ L<Pinto::Store::VCS::Git> instead.
 
 =item The C<git> program is required.
 
-You must have the binary C<git> tool installed somwhere in uour
+You must have the binary C<git> tool installed somewhere in your
 C<$PATH> for this Store to work.
 
 =item No built-in support for authentication.

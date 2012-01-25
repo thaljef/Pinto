@@ -164,7 +164,7 @@ see L<Pinto::Store::VCS::Git::Remote).
 
 =item The C<git> program is required.
 
-You must have the binary C<git> tool installed somwhere in uour
+You must have the binary C<git> tool installed somewhere in your
 C<$PATH> for this Store to work.
 
 =back
