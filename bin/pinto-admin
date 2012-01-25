@@ -19,6 +19,8 @@ exit App::Pinto::Admin->run();
 
 __END__
 
+=pod
+
 =head1 SYNOPSIS
 
   pinto-admin --root=/path/to/repos [global options] COMMAND [command options] [ARGS]
@@ -132,7 +134,7 @@ If true, L<Pinto> will not pull/update the repository from the VCS
 before each operation.  This is only relevant if you are using a
 VCS‐based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
-copy is up‐to‐date and you are going to be the only actor touching the
+copy is up to date and you are going to be the only actor touching the
 Pinto repository within the VCS.  Defaults to 0.
 
 =item store = CLASS_NAME
