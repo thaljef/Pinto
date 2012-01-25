@@ -113,6 +113,8 @@ sub path_exists_ok {
     $name ||= "Path $path exists";
 
     $self->tb->ok(-e $path, $name);
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -124,6 +126,8 @@ sub path_not_exists_ok {
     $name ||= "Path $path does not exist";
 
     $self->tb->ok(! -e $path, $name);
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -152,6 +156,8 @@ sub package_loaded_ok {
 
     $self->tb->is_eq( $pkg->is_latest(), undef, "$pkg_spec is not latest" )
         if not $latest;
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -172,6 +178,8 @@ sub package_not_loaded_ok {
     $self->tb->ok(!$pkg, "$pkg_spec is still loaded");
 
     $self->tb->ok(! -e $archive, "Archive $archive still exists");
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -179,9 +187,10 @@ sub package_not_loaded_ok {
 sub result_ok {
     my ($self, $result) = @_;
 
-    return 1 if $self->tb->ok( $result->is_success(), 'Result was succesful' );
-    $self->tb->diag( "Diagnostics: " . $result->to_string() );
-    return 0;
+    $self->tb->ok( $result->is_success(), 'Result was succesful' )
+        || $self->tb->diag( "Diagnostics: " . $result->to_string() );
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -190,6 +199,8 @@ sub result_not_ok {
     my ($self, $result) = @_;
 
     $self->tb->ok( !$result->is_success(), 'Result was not succesful' );
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -206,6 +217,7 @@ sub repository_empty_ok {
     my $dir = dir( $self->root(), qw(authors id) );
     $self->tb->ok(! -e $dir, 'Repository has no archives');
 
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -216,6 +228,8 @@ sub log_like {
     $name ||= 'Log output matches';
 
     $self->tb->like( $self->bufferstr(), $rx, $name );
+
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -226,6 +240,8 @@ sub log_unlike {
     $name ||= 'Log output does not match';
 
     $self->tb->unlike( $self->bufferstr(), $rx, $name );
+
+    return;
 }
 
 #------------------------------------------------------------------------------

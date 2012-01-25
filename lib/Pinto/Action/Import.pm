@@ -100,7 +100,6 @@ sub execute {
     # counter attribute, or refactor _find_or_import so that it can
     # tell you whether or not it actually imported something.
 
-    $DB::single = 1;
     my @msgs = $self->messages();
     return scalar @msgs;
 }

@@ -50,8 +50,8 @@ sub validate_args {
     $self->usage_error('Cannot specify packages and distributions together')
         if $opts->{packages} and $opts->{distributions};
 
-    $opts->{format} = eval qq{"$opts->{format}"}
-        if $opts->{format};  ## no critic qw(StringyEval)
+    $opts->{format} = eval qq{"$opts->{format}"} ## no critic qw(StringyEval)
+        if $opts->{format};
 
     my $pkg_name = delete $opts->{packages};
     $opts->{where}->{name} = { like => "%$pkg_name%" } if $pkg_name;
