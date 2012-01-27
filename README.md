@@ -68,7 +68,7 @@ time.  Pinto ensures that concurrent users don't step on each other.
 
 The [pinto-admin](http://search.cpan.org/perldoc?pinto-admin) and [pinto-remote](http://search.cpan.org/perldoc?pinto-remote) command line tools have options
 to control every aspect of your Pinto repository.  They are well
-documented and behave in a DWIM fashion.
+documented and behave in the customary UNIX fashion.
 
 - Pinto can be extended.
 
