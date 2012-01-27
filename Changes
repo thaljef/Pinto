@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.030     2012-01-26 22:00:32 America/Los_Angeles
+
      The --repos option for pinto-admin has been officially 
      renamed to --root.  This was done to create a symmetrical
      API between Pinto and Pinto::Admin.  The old --repos option
