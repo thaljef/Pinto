@@ -56,7 +56,7 @@ sub execute {
     # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
     $opts->{sources} = join ' ', @{ delete $opts->{source} } if defined $opts->{source};
 
-    my $creator = Pinto::Creator->new( $global_opts );
+    my $creator = Pinto::Creator->new( %{ $global_opts } );
     $creator->create( %{$opts} );
     return 0;
 }
