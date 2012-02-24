@@ -8,6 +8,7 @@ rm -rf sql/pinto.db
 sqlite3 sql/pinto.db < sql/pinto.sql
 
 dbicdump -Ilib \
+         -o skip_load_external=1 \
          -o dump_directory=lib \
          -o 'relationship_attrs={ has_many => {cascade_delete => 1} }' \
          Pinto::Schema \
