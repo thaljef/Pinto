@@ -3,6 +3,7 @@ package Pinto::Action::Add;
 # ABSTRACT: Add one distribution to the repository
 
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
 use Path::Class;
 
@@ -33,17 +34,27 @@ has archive => (
 );
 
 
+has norecurse => (
+   is      => 'ro',
+   isa     => Bool,
+   default => 0,
+);
+
+
 has extractor => (
     is         => 'ro',
     isa        => 'Pinto::PackageExtractor',
     lazy_build => 1,
 );
 
+
 #------------------------------------------------------------------------------
 # Roles
 
 with qw( Pinto::Interface::Authorable
-         Pinto::Role::FileFetcher );
+         Pinto::Role::FileFetcher
+         Pinto::Role::PackageImporter
+);
 
 #------------------------------------------------------------------------------
 # Builders
@@ -88,8 +99,12 @@ override execute => sub {
                    packages => \@pkg_specs };
 
     my $dist = $self->repos->add_distribution($struct);
-
     $self->add_message( Pinto::Util::added_dist_message($dist) );
+
+    unless ( $self->norecurse() ) {
+        my @imported = $self->import_prerequisites($archive);
+        #$self->add_message( Pinto::Util::imported_dist_message($_) ) for @imported;
+    }
 
     return 1;
 };

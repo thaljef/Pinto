@@ -29,6 +29,7 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'norecurse'   => 'Do not recursively import prereqs' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -87,6 +88,22 @@ Thereafter, only the same author can add new versions or remove those
 packages.  However, this is not strongly enforced -- you can change
 your author identity at any time using the C<--author> option.
 
+By default, Pinto also recursively imports all the distributions that
+are required to provide the prerequisite packages for the newly added
+distribution.  When searching for those prerequisite pakcages, Pinto first
+looks at the the packages that already exist in the local repository,
+then Pinto looks at the packages that are available available on the
+remote repositories.  At present, Pinto takes the *first* package it
+can find that satisfies the prerequisite.  In the future, you may be
+able to direct Pinto to instead choose the *latest* package that
+satisfies the prerequisite (NOT SURE THOSE LAST TWO STATEMENTS ARE TRUE).
+
+Imported distributions will be assigned to their original author, not
+the author who added the distribution that triggered the import.
+Also, packages provided by imported distributions are still considered
+foreign, so locally added packages will always override ones that you
+imported, even if the imported package has a higher version.
+
 =head1 COMMAND ARGUMENTS
 
 Arguments to this command are paths to the distribution files that you
@@ -132,6 +149,13 @@ VCS-based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
+
+=item --norecurse
+
+Prevents L<Pinto> from recursively importing distribtuions required to
+satisfy the prerequisites of the added distribution.  Imported
+distributions are pulled from whatever remote repositories are
+configured as the C<source> for this local repository.
 
 =item --tag=NAME
 
