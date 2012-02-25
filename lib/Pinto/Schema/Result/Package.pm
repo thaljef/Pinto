@@ -23,7 +23,7 @@ __PACKAGE__->table("package");
 
 =head1 ACCESSORS
 
-=head2 package_id
+=head2 id
 
   data_type: 'integer'
   is_auto_increment: 1
@@ -45,12 +45,6 @@ __PACKAGE__->table("package");
   default_value: null
   is_nullable: 1
 
-=head2 is_pinned
-
-  data_type: 'boolean'
-  default_value: null
-  is_nullable: 1
-
 =head2 distribution
 
   data_type: 'integer'
@@ -60,15 +54,13 @@ __PACKAGE__->table("package");
 =cut
 
 __PACKAGE__->add_columns(
-  "package_id",
+  "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
   "version",
   { data_type => "text", is_nullable => 0 },
   "is_latest",
-  { data_type => "boolean", default_value => \"null", is_nullable => 1 },
-  "is_pinned",
   { data_type => "boolean", default_value => \"null", is_nullable => 1 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -78,13 +70,13 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</package_id>
+=item * L</id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("package_id");
+__PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
@@ -116,20 +108,6 @@ __PACKAGE__->add_unique_constraint("name_distribution_unique", ["name", "distrib
 
 __PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
 
-=head2 C<name_is_pinned_unique>
-
-=over 4
-
-=item * L</name>
-
-=item * L</is_pinned>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("name_is_pinned_unique", ["name", "is_pinned"]);
-
 =head1 RELATIONS
 
 =head2 distribution
@@ -143,13 +121,28 @@ Related object: L<Pinto::Schema::Result::Distribution>
 __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
-  { distribution_id => "distribution" },
+  { id => "distribution" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 packages_stack
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-06 11:04:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xCWTZGqBqsFQCU96vVWt7w
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::PackageStack>
+
+=cut
+
+__PACKAGE__->has_many(
+  "packages_stack",
+  "Pinto::Schema::Result::PackageStack",
+  { "foreign.package" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-02-24 23:17:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:14ZbpNNsSNZMAy3KJ8jwKQ
 
 #------------------------------------------------------------------------------
 
@@ -177,6 +170,13 @@ use overload ( '""'     => 'to_string',
 __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0]) },
                                             deflate => sub { $_[0]->stringify() } }
 );
+
+#------------------------------------------------------------------------------
+# Schema::Loader does not create many-to-many relationships for us.  So we
+# must create them by hand here...
+
+__PACKAGE__->many_to_many( stacks => 'package_stack', 'stack' );
+
 
 #------------------------------------------------------------------------------
 

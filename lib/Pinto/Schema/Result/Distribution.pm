@@ -23,7 +23,7 @@ __PACKAGE__->table("distribution");
 
 =head1 ACCESSORS
 
-=head2 distribution_id
+=head2 id
 
   data_type: 'integer'
   is_auto_increment: 1
@@ -47,7 +47,7 @@ __PACKAGE__->table("distribution");
 =cut
 
 __PACKAGE__->add_columns(
-  "distribution_id",
+  "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "path",
   { data_type => "text", is_nullable => 0 },
@@ -61,13 +61,13 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</distribution_id>
+=item * L</id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("distribution_id");
+__PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
@@ -96,13 +96,13 @@ Related object: L<Pinto::Schema::Result::Package>
 __PACKAGE__->has_many(
   "packages",
   "Pinto::Schema::Result::Package",
-  { "foreign.distribution" => "self.distribution_id" },
+  { "foreign.distribution" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-06 11:01:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oaRV9jWYq0VgLnIU/he+sA
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-02-24 23:24:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:j5wvt9S/BxEJP1k0fd5+GA
 
 #-------------------------------------------------------------------------------
 
