@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -xue
 
 # Run this command from the root directory of the distribution.  You
 # must install DBIx::Class::Schema::Loader first.
