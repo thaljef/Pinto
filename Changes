@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+     Bug Fixes:
+
+     Fixed bug in the create command.  Not sure how this ever
+     worked before.
+
+     New Features:
+
+     The "add" command now recursively imports all the dependencies
+     by default.  To disable this behavior use the --norecurse option.
+
 0.030     2012-01-26 22:00:32 America/Los_Angeles
 
      The --repos option for pinto-admin has been officially 
