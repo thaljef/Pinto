@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.032     2012-03-01 10:36:25 America/Los_Angeles
+
      Bug Fixes:
 
      Worked around a problem that caused the PAUSE indexer to
