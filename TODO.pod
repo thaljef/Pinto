@@ -8,11 +8,13 @@
 
 =item Exception hierarchy/handling
 
+=item Remove the whole permission mechanism
+
 =back
 
 =head1 A LITTLE LESS IMPORTANT
 
-=over 
+=over
 
 =item Documentation review
 
@@ -37,6 +39,8 @@
 =item ack: Do an ack command across all distributions
 
 =item news: list recent additions. maybe something from Changes file
+
+=item assign: change ownership of a distribution
 
 =back
 

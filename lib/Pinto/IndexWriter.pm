@@ -35,9 +35,12 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my $file = $args{file};
     $self->note("Writing index at $file");
 
+    my @records = $self->_get_index_records();
+    my $count = @records;
+
     open my $fh, '>:gzip', $file or throw_fatal "Cannot open $file: $!";
-    $self->_write_header($fh, $file);
-    $self->_write_packages($fh);
+    $self->_write_header($fh, $file, $count);
+    $self->_write_records($fh, @records);
     close $fh;
 
     return $self;
@@ -46,7 +49,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
 #------------------------------------------------------------------------------
 
 sub _write_header {
-    my ($self, $fh, $filename) = @_;
+    my ($self, $fh, $filename, $line_count) = @_;
 
     my $base    = $filename->basename();
     my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
@@ -59,7 +62,7 @@ Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
 Written-By:   Pinto::IndexWriter $version
-Line-Count:   UNKNOWN
+Line-Count:   $line_count
 Last-Updated: @{[ scalar localtime() ]}
 
 END_PACKAGE_HEADER
@@ -69,11 +72,11 @@ END_PACKAGE_HEADER
 
 #------------------------------------------------------------------------------
 
-sub _write_packages {
-    my ($self, $fh) = @_;
+sub _write_records {
+    my ($self, $fh, @records) = @_;
 
-    for my $details_record ( $self->_get_index_records() ) {
-        my ($name, $version, $path) = @{ $details_record };
+    for my $record ( @records ) {
+        my ($name, $version, $path) = @{ $record };
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;

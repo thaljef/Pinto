@@ -117,46 +117,27 @@ sub _write_mailrc {
 
 sub _modlist_data {
 
-    return <<'END_MODLIST';
+    my $template = <<'END_MODLIST';
 File:        03modlist.data
-Description: These are the data that are published in the module
-        list, but they may be more recent than the latest posted
-        modulelist. Over time we'll make sure that these data
-        can be used to print the whole part two of the
-        modulelist. Currently this is not the case.
-Modcount:    6137
-Written-By:  PAUSE version 1.14
-Date:        Thu, 25 Aug 2011 15:27:50 GMT
+Description: This a placeholder for CPAN.pm
+Modcount:    0
+Written-By:  Id: %s
+Date:        %s
 
-package CPAN::Modulelist;
-# Usage: print Data::Dumper->new([CPAN::Modulelist->data])->Dump or similar
-# cannot 'use strict', because we normally run under Safe
-# use strict;
-sub data {
-my $result = {};
-my $primary = "modid";
-for (@$CPAN::Modulelist::data){
-my %hash;
-@hash{@$CPAN::Modulelist::cols} = @$_;
-$result->{$hash{$primary}} = \%hash;
-}
-$result;
-}
-$CPAN::Modulelist::cols = [
-'modid',
-'statd',
-'stats',
-'statl',
-'stati',
-'statp',
-'description',
-'userid',
-'chapterid'
-];
-$CPAN::Modulelist::data = [
-];
+package %s;
+
+sub data { {} }
+
+1;
 END_MODLIST
 
+    # If we put "package CPAN::Modulelist" in the above string, it
+    # fools the PAUSE indexer into thinking that we provide the
+    # CPAN::Modulelist package.  But we don't.  To get around this,
+    # I'm going to inject the string "CPAN::Modulelist" into the
+    # template.
+
+    return sprintf $template, $0, scalar localtime, 'CPAN::Modulelist';
 }
 
 #------------------------------------------------------------------------------

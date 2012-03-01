@@ -4,7 +4,7 @@ Pinto - Curate your own CPAN-like repository
 
 # VERSION
 
-version 0.030
+version 0.032
 
 # SYNOPSIS
 
@@ -144,7 +144,7 @@ The CPAN Testers is a network of smokers who run automated tests on uploaded CPA
 
 - CPAN Testers Matrix
 
-The CPAN Testers Matrix is a website that provides a visual way to determine what Perls/platforms PASSed for a distribution.
+The CPAN Testers Matrix is a website that provides a visual overview of the test results for a distribution on various Perls/platforms.
 
 [http://matrix.cpantesters.org/?dist=Pinto](http://matrix.cpantesters.org/?dist=Pinto)
 

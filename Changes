@@ -1,5 +1,27 @@
 {{$NEXT}}
 
+0.032     2012-03-01 10:36:25 America/Los_Angeles
+
+     Bug Fixes:
+
+     Worked around a problem that caused the PAUSE indexer to
+     reject the last release.
+
+     Added an accurate line-count to the 02packages file so that
+     cpan(1) doesn't complain about it.
+
+0.031     2012-02-28 05:19:58 America/Los_Angeles
+
+     Bug Fixes:
+
+     Fixed bug in the create command.  Not sure how this ever
+     worked before.
+
+     New Features:
+
+     The "add" command now recursively imports all the dependencies
+     by default.  To disable this behavior use the --norecurse option.
+
 0.030     2012-01-26 22:00:32 America/Los_Angeles
 
      The --repos option for pinto-admin has been officially 
