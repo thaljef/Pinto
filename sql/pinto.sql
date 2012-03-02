@@ -10,8 +10,8 @@ CREATE TABLE package (
        id INTEGER PRIMARY KEY NOT NULL,
        name TEXT NOT NULL,
        version TEXT NOT NULL,
-       is_latest BOOLEAN DEFAULT NULL,
        distribution INTEGER NOT NULL,
+       is_latest BOOLEAN DEFAULT NULL,
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
 
@@ -23,13 +23,20 @@ CREATE TABLE stack (
        description TEXT DEFAULT NULL 
 );
 
+create TABLE pin (
+       id INTEGER PRIMARY KEY NOT NULL,
+       ctime INTEGER NOT NULL,
+       reason TEXT NOT NULL
+);
 
 create TABLE package_stack (
        id      INTEGER PRIMARY KEY NOT NULL,
        stack   INTEGER             NOT NULL,
        package INTEGER             NOT NULL,
+       pin     INTEGER             DEFAULT NULL,
        FOREIGN KEY(stack)   REFERENCES stack(id),
-       FOREIGN KEY(package) REFERENCES package(id)
+       FOREIGN KEY(package) REFERENCES package(id),
+       FOREIGN KEY(pin)     REFERENCES pin(id)
 );
 
 
