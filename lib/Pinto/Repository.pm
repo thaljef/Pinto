@@ -8,7 +8,7 @@ use Class::Load;
 
 use Pinto::Database;
 use Pinto::IndexCache;
-use Pinto::Exceptions qw(throw_fatal);
+use Pinto::Exceptions qw(throw_fatal throw_error);
 use Pinto::Types qw(Dir);
 
 use namespace::autoclean;
@@ -43,11 +43,19 @@ has cache => (
 );
 
 
+has extractor => (
+    is         => 'ro',
+    isa        => 'Pinto::PackageExtractor',
+    lazy_build => 1,
+);
+
+
 #-------------------------------------------------------------------------------
 # Roles
 
 with qw( Pinto::Interface::Configurable
-         Pinto::Interface::Loggable );
+         Pinto::Interface::Loggable
+         Pinto::Role::FileFetcher );
 
 #-------------------------------------------------------------------------------
 # Builders
@@ -82,24 +90,63 @@ sub _build_cache {
                                    logger => $self->logger() );
 }
 
+#------------------------------------------------------------------------------
+
+sub _build_extractor {
+    my ($self) = @_;
+
+    return Pinto::PackageExtractor->new( config => $self->config(),
+                                         logger => $self->logger() );
+}
+
+
 #-------------------------------------------------------------------------------
 # Methods
 
-sub add_distribution {
-    my ($self, $struct) = @_;
+sub add_archive {
+    my ($self, %args) = @_;
 
-    my $dist = $self->db->new_distribution($struct);
+    my $path   = $args{path};
+    my $author = $args{author};
+    my $index  = $args{index};
 
-    $self->db->insert_distribution($dist);
+    throw_error "Archive $path does not exist"  if not -e $path;
+    throw_error "Archive $path is not readable" if not -r $path;
 
-    $self->store->add_archive( $dist->archive( $self->root_dir() ) );
+    my $root_dir   = $self->root_dir();
+    my $basename   = $path->basename();
+    my $author_dir = Pinto::Util::author_dir($author);
+    my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
 
-    return $dist;
-}
+    my $where    = {path => $dist_path};
+    my $existing = $self->select_distributions( $where )->single();
+    throw_error "Distribution $dist_path already exists" if $existing;
+
+    my $dist_struct = { path     => $dist_path,
+                        source   => 'LOCAL',
+                        mtime    => Pinto::Util::mtime($path) };
+
+    my @pkg_specs = $index ? $self->extractor->provides( archive => $path ) : ();
+    $dist_struct->{packages} = \@pkg_specs;
+
+    $self->info(sprintf "Adding distribution $path with %d packages", scalar @pkg_specs);
+
+    # Always update database *before* moving the archive into the
+    # repository, so if there is an error in the DB, we can stop and
+    # the repository will still be clean.
+
+    my $new_dist = $self->db->new_distribution($dist_struct);
+    $self->db->insert_distribution($new_dist);
+    my $new_archive = $new_dist->archive( $self->root_dir() );
+    $self->fetch( from => $path, to => $new_archive );
+    $self->store->add_archive( $new_archive );
+
+    return $new_dist;
+};
 
 #-------------------------------------------------------------------------------
 
-sub remove_distribution {
+sub remove_archive {
     my ($self, $dist) = @_;
 
     $self->db->delete_distribution($dist);
