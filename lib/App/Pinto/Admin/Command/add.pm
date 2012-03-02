@@ -30,6 +30,7 @@ sub opt_spec {
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'norecurse'   => 'Do not recursively import prereqs' ],
+        [ 'stack=s@'    => 'Add to this stack (repeatable)' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -156,6 +157,12 @@ Prevents L<Pinto> from recursively importing distribtuions required to
 satisfy the prerequisites of the added distribution.  Imported
 distributions are pulled from whatever remote repositories are
 configured as the C<source> for this local repository.
+
+=item --stack=NAME
+
+Instructs L<Pinto> to place all the packages in the stack with the
+given NAME.  If no stack is specified, then it defaults to the stack
+named C<default>.  You may repeat this option to name multiple stacks.
 
 =item --tag=NAME
 
