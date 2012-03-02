@@ -41,6 +41,13 @@ has norecurse => (
 );
 
 
+has pin   => (
+    is      => 'ro',
+    isa     => 'Maybe[Str]',
+    default => undef,
+);
+
+
 has stack => (
     is      => 'ro',
     isa     => Str,
@@ -63,7 +70,7 @@ override execute => sub {
     my ($added, @imported) = $self->repos->add_archive( path      => $self->archive,
                                                         author    => $self->author,
                                                         stack     => $self->stack,
-                                                        norecurse => $self->norecurse,
+                                                        pin       => $self->pin,
                                                         index     => 1 );
 
     $self->add_message( Pinto::Util::added_dist_message($added) );

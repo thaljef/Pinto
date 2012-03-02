@@ -33,9 +33,11 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
     my $file = $args{file};
-    $self->note("Writing index at $file");
+    my $stack = $args{stack} || 'default';
 
-    my @records = $self->_get_index_records();
+    $self->note("Writing index for stack $stack at $file");
+
+    my @records = $self->_get_index_records($stack);
     my $count = @records;
 
     open my $fh, '>:gzip', $file or throw_fatal "Cannot open $file: $!";
@@ -88,7 +90,7 @@ sub _write_records {
 #------------------------------------------------------------------------------
 
 sub _get_index_records {
-    my ($self) = @_;
+    my ($self, $stack) = @_;
 
     # The index is rewritten after almost every action, so we want
     # this to be as fast as possible (especially during an Add or
@@ -101,11 +103,11 @@ sub _get_index_records {
     # like one produced by PAUSE.  Also, this is about twice as fast
     # as using an iterator to read each record lazily.
 
-    my $where  = { is_latest => 1 };
-    my $select = [ qw(name version distribution.path) ];
-    my $attrs  = { select => $select, join => 'distribution'};
+    my $where  = { 'stack.name' => $stack };
+    my $select = [ qw(package.name package.version package.distribution.path) ];
+    my $attrs  = { select => $select, join => ['stack', {package => 'distribution'}] };
 
-    my $records = $self->db->select_packages( $where, $attrs );
+    my $records = $self->db->select_package_stack( $where, $attrs );
     my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
 
     return @records;

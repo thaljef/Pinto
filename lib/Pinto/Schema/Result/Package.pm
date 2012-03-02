@@ -45,12 +45,6 @@ __PACKAGE__->table("package");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 is_latest
-
-  data_type: 'boolean'
-  default_value: null
-  is_nullable: 1
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -62,8 +56,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "is_latest",
-  { data_type => "boolean", default_value => \"null", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -93,20 +85,6 @@ __PACKAGE__->set_primary_key("id");
 =cut
 
 __PACKAGE__->add_unique_constraint("name_distribution_unique", ["name", "distribution"]);
-
-=head2 C<name_is_latest_unique>
-
-=over 4
-
-=item * L</name>
-
-=item * L</is_latest>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("name_is_latest_unique", ["name", "is_latest"]);
 
 =head1 RELATIONS
 
@@ -141,23 +119,20 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-01 18:42:22
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eUzimsrAmtk3uu9LBWNH3Q
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-02 10:59:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dcF0GQSLdGQjuqyu9bkmXg
 
 #------------------------------------------------------------------------------
 
-# ABSTRACT: Represents a package in a Distribution
+# ABSTRACT: Represents a Package provided by a Distribution
 
 #------------------------------------------------------------------------------
 
 use Carp;
 use String::Format;
 
-use Pinto::Util;
-use Pinto::Exceptions qw(throw_error);
-
 use overload ( '""'     => 'to_string',
-               '<=>'    => 'compare_version',
+               '<=>'    => 'compare',
                fallback => undef );
 
 #------------------------------------------------------------------------------
@@ -175,7 +150,7 @@ __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
-__PACKAGE__->many_to_many( stacks => 'package_stack', 'stack' );
+__PACKAGE__->many_to_many( stacks => 'packages_stack', 'stack' );
 
 
 #------------------------------------------------------------------------------
@@ -200,32 +175,15 @@ sub vname {
 #------------------------------------------------------------------------------
 
 sub to_string {
-    my ($self) = @_;
-
-    # Some attributes are just undefined, usually because of
-    # oddly named distributions and other old stuff on CPAN.
-    no warnings 'uninitialized';  ## no critic qw(NoWarnings);
-
-    return sprintf '%s/%s/%s', $self->distribution->author(),
-                               $self->distribution->vname(),
-                               $self->vname();
-}
-
-#------------------------------------------------------------------------------
-
-sub to_formatted_string {
     my ($self, $format) = @_;
 
     my %fspec = (
          'n' => sub { $self->name()                                   },
          'N' => sub { $self->vname()                                  },
          'v' => sub { $self->version->stringify()                     },
-         'x' => sub { $self->is_latest()                ? '@' : ' '   },
-         'y' => sub { $self->is_pinned()                ? '+' : ' '   },
          'm' => sub { $self->distribution->is_devel()   ? 'd' : 'r'   },
          'p' => sub { $self->distribution->path()                     },
          'P' => sub { $self->distribution->archive()                  },
-         's' => sub { $self->distribution->is_local()   ? 'l' : 'f'   },
          'S' => sub { $self->distribution->source()                   },
          'a' => sub { $self->distribution->author()                   },
          'd' => sub { $self->distribution->name()                     },
@@ -248,30 +206,27 @@ sub to_formatted_string {
 sub default_format {
     my ($self) = @_;
 
-    my $width = 38 - length $self->version();
-    $width = length $self->name() if $width < length $self->name();
-
-    return "%x%m%s%y %-${width}n %v  %p\n",
+    return '%a/%D/%N';  # AUTHOR/DIST-VNAME/PKG-VNAME
 }
 
 #-------------------------------------------------------------------------------
 
-sub compare_version {
+sub compare {
     my ($pkg_a, $pkg_b) = @_;
 
-    croak "Can only compare Pinto::Package objects"
+    confess "Can only compare Pinto::Package objects"
         if __PACKAGE__ ne ref $pkg_a || __PACKAGE__ ne ref $pkg_b;
 
-    croak "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
+    return 0 if $pkg_a->id() == $pkg_b->id();
+
+    confess "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name() ne $pkg_b->name();
 
-    my $r =   ( ($pkg_a->is_pinned() || 0)        <=> ($pkg_b->is_pinned() || 0)        )
-           || ( $pkg_a->distribution->is_local()  <=> $pkg_b->distribution->is_local()  )
-           || ( $pkg_a->version()                 <=> $pkg_b->version()                 )
-           || ( $pkg_a->distribution->mtime()     <=> $pkg_b->distribution->mtime()     );
+    my $r =   ( $pkg_a->version()             <=> $pkg_b->version()             )
+           || ( $pkg_a->distribution->mtime() <=> $pkg_b->distribution->mtime() );
 
-    # No two packages can be considered equal!
-    throw_error "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
+    # No two non-identical packages can be considered equal!
+    confess "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
 
     return $r;
 };

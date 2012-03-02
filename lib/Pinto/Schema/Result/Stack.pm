@@ -114,10 +114,50 @@ __PACKAGE__->has_many(
 # VERSION
 
 #----------------------------------------------------------------------------------------
+
+use String::Format;
+
+use overload ( '""'     => 'to_string' );
+
+#----------------------------------------------------------------------------------------
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
 __PACKAGE__->many_to_many( packages => 'package_stack', 'package' );
+
+#------------------------------------------------------------------------------
+
+sub new {
+    my ($class, $attrs) = @_;
+
+    $attrs->{mtime} ||= time;
+
+    return $class->SUPER::new($attrs);
+}
+
+#----------------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self, $format) = @_;
+
+    my %fspec = (
+          'k' => sub { $self->name()                                          },
+          'e' => sub { $self->description()                                   },
+          'u' => sub { $self->mtime()                                         },
+          'U' => sub { scalar localtime $self->mtime()                        },
+    );
+
+    $format ||= $self->default_format();
+    return String::Format::stringf($format, %fspec);
+}
+
+#----------------------------------------------------------------------------------------
+
+sub default_format {
+    my ($self) = @_;
+
+    return '%k';
+}
 
 #----------------------------------------------------------------------------------------
 1;

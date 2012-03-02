@@ -109,11 +109,18 @@ sub add_archive {
     my $path   = $args{path};
     my $author = $args{author};
     my $index  = $args{index};
+    my $stack  = $args{stack};
+    my $pin    = $args{pin};
 
     throw_error "Archive $path does not exist"  if not -e $path;
     throw_error "Archive $path is not readable" if not -r $path;
 
-    my $root_dir   = $self->root_dir();
+    $stack = $self->db->select_stack( {name => $stack} )
+        || throw_error qq{No such stack named "$stack"};
+
+    $pin = $self->db->create_pin( {reason => $pin} )
+        if $pin;
+
     my $basename   = $path->basename();
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
@@ -129,14 +136,14 @@ sub add_archive {
     my @pkg_specs = $index ? $self->extractor->provides( archive => $path ) : ();
     $dist_struct->{packages} = \@pkg_specs;
 
-    $self->info(sprintf "Adding distribution $path with %d packages", scalar @pkg_specs);
+    my $count = @pkg_specs;
+    $self->info("Adding distribution $path with $count packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
     # the repository will still be clean.
 
-    my $new_dist = $self->db->new_distribution($dist_struct);
-    $self->db->insert_distribution($new_dist);
+    my $new_dist    = $self->db->create_distribution( $dist_struct, $stack, $pin );
     my $new_archive = $new_dist->archive( $self->root_dir() );
     $self->fetch( from => $path, to => $new_archive );
     $self->store->add_archive( $new_archive );
@@ -147,7 +154,21 @@ sub add_archive {
 #-------------------------------------------------------------------------------
 
 sub remove_archive {
-    my ($self, $dist) = @_;
+    my ($self, %args) = @_;
+
+    my $path = $args{path};
+
+    my $where = {path => $path};
+    my $dist  = $self->select_distributions( $where )->single();
+    throw_error "Distribution $path does not exist" if not $dist;
+
+    # Must call accessor to ensure the package objects are attached
+    # to the dist object before we delete.  Otherwise, we can't log
+    # which packages were deleted, because they'll already be gone.
+    my @pkgs = $dist->packages();
+    my $count = @pkgs;
+
+    $self->info("Removing distribution $dist with $count packages");
 
     $self->db->delete_distribution($dist);
 

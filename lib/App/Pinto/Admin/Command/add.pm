@@ -30,7 +30,8 @@ sub opt_spec {
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'norecurse'   => 'Do not recursively import prereqs' ],
-        [ 'stack=s@'    => 'Add to this stack (repeatable)' ],
+        [ 'pin=s'       => 'Pin all added packages to the stack' ],
+        [ 'stack=s'     => 'Add packages into this stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -83,12 +84,6 @@ This command adds a local distribution archive and all its packages to
 the repository and recomputes the 'latest' version of the packages
 that were in that distribution.
 
-When a distribution is first added to the repository, the author
-becomes the owner of the distribution (actually, the packages).
-Thereafter, only the same author can add new versions or remove those
-packages.  However, this is not strongly enforced -- you can change
-your author identity at any time using the C<--author> option.
-
 By default, Pinto also recursively imports all the distributions that
 are required to provide the prerequisite packages for the newly added
 distribution.  When searching for those prerequisite pakcages, Pinto first
@@ -101,9 +96,6 @@ satisfies the prerequisite (NOT SURE THOSE LAST TWO STATEMENTS ARE TRUE).
 
 Imported distributions will be assigned to their original author, not
 the author who added the distribution that triggered the import.
-Also, packages provided by imported distributions are still considered
-foreign, so locally added packages will always override ones that you
-imported, even if the imported package has a higher version.
 
 =head1 COMMAND ARGUMENTS
 
@@ -158,11 +150,17 @@ satisfy the prerequisites of the added distribution.  Imported
 distributions are pulled from whatever remote repositories are
 configured as the C<source> for this local repository.
 
+=item --pin=REASON
+
+Pins all the packages in the distribution to the stack, so they cannot
+be changed until you unpin them.  The C<REASON> is a brief description
+of why want to pin these packages.
+
 =item --stack=NAME
 
-Instructs L<Pinto> to place all the packages in the stack with the
-given NAME.  If no stack is specified, then it defaults to the stack
-named C<default>.  You may repeat this option to name multiple stacks.
+Instructs L<Pinto> to place all the packages within the distribution
+into the stack with the given NAME.  If no stack is specified, then it
+defaults to the stack named C<default>.
 
 =item --tag=NAME
 
@@ -171,18 +169,5 @@ This is only relevant if you are using a VCS-based storage mechanism.
 The syntax of the NAME depends on the type of VCS you are using.
 
 =back
-
-=head1 DISCUSSION
-
-Using the 'add' command on a distribution you got from another
-repository (such as CPAN mirror) effectively makes that distribution
-local.  So you become the owner of that distribution, even if the
-repository already contains a foreign distribution that was pulled
-from another repository by the C<mirror> or C<import> command.
-
-Local packages are always considered 'later' then any foreign package
-with the same name, even if the foreign package has a higher version
-number.  This allows you to mask a foreign package with your own
-locally patched version.
 
 =cut

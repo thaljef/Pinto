@@ -33,6 +33,7 @@ sub opt_spec {
         [ 'packages|p=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'format=s'          => 'Format specification (See POD for details)' ],
+        [ 'stack=s'           => 'List a stack other than the default' ],
 
 
 
@@ -53,17 +54,18 @@ sub validate_args {
     $opts->{format} = eval qq{"$opts->{format}"} ## no critic qw(StringyEval)
         if $opts->{format};
 
-    my $pkg_name = delete $opts->{packages};
-    $opts->{where}->{name} = { like => "%$pkg_name%" } if $pkg_name;
-
-    my $dist_path = delete $opts->{distributions};
-    $opts->{where}->{path} = { like => "%$dist_path%" } if $dist_path;
-
-    my $index = delete $opts->{index};
-    $opts->{where}->{is_latest} = $index ? 1 : undef if defined $index;
+    my $stack = delete $opts->{stack} || 'default';
+    $opts->{where}->{'stack.name'} = $stack;
 
     my $pinned = delete $opts->{pinned};
-    $opts->{where}->{is_pinned} = $pinned ? 1 : undef if defined $pinned;
+    $opts->{where}->{pin} = { '!=' => undef } if $pinned;
+    $opts->{where}->{pin} = undef if defined $pinned and $pinned == 0;
+
+    my $pkg_name = delete $opts->{packages};
+    $opts->{where}->{'package.name'} = { like => "%$pkg_name%" } if $pkg_name;
+
+    my $dist_path = delete $opts->{distributions};
+    $opts->{where}->{'package.distribution.path'} = { like => "%$dist_path%" } if $dist_path;
 
     return 1;
 }
@@ -171,7 +173,12 @@ in the package name.
 
 Limits the listing to records for packages that are pinned.  Using the
 option C<--nopinned> has the opposite effect of limiting the listing
-to records for packages that are not pinned.
+to packages that are not pinned.
+
+=item --stack=NAME
+
+List records for packages in the stack named C<NAME>.  If not
+specified, records for packages in the default stack will be listed.
 
 =back
 

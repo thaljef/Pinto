@@ -74,30 +74,39 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
-sub new_distribution {
-    my ($self, $dist_attrs) = @_;
+sub select_package_stack {
+    my ($self, $where, $attrs) = @_;
 
-    return $self->schema->resultset('Distribution')->new_result($dist_attrs);
+    $where ||= {};
+    $attrs ||= { pefetch => [ qw( package stack pin ) ] };
+
+    return $self->schema->resultset('PackageStack')->search($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------
 
-sub insert_distribution {
-    my ($self, $dist) = @_;
+sub create_distribution {
+    my ($self, $dist_struct, $stack, $pin) = @_;
 
-    $self->debug("Inserting distribution $dist into database");
+    $self->debug("Inserting distribution $dist_struct->{path} into database");
+
+    my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
+
+    my $dist = $self->schema->resultset('Distribution')->create($dist_struct);
 
     $self->whine("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
 
-    my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
-
-    $dist->insert();
-    $self->mark_latest($_) for $dist->packages();
+    for my $pkg ( $dist->packages() ) {
+        # If the registration fails, then it cannot be pinned
+        # TODO: Throw exception instead of jumping to next $pkg ?
+        my $pkg_stack = $self->register($pkg, $stack) or next;
+        $pkg_stack->pin($pin) && $pkg_stack->update() if $pin;
+    }
 
     $txn_guard->commit(); #END transaction
 
-    return $self;
+    return $dist;
 }
 
 #-------------------------------------------------------------------------------
@@ -109,12 +118,7 @@ sub delete_distribution {
 
     my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
 
-    # NOTE: must fetch the packages before we delete the dist,
-    # otherwise they won't be there any more!
-    my @packages = $dist->packages();
-
     $dist->delete();
-    $self->mark_latest($_) for @packages;
 
     $txn_guard->commit(); # END transaction
 
@@ -123,28 +127,92 @@ sub delete_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub mark_latest {
-    my ($self, $pkg) = @_;
+sub register {
+    my ($self, $pkg, $stack) = @_;
 
-    my @sisters = $self->select_packages( {name => $pkg->name()} )->all();
-    @sisters = grep { not $_->distribution->is_devel() } @sisters unless $self->config->devel();
-    return if not @sisters;
+    my $attrs     = { join => [ qw(package stack) ] };
+    my $where     = { 'package.name' => $pkg->name(), 'stack' => $stack->id() };
+    my $incumbent = $self->select_package_stack( $where, $attrs )->single();
 
-    my ($latest, @older) = reverse sort { $a <=> $b } @sisters;
+    if (not $incumbent) {
+        $self->debug("Adding $pkg to stack $stack");
+        return $self->create_pkg_stack($pkg, $stack);
+    }
 
-    # If the latest package is already marked as latest, then we can bail
-    return $self if $latest->is_latest();
+    my $incumbent_pkg = $incumbent->package();
 
-    # Mark older packages as 'undef' first, to prevent constraint violation.
-    # The schema only permits one package to be marked as latest at a time.
-    $_->is_latest(undef) for @older;
-    $_->update() for @older;
+    if ( $incumbent_pkg == $pkg ) {
+        $self->whine("Package $pkg is already in stack $stack");
+        return;
+    }
 
-    $self->debug("Marking package $latest as latest");
-    $latest->is_latest(1);
-    $latest->update();
+    if ($incumbent_pkg > $pkg) {
+        $self->whine("Stack $stack already contains newer package $pkg");
+        return;
+    }
 
-    return $latest;
+    if ( $incumbent_pkg < $pkg and $incumbent->is_pinned() ) {
+        my $name = $pkg->name();
+        $self->whine("Can't add $pkg to stack $stack because $name is pinned to $incumbent_pkg");
+        return;
+    }
+
+    # If we get here, then we know that the incoming package is newer
+    # than the incumbent, and the incumbent is not pinned.  So we can
+    # go ahead and register it in this stack.
+
+    $incumbent->delete();
+    $self->info("Upgrading package $incumbent to $pkg in stack $stack");
+    my $pkg_stack = $self->create_pkg_stack($pkg, $stack);
+
+    return $pkg_stack;
+}
+
+#-------------------------------------------------------------------------------
+
+sub create_pkg_stack {
+    my ($self, $pkg, $stack_name) = @_;
+
+    my $stack = $self->schema->resultset('Stack')->find( {name => $stack_name} )
+      or throw_error "Stack named $stack_name does not exist";
+
+    my $pkg_stack = $self->schema->resultset('PackageStack')->create( {stack => $stack, package => $pkg } );
+
+    return $pkg_stack;
+
+}
+
+#-------------------------------------------------------------------------------
+
+sub create_pin {
+    my ($self, $attrs) = @_;
+
+    my $pin = $self->schema->resultset('Pin')->create( $attrs );
+
+    return $pin;
+}
+
+#-------------------------------------------------------------------------------
+
+sub select_stack {
+    my ($self, $where, $attrs) = @_;
+
+    $where ||= {};
+    $attrs ||= {};
+
+    my $stack = $self->schema->resultset('Stack')->find( $where, $attrs );
+
+    return $stack;
+}
+
+#-------------------------------------------------------------------------------
+
+sub create_stack {
+    my ($self, $attrs) = @_;
+
+    my $stack = $self->schema->resultset('Stack')->create( $attrs );
+
+    return $stack;
 }
 
 #-------------------------------------------------------------------------------

@@ -83,6 +83,20 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-01 18:42:22
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:N9evlt2OEnxXQb9QtpgwUw
 
+#------------------------------------------------------------------------------
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+# VERSION
+
+#------------------------------------------------------------------------------
+
+sub new {
+    my ($class, $attrs) = @_;
+
+    $attrs->{ctime}  ||= time;
+
+    return $class->SUPER::new($attrs);
+}
+
+#------------------------------------------------------------------------------
+
 1;

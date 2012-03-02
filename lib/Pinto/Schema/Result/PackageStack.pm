@@ -134,6 +134,95 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-01 18:42:22
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zk+raQ7ozJVCzgcnTc6qQw
 
+#------------------------------------------------------------------------------
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+# VERSION
+
+#------------------------------------------------------------------------------
+
+use Carp;
+use String::Format;
+
+use overload ( '""'     => 'to_string',
+               '<=>'    => 'compare',
+               fallback => undef );
+
+#-------------------------------------------------------------------------------
+
+sub is_pinned {
+    my ($self) = @_;
+    return defined $self->pin();
+}
+
+#-------------------------------------------------------------------------------
+
+sub compare {
+    my ($pstk_a, $pstk_b) = @_;
+
+    confess "Can only compare Pinto::PackageStack objects"
+        if __PACKAGE__ ne ref $pstk_a || __PACKAGE__ ne ref $pstk_b;
+
+    return 0 if $pstk_a->id() == $pstk_b->id();
+
+    my $stk_a = $pstk_a->stack();
+    my $stk_b = $pstk_b->stack();
+
+    confess "Cannot compare packages from different stacks: $stk_a <=> $stk_b"
+        if $stk_a->id() != $stk_b->id();
+
+    my $r =   ( $pstk_a->is_pinned()  <=> $pstk_b->is_pinned()  )
+           || ( $pstk_a->package()    <=> $pstk_b->package()    );
+
+    # No two non-indentical package-stacks can be considered equal!
+    confess "Unable to determine ordering: $pstk_a <=> $pstk_b" if not $r;
+
+    return $r;
+};
+
+#------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self, $format) = @_;
+
+    my %fspec = (
+         'n' => sub { $self->package->name()                                   },
+         'N' => sub { $self->package->vname()                                  },
+         'v' => sub { $self->package->version->stringify()                     },
+         'm' => sub { $self->package->distribution->is_devel()  ? 'd' : 'r'    },
+         'p' => sub { $self->package->distribution->path()                     },
+         'P' => sub { $self->package->distribution->archive()                  },
+         'S' => sub { $self->package->distribution->source()                   },
+         'a' => sub { $self->package->distribution->author()                   },
+         'd' => sub { $self->package->distribution->name()                     },
+         'D' => sub { $self->package->distribution->vname()                    },
+         'w' => sub { $self->package->distribution->version()                  },
+         'u' => sub { $self->package->distribution->url()                      },
+         'k' => sub { $self->stack->name()                                     },
+         'e' => sub { $self->stack->description()                              },
+         'y' => sub { $self->is_pinned() ? '+' : ' '                           },
+    );
+
+    # Some attributes are just undefined, usually because of
+    # oddly named distributions and other old stuff on CPAN.
+    no warnings 'uninitialized';  ## no critic qw(NoWarnings);
+
+    $format ||= $self->default_format();
+    return String::Format::stringf($format, %fspec);
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub default_format {
+    my ($self) = @_;
+
+    my $width = 38 - length $self->package->version();
+    $width = length $self->package->name() if $width < length $self->package->name();
+
+    return "%y %-${width}n %v  %p\n",
+}
+
+#------------------------------------------------------------------------------
 1;
+
+__END__
