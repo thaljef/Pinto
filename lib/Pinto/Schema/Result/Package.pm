@@ -39,17 +39,17 @@ __PACKAGE__->table("package");
   data_type: 'text'
   is_nullable: 0
 
-=head2 is_latest
-
-  data_type: 'boolean'
-  default_value: null
-  is_nullable: 1
-
 =head2 distribution
 
   data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
+
+=head2 is_latest
+
+  data_type: 'boolean'
+  default_value: null
+  is_nullable: 1
 
 =cut
 
@@ -60,10 +60,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "version",
   { data_type => "text", is_nullable => 0 },
-  "is_latest",
-  { data_type => "boolean", default_value => \"null", is_nullable => 1 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "is_latest",
+  { data_type => "boolean", default_value => \"null", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -141,8 +141,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-02-24 23:17:52
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:14ZbpNNsSNZMAy3KJ8jwKQ
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-01 18:42:22
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eUzimsrAmtk3uu9LBWNH3Q
 
 #------------------------------------------------------------------------------
 
