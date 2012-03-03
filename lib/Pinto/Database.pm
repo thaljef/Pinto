@@ -94,6 +94,9 @@ sub create_distribution {
 
     my $dist = $self->schema->resultset('Distribution')->create($dist_struct);
 
+    # TODO: Decide if the distinction between developer/release
+    # distributions really makes sense.  Now that we have stacks,
+    # we might not really need to make this distinction.
     $self->whine("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
 
@@ -136,7 +139,8 @@ sub register {
 
     if (not $incumbent) {
         $self->debug("Adding $pkg to stack $stack");
-        return $self->create_pkg_stack($pkg, $stack);
+        my $pkg_stack = $self->create_pkg_stack( {package => $pkg, stack => $stack} );
+        return $pkg_stack;
     }
 
     my $incumbent_pkg = $incumbent->package();
@@ -163,7 +167,7 @@ sub register {
 
     $incumbent->delete();
     $self->info("Upgrading package $incumbent to $pkg in stack $stack");
-    my $pkg_stack = $self->create_pkg_stack($pkg, $stack);
+    my $pkg_stack = $self->create_pkg_stack( {package => $pkg, stack => $stack} );
 
     return $pkg_stack;
 }
@@ -171,12 +175,9 @@ sub register {
 #-------------------------------------------------------------------------------
 
 sub create_pkg_stack {
-    my ($self, $pkg, $stack_name) = @_;
+    my ($self, $attrs) = @_;
 
-    my $stack = $self->schema->resultset('Stack')->find( {name => $stack_name} )
-      or throw_error "Stack named $stack_name does not exist";
-
-    my $pkg_stack = $self->schema->resultset('PackageStack')->create( {stack => $stack, package => $pkg } );
+    my $pkg_stack = $self->schema->resultset('PackageStack')->create( $attrs );
 
     return $pkg_stack;
 
