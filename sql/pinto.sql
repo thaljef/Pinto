@@ -22,11 +22,13 @@ CREATE TABLE stack (
        description TEXT DEFAULT NULL 
 );
 
+
 create TABLE pin (
        id INTEGER PRIMARY KEY NOT NULL,
        ctime INTEGER NOT NULL,
        reason TEXT NOT NULL
 );
+
 
 create TABLE package_stack (
        id           INTEGER PRIMARY KEY NOT NULL,
