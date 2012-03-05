@@ -51,10 +51,14 @@ sub action_name {
 
     my $class = ref $self || $self;
 
-    $class =~ m{ ([^:]+) $ }mx
-      or croak "Unable to parse Action name from $class";
+    $class =~ m{ ^ Pinto::Admin::(?:Command|Subcommand):: (.+) $ }mx
+        or croak "Unable to parse Action name from $class";
 
-    return ucfirst $1;
+    # Convert foo::bar::baz -> Foo::Bar:Baz
+    # TODO: consider using a regex to do the conversion
+    my $action_name = join '::', map {ucfirst} split '::', $1;
+
+    return $action_name;
 }
 
 #-----------------------------------------------------------------------------
