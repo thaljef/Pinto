@@ -24,6 +24,7 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'stack|s=s'   => 'Remove the pin from a particular stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -53,7 +54,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action('Unpin', %{$opts}, package => $_) for @args;
+    $self->pinto->add_action($self->action_name(), %{$opts}, package => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -73,9 +74,9 @@ __END__
 
 =head1 DESCRIPTION
 
-This command unpins a package from the index, so that the latest
-version will appear in the index.  Note that local packages still have
-precedence over foreign packages.
+This command unpins a package in the stack, so that the package can be
+merged into another stack with a newer version of the package, or the
+package can be upgraded to a newer version within this stack.
 
 =head1 COMMAND ARGUMENTS
 

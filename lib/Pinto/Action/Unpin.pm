@@ -5,7 +5,7 @@ package Pinto::Action::Unpin;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 
-use Pinto::Types qw(Vers);
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -25,27 +25,51 @@ has package => (
     required => 1,
 );
 
+
+has stack   => (
+    is      => 'ro',
+    isa     => StackName,
+    default => 'default',
+);
+
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $name  =  $self->package();
-    my $where = { name => $name, is_pinned => 1 };
-    my $pkg   = $self->repos->select_packages($where)->first();
+    my $stack_name = $self->stack();
+    my $where = { name => $stack_name };
+    my $stack = $self->repos->db->select_stacks($where)->single();
 
-    if (not $pkg) {
-        $self->whine("Package $name does not exist in the repository, or is not pinned");
-        return 0;
+    if (not $stack) {
+        $self->whine("Stack $stack_name does not exist");
+        return;
     }
 
-    $self->info("Unpinning package $pkg");
+    return $self->_do_unpin($stack);
+}
 
-    $pkg->is_pinned(undef);
-    $pkg->update();
-    my $latest = $self->repos->db->mark_latest($pkg);
+sub _do_unpin {
+    my ($self, $stack) = @_;
 
-    $self->add_message("Unpinned package $name. Latest is now $latest");
+    my $pkg_name = $self->package();
+    my $attrs    = { prefetch => 'package' };
+    my $where    = { 'package.name' => $pkg_name, stack => $stack->id() };
+    my $pkg_stk  = $self->repos->db->select_package_stack($where, $attrs)->single();
+
+    if (not $pkg_stk) {
+        $self->whine("Package $pkg_name is not in stack $stack");
+        return;
+    }
+
+    if (not $pkg_stk->is_pinned()) {
+        $self->whine("Package $pkg_stk is not pinned");
+        return;
+    }
+
+    $self->info("Unpinning package $pkg_stk");
+    $pkg_stk->pin(undef);
+    $pkg_stk->update();
 
     return 1;
 }
