@@ -1,6 +1,6 @@
 package Pinto::Action::Stack::Copy;
 
-# ABSTRACT: An action to create a new stack by copying another stack
+# ABSTRACT: An action to create a new stack by copying another
 
 use Moose;
 

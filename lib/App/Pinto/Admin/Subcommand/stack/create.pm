@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Subcommand::stack::create;
 
-# ABSTRACT: create a new stack
+# ABSTRACT: create a new empty stack
 
 use strict;
 use warnings;

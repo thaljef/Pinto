@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Subcommand::stack::copy;
 
-# ABSTRACT: copy a stack
+# ABSTRACT: create a new stack by copying another
 
 use strict;
 use warnings;

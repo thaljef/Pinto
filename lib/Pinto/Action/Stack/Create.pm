@@ -1,6 +1,6 @@
 package Pinto::Action::Stack::Create;
 
-# ABSTRACT: An action to create a new stack
+# ABSTRACT: An action to create a new empty stack
 
 use Moose;
 
