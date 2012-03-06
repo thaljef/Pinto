@@ -98,11 +98,11 @@ sub _copy_stack {
     my ($self) = @_;
 
     my $from_stack_name = $self->from_stack();
-    my $from_stack = $self->repos->db->select_stack( {name => $from_stack_name} )
+    my $from_stack = $self->repos->db->select_stacks( {name => $from_stack_name} )->single()
         or confess "Stack $from_stack_name does not exist";
 
     my $to_stack_name = $self->to_stack();
-    my $to_stack = $self->repos->db->select_stack( {name => $to_stack_name} )
+    my $to_stack = $self->repos->db->select_stacks( {name => $to_stack_name} )->single()
         or confess "Stack $to_stack_name does not exist";
 
     my $where = { stack => $from_stack->id() };

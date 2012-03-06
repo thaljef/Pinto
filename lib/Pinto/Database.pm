@@ -74,18 +74,6 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
-sub select_stacks {
-    my ($self, $where, $attrs) = @_;
-
-    $where ||= {};
-    $attrs ||= {};
-
-    return $self->schema->resultset('Stack')->search($where, $attrs);
-
-}
-
-#-------------------------------------------------------------------------------
-
 sub select_package_stack {
     my ($self, $where, $attrs) = @_;
 
@@ -207,13 +195,13 @@ sub create_pin {
 
 #-------------------------------------------------------------------------------
 
-sub select_stack {
+sub select_stacks {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
     $attrs ||= {};
 
-    my $stack = $self->schema->resultset('Stack')->find( $where, $attrs );
+    my $stack = $self->schema->resultset('Stack')->search( $where, $attrs );
 
     return $stack;
 }
