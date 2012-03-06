@@ -25,7 +25,7 @@ sub opt_spec {
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'reason=s'    => 'Explanation of why this package is pinned' ],
-        [ 'stack=s'     => 'Pin this package within a particular stack' ],
+        [ 'stack|s=s'   => 'Pin this package within a particular stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
