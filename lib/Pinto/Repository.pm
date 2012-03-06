@@ -115,7 +115,7 @@ sub add_archive {
     throw_error "Archive $path does not exist"  if not -e $path;
     throw_error "Archive $path is not readable" if not -r $path;
 
-    $stack = $self->db->select_stack( {name => $stack} )
+    $stack = $self->db->select_stacks( {name => $stack} )->single()
         || throw_error qq{No such stack named "$stack"};
 
     $pin = $self->db->create_pin( {reason => $pin} )
