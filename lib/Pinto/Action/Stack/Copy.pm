@@ -38,9 +38,9 @@ has to_stack => (
 
 
 has description => (
-    is      => 'ro',
-    isa     => Str,
-    default => 'no description was given',
+    is        => 'ro',
+    isa       => Str,
+    predicate => 'has_description',
 );
 
 #------------------------------------------------------------------------------
@@ -49,12 +49,12 @@ has description => (
 override execute => sub {
     my ($self) = @_;
 
-    $self->_check_stacks();  # Maybe doe this in the BUILD?
+    $self->_check_stacks();  # Maybe do this in the BUILD?
 
     my $txn_guard = $self->repos->db->schema->txn_scope_guard(); # BEGIN transaction
 
-    $self->_create_stack();
     $self->_copy_stack();
+    $self->_fill_stack();
 
     $txn_guard->commit(); #END transaction
 
@@ -74,22 +74,7 @@ sub _check_stacks {
     my $to_stack_name = $self->to_stack();
     my $to_where = {name => $to_stack_name};
     $self->repos->db->select_stacks( $to_where )->single()
-        and $self->fatal("Destination stack $to_stack_name already exists");
-
-    return;
-}
-
-#------------------------------------------------------------------------------
-
-sub _create_stack {
-    my ($self) = @_;
-
-    $self->note( sprintf 'Creating new stack %s', $self->to_stack() );
-
-    my $struct = { name        => $self->to_stack(),
-                   description => $self->description() };
-
-    $self->repos->db->create_stack( $struct );
+        and $self->fatal("Target stack $to_stack_name already exists");
 
     return;
 }
@@ -97,6 +82,25 @@ sub _create_stack {
 #------------------------------------------------------------------------------
 
 sub _copy_stack {
+    my ($self) = @_;
+
+    $self->note( sprintf 'Creating new stack %s', $self->to_stack() );
+
+    my $from_stack_name = $self->from_stack();
+    my $from_where = {name => $from_stack_name};
+    my $stack = $self->repos->db->select_stacks( $from_where )->single()
+        or $self->fatal("Source stack $from_stack_name does not exist");
+
+    my $changes = { name => $self->to_stack() };
+    $changes->{description} = $self->description() if $self->has_description();
+    $stack->copy( $changes );
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _fill_stack {
     my ($self) = @_;
 
     my $from_stack_name = $self->from_stack();
@@ -116,6 +120,8 @@ sub _copy_stack {
         $self->debug(sprintf 'Copying package %s into stack %s', $package_stack->package(), $to_stack);
         $package_stack->copy( { stack => $to_stack->id() } );
     }
+
+    # TODO: Make sure both stacks have the same mtime after copying
 
     return;
 }
