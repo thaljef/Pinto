@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::unpin;
 
-# ABSTRACT: loosen a package that has been pinned
+# ABSTRACT: free a package that has been pinned
 
 use strict;
 use warnings;
@@ -80,7 +80,7 @@ package can be upgraded to a newer version within this stack.
 
 =head1 COMMAND ARGUMENTS
 
-The arguments to this command are just package names.
+Arguments are the names of the packages you wish to unpin.
 
 You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"
@@ -116,9 +116,9 @@ Pinto repository within the VCS.
 
 =item --tag=NAME
 
-Instructs L<Pinto> to tag the head revision of the repository at NAME.
+Instructs L<Pinto> to tag the head revision of the repository at C<NAME>.
 This is only relevant if you are using a VCS-based storage mechanism.
-The syntax of the NAME depends on the type of VCS you are using.
+The syntax of the C<NAME> depends on the type of VCS you are using.
 
 =back
 

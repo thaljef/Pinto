@@ -24,7 +24,7 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
-        [ 'reason=s'    => 'Explanation of why this package is pinned' ],
+        [ 'reason|R=s'  => 'Explanation of why this package is pinned' ],
         [ 'stack|s=s'   => 'Pin this package within a particular stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
@@ -80,29 +80,18 @@ __END__
 
 =head1 DESCRIPTION
 
-This command pins a package so that it will always appear in the index
-even if it is not the latest version, or a newer version is
-subsequently mirrored or imported.  You can pin the latest version of
-the package, or any arbitrary version of the package.
+This command pins a package so that it stays in the stack even if a
+newer version is subsequently mirrored, imported, or added to that
+stack.  The pin is local to the stack and does not affect any other
+stacks.
 
-Only one version of a package can be pinned at any one time.  If you
-pin C<Foo::Bar-1.0>, and then later pin <Foo::Bar-2.0>, then
-C<Foo::Bar-1.0> immediately becomes unpinned.
-
-To forcibly unpin a package, so that the latest version appears in the
-index, please see the C<unpin> command.
+A package must be in the stack before you can pin it.  To add a
+package to the stack, please see the C<push> command.  To remove the
+pin from a package, please see the C<unpin> command.
 
 =head1 COMMAND ARGUMENTS
 
-To pin the latest version of a particular package, just give the name
-of the package.  For example:
-
-  Foo::Bar
-
-To pin a particular version of a package, append '-' and the version
-number to the name.  For example:
-
-  Foo::Bar-1.2
+Arguments are the names of the packages you wish to pin.
 
 You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"
@@ -144,13 +133,14 @@ is pinned.  For example: 'Versions later than 2.1 will break our app'
 =item --stack=NAME
 
 Instructs L<Pinto> to pin the package on the stack named C<NAME>.  If
-not specified, the default stack is assumed.
+not specified, the C<default> stack is assumed.
 
 =item --tag=NAME
 
-Instructs L<Pinto> to tag the head revision of the repository at NAME.
-This is only relevant if you are using a VCS-based storage mechanism.
-The syntax of the NAME depends on the type of VCS you are using.
+Instructs L<Pinto> to tag the head revision of the repository at
+C<NAME>.  This is only relevant if you are using a VCS-based storage
+mechanism.  The syntax of the C<NAME> depends on the type of VCS you
+are using.
 
 =back
 
