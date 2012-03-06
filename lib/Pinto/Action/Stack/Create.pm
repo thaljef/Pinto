@@ -1,0 +1,59 @@
+package Pinto::Action::Stack::Create;
+
+# ABSTRACT: An action to create a new stack
+
+use Moose;
+
+use MooseX::Types::Moose qw(Str);
+
+use namespace::autoclean;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+# ISA
+
+extends 'Pinto::Action';
+
+#------------------------------------------------------------------------------
+
+has stack => (
+    is      => 'ro',
+    isa     => Str,
+    required => 1,
+);
+
+has description => (
+    is      => 'ro',
+    isa     => Str,
+    required => 1,
+);
+
+#------------------------------------------------------------------------------
+
+override execute => sub {
+    my ($self) = @_;
+
+    my $stack_name = $self->stack();
+    my $where = {name => $stack_name};
+
+    $self->repos->db->select_stacks( $where )->single()
+        and $self->fatal("Stack $stack_name already exists");
+
+    $where->{description} = $self->description();
+    $self->repos->db->create_stack( $where );
+
+    return 1;
+};
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable();
+
+#------------------------------------------------------------------------------
+
+1;
+
+__END__

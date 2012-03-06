@@ -4,7 +4,7 @@ package App::Pinto::Admin::Command::stack;
 
 #-----------------------------------------------------------------------------
 
-use base qw(App::Cmd::Subdispatch);
+use base qw(App::Cmd::Subdispatch App::Pinto::Admin::Command);
 
 #-----------------------------------------------------------------------------
 
@@ -20,10 +20,11 @@ sub plugin_search_path {
 
 sub prepare_default_command {
     my ( $self, $opt, @args ) = @_;
-    $self->_prepare_command( "help" );
+    $self->_prepare_command( 'help' );
 }
 
 #-----------------------------------------------------------------------------
+
 1;
 
 __END__

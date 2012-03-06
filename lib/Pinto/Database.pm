@@ -74,6 +74,18 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
+sub select_stacks {
+    my ($self, $where, $attrs) = @_;
+
+    $where ||= {};
+    $attrs ||= {};
+
+    return $self->schema->resultset('Stack')->search($where, $attrs);
+
+}
+
+#-------------------------------------------------------------------------------
+
 sub select_package_stack {
     my ($self, $where, $attrs) = @_;
 

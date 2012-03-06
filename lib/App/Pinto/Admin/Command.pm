@@ -49,9 +49,10 @@ sub execute {
 sub action_name {
     my ($self) = @_;
 
-    my $class = ref $self || $self;
+    my $class = ref $self || $self;  # why ref $self ??
+    my $prefix = $self->command_namespace_prefix();
 
-    $class =~ m{ ^ Pinto::Admin::(?:Command|Subcommand):: (.+) $ }mx
+    $class =~ m/ ^ ${prefix}:: (.+) /mx
         or croak "Unable to parse Action name from $class";
 
     # Convert foo::bar::baz -> Foo::Bar:Baz
@@ -59,6 +60,12 @@ sub action_name {
     my $action_name = join '::', map {ucfirst} split '::', $1;
 
     return $action_name;
+}
+
+#-----------------------------------------------------------------------------
+
+sub command_namespace_prefix {
+    return __PACKAGE__;
 }
 
 #-----------------------------------------------------------------------------
