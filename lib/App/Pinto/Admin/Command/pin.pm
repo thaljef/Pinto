@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::pin;
 
-# ABSTRACT: force a package into the index
+# ABSTRACT: force a package to stay in a stack
 
 use strict;
 use warnings;
@@ -24,6 +24,8 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'reason=s'    => 'Explanation of why this package is pinned' ],
+        [ 'stack=s'     => 'Pin this package within a particular stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -52,12 +54,12 @@ sub execute {
     my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
     return 0 if not @args;
 
-    $self->pinto->new_batch(%{$opts});
+    $self->pinto->new_batch( %{$opts} );
 
     for my $arg (@args) {
         my ($name, $version) = split m/ - /mx, $arg, 2;
         my %version = defined $version ? (version => $version) : ();
-        $self->pinto->add_action('Pin', %{$opts}, package => $name, %version);
+        $self->pinto->add_action($self->action_name(), %{$opts}, package => $name, %version);
     }
     my $result = $self->pinto->run_actions();
 
@@ -133,6 +135,16 @@ VCS-based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
+
+=item --reason=TEXT
+
+Annotates the pin with a descriptive explanation for why this package
+is pinned.  For example: 'Versions later than 2.1 will break our app'
+
+=item --stack=NAME
+
+Instructs L<Pinto> to pin the package on the stack named C<NAME>.  If
+not specified, the default stack is assumed.
 
 =item --tag=NAME
 

@@ -5,7 +5,7 @@ package Pinto::Action::Pin;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 
-use Pinto::Types qw(Vers);
+use Pinto::Types qw(Vers StackName);
 
 use namespace::autoclean;
 
@@ -14,10 +14,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
+# ISA
 
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
+# Attributes
 
 has package => (
     is       => 'ro',
@@ -32,78 +34,71 @@ has version => (
     coerce    => 1,
 );
 
+has stack   => (
+    is        => 'ro',
+    isa       => StackName,
+    default   => 'default',
+    coerce    => 1,
+);
+
+
+has reason   => (
+    is        => 'ro',
+    isa       => Str,
+    default   => 'no reason was given',
+);
+
 #------------------------------------------------------------------------------
+# Methods
 
 sub execute {
     my ($self) = @_;
 
-    my $pkg = $self->_get_package() or return 0;
+    my $pkg_stk = $self->_get_package_stack() or return 0;
 
-    $self->whine("Package $pkg is already pinned")
-        and return 0 if $pkg->is_pinned();
+    $self->whine(sprintf "Package $pkg_stk is already pinned: %s", $pkg_stk->reason())
+        and return 0 if $pkg_stk->is_pinned();
 
-    $self->whine("This repository does not permit pinning developer packages")
-        and return 0 if $pkg->distribution->is_devel() and not $self->config->devel();
+    # TODO: Decide how to handle pinning of developer distributions
+    # $self->whine("This repository does not permit pinning developer packages")
+    #     and return 0 if $pkg->distribution->is_devel() and not $self->config->devel();
 
-    $self->_do_pin($pkg);
+    $self->_do_pin($pkg_stk);
 
     return 1;
 }
 
 #------------------------------------------------------------------------------
 
-sub _get_package {
+sub _get_package_stack {
     my ($self) = @_;
 
-    my $where           = { name => $self->package() };
-    $where->{version}   = $self->version() if $self->has_version();
-    $where->{is_latest} = 1 if not $self->has_version();
+    my $where = { 'package.name' => $self->package(),
+                  'stack.name'   => $self->stack() };
+    my $attrs = { prefetch => [ qw(package stack) ] };
 
-    my $pkg_rs = $self->repos->select_packages($where);
-    my $pkg_count = $pkg_rs->count();
+    my $pkg_stk = $self->repos->db->select_package_stack($where, $attrs)->single();
 
-    my $vname_suffix = $self->has_version() ? '-' . $self->version() : '';
-    my $pkg_vname = $self->package() . $vname_suffix;
-
-    if (not $pkg_count) {
-        $self->whine("Package $pkg_vname does not exist in the repository");
-        return;
-    }
-    elsif ( $pkg_count > 1) {
-        # TODO: Need to handle this better.  Maybe specify precise distribution?
-        $self->whine("Repository has multiple copies of package $pkg_vname");
+    if (not $pkg_stk) {
+        my $pkg_vname = sprintf '%s-%s', $self->package(), $self->version();
+        $self->whine( sprintf "Package $pkg_vname is not in stack %s", $self->stack() );
         return;
     }
 
-    # At this point, we know there is only one record
-    my $pkg = $pkg_rs->first();
-
-    return $pkg;
+    return $pkg_stk;
 }
 
 #------------------------------------------------------------------------------
 
 sub _do_pin {
-    my ($self, $pkg) = @_;
+    my ($self, $pkg_stk) = @_;
 
-    $self->info("Pinning package $pkg");
+    $self->info( sprintf 'Pinning package %s on stack %s',
+                 $pkg_stk->package(), $pkg_stk->stack() );
 
-    # Only one version of a package can be pinned at a time.
-    # So first, we unpin all the packages with that name...
-    my $where   = { name => $pkg->name() };
-    my @sisters = $self->repos->select_packages( $where )->all();
-    $_->is_pinned(undef) for @sisters;
-    $_->update() for @sisters;
-
-    # Then pin the particular package we want...
-    $pkg->is_pinned(1);
-    $pkg->update();
-
-    # Finally, remark the latest version of the package
-    $self->repos->db->mark_latest($pkg);
-
-    my $name = $pkg->name();
-    $self->add_message("Pinned package $name. Latest is now $pkg");
+    my $pin = $self->repos->db->create_pin( { reason => $self->reason() } );
+    $pkg_stk->pin($pin);
+    $pkg_stk->update();
 
     return 1;
 }
