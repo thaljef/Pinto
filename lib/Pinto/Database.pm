@@ -156,8 +156,8 @@ sub register {
     }
 
     if ( $incumbent_pkg < $pkg and $incumbent->is_pinned() ) {
-        my $name = $pkg->name();
-        $self->whine("Can't add $pkg to stack $stack because $name is pinned to $incumbent_pkg");
+        my $pkg_name = $pkg->name();
+        $self->whine("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
         return;
     }
 
@@ -166,7 +166,7 @@ sub register {
     # go ahead and register it in this stack.
 
     $incumbent->delete();
-    $self->info("Upgrading package $incumbent to $pkg in stack $stack");
+    $self->debug("Upgrading package $incumbent_pkg to $pkg in stack $stack");
     my $pkg_stack = $self->create_pkg_stack( {package => $pkg, stack => $stack} );
 
     return $pkg_stack;
