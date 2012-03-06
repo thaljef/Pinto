@@ -84,6 +84,8 @@ sub _check_stacks {
 sub _create_stack {
     my ($self) = @_;
 
+    $self->note( sprintf 'Creating new stack %s', $self->to_stack() );
+
     my $struct = { name        => $self->to_stack(),
                    description => $self->description() };
 
@@ -108,7 +110,10 @@ sub _copy_stack {
     my $where = { stack => $from_stack->id() };
     my $package_stack_rs = $self->repos->db->select_package_stack( $where );
 
+    $self->note("Copying stack $from_stack into stack $to_stack");
+
     while ( my $package_stack = $package_stack_rs->next() ) {
+        $self->debug(sprintf 'Copying package %s into stack %s', $package_stack->package(), $to_stack);
         $package_stack->copy( { stack => $to_stack->id() } );
     }
 
