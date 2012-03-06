@@ -151,7 +151,7 @@ sub _create_db {
 
     my $default_stack = { name        => 'default',
                           mtime       => time,
-                          description => 'The default stack',
+                          description => 'the default stack',
     };
 
     $db->schema->resultset('Stack')->create($default_stack);
