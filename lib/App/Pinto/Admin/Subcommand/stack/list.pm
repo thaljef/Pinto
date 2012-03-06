@@ -31,6 +31,7 @@ sub opt_spec {
 }
 
 #------------------------------------------------------------------------------
+
 sub usage_desc {
     my ($self) = @_;
 
@@ -42,6 +43,20 @@ END_USAGE
 
     chomp $usage;
     return $usage;
+}
+
+#------------------------------------------------------------------------------
+
+sub validate_args {
+    my ($self, $opts, $args) = @_;
+
+    $self->usage_error('Arguments are not allowed')
+        if @{ $args };
+
+    $opts->{format} = eval qq{"$opts->{format}"} ## no critic qw(StringyEval)
+        if $opts->{format};
+
+    return 1;
 }
 
 #------------------------------------------------------------------------------

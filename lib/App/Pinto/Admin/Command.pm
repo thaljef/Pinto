@@ -53,7 +53,7 @@ sub action_name {
     my $prefix = $self->command_namespace_prefix();
 
     $class =~ m/ ^ ${prefix}:: (.+) /mx
-        or croak "Unable to parse Action name from $class";
+        or confess "Unable to parse Action name from $class";
 
     # Convert foo::bar::baz -> Foo::Bar:Baz
     # TODO: consider using a regex to do the conversion

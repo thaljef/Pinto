@@ -4,17 +4,11 @@ package App::Pinto::Admin::Command::stack;
 
 #-----------------------------------------------------------------------------
 
-use base qw(App::Cmd::Subdispatch App::Pinto::Admin::Command);
+use base 'App::Pinto::Admin::DispatchingCommand';
 
 #-----------------------------------------------------------------------------
 
 # VERSION
-
-#-----------------------------------------------------------------------------
-
-sub plugin_search_path {
-    return 'App::Pinto::Admin::Subcommand::stack';
-}
 
 #-----------------------------------------------------------------------------
 
