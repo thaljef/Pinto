@@ -137,7 +137,9 @@ sub _merge_pkg_stk {
         return;
     }
 
-    # CASE 5:  If we get here then something has gone wrong
+    # CASE 5:  The above logic should cover all possible scenarios.
+    # So if we get here then either our logic is flawed or something
+    # weird has happened in the database.
 
     confess "Unable to merge $source into $target";
 
