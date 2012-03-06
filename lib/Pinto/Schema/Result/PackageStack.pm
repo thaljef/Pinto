@@ -164,17 +164,8 @@ sub compare {
 
     return 0 if $pstk_a->id() == $pstk_b->id();
 
-    my $stk_a = $pstk_a->stack();
-    my $stk_b = $pstk_b->stack();
-
-    confess "Cannot compare packages from different stacks: $stk_a <=> $stk_b"
-        if $stk_a->id() != $stk_b->id();
-
     my $r =   ( $pstk_a->is_pinned()  <=> $pstk_b->is_pinned()  )
            || ( $pstk_a->package()    <=> $pstk_b->package()    );
-
-    # No two non-indentical package-stacks can be considered equal!
-    confess "Unable to determine ordering: $pstk_a <=> $pstk_b" if not $r;
 
     return $r;
 };
@@ -214,12 +205,8 @@ sub to_string {
 #-------------------------------------------------------------------------------
 
 sub default_format {
-    my ($self) = @_;
 
-    my $width = 38 - length $self->package->version();
-    $width = length $self->package->name() if $width < length $self->package->name();
-
-    return "%y %-${width}n %v  %p\n",
+    return '%a/%D/%N@%k';
 }
 
 #------------------------------------------------------------------------------
