@@ -80,7 +80,8 @@ sub _get_package_stack {
     my $pkg_stk = $self->repos->db->select_package_stack($where, $attrs)->single();
 
     if (not $pkg_stk) {
-        my $pkg_vname = sprintf '%s-%s', $self->package(), $self->version();
+        my $pkg_vname = $self->package();
+        $pkg_vname   .= $self->version() if $self->has_version();
         $self->whine( sprintf "Package $pkg_vname is not in stack %s", $self->stack() );
         return;
     }
