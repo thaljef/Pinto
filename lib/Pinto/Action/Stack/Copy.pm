@@ -51,8 +51,12 @@ override execute => sub {
 
     $self->_check_stacks();  # Maybe doe this in the BUILD?
 
-    # Create new stack
-    # Copy existing package_stack to new stack
+    my $txn_guard = $self->repos->db->schema->txn_scope_guard(); # BEGIN transaction
+
+    $self->_create_stack();
+    $self->_copy_stack();
+
+    $txn_guard->commit(); #END transaction
 
     return 1;
 };
@@ -71,6 +75,42 @@ sub _check_stacks {
     my $to_where = {name => $to_stack_name};
     $self->repos->db->select_stacks( $to_where )->single()
         and $self->fatal("Destination stack $to_stack_name already exists");
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _create_stack {
+    my ($self) = @_;
+
+    my $struct = { name        => $self->to_stack(),
+                   description => $self->description() };
+
+    $self->repos->db->create_stack( $struct );
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _copy_stack {
+    my ($self) = @_;
+
+    my $from_stack_name = $self->from_stack();
+    my $from_stack = $self->repos->db->select_stack( {name => $from_stack_name} )
+        or confess "Stack $from_stack_name does not exist";
+
+    my $to_stack_name = $self->to_stack();
+    my $to_stack = $self->repos->db->select_stack( {name => $to_stack_name} )
+        or confess "Stack $to_stack_name does not exist";
+
+    my $where = { stack => $from_stack->id() };
+    my $package_stack_rs = $self->repos->db->select_package_stack( $where );
+
+    while ( my $package_stack = $package_stack_rs->next() ) {
+        $package_stack->copy( { stack => $to_stack->id() } );
+    }
 
     return;
 }
