@@ -33,7 +33,7 @@ has out => (
 has format => (
     is      => 'ro',
     isa     => Str,
-    default => '',
+    default => "%y %-40n %12v %p\n",
 );
 
 
