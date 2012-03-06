@@ -10,6 +10,8 @@
 
 =item Remove the whole permission mechanism
 
+=item Add a history mechanism to document changes
+
 =back
 
 =head1 A LITTLE LESS IMPORTANT
@@ -49,6 +51,8 @@
 In no particular order...
 
 =over 4
+
+=item Implement a notifications framwork, for telling people when a stack has changed.
 
 =item Implement --force option for the mirror command (always fetch new index)  WHY?
 
