@@ -31,7 +31,7 @@ sub opt_spec {
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'norecurse'   => 'Do not recursively import prereqs' ],
         [ 'pin=s'       => 'Pin all added packages to the stack' ],
-        [ 'stack=s'     => 'Add packages into this stack' ],
+        [ 'stack|s=s'   => 'Add packages into this stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
