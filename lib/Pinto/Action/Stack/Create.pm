@@ -5,6 +5,7 @@ package Pinto::Action::Stack::Create;
 use Moose;
 
 use MooseX::Types::Moose qw(Str);
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -18,10 +19,11 @@ use namespace::autoclean;
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
+# Attributes
 
 has stack => (
     is      => 'ro',
-    isa     => Str,
+    isa     => StackName,
     required => 1,
 );
 
@@ -32,6 +34,7 @@ has description => (
 );
 
 #------------------------------------------------------------------------------
+# Methods
 
 override execute => sub {
     my ($self) = @_;
