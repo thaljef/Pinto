@@ -23,11 +23,11 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'description|d=s' => 'Description of the stack', {required => 1} ],
-        [ 'message|m=s'     => 'Prepend a message to the VCS log'          ],
-        [ 'nocommit'        => 'Do not commit changes to VCS'              ],
-        [ 'noinit'          => 'Do not pull/update from VCS'               ],
-        [ 'tag=s'           => 'Specify a VCS tag name'                    ],
+        [ 'description|d=s' => 'Long(er) description of the stack' ],
+        [ 'message|m=s'     => 'Prepend a message to the VCS log'  ],
+        [ 'nocommit'        => 'Do not commit changes to VCS'      ],
+        [ 'noinit'          => 'Do not pull/update from VCS'       ],
+        [ 'tag=s'           => 'Specify a VCS tag name'            ],
     );
 
 

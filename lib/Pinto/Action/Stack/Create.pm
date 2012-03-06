@@ -28,7 +28,7 @@ has stack => (
 has description => (
     is      => 'ro',
     isa     => Str,
-    required => 1,
+    default => 'no description was given',
 );
 
 #------------------------------------------------------------------------------
