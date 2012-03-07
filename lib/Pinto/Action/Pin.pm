@@ -27,12 +27,14 @@ has package => (
     required => 1,
 );
 
+
 has version => (
     is        => 'ro',
     isa       => Vers,
     predicate => 'has_version',
     coerce    => 1,
 );
+
 
 has stack   => (
     is        => 'ro',
@@ -81,7 +83,7 @@ sub _get_package_stack {
 
     if (not $pkg_stk) {
         my $pkg_vname = $self->package();
-        $pkg_vname   .= $self->version() if $self->has_version();
+        $pkg_vname   .= '-' . $self->version() if $self->has_version();
         $self->whine( sprintf "Package $pkg_vname is not in stack %s", $self->stack() );
         return;
     }
