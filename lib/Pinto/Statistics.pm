@@ -6,6 +6,8 @@ use Moose;
 
 use String::Format;
 
+use Pinto::Types qw(StackName);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -14,6 +16,14 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 # Attributes
+
+has stack => (
+    is      => 'ro',
+    isa     => StackName,
+    default => 'default',
+    coerce  => 1,
+);
+
 
 has db => (
     is       => 'ro',
@@ -32,13 +42,15 @@ sub total_distributions {
 
 #------------------------------------------------------------------------------
 
-sub index_distributions {
+sub stack_distributions {
     my ($self) = @_;
 
-    my $where = { is_latest => 1};
-    my $attrs = { select => 'path', join => 'packages', distinct => 1 };
+    my $where = { 'stack.name' => $self->stack() };
+    my $attrs = { select   => 'distribution.path',
+                  join     => [ 'stack', { 'package' => 'distribution' } ],
+                  distinct => 1 };
 
-    return $self->db->select_distributions($where, $attrs)->count();
+    return $self->db->select_package_stack( $where, $attrs )->count();
 }
 
 #------------------------------------------------------------------------------
@@ -51,12 +63,13 @@ sub total_packages {
 
 #------------------------------------------------------------------------------
 
-sub index_packages {
+sub stack_packages {
     my ($self) = @_;
 
-    my $where = {is_latest => 1};
+    my $where = { 'stack.name' => $self->stack() };
+    my $attrs = { join => 'stack' };
 
-    return $self->db->select_packages( $where )->count();
+    return $self->db->select_package_stack( $where, $attrs )->count();
 }
 
 #------------------------------------------------------------------------------
@@ -80,9 +93,10 @@ sub to_formatted_string {
 
     my %fspec = (
         'D' => sub { $self->total_distributions()   },
-        'd' => sub { $self->index_distributions()   },
+        'd' => sub { $self->stack_distributions()   },
+        'k' => sub { $self->stack()                 },
         'P' => sub { $self->total_packages()        },
-        'p' => sub { $self->index_packages()        },
+        'p' => sub { $self->stack_packages()        },
     );
 
     $format ||= $self->default_format();
@@ -95,7 +109,11 @@ sub default_format {
     my ($self) = @_;
 
     return <<'END_FORMAT';
-                     Index      Total
+
+STATISTICS FOR THE "%k" STACK
+-------------------------------------
+
+                     Stack      Total
                ----------------------
      Packages  %10p  %10P
 Distributions  %10d  %10D
