@@ -184,6 +184,7 @@ sub to_string {
          'm' => sub { $self->distribution->is_devel()   ? 'd' : 'r'   },
          'p' => sub { $self->distribution->path()                     },
          'P' => sub { $self->distribution->archive()                  },
+         's' => sub { $self->distribution->is_local()   ? 'l' : 'f'   },
          'S' => sub { $self->distribution->source()                   },
          'a' => sub { $self->distribution->author()                   },
          'd' => sub { $self->distribution->name()                     },

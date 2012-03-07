@@ -182,6 +182,7 @@ sub to_string {
          'm' => sub { $self->package->distribution->is_devel()  ? 'd' : 'r'    },
          'p' => sub { $self->package->distribution->path()                     },
          'P' => sub { $self->package->distribution->archive()                  },
+         's' => sub { $self->package->distribution->is_local()  ? 'l' : 'f'    },
          'S' => sub { $self->package->distribution->source()                   },
          'a' => sub { $self->package->distribution->author()                   },
          'd' => sub { $self->package->distribution->name()                     },
@@ -190,7 +191,9 @@ sub to_string {
          'u' => sub { $self->package->distribution->url()                      },
          'k' => sub { $self->stack->name()                                     },
          'e' => sub { $self->stack->description()                              },
-         'y' => sub { $self->is_pinned() ? '+' : ' '                           },
+         'u' => sub { $self->stack->mtime()                                    },
+         'U' => sub { scalar localtime $self->stack->mtime()                   },
+         'y' => sub { $self->is_pinned()                        ? '+' : ' '    },
     );
 
     # Some attributes are just undefined, usually because of
