@@ -57,11 +57,24 @@ To see the complete manual for a subcommand:
 
 =head1 THE DEFAULT STACK
 
-Every L<Pinto> repository has a built-in stack named C<default>.  Most
-commands and subcommands that take a C<--stack> option or
-C<STACK_NAME> argument will use the C<default> stack if you don't
-specify an explicit stack.  The C<default> stack is always present and
-cannot be removed.
+Every package added to the repository must go into a stack.  But if
+that stack has pins that conflict with the incoming packages, then
+L<Pinto> will refuse to add all the packages in the archive to the
+stack.  But we don't want to lose that archive because it may not be
+available in the future.
+
+L<Pinto> has a built-in stack named C<default>.  You cannot pin
+packages on the C<default> stack nor can you delete the C<default>
+stack.  So the C<default> stack provides a safe landing place for
+packages so L<Pinto> never has to completely reject an archive that
+has conflicting packages.  Whenever you add a package to a custom
+stack, L<Pinto> automatically adds it to the C<default> stack as well.
+
+If there was a conflict in your custom stack, the package will still
+be in the repository under the C<default> stack.  Once you've resolved
+the conflict (usually by removing the right pins) then you can put the
+new packages into your custom stack without having to go get another
+copy of the archive (which may not exist by now).
 
 =head1 SEE ALSO
 

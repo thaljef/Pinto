@@ -23,6 +23,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
+        [ 'dryrun'          => 'Do not actually perform the merge' ],
         [ 'message|m=s'     => 'Prepend a message to the VCS log'  ],
         [ 'nocommit'        => 'Do not commit changes to VCS'      ],
         [ 'noinit'          => 'Do not pull/update from VCS'       ],
@@ -113,6 +114,11 @@ name of the C<TARGET> stack.
 =head1 SUBCOMMAND OPTIONS
 
 =over 4
+
+=item --dryrun
+
+Instructs L<Pinto> to do a dry run of the merge.  Conflicts will be
+reported, but the stacks will not actually be merged.
 
 =item --message=MESSAGE
 

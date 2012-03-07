@@ -51,6 +51,9 @@ override execute => sub {
     my $where = $self->where();
     $where->{'stack.name'} ||= 'default';
 
+    # TODO: make sure the stack name is valid and whine if it is not.
+    # This is better than just listing nothing, which implies the stack does exist.
+
     my $attrs = { order_by => [ qw(package.name package.version package.distribution.path) ],
                   prefetch => [ 'pin', 'stack', { 'package' => 'distribution' } ] };
 

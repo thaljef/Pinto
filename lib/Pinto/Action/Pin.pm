@@ -5,7 +5,7 @@ package Pinto::Action::Pin;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 
-use Pinto::Types qw(Vers StackName);
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -28,18 +28,10 @@ has package => (
 );
 
 
-has version => (
-    is        => 'ro',
-    isa       => Vers,
-    predicate => 'has_version',
-    coerce    => 1,
-);
-
-
 has stack   => (
     is        => 'ro',
     isa       => StackName,
-    default   => 'default',
+    required  => 1,
     coerce    => 1,
 );
 
@@ -49,6 +41,21 @@ has reason   => (
     isa       => Str,
     default   => 'no reason was given',
 );
+
+#------------------------------------------------------------------------------
+# Construction
+
+sub BUILD {
+    my ($self) = @_;
+
+    # TODO: Should this check also be placed in the PackageStack too?
+    # I think we also want it here so we can do it as early as possible
+
+    $self->fatal('You cannot place pins on the default stack')
+        if $self->stack() eq 'default';
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 # Methods
@@ -75,6 +82,9 @@ sub execute {
 sub _get_package_stack {
     my ($self) = @_;
 
+    # TODO: Validate that the stack exists so you can tell the difference
+    # between an invalid stack and a PackageStack that doesn't exist.
+
     my $where = { 'package.name' => $self->package(),
                   'stack.name'   => $self->stack() };
     my $attrs = { prefetch => [ qw(package stack) ] };
@@ -82,9 +92,8 @@ sub _get_package_stack {
     my $pkg_stk = $self->repos->db->select_package_stack($where, $attrs)->single();
 
     if (not $pkg_stk) {
-        my $pkg_vname = $self->package();
-        $pkg_vname   .= '-' . $self->version() if $self->has_version();
-        $self->whine( sprintf "Package $pkg_vname is not in stack %s", $self->stack() );
+        my ($pkg, $stk) = ( $self->package(), $self->stack() );
+        $self->whine("Package $pkg is not in stack $stk");
         return;
     }
 

@@ -18,6 +18,7 @@ use namespace::autoclean;
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
+# Attributes
 
 has package => (
     is       => 'ro',
@@ -33,6 +34,22 @@ has stack   => (
 );
 
 #------------------------------------------------------------------------------
+# Construction
+
+sub BUILD {
+    my ($self) = @_;
+
+    # TODO: Should this check also be placed in the PackageStack too?
+    # I think we also want it here so we can do it as early as possible
+
+    $self->fatal('The default stack cannot have pins anyway')
+        if $self->stack() eq 'default';
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+# Methods
 
 sub execute {
     my ($self) = @_;

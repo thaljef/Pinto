@@ -25,7 +25,6 @@ sub opt_spec {
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'reason|R=s'  => 'Explanation of why this package is pinned' ],
-        [ 'stack|s=s'   => 'Pin this package within a particular stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -38,8 +37,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH $command [OPTIONS] PACKAGE_NAME ...
-%c --root=PATH $command [OPTIONS] < LIST_OF_PACKAGE_NAMES
+%c --root=PATH $command [OPTIONS] STACK_NAME PACKAGE_NAME ...
+%c --root=PATH $command [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
 END_USAGE
 
     chomp $usage;
@@ -48,19 +47,33 @@ END_USAGE
 
 #------------------------------------------------------------------------------
 
+sub validate_args {
+    my ($self, $opts, $args) = @_;
+
+    $self->usage_error("Must specify a STACK_NAME and at least one PACKAGE_NAME")
+        if @{ $args } < 2;
+
+    return 1;
+
+}
+
+#------------------------------------------------------------------------------
+
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    return 0 if not @args;
+    my $stack_name = shift @{ $args };
+
+    my @package_names = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
+    return 0 if not @package_names;
 
     $self->pinto->new_batch( %{$opts} );
 
-    for my $arg (@args) {
-        my ($name, $version) = split m/ - /mx, $arg, 2;
-        my %version = defined $version ? (version => $version) : ();
-        $self->pinto->add_action($self->action_name(), %{$opts}, package => $name, %version);
+    for my $package_name (@package_names) {
+        $self->pinto->add_action($self->action_name(), %{$opts}, package => $package_name,
+                                                                 stack   => $stack_name );
     }
+
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -75,8 +88,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir pin [OPTIONS] PACKAGE_NAME ...
-  pinto-admin --root=/some/dir pin [OPTIONS] < LIST_OF_PACKAGE_NAMES
+  pinto-admin --root=/some/dir pin [OPTIONS] STACK_NAME PACKAGE_NAME ...
+  pinto-admin --root=/some/dir pin [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
 
 =head1 DESCRIPTION
 
@@ -129,11 +142,6 @@ Pinto repository within the VCS.
 
 Annotates the pin with a descriptive explanation for why this package
 is pinned.  For example: 'Versions later than 2.1 will break our app'
-
-=item --stack=NAME
-
-Instructs L<Pinto> to pin the package on the stack named C<NAME>.  If
-not specified, the C<default> stack is assumed.
 
 =item --tag=NAME
 

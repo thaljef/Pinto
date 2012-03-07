@@ -101,6 +101,11 @@ sub create_distribution {
         if $dist->is_devel() and not $self->config->devel();
 
     for my $pkg ( $dist->packages() ) {
+
+        # Always register on the default stack, unless that's
+        # where we are supposed to register it anyway.
+        $self->register($pkg) if $stack->name() ne 'default';
+
         # If the registration fails, then it cannot be pinned
         # TODO: Throw exception instead of jumping to next $pkg ?
         my $pkg_stack = $self->register($pkg, $stack) or next;
@@ -132,6 +137,8 @@ sub delete_distribution {
 
 sub register {
     my ($self, $pkg, $stack) = @_;
+
+    $stack ||= $self->select_stacks( {name => 'default'} )->single();
 
     my $attrs     = { join => [ qw(package stack) ] };
     my $where     = { 'package.name' => $pkg->name(), 'stack' => $stack->id() };

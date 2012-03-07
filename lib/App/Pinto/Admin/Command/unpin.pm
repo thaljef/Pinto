@@ -24,7 +24,6 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
-        [ 'stack|s=s'   => 'Remove the pin from a particular stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -37,8 +36,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH $command [OPTIONS] PACKAGE_NAME ...
-%c --root=PATH $command [OPTIONS] < LIST_OF_PACKAGE_NAMES
+%c --root=PATH $command [OPTIONS] STACK_NAME PACKAGE_NAME ...
+%c --root=PATH $command [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
 END_USAGE
 
     chomp $usage;
@@ -47,14 +46,33 @@ END_USAGE
 
 #------------------------------------------------------------------------------
 
+sub validate_args {
+    my ($self, $opts, $args) = @_;
+
+    $self->usage_error("Must specify a STACK_NAME and at least one PACKAGE_NAME")
+        if @{ $args } < 2;
+
+    return 1;
+
+}
+
+#------------------------------------------------------------------------------
+
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    return 0 if not @args;
+    my $stack_name = shift @{ $args };
 
-    $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action($self->action_name(), %{$opts}, package => $_) for @args;
+    my @package_names = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
+    return 0 if not @package_names;
+
+    $self->pinto->new_batch( %{$opts} );
+
+    for my $package_name (@package_names) {
+        $self->pinto->add_action($self->action_name(), %{$opts}, package => $package_name,
+                                                                 stack   => $stack_name );
+    }
+
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;

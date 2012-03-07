@@ -3,6 +3,7 @@ package Pinto::Action::Stack::Merge;
 # ABSTRACT: An action to merge one stack into another
 
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
 use Carp;
 
@@ -37,6 +38,13 @@ has to_stack => (
     coerce   => 1,
 );
 
+
+has dryrun => (
+    is       => 'ro',
+    isa      => Bool,
+    default  => 0,
+);
+
 #------------------------------------------------------------------------------
 # Methods
 
@@ -54,11 +62,12 @@ override execute => sub {
     my $where = { stack => $source_stack->id() };
     my $package_stack_rs = $self->repos->db->select_package_stack( $where );
 
-    $self->note("Merging stack $source_stack into stack $target_stack");
+    $self->debug("Merging stack $source_stack into stack $target_stack");
 
+    my $conflicts;
     while ( my $source_pkg_stk = $package_stack_rs->next() ) {
 
-        $self->note("Merging package $source_pkg_stk into stack $target_stack");
+        $self->debug("Merging package $source_pkg_stk into stack $target_stack");
 
         my $where = { 'package.name' => $source_pkg_stk->package->name(),
                       'stack'        => $target_stack->id() };
@@ -67,10 +76,17 @@ override execute => sub {
 
         my $target_pkg_stk = $self->repos->db->select_package_stack($where, $attrs)->single();
 
-        $self->_merge_pkg_stk( $source_pkg_stk, $target_pkg_stk, $target_stack );
+        $conflicts += $self->_merge_pkg_stk( $source_pkg_stk, $target_pkg_stk, $target_stack );
     }
 
-    return;
+    $self->fatal("There were $conflicts conflicts.  Merge aborted")
+        if $conflicts and not $self->dryrun();
+
+    $self->info('Dry run merge -- no changes were made')
+        if $self->dryrun();
+
+    my $status = $self->dryrun() ? 0 : 1;
+    return $status;
 };
 
 #------------------------------------------------------------------------------
@@ -83,9 +99,10 @@ sub _merge_pkg_stk {
 
     if (not defined $target) {
          my $pkg = $source->package();
-         $self->debug("Adding package $pkg to stack $to_stack");
+         $self->info("Adding package $pkg to stack $to_stack");
+         return 0 if $self->dryrun();
          $source->copy( {stack => $to_stack} );
-         return;
+         return 0;
      }
 
     # CASE 2:  The exact same package is in both the source
@@ -94,14 +111,15 @@ sub _merge_pkg_stk {
     # pin to the target.
 
     if ($target == $source) {
-        $self->debug("$source and $target are the same");
+        $self->note("$source and $target are the same");
         if ($source->is_pinned) {
-            $self->debug("Adding pin to $target");
+            $self->info("Adding pin to $target");
+            return 0 if $self->dryrun();
             $target->pin( $source->pin() );
             $target->update();
-            return;
+            return 0;
         }
-        return;
+        return 0;
     }
 
     # CASE 3:  The package in the target stack is newer than the
@@ -113,10 +131,10 @@ sub _merge_pkg_stk {
     if ($target > $source) {
         if ( $source->is_pinned() ) {
             $self->whine("$source is pinned to a version older than $target");
-            return;
+            return 1;
         }
-        $self->debug("$target is already newer than $source");
-        return;
+        $self->info("$target is already newer than $source");
+        return 0;
     }
 
 
@@ -129,12 +147,14 @@ sub _merge_pkg_stk {
     if ($target < $source) {
         if ( $target->is_pinned() ) {
             $self->whine("$target is pinned to a version older than $source");
-            return;
+            return 1;
         }
-        $self->debug("Merging $source over $target");
-        $target->package( $source->package() );
+        my $source_pkg = $source->package();
+        $self->info("Upgrading $target to $source_pkg");
+        return 0 if $self->dryrun();
+        $target->package( $source_pkg );
         $target->update();
-        return;
+        return 0;
     }
 
     # CASE 5:  The above logic should cover all possible scenarios.
