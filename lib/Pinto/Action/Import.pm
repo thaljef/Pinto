@@ -62,23 +62,20 @@ sub execute {
     my $wanted = { name    => $self->package_name(),
                    version => $self->minimum_version() };
 
-    my $dist = $self->find_or_import( $wanted );
+    my ($dist, $imported_flag) = $self->find_or_import( $wanted );
     return 0 if not $dist;
 
-    my $archive = $dist->archive( $self->repos->root_dir() );
-    $self->import_prerequisites($archive) unless $self->norecurse();
+    $self->add_message( Pinto::Util::imported_dist_message($dist) )
+        if $imported_flag;
 
-    # HACK: We need to return true only if we actually imported
-    # something.  If we didn't import anything (i.e. couldn't find
-    # anything or we already have everything) then we must return
-    # false so that we don't cause an unnecessary VCS commit.
-    # Checking the message count is a sleazy way of figuring out how
-    # many distributions we actually imported.  TODO: consider using a
-    # counter attribute, or refactor _find_or_import so that it can
-    # tell you whether or not it actually imported something.
+    unless ( $self->norecurse() ) {
+        my $archive = $dist->archive( $self->repos->root_dir() );
+        my @imported_prereqs = $self->import_prerequisites($archive);
+        $self->add_message( Pinto::Util::imported_dist_message( $_ ) ) for @imported_prereqs;
+        $imported_flag += @imported_prereqs;
+    }
 
-    my @msgs = $self->messages();
-    return scalar @msgs;
+    return $imported_flag;
 }
 
 #------------------------------------------------------------------------------
