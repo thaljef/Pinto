@@ -106,7 +106,7 @@ sub import_prerequisites {
              my $prereq_vname = "$prereq->{name}-$prereq->{version}";
              $self->whine("Skipping prerequisite $prereq_vname. $_");
              # Mark the prereq as done so we don't try to import it again
-             $done{ $prereq->{name} } = $prereq;
+             $done{ $prereq->{name} } = $prereq->{version};
              undef;  # returned by try{}
         };
 
