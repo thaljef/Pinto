@@ -103,7 +103,7 @@ override execute => sub {
 
     unless ( $self->norecurse() ) {
         my @imported = $self->import_prerequisites($archive);
-        #$self->add_message( Pinto::Util::imported_dist_message($_) ) for @imported;
+        $self->add_message( Pinto::Util::imported_prereq_dist_message($_) ) for @imported;
     }
 
     return 1;

@@ -128,6 +128,14 @@ sub imported_dist_message {
 
 #-------------------------------------------------------------------------------
 
+sub imported_prereq_dist_message {
+    my ($distribution) = @_;
+
+    return _dist_message($distribution, 'Imported prerequisite');
+}
+
+#-------------------------------------------------------------------------------
+
 sub _dist_message {
     my ($dist, $action) = @_;
 

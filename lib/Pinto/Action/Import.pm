@@ -71,7 +71,7 @@ sub execute {
     unless ( $self->norecurse() ) {
         my $archive = $dist->archive( $self->repos->root_dir() );
         my @imported_prereqs = $self->import_prerequisites($archive);
-        $self->add_message( Pinto::Util::imported_dist_message( $_ ) ) for @imported_prereqs;
+        $self->add_message( Pinto::Util::imported_prereq_dist_message( $_ ) ) for @imported_prereqs;
         $imported_flag += @imported_prereqs;
     }
 
