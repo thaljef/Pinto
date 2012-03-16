@@ -4,12 +4,13 @@ package Pinto::Repository;
 
 use Moose;
 
+use Try::Tiny;
 use Class::Load;
 
 use Pinto::Database;
 use Pinto::IndexCache;
-use Pinto::Exceptions qw(throw_fatal throw_error);
 use Pinto::Types qw(Dir);
+use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
 
@@ -74,8 +75,8 @@ sub _build_store {
 
     my $store_class = $self->config->store();
 
-    eval { Class::Load::load_class( $store_class ); 1 }
-        or throw_fatal "Unable to load store class $store_class: $@";
+    try   { Class::Load::load_class( $store_class ) }
+    catch { throw_fatal "Unable to load store class $store_class: $_" };
 
     return $store_class->new( config => $self->config(),
                               logger => $self->logger() );
@@ -125,9 +126,8 @@ sub add_archive {
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
 
-    my $where    = {path => $dist_path};
-    my $existing = $self->select_distributions( $where )->single();
-    throw_error "Distribution $dist_path already exists" if $existing;
+    $self->select_distributions( {path => $dist_path} )->single()
+        and throw_error "Distribution $dist_path already exists";
 
     my $dist_struct = { path     => $dist_path,
                         source   => 'LOCAL',
@@ -149,7 +149,7 @@ sub add_archive {
     $self->store->add_archive( $new_archive );
 
     return $new_dist;
-};
+}
 
 #-------------------------------------------------------------------------------
 
@@ -159,15 +159,11 @@ sub remove_archive {
     my $path = $args{path};
 
     my $where = {path => $path};
-    my $dist  = $self->select_distributions( $where )->single();
+    my $attrs = {prefetch => 'packages'};
+    my $dist  = $self->select_distributions($where, $attrs)->single();
     throw_error "Distribution $path does not exist" if not $dist;
 
-    # Must call accessor to ensure the package objects are attached
-    # to the dist object before we delete.  Otherwise, we can't log
-    # which packages were deleted, because they'll already be gone.
-    my @pkgs = $dist->packages();
-    my $count = @pkgs;
-
+    $count = $dist->package_count();
     $self->info("Removing distribution $dist with $count packages");
 
     $self->db->delete_distribution($dist);
