@@ -10,6 +10,7 @@ use Carp;
 use Try::Tiny;
 use Path::Class;
 use Digest::MD5;
+use Digest::SHA;
 use Readonly;
 
 use Pinto::Exceptions qw(throw_version throw_error);
