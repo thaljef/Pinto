@@ -1,32 +1,34 @@
 CREATE TABLE distribution (
-       id INTEGER PRIMARY KEY NOT NULL,
-       path TEXT NOT NULL,
-       source TEXT NOT NULL,
-       mtime INTEGER NOT NULL
+       id      INTEGER PRIMARY KEY NOT NULL,
+       path    TEXT                NOT NULL,
+       source  TEXT                NOT NULL,
+       mtime   INTEGER             NOT NULL,
+       md5     TEXT                NOT NULL,
+       sha256  TEXT                NOT NULL
 );
 
 
 CREATE TABLE package (
-       id INTEGER PRIMARY KEY NOT NULL,
-       name TEXT NOT NULL,
-       version TEXT NOT NULL,
-       distribution INTEGER NOT NULL,
+       id            INTEGER PRIMARY KEY NOT NULL,
+       name          TEXT                NOT NULL,
+       version       TEXT                NOT NULL,
+       distribution  INTEGER             NOT NULL,
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
 
 
 CREATE TABLE stack (
-       id INTEGER PRIMARY KEY NOT NULL,
-       name TEXT NOT NULL,
-       mtime INTEGER NOT NULL,
-       description TEXT DEFAULT NULL 
+       id          INTEGER PRIMARY KEY NOT NULL,
+       name        TEXT                NOT NULL,
+       mtime       INTEGER             NOT NULL,
+       description TEXT                DEFAULT NULL 
 );
 
 
 create TABLE pin (
-       id INTEGER PRIMARY KEY NOT NULL,
-       ctime INTEGER NOT NULL,
-       reason TEXT NOT NULL
+       id         INTEGER PRIMARY KEY NOT NULL,
+       ctime      INTEGER             NOT NULL,
+       reason     TEXT                NOT NULL
 );
 
 
