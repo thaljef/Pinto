@@ -49,12 +49,11 @@ has description => (
 override execute => sub {
     my ($self) = @_;
 
-    $self->_check_stacks();  # Maybe do this in the BUILD?
-
     my $txn_guard = $self->repos->db->schema->txn_scope_guard(); # BEGIN transaction
 
-    $self->_copy_stack();
-    $self->_fill_stack();
+    my $from_stack = $self->_check_stacks();
+    my $to_stack   = $self->_copy_stack($from_stack);
+    $self->_copy_stack_members($from_stack, $to_stack);
 
     $txn_guard->commit(); #END transaction
 
@@ -67,58 +66,40 @@ sub _check_stacks {
     my ($self) = @_;
 
     my $from_stack_name = $self->from_stack();
-    my $from_where = {name => $from_stack_name};
-    $self->repos->db->select_stacks( $from_where )->single()
+    my $from_stack = $self->repos->get_stack( name => $from_stack_name )
         or $self->fatal("Source stack $from_stack_name does not exist");
 
     my $to_stack_name = $self->to_stack();
-    my $to_where = {name => $to_stack_name};
-    $self->repos->db->select_stacks( $to_where )->single()
+    $self->repos->get_stack( name => $to_stack_name )
         and $self->fatal("Target stack $to_stack_name already exists");
 
-    return;
+    return $from_stack;
 }
 
 #------------------------------------------------------------------------------
 
 sub _copy_stack {
-    my ($self) = @_;
+    my ($self, $from_stack) = @_;
 
     $self->note( sprintf 'Creating new stack %s', $self->to_stack() );
 
-    my $from_stack_name = $self->from_stack();
-    my $from_where = {name => $from_stack_name};
-    my $stack = $self->repos->db->select_stacks( $from_where )->single()
-        or $self->fatal("Source stack $from_stack_name does not exist");
-
     my $changes = { name => $self->to_stack() };
     $changes->{description} = $self->description() if $self->has_description();
-    $stack->copy( $changes );
+    my $to_stack = $from_stack->copy( $changes );
 
-    return;
+    return $to_stack;
 }
 
 #------------------------------------------------------------------------------
 
-sub _fill_stack {
-    my ($self) = @_;
-
-    my $from_stack_name = $self->from_stack();
-    my $from_stack = $self->repos->db->select_stacks( {name => $from_stack_name} )->single()
-        or confess "Stack $from_stack_name does not exist";
-
-    my $to_stack_name = $self->to_stack();
-    my $to_stack = $self->repos->db->select_stacks( {name => $to_stack_name} )->single()
-        or confess "Stack $to_stack_name does not exist";
-
-    my $where = { stack => $from_stack->id() };
-    my $package_stack_rs = $self->repos->db->select_package_stack( $where );
+sub _copy_stack_members {
+    my ($self, $from_stack, $to_stack) = @_;
 
     $self->note("Copying stack $from_stack into stack $to_stack");
 
-    while ( my $package_stack = $package_stack_rs->next() ) {
-        $self->debug(sprintf 'Copying package %s into stack %s', $package_stack->package(), $to_stack);
-        $package_stack->copy( { stack => $to_stack->id() } );
+    for my $packages_stack ( $from_stack->packages_stack() ) {
+        $self->debug(sprintf 'Copying package %s into stack %s', $packages_stack->package(), $to_stack);
+        $packages_stack->copy( { stack => $to_stack->id() } );
     }
 
     # TODO: Make sure both stacks have the same mtime after copying

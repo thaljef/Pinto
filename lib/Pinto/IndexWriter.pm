@@ -107,7 +107,7 @@ sub _get_index_records {
     my $select = [ qw(package.name package.version package.distribution.path) ];
     my $attrs  = { select => $select, join => ['stack', {package => 'distribution'}] };
 
-    my $records = $self->db->select_package_stack( $where, $attrs );
+    my $records = $self->db->select_package_stacks( $where, $attrs );
     my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
 
     return @records;

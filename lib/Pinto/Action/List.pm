@@ -51,13 +51,15 @@ override execute => sub {
     my $where = $self->where();
     $where->{'stack.name'} ||= 'default';
 
-    # TODO: make sure the stack name is valid and whine if it is not.
-    # This is better than just listing nothing, which implies the stack does exist.
+    if (not $self->repos->get_stack( name => $where->{'stack.name'} )) {
+        $self->whine("No such stack named $where->{'stack.name'}");
+        return 1;
+    }
 
     my $attrs = { order_by => [ qw(package.name package.version package.distribution.path) ],
                   prefetch => [ 'pin', 'stack', { 'package' => 'distribution' } ] };
 
-    my $rs = $self->repos->db->select_package_stack($where, $attrs);
+    my $rs = $self->repos->db->select_package_stacks($where, $attrs);
 
     my $format = $self->format();
     while( my $package_stack = $rs->next() ) {

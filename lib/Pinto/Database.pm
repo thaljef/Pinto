@@ -56,7 +56,7 @@ sub select_distributions {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
-    $attrs ||= {};
+    $attrs ||= {prefetch => 'packages'};
 
     return $self->schema->resultset('Distribution')->search($where, $attrs);
 }
@@ -67,14 +67,14 @@ sub select_packages {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
-    $attrs ||= {};
+    $attrs ||= {prefetch => 'distribution'};
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------
 
-sub select_package_stack {
+sub select_package_stacks {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
@@ -140,9 +140,14 @@ sub register {
 
     $stack ||= $self->select_stacks( {name => 'default'} )->single();
 
+    if (my $pkg_stack = $pkg->packages_stack_rs->find( {stack => $stack} ) ) {
+        $self->debug("$pkg is already on stack $stack");
+        return $pkg_stack;
+    }
+
     my $attrs     = { join => [ qw(package stack) ] };
     my $where     = { 'package.name' => $pkg->name(), 'stack' => $stack->id() };
-    my $incumbent = $self->select_package_stack( $where, $attrs )->single();
+    my $incumbent = $self->select_package_stacks( $where, $attrs )->single();
 
     if (not $incumbent) {
         $self->debug("Adding $pkg to stack $stack");

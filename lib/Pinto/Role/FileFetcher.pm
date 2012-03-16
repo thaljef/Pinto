@@ -85,7 +85,7 @@ sub fetch_temporary {
     my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
     my $tempfile = Path::Class::file($tempdir, $base);
 
-    $self->fetch(url => $url, to => $tempfile);
+    $self->fetch(from => $url, to => $tempfile);
 
     return Path::Class::file($tempfile);
 }

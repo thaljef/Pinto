@@ -27,8 +27,9 @@ sub opt_spec {
     return (
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
-        [ 'norecurse'   => 'Do not recursively import prereqs' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
+        [ 'norecurse'   => 'Do not recursively import prereqs' ],
+        [ 'stack|s=s'   => 'Put packages into this stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -61,8 +62,8 @@ sub execute {
 
     for my $arg (@args) {
         my ($name, $version) = split m/ - /mx, $arg, 2;
-        $self->pinto->add_action('Import', %{$opts}, package_name    => $name,
-                                                     minimum_version => ($version || 0));
+        $self->pinto->add_action($self->action_name(), %{$opts}, package_name    => $name,
+                                                                 minimum_version => ($version || 0));
     }
     my $result = $self->pinto->run_actions();
 
@@ -143,11 +144,6 @@ out of sync with the VCS.  It is up to you to then commit or rollback
 the changes using your VCS tools directly.  Pinto will not commit old
 changes that were left from a previous operation.
 
-=item --norecurse
-
-Prevents L<Pinto> from recursively importing any distributions
-required to satisfy prerequisites.
-
 =item --noinit
 
 Prevents L<Pinto> from pulling/updating the repository from the VCS
@@ -156,6 +152,17 @@ VCS-based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
+
+=item --norecurse
+
+Prevents L<Pinto> from recursively importing any distributions
+required to satisfy prerequisites.
+
+=item --stack=NAME
+
+Instructs L<Pinto> to place all the packages within the distribution
+into the stack with the given NAME.  All packages are always placed
+in the C<default> stack as well.
 
 =item --tag=NAME
 

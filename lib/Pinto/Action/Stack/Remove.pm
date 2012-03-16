@@ -39,10 +39,9 @@ override execute => sub {
     my $stack_name = $self->stack();
 
     $self->fatal( 'You cannot remove the default stack' )
-      if $stack_name eq 'default';
+        if $stack_name eq 'default';
 
-    my $where = {name => $stack_name};
-    my $stack = $self->repos->db->select_stacks( $where )->single()
+    my $stack = $self->repos->get_stack( name => $stack_name )
         or $self->fatal("Stack $stack_name does not exist");
 
     $self->note("Removing stack $stack");

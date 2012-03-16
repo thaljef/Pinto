@@ -44,7 +44,10 @@ override execute => sub {
     $path = $path =~ m{/}mx ? $path
                             : Pinto::Util::author_dir($author)->file($path)->as_foreign('Unix');
 
-    my $dist = $self->repos->remove_archive( path => $path );
+    my $dist = $self->repos->get_distribution(path => $path)
+        || throw_error "Distribution $path does not exist";
+
+    $self->repos->remove_distribution(dist => $dist);
 
     $self->add_message( Pinto::Util::removed_dist_message($dist) );
 

@@ -31,7 +31,7 @@ sub opt_spec {
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'norecurse'   => 'Do not recursively import prereqs' ],
         [ 'pin=s'       => 'Pin all added packages to the stack' ],
-        [ 'stack|s=s'   => 'Add packages into this stack' ],
+        [ 'stack|s=s'   => 'Put packages into this stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -61,7 +61,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action('Add', %{$opts}, archive => $_) for @args;
+    $self->pinto->add_action($self->action_name(), %{$opts}, archive => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -159,8 +159,8 @@ of why want to pin these packages.
 =item --stack=NAME
 
 Instructs L<Pinto> to place all the packages within the distribution
-into the stack with the given NAME.  If no stack is specified, then it
-defaults to the stack named C<default>.
+into the stack with the given NAME.   All packages are always placed
+in the C<default> stack as well.
 
 =item --tag=NAME
 

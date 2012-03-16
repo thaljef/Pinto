@@ -55,8 +55,7 @@ sub execute {
     my ($self) = @_;
 
     my $stack_name = $self->stack();
-    my $where = { name => $stack_name };
-    my $stack = $self->repos->db->select_stacks($where)->single();
+    my $stack = $self->repos->get_stack(name => $stack_name);
 
     if (not $stack) {
         $self->whine("Stack $stack_name does not exist");
@@ -66,13 +65,15 @@ sub execute {
     return $self->_do_unpin($stack);
 }
 
+#------------------------------------------------------------------------------
+
 sub _do_unpin {
     my ($self, $stack) = @_;
 
     my $pkg_name = $self->package();
     my $attrs    = { prefetch => 'package' };
     my $where    = { 'package.name' => $pkg_name, stack => $stack->id() };
-    my $pkg_stk  = $self->repos->db->select_package_stack($where, $attrs)->single();
+    my $pkg_stk  = $self->repos->db->select_package_stacks($where, $attrs)->single();
 
     if (not $pkg_stk) {
         $self->whine("Package $pkg_name is not in stack $stack");

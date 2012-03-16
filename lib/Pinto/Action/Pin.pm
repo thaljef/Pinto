@@ -63,10 +63,23 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $pkg_stk = $self->_get_package_stack() or return 0;
+    # TODO: Validate that the stack exists so you can tell the difference
+    # between an invalid stack and a PackageStack that doesn't exist.
 
-    $self->whine(sprintf "Package $pkg_stk is already pinned: %s", $pkg_stk->reason())
-        and return 0 if $pkg_stk->is_pinned();
+    my $pkg_stk = $self->repos->get_stack_member( package => $self->package(),
+                                                  stack   => $self->stack() );
+
+    if (not $pkg_stk) {
+        my ($pkg, $stk) = ( $self->package(), $self->stack() );
+        $self->whine("Package $pkg is not in stack $stk");
+        return 0;
+    }
+
+
+    if ( $pkg_stk->is_pinned() ) {
+        $self->whine(sprintf "Package $pkg_stk is already pinned: %s", $pkg_stk->reason());
+        return 0;
+    }
 
     # TODO: Decide how to handle pinning of developer distributions
     # $self->whine("This repository does not permit pinning developer packages")
@@ -75,29 +88,6 @@ sub execute {
     $self->_do_pin($pkg_stk);
 
     return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub _get_package_stack {
-    my ($self) = @_;
-
-    # TODO: Validate that the stack exists so you can tell the difference
-    # between an invalid stack and a PackageStack that doesn't exist.
-
-    my $where = { 'package.name' => $self->package(),
-                  'stack.name'   => $self->stack() };
-    my $attrs = { prefetch => [ qw(package stack) ] };
-
-    my $pkg_stk = $self->repos->db->select_package_stack($where, $attrs)->single();
-
-    if (not $pkg_stk) {
-        my ($pkg, $stk) = ( $self->package(), $self->stack() );
-        $self->whine("Package $pkg is not in stack $stk");
-        return;
-    }
-
-    return $pkg_stk;
 }
 
 #------------------------------------------------------------------------------

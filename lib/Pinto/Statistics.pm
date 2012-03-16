@@ -50,7 +50,7 @@ sub stack_distributions {
                   join     => [ 'stack', { 'package' => 'distribution' } ],
                   distinct => 1 };
 
-    return $self->db->select_package_stack( $where, $attrs )->count();
+    return $self->db->select_package_stacks( $where, $attrs )->count();
 }
 
 #------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ sub stack_packages {
     my $where = { 'stack.name' => $self->stack() };
     my $attrs = { join => 'stack' };
 
-    return $self->db->select_package_stack( $where, $attrs )->count();
+    return $self->db->select_package_stacks( $where, $attrs )->count();
 }
 
 #------------------------------------------------------------------------------

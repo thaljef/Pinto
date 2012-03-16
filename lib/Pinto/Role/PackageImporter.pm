@@ -28,14 +28,12 @@ has extractor => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Interface::Loggable
-         Pinto::Role::FileFetcher
-);
+with qw( Pinto::Interface::Loggable );
 
 #------------------------------------------------------------------------------
 # Required interface
 
-requires qw( repos );
+requires qw( repos stack );
 
 #------------------------------------------------------------------------------
 # Builders
@@ -56,39 +54,43 @@ sub find_or_import {
     my $pkg_vname = "$pkg_name-$pkg_ver";
 
     $self->note("Looking for package $pkg_vname");
+    my $latest = $self->repos->get_latest_package(name => $pkg_name);
 
-    my $where   = {name => $pkg_name, is_latest => 1};
-    my $got_pkg = $self->repos->select_packages( $where )->single();
 
-    if ($got_pkg and $got_pkg->version() >= $pkg_ver) {
-        $self->note("Already have package $pkg_vname or newer as $got_pkg");
-        return ($got_pkg->distribution(), 0);
+    if ($latest && $latest->version() >= $pkg_ver) {
+        my $dist = $latest->distribution();
+        $self->note("Already have package $pkg_vname or newer as $latest");
+        $self->repos->register_distribution(dist => $dist, stack => $self->stack);
+        return ($dist, 0);
     }
 
     my $dist_url = $self->repos->cache->locate( package => $pkg_name,
                                                 version => $pkg_ver,
                                                 latest  => 1 );
-    if ($dist_url) {
-        $self->debug("Found package $pkg_vname or newer in $dist_url");
 
-        if ( Pinto::Util::isa_perl($dist_url) ) {
-            $self->debug("Distribution $dist_url is a perl.  Skipping it.");
-            return;
-        }
 
-        return ($self->_import_distribution($dist_url), 1);
+    throw_error "Cannot find $pkg_vname anywhere"
+        if not $dist_url;
+
+
+    $self->debug("Found package $pkg_vname or newer in $dist_url");
+
+    if ( Pinto::Util::isa_perl($dist_url) ) {
+        $self->debug("Distribution $dist_url is a perl.  Skipping it.");
+        return;
     }
 
-    throw_error "Cannot find $pkg_vname anywhere";
+    my $dist = $self->repos->import_distribution( url   => $dist_url,
+                                                  stack => $self->stack() );
 
-    return;
+    return ($dist, 1);
 }
 
 
 #------------------------------------------------------------------------------
 
 sub import_prerequisites {
-    my ($self, $archive) = @_;
+    my ($self, $archive, $stack) = @_;
 
     my @prereq_queue = $self->_extract_prerequisites($archive);
     my %visited = ($archive => 1);
@@ -98,12 +100,8 @@ sub import_prerequisites {
   PREREQ:
     while (my $prereq = shift @prereq_queue) {
 
-        # my $queue_depth = @prereq_queue;
-        # print "\nPrereq queue is $queue_depth deep:\n";
-        # printf( "\t%s -> %s\n", $_->{name}, $_->{version} ) for sort {$a->{name} cmp $b->{name}} @prereq_queue;
-
         my ($required_dist, $imported_flag) = try {
-              $self->find_or_import( $prereq );
+              $self->find_or_import( $prereq, $stack );
         }
         catch {
              my $prereq_vname = "$prereq->{name}-$prereq->{version}";
@@ -170,32 +168,6 @@ sub _extract_prerequisites {
 
 #------------------------------------------------------------------------------
 
-sub _import_distribution {
-    my ($self, $url) = @_;
-
-    my ($source, $path, $author, $destination) =
-        Pinto::Util::parse_dist_url( $url, $self->config->root_dir() );
-
-    my $where    = {path => $path};
-    my $existing = $self->repos->select_distributions( $where )->single();
-    throw_error "Distribution $path already exists" if $existing;
-
-    $self->fetch(from => $url, to => $destination);
-
-    my @pkg_specs = $self->extractor->provides(archive => $destination);
-    $self->info(sprintf "Importing distribution $url providing %d packages", scalar @pkg_specs);
-
-    my $struct = { path     => $path,
-                   source   => $source,
-                   mtime    => Pinto::Util::mtime($destination),
-                   packages => \@pkg_specs };
-
-    my $dist = $self->repos->add_distribution($struct);
-
-    return $dist;
-}
-
-#------------------------------------------------------------------------------
 
 1;
 

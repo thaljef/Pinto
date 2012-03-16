@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool Str);
 use Path::Class;
 
 use Pinto::Util;
-use Pinto::Types qw(File);
+use Pinto::Types qw(File StackName);
 use Pinto::PackageExtractor;
 use Pinto::Exceptions qw(throw_error);
 
@@ -50,7 +50,7 @@ has pin   => (
 
 has stack => (
     is      => 'ro',
-    isa     => Str,
+    isa     => StackName,
     default => 'default',
 );
 
@@ -67,16 +67,16 @@ with qw( Pinto::Interface::Authorable
 override execute => sub {
     my ($self) = @_;
 
-    my ($added_dist) = $self->repos->add_archive( path      => $self->archive,
-                                                  author    => $self->author,
-                                                  stack     => $self->stack,
-                                                  pin       => $self->pin,
-                                                  index     => 1 );
+    my ($dist) = $self->repos->add_distribution( archive   => $self->archive,
+                                                 author    => $self->author,
+                                                 stack     => $self->stack,
+                                                 pin       => $self->pin );
 
-    $self->add_message( Pinto::Util::added_dist_message($added_dist) );
+    $self->add_message( Pinto::Util::added_dist_message($dist) );
 
     unless ( $self->norecurse() ) {
-        my @imported = $self->import_prerequisites( $added_dist->archive() );
+        my $root = $self->repos->root_dir();
+        my @imported = $self->import_prerequisites( $dist->archive($root), $self->stack() );
         $self->add_message( Pinto::Util::imported_prereq_dist_message($_) ) for @imported;
     }
 

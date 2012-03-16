@@ -52,15 +52,15 @@ override execute => sub {
     my ($self) = @_;
 
     my $source_stack_name = $self->from_stack();
-    my $source_stack = $self->repos->db->select_stacks( {name => $source_stack_name} )->single()
+    my $source_stack = $self->repos->get_stack(name => $source_stack_name)
         or confess "Stack $source_stack_name does not exist";
 
     my $target_stack_name = $self->to_stack();
-    my $target_stack = $self->repos->db->select_stacks( {name => $target_stack_name} )->single()
+    my $target_stack = $self->repos->get_stack(name => $target_stack_name)
         or confess "Stack $target_stack_name does not exist";
 
     my $where = { stack => $source_stack->id() };
-    my $package_stack_rs = $self->repos->db->select_package_stack( $where );
+    my $package_stack_rs = $self->repos->db->select_package_stacks( $where );
 
     $self->debug("Merging stack $source_stack into stack $target_stack");
 
@@ -74,7 +74,7 @@ override execute => sub {
 
         my $attrs = { prefetch => 'package' };
 
-        my $target_pkg_stk = $self->repos->db->select_package_stack($where, $attrs)->single();
+        my $target_pkg_stk = $self->repos->db->select_package_stacks($where, $attrs)->single();
 
         $conflicts += $self->_merge_pkg_stk( $source_pkg_stk, $target_pkg_stk, $target_stack );
     }

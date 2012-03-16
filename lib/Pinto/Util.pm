@@ -45,7 +45,7 @@ sub author_dir {                                  ## no critic (ArgUnpacking)
 #-------------------------------------------------------------------------------
 
 sub parse_dist_url {
-    my ($url, $base_dir) = @_;
+    my ($url) = @_;
 
     #  $path = '/yadda/yadda/authors/id/A/AU/AUTHOR/Foo-1.2.tar.gz'
     my $path = $url->path();
@@ -55,9 +55,8 @@ sub parse_dist_url {
         # $path = 'A/AU/AUTHOR/Foo-1.2.tar.gz'
         my $source     = $url->isa('URI::file') ? $1 : $url->authority();
         my @path_parts = split m{ / }mx, $path; # qw( A AU AUTHOR Foo-1.2.tar.gz )
-        my $archive    = file($base_dir, qw(authors id), @path_parts);
         my $author     = $path_parts[2];
-        return ($source, $path, $author, $archive);
+        return ($source, $path, $author);
     }
     else {
 

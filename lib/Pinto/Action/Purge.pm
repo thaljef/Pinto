@@ -26,7 +26,7 @@ override execute => sub {
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
-        $self->repos->remove_distribution($dist);
+        $self->repos->remove_distribution(dist => $dist);
         $removed++
     }
 
