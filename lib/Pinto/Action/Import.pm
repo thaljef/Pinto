@@ -1,6 +1,6 @@
 package Pinto::Action::Import;
 
-# ABSTRACT: Import a package (and its prerequisites) into the local repository
+# ABSTRACT: Import a foreign distribution into the repository
 
 use version;
 

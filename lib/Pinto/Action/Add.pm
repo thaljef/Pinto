@@ -1,6 +1,6 @@
 package Pinto::Action::Add;
 
-# ABSTRACT: Add one distribution to the repository
+# ABSTRACT: Add a local distribution to the repository
 
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);
