@@ -4,7 +4,7 @@ Pinto - Curate your own CPAN-like repository
 
 # VERSION
 
-version 0.032
+version 0.033
 
 # SYNOPSIS
 

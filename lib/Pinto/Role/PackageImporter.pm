@@ -62,7 +62,7 @@ sub find_or_import {
 
     if ($got_pkg and $got_pkg->version() >= $pkg_ver) {
         $self->note("Already have package $pkg_vname or newer as $got_pkg");
-        return $got_pkg->distribution();
+        return ($got_pkg->distribution(), 0);
     }
 
     my $dist_url = $self->repos->cache->locate( package => $pkg_name,
@@ -76,7 +76,7 @@ sub find_or_import {
             return;
         }
 
-        return $self->_import_distribution($dist_url);
+        return ($self->_import_distribution($dist_url), 1);
     }
 
     throw_error "Cannot find $pkg_vname anywhere";
@@ -93,24 +93,29 @@ sub import_prerequisites {
     my @prereq_queue = $self->_extract_prerequisites($archive);
     my %visited = ($archive => 1);
     my @imported;
-    my %done;
+    my %seen;
 
   PREREQ:
     while (my $prereq = shift @prereq_queue) {
 
-        my $required_archive = try {
-              my $required_dist = $self->find_or_import( $prereq );
-              $required_dist->archive( $self->config->root_dir() );
+        # my $queue_depth = @prereq_queue;
+        # print "\nPrereq queue is $queue_depth deep:\n";
+        # printf( "\t%s -> %s\n", $_->{name}, $_->{version} ) for sort {$a->{name} cmp $b->{name}} @prereq_queue;
+
+        my ($required_dist, $imported_flag) = try {
+              $self->find_or_import( $prereq );
         }
         catch {
              my $prereq_vname = "$prereq->{name}-$prereq->{version}";
              $self->whine("Skipping prerequisite $prereq_vname. $_");
              # Mark the prereq as done so we don't try to import it again
-             $done{ $prereq->{name} } = $prereq;
+             $seen{ $prereq->{name} } = $prereq;
              undef;  # returned by try{}
         };
 
-        next PREREQ if not $required_archive;
+        next PREREQ if not $required_dist;
+        my $required_archive = $required_dist->archive( $self->config->root_dir() );
+        push @imported, $required_dist if $imported_flag;
 
         if ( $visited{$required_archive} ) {
             # We don't need to extract prereqs from the same dist more than once
@@ -121,19 +126,31 @@ sub import_prerequisites {
       NEW_PREREQ:
         for my $new_prereq ( $self->_extract_prerequisites($required_archive) ) {
 
+            # This is all pretty hacky.  It might be better to represent the queue
+            # as a hash table instead of a list, since we really need to keep track
+            # of things by name.
+
             # Add this prereq to the queue only if greater than the ones we already got
             my $name = $new_prereq->{name};
-            next NEW_PREREQ if exists $done{$name}
-                               && $new_prereq->{version} <= $done{$name};
 
-            $done{$name} = $new_prereq->{version};
+            next NEW_PREREQ if exists $seen{$name}
+                               && $new_prereq->{version} <= $seen{$name};
+
+
+            # Take any prior versions of this prereq out of the queue
+            @prereq_queue = grep { $_->{name} ne $name } @prereq_queue;
+
+            # Note that this is the latest version of this prereq we've seen so far
+            $seen{$name} = $new_prereq->{version};
+
+            # Push the prereq onto the queue
             push @prereq_queue, $new_prereq;
         }
 
         $visited{$required_archive} = 1;
     }
 
-    return 1;
+    return @imported;
 }
 
 #------------------------------------------------------------------------------
