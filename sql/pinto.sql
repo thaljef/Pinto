@@ -42,8 +42,32 @@ create TABLE package_stack (
        FOREIGN KEY(pin)     REFERENCES pin(id)
 );
 
+/*
+create TABLE revision (
+       id          INTEGER PRIMARY KEY NOT NULL,
+       stack       INTEGER             NOT NULL,
+       log         TEXT                NOT NULL,
+       user        TEXT                NOT NULL,
+       ctime       INTEGER             NOT NULL,
+       FOREIGN KEY(stack)   REFERENCES stack(id),
+);
+
+
+create TABLE package_stack_change (
+       id           INTEGER PRIMARY KEY NOT NULL,
+       type         INTEGER             NOT NULL,
+       revision     INTEGER             NOT NULL,
+       stack        INTEGER             NOT NULL,
+       package      INTEGER             NOT NULL,
+       pin          INTEGER             DEFAULT NULL,
+       FOREIGN KEY(revision)  REFERENCES revision(id),
+       FOREIGN KEY(stack)     REFERENCES stack(id),
+       FOREIGN KEY(package)   REFERENCES package(id),
+       FOREIGN KEY(pin)       REFERENCES pin(id)
+);
+*/
 
 CREATE UNIQUE INDEX distribution_idx      ON distribution(path);
 CREATE UNIQUE INDEX package_idx           ON package(name, distribution);
-CREATE UNIQUE INDEX stack_idx             ON stack(name);
+CREATE UNIQUE INDEX stack_name_idx        ON stack(name);
 CREATE        INDEX package_name_idx      ON package(name);
