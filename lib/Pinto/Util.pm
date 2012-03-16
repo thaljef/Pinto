@@ -9,6 +9,7 @@ use version;
 use Carp;
 use Try::Tiny;
 use Path::Class;
+use Digest::MD5;
 use Readonly;
 
 use Pinto::Exceptions qw(throw_version throw_error);
@@ -95,10 +96,38 @@ sub isa_perl {
 sub mtime {
     my ($file) = @_;
 
-    croak 'Must supply a file' if not $file;
-    croak "$file does not exist" if not -e $file;
+    confess 'Must supply a file' if not $file;
+    confess "$file does not exist" if not -e $file;
 
     return (stat $file)[9];
+}
+
+#-------------------------------------------------------------------------------
+
+sub md5 {
+    my ($file) = @_;
+
+    confess 'Must supply a file' if not $file;
+    confess "$file does not exist" if not -e $file;
+
+    my $fh = $file->openr();
+    my $md5 = Digest::MD5->new->addfile($fh)->hexdigest();
+
+    return $md5;
+}
+
+#-------------------------------------------------------------------------------
+
+sub sha256 {
+    my ($file) = @_;
+
+    confess 'Must supply a file' if not $file;
+    confess "$file does not exist" if not -e $file;
+
+    my $fh = $file->openr();
+    my $sha256 = Digest::SHA->new(256)->addfile($fh)->hexdigest();
+
+    return $sha256;
 }
 
 #-------------------------------------------------------------------------------

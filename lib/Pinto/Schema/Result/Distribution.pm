@@ -44,6 +44,16 @@ __PACKAGE__->table("distribution");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 md5
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 sha256
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -55,6 +65,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "mtime",
   { data_type => "integer", is_nullable => 0 },
+  "md5",
+  { data_type => "text", is_nullable => 0 },
+  "sha256",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -101,8 +115,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-02-24 23:24:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:j5wvt9S/BxEJP1k0fd5+GA
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-16 03:49:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eT1x5zQ5MB8UeZLqUPSrAw
 
 #-------------------------------------------------------------------------------
 

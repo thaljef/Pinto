@@ -227,7 +227,9 @@ sub add_distribution {
 
     my $dist_struct = { path     => $dist_path,
                         source   => $source,
-                        mtime    => Pinto::Util::mtime($archive) };
+                        mtime    => Pinto::Util::mtime($archive),
+                        md5      => Pinto::Util::md5($archive),
+                        sha256   => Pinto::Util::sha256($archive) };
 
     my @pkg_specs = $index ? $self->extractor->provides( archive => $archive ) : ();
     $dist_struct->{packages} = \@pkg_specs;
