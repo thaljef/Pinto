@@ -67,14 +67,14 @@ with qw( Pinto::Interface::Authorable
 override execute => sub {
     my ($self) = @_;
 
-    my ($added, @imported) = $self->repos->add_archive( path      => $self->archive,
-                                                        author    => $self->author,
-                                                        stack     => $self->stack,
-                                                        pin       => $self->pin,
-                                                        index     => 1 );
+    my ($added) = $self->repos->add_archive( path      => $self->archive,
+                                             author    => $self->author,
+                                             stack     => $self->stack,
+                                             pin       => $self->pin,
+                                             index     => 1 );
 
-    $self->add_message( Pinto::Util::added_dist_message($added) );
-    $self->add_message( Pinto::Util::imported_dist_message($_) ) for @imported;
+    my @imported = $self->import_prerequisites($archive) unless $self->norecurse();
+    $self->add_message( Pinto::Util::imported_prereq_dist_message($_) ) for @imported;
 
     return 1;
 };
