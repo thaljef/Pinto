@@ -4,6 +4,7 @@ package Pinto::Role::FileFetcher;
 
 use Moose::Role;
 
+use File::Temp;
 use Path::Class;
 use LWP::UserAgent;
 
