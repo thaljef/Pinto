@@ -9,6 +9,7 @@ use MooseX::Types::Moose qw(ScalarRef HashRef);
 use Carp;
 use IO::String;
 use Path::Class;
+use File::Temp qw(tempdir);
 
 use Pinto;
 use Pinto::Util;
@@ -132,52 +133,26 @@ sub path_not_exists_ok {
 
 #------------------------------------------------------------------------------
 
-sub package_loaded_ok {
-    my ($self, $pkg_spec, $latest) = @_;
+sub package_ok {
+    my ($self, $pkg_spec) = @_;
 
-    my ($author, $dist_file, $pkg_name, $pkg_ver) = parse_pkg_spec($pkg_spec);
+    my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name)
+        = parse_pkg_spec($pkg_spec);
 
-    my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_file)->as_foreign('Unix');
-
-    my $attrs = { prefetch  => 'distribution' };
-    my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->db->select_packages($where, $attrs)->single();
+    my $pkg = $self->pinto->repos->get_stack_member(package => $pkg_name, stack => $stack_name);
     return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $pkg;
 
     $self->tb->ok(1, "$pkg_spec is loaded");
-    $self->tb->is_eq($pkg->version(), $pkg_ver, "$pkg_name has correct version");
-
-    my $archive = $pkg->distribution->archive( $self->root() );
-    $self->tb->ok(-e $archive, "Archive $archive exists");
-
-    $self->tb->is_eq( $pkg->is_latest(), 1, "$pkg_spec is latest" )
-        if $latest;
-
-    $self->tb->is_eq( $pkg->is_latest(), undef, "$pkg_spec is not latest" )
-        if not $latest;
-
-    return;
-}
-
-#------------------------------------------------------------------------------
-
-sub package_not_loaded_ok {
-    my ($self, $pkg_spec) = @_;
-
-    my ($author, $dist_file, $pkg_name, $pkg_ver) = parse_pkg_spec($pkg_spec);
+    $self->tb->is_eq($pkg->package->version(), $pkg_ver, "$pkg_name has correct version");
 
     my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_file)->as_foreign('Unix');
-    my $archive   = $self->root()->file(qw(authors id), $author_dir, $dist_file);
+    my $dist_path = $author_dir->file($dist_archive . '.tar.gz')->as_foreign('Unix');
+    $self->tb->is_eq($pkg->package->distribution->path(), $dist_path, "$pkg_name has correct dist path");
 
-    my $attrs = { prefetch  => 'distribution' };
-    my $where = { name => $pkg_name, 'distribution.path' => $dist_path };
-    my $pkg = $self->pinto->repos->select_packages($where, $attrs)->single();
+    my $archive = $pkg->package->distribution->archive( $self->root() );
+    $self->tb->ok(-e $archive, "Archive $archive exists");
 
-    $self->tb->ok(!$pkg, "$pkg_spec is still loaded");
-
-    $self->tb->ok(! -e $archive, "Archive $archive still exists");
+    $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
 
     return;
 }
@@ -249,14 +224,14 @@ sub log_unlike {
 sub parse_pkg_spec {
     my ($spec) = @_;
 
-    # Looks like "AUTHOR/Foo-1.2.tar.gz/Foo::Bar-1.2"
-    $spec =~ m{ ^ ([^/]+) / ([^/]+) / ([^-]+) - (.+) $ }mx
+    # Looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack"
+    $spec =~ m{ ^ ([^/]+) / ([^/]+) / ([^-]+) - (.+) / (.+)$ }mx
         or croak "Could not parse pkg spec: $spec";
 
     # TODO: use sexy named captures instead
-    my ($author, $dist_file, $pkg_name, $pkg_ver) = ($1, $2, $3, $4);
+    my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack) = ($1, $2, $3, $4, $5);
 
-    return ($author, $dist_file, $pkg_name, $pkg_ver);
+    return ($author, $dist_archive, $pkg_name, $pkg_ver, $stack);
 }
 
 #------------------------------------------------------------------------------
