@@ -251,6 +251,36 @@ sub add_distribution {
 
 #------------------------------------------------------------------------------
 
+sub mirror_distribution {
+    my ($self, %args) = @_;
+
+    my $struct = $args{struct};
+    my $stack  = $args{stack};
+
+    $stack = $self->get_stack(name => $stack)
+        || throw_error qq{No such stack named "$stack"};
+
+    my $url = URI->new($struct->{source} . '/authors/id/' . $struct->{path});
+    $self->info("Mirroring distribution at $url");
+
+    my $temp_archive  = $self->fetch_temporary(url => $url);
+    $struct->{mtime}  = Pinto::Util::mtime($temp_archive);
+    $struct->{md5}    = Pinto::Util::md5($temp_archive);
+    $struct->{sha256} = Pinto::Util::sha256($temp_archive);
+
+    my $dist = $self->db->create_distribution($struct, $stack);
+
+    my @path_parts = split m{ / }mx, $struct->{path};
+    my $repo_archive = $self->root_dir->file( qw(authors id), @path_parts );
+    $self->fetch(from => $temp_archive, to => $repo_archive);
+    $self->store->add_archive($repo_archive);
+
+    return $dist;
+}
+
+#------------------------------------------------------------------------------
+
+
 sub import_distribution {
     my ($self, %args) = @_;
 

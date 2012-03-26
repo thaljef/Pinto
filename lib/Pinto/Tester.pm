@@ -14,6 +14,7 @@ use File::Temp qw(tempdir);
 use Pinto;
 use Pinto::Util;
 use Pinto::Creator;
+use Pinto::Tester::Util qw(make_dist_struct make_dist_archive);
 use Pinto::Types qw(Dir);
 
 #------------------------------------------------------------------------------
@@ -133,6 +134,17 @@ sub path_not_exists_ok {
 
 #------------------------------------------------------------------------------
 
+sub action_ok {
+    my ($self, $action, $batch_args, $action_args) = @_;
+
+    $self->pinto->new_batch( %{ $batch_args || {} } );
+    $self->pinto->add_action($action, %{ $action_args || {} } );
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    $self->result_ok( $self->pinto->run_actions() );
+}
+
+#------------------------------------------------------------------------------
+
 sub package_ok {
     my ($self, $pkg_spec) = @_;
 
@@ -221,8 +233,29 @@ sub log_unlike {
 
 #------------------------------------------------------------------------------
 
+sub populate {
+    my ($self, @specs) = @_;
+
+    $self->pinto->new_batch();
+
+    for my $spec (@specs) {
+        my $struct  = make_dist_struct($spec);
+        my $archive = make_dist_archive($struct);
+        my %action_args = (author => $struct->{cpan_author}, norecurse => 1, archive => $archive);
+        $self->pinto->add_action( 'Add', %action_args );
+    }
+
+    $self->result_ok( $self->pinto->run_actions() );
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub parse_pkg_spec {
     my ($spec) = @_;
+
+    $spec =~ s{\s+}{}g;
 
     # Looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack"
     $spec =~ m{ ^ ([^/]+) / ([^/]+) / ([^-]+) - (.+) / (.+)$ }mx

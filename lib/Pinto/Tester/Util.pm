@@ -20,7 +20,7 @@ use base 'Exporter';
 
 #-------------------------------------------------------------------------------
 
-our @EXPORT_OK = qw( make_dist_obj make_pkg_obj make_dist_archive);
+our @EXPORT_OK = qw(make_dist_obj make_pkg_obj make_dist_struct make_dist_archive);
 
 #-------------------------------------------------------------------------------
 
@@ -39,14 +39,16 @@ sub make_dist_obj {
 #------------------------------------------------------------------------------
 
 sub make_dist_archive {
-    my ($spec) = @_;
+    my ($spec_or_struct) = @_;
 
-    my $struct    = make_dist_struct( $spec );
-    my $fake_dist = Module::Faker::Dist->new( $struct );
-    my $temp_dir  = tempdir(CLEANUP => 1 );
-    my $archive   = $fake_dist->make_archive( {dir => $temp_dir} );
+    my $struct    = ref $spec_or_struct eq 'HASH' ? $spec_or_struct
+                                                  : make_dist_struct( $spec_or_struct );
 
-    return file($archive);
+    my $temp_dir     = tempdir(CLEANUP => 1 );
+    my $fake_dist    = Module::Faker::Dist->new( $struct );
+    my $fake_archive = $fake_dist->make_archive( {dir => $temp_dir} );
+
+    return file($fake_archive);
 }
 
 #------------------------------------------------------------------------------
@@ -93,7 +95,7 @@ sub parse_dist_spec {
     my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
 
     $dist = parse_spec($dist);
-    $dist->{author} = $author || 'LOCAL';
+    $dist->{cpan_author} = $author || 'LOCAL';
 
     my @provides = map { parse_spec($_) } split /,/, $provides || '';
     my @requires = map { parse_spec($_) } split /,/, $requires || '';

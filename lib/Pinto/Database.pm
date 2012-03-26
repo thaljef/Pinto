@@ -86,13 +86,13 @@ sub select_package_stacks {
 #-------------------------------------------------------------------------------
 
 sub create_distribution {
-    my ($self, $dist_struct, $stack, $pin) = @_;
+    my ($self, $struct, $stack, $pin) = @_;
 
-    $self->debug("Inserting distribution $dist_struct->{path} into database");
+    $self->debug("Inserting distribution $struct->{path} into database");
 
     my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
 
-    my $dist = $self->schema->resultset('Distribution')->create($dist_struct);
+    my $dist = $self->schema->resultset('Distribution')->create($struct);
 
     # TODO: Decide if the distinction between developer/release
     # distributions really makes sense.  Now that we have stacks,

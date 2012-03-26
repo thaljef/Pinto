@@ -8,6 +8,7 @@ use URI;
 use Try::Tiny;
 
 use Pinto::Util;
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -22,6 +23,13 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 # Moose Attributes
+
+has stack => (
+    is      => 'ro',
+    isa     => StackName,
+    default => 'default',
+);
+
 
 # has force => (
 #    is      => 'ro',
@@ -49,9 +57,9 @@ sub execute {
 
 
     my $count = 0;
-    for my $dist_spec ( $self->repos->cache->contents() ) {
+    for my $struct ( $self->repos->cache->contents() ) {
 
-        my $path = $dist_spec->{path};
+        my $path = $struct->{path};
         if ( Pinto::Util::isa_perl($path) ) {
             $self->debug("Distribution $path is a perl.  Skipping it.");
             next;
@@ -62,7 +70,7 @@ sub execute {
             next;
         }
 
-        $count += try   { $self->_do_mirror($dist_spec) }
+        $count += try   { $self->_do_mirror($struct)      }
                   catch { $self->_handle_mirror_error($_) };
 
     }
@@ -77,26 +85,12 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _do_mirror {
-    my ($self, $dist_spec) = @_;
+  my ($self, $struct) = @_;
 
-    my $url = URI->new($dist_spec->{source} . '/authors/id/' . $dist_spec->{path});
-    my @path_parts = split m{ / }mx, $dist_spec->{path};
+  my $dist = $self->repos->mirror_distribution( struct => $struct,
+                                                stack  => $self->stack() );
 
-    $self->info("Mirroring distribution at $url");
-
-    my $destination = $self->repos->root_dir->file( qw(authors id), @path_parts );
-    $self->fetch(from => $url, to => $destination);
-
-    my $pkg_specs = $self->_fix_versions( $dist_spec->{packages} );
-
-    my $struct = { path     => $dist_spec->{path},
-                   source   => $dist_spec->{source},
-                   mtime    => Pinto::Util::mtime($destination),
-                   packages => $pkg_specs };
-
-    $self->repos->add_distribution($struct);
-
-    return 1;
+  return 1;
 }
 
 #------------------------------------------------------------------------------

@@ -6,67 +6,33 @@ use warnings;
 use Test::More;
 
 use Path::Class;
-use FindBin qw($Bin);
 
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------
-
-my $fakes     = dir( $Bin, qw(data fakepan repos a) );
-my $source    = URI->new("file://$fakes");
-my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
-
-my $us   = 'US';     # The local author
-my $them = 'LOCAL';  # The foreign author (CPAN::Faker assigns them all to 'LOCAL');
-
-#------------------------------------------------------------------------------
 # Setup...
 
-my $t = Pinto::Tester->new( creator_args => {sources => $source} );
-my $pinto = $t->pinto();
+no warnings 'qw';
+my @specs = qw(
+    AUTHOR/Foo-Bar-1.2=Foo::Bar-1.2
+    AUTHOR/FooAndBaz-2.3=Foo-2.3,Baz-2.9
+);
+use warnings;
 
-$t->repository_empty_ok();
+my $source_repo = Pinto::Tester->new->populate( @specs );
+my $source_repo_url = 'file://' . $source_repo->root();
 
-#------------------------------------------------------------------------------
-# Updating from a foreign repository...
-
-$pinto->new_batch();
-$pinto->add_action('Mirror');
-
-$t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$them/BarAndBaz-0.04.tar.gz/Bar-0.04",  1 );
-$t->package_loaded_ok( "$them/BarAndBaz-0.04.tar.gz/Baz-0.04",  1 );
-$t->package_loaded_ok( "$them/Fee-0.02_1.tar.gz/Fee-0.02_1",    0 );
-$t->package_loaded_ok( "$them/FooAndBar-0.02.tar.gz/Foo-0.02",  1 );
+my $test_repo = Pinto::Tester->new( creator_args => {sources => $source_repo_url} );
+$test_repo->repository_empty_ok();
 
 #------------------------------------------------------------------------------
-# Adding a local version of an existing foreign package...
+# Mirroring a foreign repository...
 
-my $dist    = 'BarAndBaz-0.04.tar.gz';
-my $archive =  $auth_dir->file($dist);
-
-$pinto->new_batch();
-$pinto->add_action('Add', archive => $archive, author => $us);
-
-$t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$us/$dist/Bar-0.04", 1 );
-$t->package_loaded_ok( "$us/$dist/Baz-0.04", 1 );
-
-# The foreign versions should no longer be latest
-$t->package_loaded_ok( "$them/$dist/Bar-0.04",  0 );
-$t->package_loaded_ok( "$them/$dist/Baz-0.04",  0 );
-
-#------------------------------------------------------------------------------
-# After removing our local version, the foreign version should become latest...
-
-$pinto->new_batch();
-$pinto->add_action('Remove', path => $dist, author => $us );
-
-$t->result_ok( $pinto->run_actions() );
-$t->package_not_loaded_ok( "$us/$dist/Bar-0.04" );
-$t->package_not_loaded_ok( "$us/$dist/Baz-0.04" );
-
-$t->package_loaded_ok( "$them/$dist/Bar-0.04",  1 );
-$t->package_loaded_ok( "$them/$dist/Baz-0.04",  1 );
+$test_repo->action_ok('Mirror');
+$test_repo->package_ok('AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/default');
+$test_repo->package_ok('AUTHOR/FooAndBaz-2.3/Foo-2.3/default');
+$test_repo->package_ok('AUTHOR/FooAndBaz-2.3/Baz-2.9/default');
 
 done_testing();
+
+
