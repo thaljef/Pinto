@@ -26,20 +26,7 @@ with qw( Pinto::Interface::Loggable
          Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------
-# Construction
 
-around BUILDARGS => sub {
-    my $orig = shift;
-    my $class = shift;
-
-    my $args = $class->$orig(@_);
-
-    $args->{config} ||= Pinto::Config->new( $args );
-
-    return $args;
-};
-
-#------------------------------------------------------------------------------
 
 sub create {
     my ($self, %args) = @_;

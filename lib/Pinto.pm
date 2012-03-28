@@ -56,19 +56,6 @@ with qw( Pinto::Interface::Configurable
 #------------------------------------------------------------------------------
 # Construction
 
-around BUILDARGS => sub {
-    my $orig = shift;
-    my $class = shift;
-
-    my $args = $class->$orig(@_);
-
-    $args->{config} ||= Pinto::Config->new( $args );
-
-    return $args;
-};
-
-#------------------------------------------------------------------------------
-
 sub BUILD {
     my ($self) = @_;
 
