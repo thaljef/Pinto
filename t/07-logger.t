@@ -62,6 +62,9 @@ like($loud_buffer, qr/note/, 'note message logged when loud');
 
 $loud_logger->info("info");
 like($loud_buffer, qr/info/, 'info message logged when loud');
+
+$loud_logger->whine("whine");
+like($loud_buffer, qr/whine/, 'whine message logged when loud');
 }
 
 #-----------------------------------------------------------------------------
