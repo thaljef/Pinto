@@ -48,13 +48,17 @@ has nocolor => (
 
 #-----------------------------------------------------------------------------
 
-sub BUILDARGS {
-    my ($class, %args) = @_;
+around BUILDARGS => sub {
+    my $orig = shift;
+    my $class = shift;
 
-    $args{verbose} = $LEVEL_QUIET if delete $args{quiet};
+    my $args = $class->$orig(@_);
 
-    return \%args;
-}
+    # Note: this could also be done with init_arg, or MooseX::Aliases
+    $args->{verbose} = $LEVEL_QUIET if delete $args->{quiet};
+
+    return $args;
+};
 
 #-----------------------------------------------------------------------------
 # Private methods

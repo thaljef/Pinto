@@ -28,14 +28,17 @@ with qw( Pinto::Interface::Loggable
 #------------------------------------------------------------------------------
 # Construction
 
-sub BUILDARGS {
-    my ($class, %args) = @_;
+around BUILDARGS => sub {
+    my $orig = shift;
+    my $class = shift;
 
-    $args{logger} ||= Pinto::Logger->new( %args );
-    $args{config} ||= Pinto::Config->new( %args );
+    my $args = $class->$orig(@_);
 
-    return \%args;
-}
+    $args->{logger} ||= Pinto::Logger->new( $args );
+    $args->{config} ||= Pinto::Config->new( $args );
+
+    return $args;
+};
 
 #------------------------------------------------------------------------------
 
