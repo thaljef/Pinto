@@ -54,12 +54,20 @@ has log_level => (
     },
 );
 
-# optionally logs to this filehandle.
+# optionally logs to this filehandle
 has filehandle => (
     is      => 'ro',
     isa     => IO,
     alias   => 'out', # for backcompat
     coerce  => 1,
+    predicate => '_has_filehandle',
+);
+
+has noscreen => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub { shift->_has_filehandle },
 );
 
 my %normal = ( text => undef, background => undef );
@@ -73,7 +81,7 @@ has logger => (
         my $self = shift;
         Log::Dispatch->new(
             outputs => [
-                [
+                ( $self->noscreen ? () : [
                     $self->nocolor ? 'Screen' : 'Screen::Color',
                     min_level => $self->log_level,
                     newline => 1,
@@ -87,7 +95,7 @@ has logger => (
                         emergency   => \%bold_red,
                         fatal       => \%bold_red,
                     )},
-                ],
+                ]),
                 ( $self->filehandle ? [
                     'Handle',
                     min_level => $self->log_level,
