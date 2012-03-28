@@ -52,7 +52,7 @@ with qw( Pinto::Interface::Configurable
 
 sub execute {
     my ($self) = @_;
-    croak 'This is an absract method';
+    croak 'This is an abstract method';
 }
 
 #------------------------------------------------------------------------------
