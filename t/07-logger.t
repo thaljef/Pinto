@@ -37,7 +37,7 @@ my $quiet_logger = Pinto::Logger->new( verbose => 3,
 $quiet_logger->debug("debug");
 is($quiet_buffer, '', 'debug message not logged when quiet');
 
-$quiet_logger->info("note");
+$quiet_logger->note("note");
 is($quiet_buffer, '', 'note message not logged when quiet');
 
 $quiet_logger->info("info");
@@ -58,7 +58,7 @@ $loud_logger->debug("debug");
 like($loud_buffer, qr/debug/, 'debug message logged when loud');
 
 $loud_logger->info("note");
-like($loud_buffer, qr/note/, 'info message logged when loud');
+like($loud_buffer, qr/note/, 'note message logged when loud');
 
 $loud_logger->info("info");
 like($loud_buffer, qr/info/, 'info message logged when loud');
