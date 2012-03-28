@@ -21,6 +21,16 @@ has logger => (
 
 #-----------------------------------------------------------------------------
 
+around BUILDARGS => sub {
+    my $orig = shift;
+    my $class = shift;
+
+    my $args = $class->$orig(@_);
+
+    $args->{logger} ||= Pinto::Logger->new( $args );
+    return $args;
+};
+
 1;
 
 __END__

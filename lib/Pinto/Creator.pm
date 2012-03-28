@@ -34,7 +34,6 @@ around BUILDARGS => sub {
 
     my $args = $class->$orig(@_);
 
-    $args->{logger} ||= Pinto::Logger->new( $args );
     $args->{config} ||= Pinto::Config->new( $args );
 
     return $args;
