@@ -27,7 +27,7 @@ around BUILDARGS => sub {
 
     my $args = $class->$orig(@_);
 
-    $args->{logger} ||= Pinto::Logger->new( $args );
+    $args->{logger} = Pinto::Logger->new( %$args ) if not exists $args->{logger};
     return $args;
 };
 
