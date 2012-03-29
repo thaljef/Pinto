@@ -153,10 +153,10 @@ has sources  => (
 
 
 has sources_list => (
-    is         => 'ro',
     isa        => 'ArrayRef[URI]',
     builder    => '_build_sources_list',
-    auto_deref => 1,
+    traits     => ['Array'],
+    handles    => { sources_list => 'elements' },
     init_arg   => undef,
     lazy       => 1,
 );

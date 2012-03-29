@@ -26,18 +26,18 @@ extends 'Test::Builder::Module';
 #------------------------------------------------------------------------------
 
 has pinto_args => (
-   is         => 'ro',
    isa        => HashRef,
    default    => sub { {} },
-   auto_deref => 1,
+   traits     => ['Hash'],
+   handles    => { pinto_args => 'elements' },
 );
 
 
 has creator_args => (
-   is         => 'ro',
    isa        => HashRef,
    default    => sub { {} },
-   auto_deref => 1,
+   traits     => ['Hash'],
+   handles    => { creator_args => 'elements' },
 );
 
 
