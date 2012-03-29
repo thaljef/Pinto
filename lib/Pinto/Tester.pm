@@ -9,6 +9,7 @@ use MooseX::Types::Moose qw(ScalarRef HashRef);
 use Carp;
 use IO::String;
 use Path::Class;
+use Test::Log::Dispatch;
 
 use Pinto;
 use Pinto::Util;
@@ -56,14 +57,6 @@ has root => (
 );
 
 
-has buffer => (
-   is         => 'ro',
-   isa        => ScalarRef,
-   default    => sub { \my $buffer },
-   writer     => '_set_buffer',
-);
-
-
 has tb => (
    is       => 'ro',
    isa      => 'Test::Builder',
@@ -79,28 +72,19 @@ sub _build_pinto {
     my $creator = Pinto::Creator->new( root => $self->root() );
     $creator->create( $self->creator_args() );
 
-    my %defaults = ( out => $self->buffer(), verbose => 3, root => $self->root() );
+    my %defaults = ( log_handler => Test::Log::Dispatch->new, verbose => 3, root => $self->root() );
 
     return Pinto->new(%defaults, $self->pinto_args());
 }
 #------------------------------------------------------------------------------
 
-sub bufferstr {
-    my ($self)  = @_;
+# for backcompat
+sub reset_buffer { goto &reset_log }
 
-    return ${ $self->buffer() };
-}
+sub reset_log {
+    my ($self) = @_;
 
-#------------------------------------------------------------------------------
-
-sub reset_buffer {
-    my ($self, $new_buffer) = @_;
-
-    $new_buffer ||= \my $buffer;
-    my $io = IO::String->new( ${$new_buffer} );
-    $self->pinto->logger->{out} = $io; # Hack!
-    $self->_set_buffer($new_buffer);
-
+    $self->pinto->logger->log_handler(Test::Log::Dispatch->new);
     return $self;
 }
 
@@ -227,7 +211,7 @@ sub log_like {
 
     $name ||= 'Log output matches';
 
-    $self->tb->like( $self->bufferstr(), $rx, $name );
+    $self->pinto->logger->log_handler->contains_ok($rx, $name);
 
     return;
 }
@@ -239,7 +223,7 @@ sub log_unlike {
 
     $name ||= 'Log output does not match';
 
-    $self->tb->unlike( $self->bufferstr(), $rx, $name );
+    $self->pinto->logger->log_handler->does_not_contain_ok($rx, $name);
 
     return;
 }

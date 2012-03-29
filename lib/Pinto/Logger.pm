@@ -74,7 +74,8 @@ my %normal = ( text => undef, background => undef );
 my %bold_yellow = ( text => 'yellow', background => undef, bold => 1 );
 my %bold_red = ( text => 'red', background => undef, bold => 1 );
 
-has logger => (
+has log_handler => (
+    is => 'rw',
     isa => 'Log::Dispatch',
     lazy => 1,
     default => sub {
@@ -162,7 +163,7 @@ Dies with the given message.
 sub fatal {
     my ($self, $message) = @_;
 
-    $self->logger->log_and_die(level => 'fatal', message => $message);
+    $self->log_handler->log_and_die(level => 'fatal', message => $message);
 }
 
 
