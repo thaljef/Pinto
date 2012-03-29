@@ -7,7 +7,7 @@ use Moose;
 use MooseX::Configuration;
 use MooseX::Aliases;
 
-use MooseX::Types::Moose qw(Str Bool Int);
+use MooseX::Types::Moose qw(Str Bool Int Undef);
 use Pinto::Types qw(Dir File);
 use URI;
 
@@ -160,6 +160,26 @@ has store => (
     key       => 'store',
     default   => 'Pinto::Store::File',
     documentation => 'Name of class that handles storage of your repository',
+);
+
+has log_dir => (
+    is        => 'ro',
+    isa       => Undef|Dir,
+    default   => sub { return $_[0]->root_dir->subdir('log') },
+    coerce    => 1,
+    lazy      => 1,
+);
+
+has log_file => (
+    is        => 'ro',
+    isa       => Undef|File,
+    default   => sub {
+        my $self = shift;
+        return if not $self->log_dir;
+        return $self->log_dir->file('pinto.log')
+    },
+    coerce    => 1,
+    lazy      => 1,
 );
 
 #------------------------------------------------------------------------------

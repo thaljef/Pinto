@@ -14,6 +14,8 @@ use Log::Dispatch::Screen;
 use Log::Dispatch::Screen::Color;
 use Scalar::Util 'looks_like_number';
 use List::Util qw(min max);
+use Path::Class;
+use DateTime;
 
 use namespace::autoclean;
 
@@ -37,6 +39,9 @@ Readonly my %level_map => (
     1   => 'info',
     2   => 'debug',      # this level or higher means "everything"
 );
+
+
+with 'Pinto::Interface::Configurable';
 
 #-----------------------------------------------------------------------------
 # Moose attributes
@@ -80,6 +85,11 @@ has log_handler => (
     lazy => 1,
     default => sub {
         my $self = shift;
+
+        # Create log directory
+        my $log_dir = $self->config->log_dir;
+        $log_dir->mkpath if $log_dir and not -e $log_dir;
+
         Log::Dispatch->new(
             outputs => [
                 ( $self->noscreen ? () : [
@@ -102,6 +112,19 @@ has log_handler => (
                     min_level => $self->log_level,
                     newline => 1,
                     handle => $self->filehandle,
+                ] : ()),
+                ( $log_dir ? [
+                    'File',
+                    min_level => 'debug', mode => 'append', newline => 1,
+                    filename => $self->config->log_file->stringify,
+                    permissions => 0644,
+                    callbacks => sub {
+                        # TODO: use Log::Dispatch::Config, when ether's patches
+                        # are accepted, to allow configurable logging formats
+                        my %p = @_;
+                        my $message = delete $p{message};
+                        return DateTime->now->iso8601 . ' ' . $message;
+                    },
                 ] : ()),
             ],
         );
