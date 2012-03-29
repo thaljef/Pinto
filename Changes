@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+     New Features:
+
+     The value for the --author option now defaults to the 'user'
+     specified in your ~/.pause file.  If that file does not exist,
+     then it still defaults to your current login username.
+
 0.033     2012-03-15 06:55:39 America/Los_Angeles
 
      Bug Fixes:
