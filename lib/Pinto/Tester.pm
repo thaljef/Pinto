@@ -69,12 +69,12 @@ has tb => (
 sub _build_pinto {
     my ($self) = @_;
 
-    my $creator = Pinto::Creator->new( root => $self->root() );
+    my %log_defaults = ( log_handler => Test::Log::Dispatch->new, noscreen => 1, verbose => 3, root => $self->root() );
+
+    my $creator = Pinto::Creator->new( %log_defaults, root => $self->root() );
     $creator->create( $self->creator_args() );
 
-    my %defaults = ( log_handler => Test::Log::Dispatch->new, verbose => 3, root => $self->root() );
-
-    return Pinto->new(%defaults, $self->pinto_args());
+    return Pinto->new(%log_defaults, $self->pinto_args());
 }
 #------------------------------------------------------------------------------
 
