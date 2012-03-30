@@ -6,7 +6,7 @@ use Moose;
 
 use Carp qw(croak);
 
-use MooseX::Types::Moose qw(Str HashRef);
+use MooseX::Types::Moose qw(Str Maybe Bool HashRef);
 use Pinto::Types qw(IO);
 
 use namespace::autoclean;
@@ -37,17 +37,66 @@ has format => (
 );
 
 
+has pinned => (
+    is     => 'ro',
+    isa    => Bool,
+);
+
+
+has index => (
+    is     => 'ro',
+    isa    => Str,
+);
+
+
+has packages => (
+    is     => 'ro',
+    isa    => Str,
+);
+
+
+has distributions => (
+    is     => 'ro',
+    isa    => Str,
+);
+
+
 has where => (
     is      => 'ro',
     isa     => HashRef,
-    default => sub { {} },
+    builder => '_build_where',
+    lazy    => 1,
 );
+
+#------------------------------------------------------------------------------
+
+sub _build_where {
+    my ($self) = @_;
+
+    my $where = {};
+
+    my $pkg_name = $self->packages();
+    $where->{name} = { like => "%$pkg_name%" } if $pkg_name;
+
+    my $dist_path = $self->distributions();
+    $where->{path} = { like => "%$dist_path%" } if $dist_path;
+
+    my $index = $self->index();
+    $where->{is_latest} = $index ? 1 : undef if defined $index;
+
+    my $pinned = $self->pinned();
+    $where->{is_pinned} = $pinned ? 1 : undef if defined $pinned;
+
+    return $where;
+}
+
 
 #------------------------------------------------------------------------------
 
 override execute => sub {
     my ($self) = @_;
 
+    $DB::single = 1;
     my $where = $self->where();
 
     my $attrs = { order_by => [ qw(name version path) ],
