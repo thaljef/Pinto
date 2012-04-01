@@ -96,7 +96,6 @@ sub _build_where {
 override execute => sub {
     my ($self) = @_;
 
-    $DB::single = 1;
     my $where = $self->where();
 
     my $attrs = { order_by => [ qw(name version path) ],
