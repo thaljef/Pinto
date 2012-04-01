@@ -1,11 +1,8 @@
-package Pinto::Action::Pin;
-
 # ABSTRACT: Force a package into the index
 
-use Moose;
-use MooseX::Types::Moose qw(Str);
+package Pinto::Action::Pin;
 
-use Pinto::Types qw(Vers);
+use Moose;
 
 use namespace::autoclean;
 
@@ -15,22 +12,11 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has package => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
-
-has version => (
-    is        => 'ro',
-    isa       => Vers,
-    predicate => 'has_version',
-    coerce    => 1,
-);
+with qw( Pinto::Interface::Action::Pin );
 
 #------------------------------------------------------------------------------
 
@@ -56,7 +42,7 @@ sub _get_package {
     my ($self) = @_;
 
     my $where           = { name => $self->package() };
-    $where->{version}   = $self->version() if $self->has_version();
+    $where->{version}   = $self->version() if defined $self->version();
     $where->{is_latest} = 1 if not $self->has_version();
 
     my $pkg_rs = $self->repos->select_packages($where);

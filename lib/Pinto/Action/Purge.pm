@@ -1,6 +1,6 @@
-package Pinto::Action::Purge;
-
 # ABSTRACT: Remove all distributions from the repository
+
+package Pinto::Action::Purge;
 
 use Moose;
 
@@ -12,7 +12,11 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Interface::Action::Purge );
 
 #------------------------------------------------------------------------------
 

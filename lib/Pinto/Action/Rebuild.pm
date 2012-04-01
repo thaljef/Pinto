@@ -1,10 +1,8 @@
-package Pinto::Action::Rebuild;
-
 # ABSTRACT: Rebuild the index file for the repository
 
-use Moose;
+package Pinto::Action::Rebuild;
 
-use MooseX::Types::Moose qw(Bool);
+use Moose;
 
 use namespace::autoclean;
 
@@ -14,15 +12,11 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has recompute => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
+with qw( Pinto::Interface::Action::Rebuild );
 
 #------------------------------------------------------------------------------
 

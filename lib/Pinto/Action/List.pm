@@ -1,13 +1,10 @@
-package Pinto::Action::List;
-
 # ABSTRACT: An action for listing contents of a repository
+
+package Pinto::Action::List;
 
 use Moose;
 
-use Carp qw(croak);
-
-use MooseX::Types::Moose qw(Str Maybe Bool HashRef);
-use Pinto::Types qw(IO);
+use MooseX::Types::Moose qw(HashRef);
 
 use namespace::autoclean;
 
@@ -16,50 +13,14 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has out => (
-    is      => 'ro',
-    isa     => IO,
-    coerce  => 1,
-    default => sub { [fileno(STDOUT), '>'] },
-);
+with qw( Pinto::Interface::Action::List );
 
-
-has format => (
-    is      => 'ro',
-    isa     => Str,
-    default => '',
-);
-
-
-has pinned => (
-    is     => 'ro',
-    isa    => Bool,
-);
-
-
-has index => (
-    is     => 'ro',
-    isa    => Str,
-);
-
-
-has packages => (
-    is     => 'ro',
-    isa    => Str,
-);
-
-
-has distributions => (
-    is     => 'ro',
-    isa    => Str,
-);
-
+#------------------------------------------------------------------------------
 
 has where => (
     is      => 'ro',

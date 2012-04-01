@@ -1,12 +1,8 @@
-package Pinto::Action::Nop;
-
 # ABSTRACT: A no-op action
 
+package Pinto::Action::Nop;
+
 use Moose;
-
-use MooseX::Types::Moose qw(Int);
-
-extends 'Pinto::Action';
 
 use namespace::autoclean;
 
@@ -16,11 +12,11 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-has sleep => (
-    is      => 'ro',
-    isa     => Int,
-    default => 0,
-);
+extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Interface::Action::Nop );
 
 #------------------------------------------------------------------------------
 

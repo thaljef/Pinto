@@ -1,11 +1,10 @@
-package Pinto::Action::Statistics;
 
 # ABSTRACT: Report statistics about the repository
+package Pinto::Action::Statistics;
 
 use Moose;
 
 use Pinto::Statistics;
-use Pinto::Types qw(IO);
 
 use namespace::autoclean;
 
@@ -14,19 +13,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has out => (
-    is      => 'ro',
-    isa     => IO,
-    coerce  => 1,
-    default => sub { [fileno(STDOUT), '>'] },
-);
+with qw( Pinto::Interface::Action::Statistics );
 
 #------------------------------------------------------------------------------
 

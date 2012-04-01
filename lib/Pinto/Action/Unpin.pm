@@ -1,11 +1,8 @@
-package Pinto::Action::Unpin;
-
 # ABSTRACT: Loosen a package that has been pinned
 
-use Moose;
-use MooseX::Types::Moose qw(Str);
+package Pinto::Action::Unpin;
 
-use Pinto::Types qw(Vers);
+use Moose;
 
 use namespace::autoclean;
 
@@ -15,15 +12,11 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has package => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
+with qw( Pinto::Interface::Action::Unpin );
 
 #------------------------------------------------------------------------------
 

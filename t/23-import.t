@@ -32,7 +32,7 @@ $t->repository_empty_ok();
 # Simple import...
 
 $pinto->new_batch();
-$pinto->add_action('Import', norecurse => 1, package_name => 'Salad');
+$pinto->add_action('Import', norecurse => 1, package => 'Salad');
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_loaded_ok( "$them/Salad-1.0.0.tar.gz/Salad-1.0.0", 1);
@@ -53,7 +53,7 @@ $t->package_loaded_ok( "$us/$dist/Oil-3.0", 1);
 # Import recursive...
 
 $pinto->new_batch();
-$pinto->add_action('Import', package_name => 'Salad');
+$pinto->add_action('Import', package => 'Salad');
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_loaded_ok( "$them/Salad-1.0.0.tar.gz/Salad-1.0.0", 1);

@@ -1,9 +1,8 @@
-package Pinto::Action::Remove;
-
 # ABSTRACT: Remove one distribution from the repository
 
+package Pinto::Action::Remove;
+
 use Moose;
-use MooseX::Types::Moose qw( Str );
 
 use Pinto::Util;
 use Pinto::Exceptions qw(throw_error);
@@ -15,22 +14,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
-
-#------------------------------------------------------------------------------
-# Attributes
-
-has path  => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Authorable );
+with qw( Pinto::Interface::Action::Remove );
 
 #------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
-package Pinto::Action::Clean;
-
 # ABSTRACT: Remove all outdated distributions from the repository
+
+package Pinto::Action::Clean;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
@@ -15,9 +15,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Interface::Action::Clean );
 
 #------------------------------------------------------------------------------
 

@@ -1,13 +1,10 @@
-package Pinto::Action::Import;
-
 # ABSTRACT: Import a package (and its prerequisites) into the local repository
 
-use version;
+package Pinto::Action::Import;
 
 use Moose;
-use MooseX::Types::Moose qw(Str Bool);
 
-use Pinto::Types qw(Vers);
+use version;
 
 use namespace::autoclean;
 
@@ -16,38 +13,13 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
-
-#------------------------------------------------------------------------------
-# Attributes
-
-has package_name => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
-
-
-has minimum_version => (
-    is      => 'ro',
-    isa     => Vers,
-    default => sub { version->parse(0) },
-    coerce  => 1,
-);
-
-
-has norecurse => (
-   is      => 'ro',
-   isa     => Bool,
-   default => 0,
-);
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
-# Roles
 
-with qw( Pinto::Role::PackageImporter );
+with qw( Pinto::Role::PackageImporter
+         Pinto::Interface::Action::Import );
 
 #------------------------------------------------------------------------------
 
@@ -59,8 +31,8 @@ with qw( Pinto::Role::PackageImporter );
 sub execute {
     my ($self) = @_;
 
-    my $wanted = { name    => $self->package_name(),
-                   version => $self->minimum_version() };
+    my $wanted = { name    => $self->package(),
+                   version => $self->version() };
 
     my ($dist, $imported_flag) = $self->find_or_import( $wanted );
     return 0 if not $dist;

@@ -61,8 +61,8 @@ sub execute {
 
     for my $arg (@args) {
         my ($name, $version) = split m/ - /mx, $arg, 2;
-        $self->pinto->add_action('Import', %{$opts}, package_name    => $name,
-                                                     minimum_version => ($version || 0));
+        $self->pinto->add_action('Import', %{$opts}, package => $name,
+                                                     version => ($version || 0));
     }
     my $result = $self->pinto->run_actions();
 
