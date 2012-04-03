@@ -24,13 +24,14 @@ has changes_made    => (
 );
 
 has exceptions => (
-    is         => 'ro',
     isa        => ArrayRef,
     traits     => [ 'Array' ],
     default    => sub { [] },
-    handles    => {add_exception => 'push'},
+    handles    => {
+        add_exception => 'push',
+        exceptions    => 'elements',
+    },
     init_arg   => undef,
-    auto_deref => 1,
 );
 
 #-----------------------------------------------------------------------------
@@ -38,7 +39,7 @@ has exceptions => (
 sub is_success {
     my ($self) = @_;
 
-    return @{ $self->exceptions() } == 0;
+    return $self->exceptions() == 0;
 }
 
 #-----------------------------------------------------------------------------

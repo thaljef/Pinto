@@ -23,6 +23,16 @@ has config => (
 
 #-----------------------------------------------------------------------------
 
+around BUILDARGS => sub {
+    my $orig = shift;
+    my $class = shift;
+
+    my $args = $class->$orig(@_);
+
+    $args->{config} ||= Pinto::Config->new( $args );
+    return $args;
+};
+
 1;
 
 __END__
