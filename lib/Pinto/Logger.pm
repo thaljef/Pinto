@@ -4,11 +4,18 @@ package Pinto::Logger;
 
 use Moose;
 
-use MooseX::Types::Moose qw(Int Bool);
-use Pinto::Types qw(IO);
+use MooseX::Aliases;
+use MooseX::Types::Moose qw(Int Bool Str);
+use Pinto::Types qw(IO File);
 
 use Readonly;
-use Term::ANSIColor 2.02;
+use Log::Dispatch;
+use Log::Dispatch::Screen;
+use Log::Dispatch::Screen::Color;
+use Scalar::Util 'looks_like_number';
+use List::Util qw(min max);
+use Path::Class;
+use DateTime;
 
 use namespace::autoclean;
 
@@ -18,26 +25,117 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
+# TODO: Const::Fast is much better
 Readonly my $LEVEL_QUIET => -2;
 Readonly my $LEVEL_WARN  => -1;
 Readonly my $LEVEL_INFO  =>  0;
 Readonly my $LEVEL_NOTE  =>  1;
 Readonly my $LEVEL_DEBUG =>  2;
 
+Readonly my %level_map => (
+    -2  => 'critical',
+    -1  => 'warn',
+    0   => 'notice',    # info and notice appear in opposite order in LD.
+    1   => 'info',
+    2   => 'debug',      # this level or higher means "everything"
+);
+
+
+with 'Pinto::Interface::Configurable';
+
 #-----------------------------------------------------------------------------
 # Moose attributes
 
-has verbose  => (
-    is       => 'ro',
-    isa      => Int,
-    default  => $LEVEL_INFO,
+has log_level => (
+    is      => 'ro',
+    isa     => Str,
+    default => 'notice',
+    initializer => sub {
+        my ($self, $value, $setter) = @_;
+        my $level = looks_like_number($value)
+            ? $level_map{min(max($value, -2), 2)}
+            : $value;
+        $setter->($level);
+    },
 );
 
-has out => (
-    is       => 'ro',
-    isa      => IO,
-    coerce   => 1,
-    default  => sub { [fileno(STDOUT), '>'] },
+# optionally logs to this filehandle
+has filehandle => (
+    is      => 'ro',
+    isa     => IO,
+    alias   => 'out', # for backcompat
+    coerce  => 1,
+    predicate => '_has_filehandle',
+);
+
+has noscreen => (
+    is      => 'ro',
+    isa     => Bool,
+    lazy    => 1,
+    default => sub { shift->_has_filehandle },
+);
+
+my %normal = ( text => undef, background => undef );
+my %bold_yellow = ( text => 'yellow', background => undef, bold => 1 );
+my %bold_red = ( text => 'red', background => undef, bold => 1 );
+
+has log_handler => (
+    is => 'rw',
+    isa => 'Log::Dispatch',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+
+        # Create log directory
+        my $log_dir = $self->config->log_dir;
+        $log_dir->mkpath if $log_dir and not -e $log_dir;
+
+        Log::Dispatch->new(
+            outputs => [
+                ( $self->noscreen ? () : [
+                    $self->nocolor ? 'Screen' : 'Screen::Color',
+                    min_level => $self->log_level,
+                    newline => 1,
+                    color => { $self->nocolor ? () : (
+                        info        => \%normal,
+                        notice      => \%normal,
+                        warning     => \%bold_yellow,
+                        error       => \%bold_yellow,
+                        critical    => \%bold_red,
+                        alert       => \%bold_red,
+                        emergency   => \%bold_red,
+                        fatal       => \%bold_red,
+                    )},
+                ]),
+                ( $self->filehandle ? [
+                    'Handle',
+                    min_level => $self->log_level,
+                    newline => 1,
+                    handle => $self->filehandle,
+                ] : ()),
+                ( $log_dir ? [
+                    'File',
+                    min_level => 'debug', mode => 'append', newline => 1,
+                    filename => $self->config->log_file->stringify,
+                    permissions => 0644,
+                    callbacks => sub {
+                        # TODO: use Log::Dispatch::Config, when ether's patches
+                        # are accepted, to allow configurable logging formats
+                        my %p = @_;
+                        my $message = delete $p{message};
+                        return DateTime->now->iso8601 . ' ' . $message;
+                    },
+                ] : ()),
+            ],
+        );
+    },
+    handles => {
+        debug => 'debug',
+        note => 'info',         # info and notice appear in opposite order in LD.
+        info => 'notice',
+        whine => 'warning',
+        # fatal is handled below.
+    },
 );
 
 has nocolor => (
@@ -48,22 +146,17 @@ has nocolor => (
 
 #-----------------------------------------------------------------------------
 
-sub BUILDARGS {
-    my ($class, %args) = @_;
+around BUILDARGS => sub {
+    my $orig = shift;
+    my $class = shift;
 
-    $args{verbose} = $LEVEL_QUIET if delete $args{quiet};
+    my $args = $class->$orig(@_);
 
-    return \%args;
-}
+    $args->{log_level} = delete $args->{verbose} if exists $args->{verbose};
+    $args->{log_level} = 'critical' if delete $args->{quiet};
 
-#-----------------------------------------------------------------------------
-# Private methods
-
-sub _logit {
-    my ($self, $message) = @_;
-
-    return print { $self->out() } "$message\n";
-}
+    return $args;
+};
 
 #-----------------------------------------------------------------------------
 # Public methods
@@ -72,70 +165,17 @@ sub _logit {
 
 Logs a message if C<verbose> is 1 or higher.
 
-=cut
-
-sub debug {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $self->_logit($message) if $self->verbose() >= $LEVEL_DEBUG;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
 =method note( $message )
 
 Logs a message if C<verbose> is 2 or higher.
-
-=cut
-
-sub note {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $self->_logit($message) if $self->verbose() >= $LEVEL_NOTE;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
 
 =method info( $message )
 
 Logs a message if C<verbose> is 0 or higher.
 
-=cut
-
-sub info {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $self->_logit($message) if $self->verbose() >= $LEVEL_INFO;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
 =method whine( $message )
 
-Logs a message to C<verbose> is -1 or higher.
-
-=cut
-
-sub whine {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $message = _colorize("$message", 'bold yellow') unless $self->nocolor();
-    $self->_logit($message) if $self->verbose() >= $LEVEL_WARN;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
+Logs a message if C<verbose> is -1 or higher.
 
 =method fatal( $message )
 
@@ -146,31 +186,9 @@ Dies with the given message.
 sub fatal {
     my ($self, $message) = @_;
 
-    chomp $message;
-    $message = _colorize("$message", 'bold red') unless $self->nocolor();
-
-    die "$message\n";                     ## no critic (RequireCarping)
+    $self->log_handler->log_and_die(level => 'fatal', message => $message);
 }
 
-#-----------------------------------------------------------------------------
-
-sub _colorize {
-    my ($string, $color) = @_;
-
-    return $string if not defined $color;
-    return $string if $color eq q{};
-
-    # TODO: Don't colorize if not going to a terminal?
-
-    # $terminator is a purely cosmetic change to make the color end at the end
-    # of the line rather than right before the next line. It is here because
-    # if you use background colors, some console windows display a little
-    # fragment of colored background before the next uncolored (or
-    # differently-colored) line.
-
-    my $terminator = chomp $string ? "\n" : q{};
-    return  Term::ANSIColor::colored( $string, $color ) . $terminator;
-}
 
 #-----------------------------------------------------------------------------
 

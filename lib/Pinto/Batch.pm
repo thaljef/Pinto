@@ -28,13 +28,14 @@ has repos    => (
 
 
 has messages => (
-    is         => 'ro',
     isa        => 'ArrayRef[Str]',
     traits     => [ 'Array' ],
-    handles    => {add_message => 'push'},
+    handles    => {
+        add_message => 'push',
+        messages    => 'elements',
+    },
     default    => sub { [] },
     init_arg   => undef,
-    auto_deref => 1,
 );
 
 
