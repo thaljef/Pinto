@@ -4,6 +4,8 @@ package Pinto;
 
 use Moose;
 
+use Carp;
+use Try::Tiny;
 use Class::Load;
 
 use Pinto::Config;
@@ -11,7 +13,6 @@ use Pinto::Logger;
 use Pinto::Locker;
 use Pinto::Batch;
 use Pinto::Repository;
-use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
 
@@ -20,9 +21,7 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# Moose attributes
-
-#------------------------------------------------------------------------------
+# Attributes
 
 has repos   => (
     is         => 'ro',
@@ -122,9 +121,7 @@ sub add_action {
     my ($self, $action_name, %args) = @_;
 
     my $action_class = "Pinto::Action::$action_name";
-
-    eval { Class::Load::load_class($action_class); 1 }
-        or throw_fatal "Unable to load action class $action_class: $@";
+    Class::Load::load_class($action_class);
 
     my $action =  $action_class->new( config => $self->config(),
                                       logger => $self->logger(),
@@ -141,8 +138,7 @@ sub add_action {
 sub run_actions {
     my ($self) = @_;
 
-    my $batch = $self->_batch()
-        or throw_fatal 'You must create a batch first';
+    my $batch = $self->_batch() or confess 'You must create a batch first';
 
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->whine(@_) };
