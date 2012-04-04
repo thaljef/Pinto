@@ -6,6 +6,16 @@
      specified in your ~/.pause file.  If that file does not exist,
      then it still defaults to your current login username.
 
+     Other Changes:
+
+     All diagnostic messages from pinto-admin now go to STDERR
+     rather than STDOUT.  So you can cleanly directy the output
+     into a file (like with the `list` command).
+
+     Refactored a lot of redundant code into roles that are shared
+     with Pinto::Remote.  But if you're not looking at the Pinto
+     internals, you won't notice it.
+
 0.033     2012-03-15 06:55:39 America/Los_Angeles
 
      Bug Fixes:
