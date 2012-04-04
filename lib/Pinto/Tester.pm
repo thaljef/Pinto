@@ -76,12 +76,15 @@ has tb => (
 sub _build_pinto {
     my ($self) = @_;
 
-    my $creator = Pinto::Creator->new( root => $self->root() );
+    my %defaults = ( root    => $self->root(),
+                     out     => $self->buffer(),
+                     verbose => 3, );
+
+    my $creator = Pinto::Creator->new( %defaults );
     $creator->create( $self->creator_args() );
 
-    my %defaults = ( out => $self->buffer(), verbose => 3, root => $self->root() );
-
-    return Pinto->new(%defaults, $self->pinto_args());
+    my $pinto = Pinto->new(%defaults, $self->pinto_args());
+    return $pinto;
 }
 #------------------------------------------------------------------------------
 
