@@ -4,7 +4,7 @@ package Pinto::Logger;
 
 use Moose;
 
-use MooseX::Types::Moose qw(Int Bool);
+use MooseX::Types::Moose qw(Int Bool Str);
 use Pinto::Types qw(IO);
 
 use Readonly;
@@ -37,7 +37,13 @@ has out => (
     is       => 'ro',
     isa      => IO,
     coerce   => 1,
-    default  => sub { [fileno(STDOUT), '>'] },
+    default  => sub { [fileno(STDERR), '>'] },
+);
+
+has log_prefix  => (
+    is       => 'ro',
+    isa      => Str,
+    default  => '',
 );
 
 has nocolor => (
@@ -62,7 +68,8 @@ sub BUILDARGS {
 sub _logit {
     my ($self, $message) = @_;
 
-    return print { $self->out() } "$message\n";
+    my $prefix = $self->log_prefix();
+    return print { $self->out() } sprintf("%s%s\n", $prefix, $message);
 }
 
 #-----------------------------------------------------------------------------
