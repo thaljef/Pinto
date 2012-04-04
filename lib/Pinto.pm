@@ -3,13 +3,14 @@ package Pinto;
 # ABSTRACT: Curate your own CPAN-like repository
 
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
 use Carp;
+use Try::Tiny;
 use Class::Load;
 
 use Pinto::Config;
 use Pinto::Logger;
-use Pinto::Locker;
 use Pinto::Batch;
 use Pinto::Repository;
 
@@ -27,14 +28,6 @@ use namespace::autoclean;
 has repos   => (
     is         => 'ro',
     isa        => 'Pinto::Repository',
-    lazy_build => 1,
-);
-
-
-has locker  => (
-    is         => 'ro',
-    isa        => 'Pinto::Locker',
-    init_arg   =>  undef,
     lazy_build => 1,
 );
 
@@ -92,15 +85,6 @@ sub _build_repos {
 }
 
 #------------------------------------------------------------------------------
-
-sub _build_locker {
-    my ($self) = @_;
-
-    return Pinto::Locker->new( config => $self->config(),
-                               logger => $self->logger() );
-}
-
-#------------------------------------------------------------------------------
 # Public methods
 
 sub new_batch {
@@ -139,17 +123,13 @@ sub add_action {
 sub run_actions {
     my ($self) = @_;
 
-    my $batch = $self->_batch() or confess 'You must create a batch first';
+    my $batch = $self->_batch()
+        or confess 'You must create a batch first';
 
-    # Divert any warnings to our logger
-    local $SIG{__WARN__} = sub { $self->whine(@_) };
+    my $result = try   { $self->_batch->run() }
+                 catch { $self->fatal($_)     };
 
-    # Shit happens here!
-    $self->locker->lock();
-    my $r = $self->_batch->run();
-    $self->locker->unlock();
-
-    return $r;
+    return $result;
 
 }
 

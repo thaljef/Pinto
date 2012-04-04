@@ -16,10 +16,6 @@ my $pinto = $t->pinto();
 $pinto->new_batch();
 
 #------------------------------------------------------------------------------
-
-is($pinto->locker->is_locked(), '', 'Repository is not locked initially');
-
-#------------------------------------------------------------------------------
 # Now fork and have two processes run an action at the same time...
 
 
@@ -29,7 +25,7 @@ die "fork failed: $!" unless defined $pid;
 if ($pid) {
     # parent
     sleep 10; # Let the child get started
-    print "Starting: $$\n";
+    print "Starting process: $$\n";
     $pinto->add_action('Nop');
 
     throws_ok { $pinto->run_actions() } qr/Unable to lock/,
