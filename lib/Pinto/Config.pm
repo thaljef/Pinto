@@ -109,6 +109,24 @@ has cache_dir => (
 );
 
 
+has log_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->pinto_dir->subdir('log') },
+    lazy      => 1,
+);
+
+
+has log_file => (
+    is        => 'ro',
+    isa       => File,
+    init_arg  => undef,
+    default   => sub { return $_[0]->log_dir->file('pinto.log') },
+    lazy      => 1,
+);
+
+
 has basename => (
     is        => 'ro',
     isa       => Str,

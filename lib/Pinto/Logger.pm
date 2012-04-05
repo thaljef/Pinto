@@ -8,10 +8,12 @@ use MooseX::Types::Moose qw(HashRef Int Bool Str);
 
 use Readonly;
 use Log::Dispatch;
+use Log::Dispatch::File;
 use Log::Dispatch::Handle;
 use Log::Dispatch::Screen;
 use Log::Dispatch::Screen::Color;
 use List::Util qw(min max);
+use DateTime;
 
 use Pinto::Types qw(IO File);
 
@@ -38,6 +40,11 @@ my $COLOR_BOLD_YELLOW = { text => 'yellow', background => undef, bold => 1 };
 my $COLOR_BOLD_RED    = { text => 'red',    background => undef, bold => 1 };
 
 #-----------------------------------------------------------------------------
+# Roles
+
+with qw(Pinto::Interface::Configurable);
+
+#-----------------------------------------------------------------------------
 # Attributes
 
 has log_level => (
@@ -50,14 +57,7 @@ has log_level => (
 has log_file => (
     is      => 'ro',
     isa     => File,
-    coerce  => 1,
-);
-
-
-has log_file_handle => (
-    is      => 'ro',
-    isa     => IO,
-    default => sub { $_[0]->log_file || confess 'Must specify a log_file' },
+    default => sub { $_[0]->config->log_file },
     coerce  => 1,
 );
 
@@ -142,7 +142,26 @@ around BUILDARGS => sub {
 sub _build_log_handler {
     my ($self) = @_;
 
+    my $log_dir = $self->config->log_dir;
+    $log_dir->mkpath if not -e $log_dir;
+
     my $log = Log::Dispatch->new();
+
+    #-----------------------------
+    # Repository log file...
+
+    my $type = 'Log::Dispatch::File';
+
+    my $cb = sub { my %args = @_;
+                   return DateTime->now->iso8601 . uc(" $args{level}: ") . $args{message} };
+
+    $log->add( $type->new(min_level   => 'notice',
+                          filename    => $self->log_file->stringify,
+                          mode        => 'append',
+                          permissions => 0644,
+                          callbacks   => [ $cb ],
+                          newline     => 1) );
+
 
     #-----------------------------
     # The terminal...
@@ -172,23 +191,6 @@ sub _build_log_handler {
 
         $log->add( $type->new(min_level => $self->log_level,
                               handle    => $self->out,
-                              callbacks => [ $cb ],
-                              newline   => 1) );
-    }
-
-    #-----------------------------
-    # Repository log file...
-
-    if ($self->log_file) {
-        my $type = 'Log::Dispatch::File';
-
-        my $cb = sub { my %args = @_;
-                       my $now = localtime;
-                       return sprintf '[%s] %s: %s', $now, uc $args{log_level}, $args{message} };
-
-        $log->add( $type->new(min_level => $self->log_level,
-                              handle    => $self->logfile,
-                              mode      => 'append',
                               callbacks => [ $cb ],
                               newline   => 1) );
     }
