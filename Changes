@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+     New Features:
+
+     Pinto now logs activity to $root_dir/.pinto/logs/pinto.log
+     (Karen Etheridge).
+
 0.035     2012-04-04 19:00:35 America/Los_Angeles
 
      New Features:
