@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.035     2012-04-04 19:00:35 America/Los_Angeles
+
      New Features:
 
      The value for the --author option now defaults to the 'user'
