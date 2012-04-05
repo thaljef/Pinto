@@ -9,6 +9,7 @@ use MooseX::Types::Moose qw(ScalarRef HashRef);
 use Carp;
 use IO::String;
 use Path::Class;
+use Test::Log::Dispatch;
 
 use Pinto;
 use Pinto::Util;
@@ -26,18 +27,18 @@ extends 'Test::Builder::Module';
 #------------------------------------------------------------------------------
 
 has pinto_args => (
-   is         => 'ro',
    isa        => HashRef,
    default    => sub { {} },
-   auto_deref => 1,
+   traits     => ['Hash'],
+   handles    => { pinto_args => 'elements' },
 );
 
 
 has creator_args => (
-   is         => 'ro',
    isa        => HashRef,
    default    => sub { {} },
-   auto_deref => 1,
+   traits     => ['Hash'],
+   handles    => { creator_args => 'elements' },
 );
 
 
@@ -56,14 +57,6 @@ has root => (
 );
 
 
-has buffer => (
-   is         => 'ro',
-   isa        => ScalarRef,
-   default    => sub { \my $buffer },
-   writer     => '_set_buffer',
-);
-
-
 has tb => (
    is       => 'ro',
    isa      => 'Test::Builder',
@@ -76,33 +69,28 @@ has tb => (
 sub _build_pinto {
     my ($self) = @_;
 
-    my %defaults = ( root    => $self->root(),
-                     out     => $self->buffer(),
-                     verbose => 3, );
+    my %defaults     = ( root    => $self->root() );
+    my %log_defaults = ( log_handler => Test::Log::Dispatch->new(),
+                         noscreen    => 1,
+                         verbose     => 3, );
 
-    my $creator = Pinto::Creator->new( %defaults );
+
+    my $creator = Pinto::Creator->new(%defaults, %log_defaults);
     $creator->create( $self->creator_args() );
 
-    my $pinto = Pinto->new(%defaults, $self->pinto_args());
+    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args());
     return $pinto;
 }
-#------------------------------------------------------------------------------
-
-sub bufferstr {
-    my ($self)  = @_;
-
-    return ${ $self->buffer() };
-}
 
 #------------------------------------------------------------------------------
 
-sub reset_buffer {
-    my ($self, $new_buffer) = @_;
+# for backcompat
+sub reset_buffer { goto &reset_log }
 
-    $new_buffer ||= \my $buffer;
-    my $io = IO::String->new( ${$new_buffer} );
-    $self->pinto->logger->{out} = $io; # Hack!
-    $self->_set_buffer($new_buffer);
+sub reset_log {
+    my ($self) = @_;
+
+    $self->pinto->logger->log_handler(Test::Log::Dispatch->new);
 
     return $self;
 }
@@ -230,7 +218,7 @@ sub log_like {
 
     $name ||= 'Log output matches';
 
-    $self->tb->like( $self->bufferstr(), $rx, $name );
+    $self->pinto->logger->log_handler->contains_ok($rx, $name);
 
     return;
 }
@@ -242,7 +230,7 @@ sub log_unlike {
 
     $name ||= 'Log output does not match';
 
-    $self->tb->unlike( $self->bufferstr(), $rx, $name );
+    $self->pinto->logger->log_handler->does_not_contain_ok($rx, $name);
 
     return;
 }

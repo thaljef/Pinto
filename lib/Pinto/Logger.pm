@@ -3,12 +3,17 @@ package Pinto::Logger;
 # ABSTRACT: A simple logger
 
 use Moose;
-
-use MooseX::Types::Moose qw(Int Bool Str);
-use Pinto::Types qw(IO);
+use MooseX::Aliases;
+use MooseX::Types::Moose qw(HashRef Int Bool Str);
 
 use Readonly;
-use Term::ANSIColor 2.02;
+use Log::Dispatch;
+use Log::Dispatch::Handle;
+use Log::Dispatch::Screen;
+use Log::Dispatch::Screen::Color;
+use List::Util qw(min max);
+
+use Pinto::Types qw(IO File);
 
 use namespace::autoclean;
 
@@ -18,33 +23,58 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-Readonly my $LEVEL_QUIET => -2;
-Readonly my $LEVEL_WARN  => -1;
-Readonly my $LEVEL_INFO  =>  0;
-Readonly my $LEVEL_NOTE  =>  1;
-Readonly my $LEVEL_DEBUG =>  2;
+Readonly my %level_map => (
+    -2   => 'critical',
+    -1   => 'warn',
+     0   => 'notice',    # info and notice appear in opposite order in LD.
+     1   => 'info',
+     2   => 'debug',     # this level or higher means "everything"
+);
 
 #-----------------------------------------------------------------------------
-# Moose attributes
 
-has verbose  => (
-    is       => 'ro',
-    isa      => Int,
-    default  => $LEVEL_INFO,
+my $COLOR_NORMAL      = { text => undef,    background => undef };
+my $COLOR_BOLD_YELLOW = { text => 'yellow', background => undef, bold => 1 };
+my $COLOR_BOLD_RED    = { text => 'red',    background => undef, bold => 1 };
+
+#-----------------------------------------------------------------------------
+# Attributes
+
+has log_level => (
+    is      => 'ro',
+    isa     => Str,
+    default => 'notice',
 );
+
+
+has log_file => (
+    is      => 'ro',
+    isa     => File,
+    coerce  => 1,
+);
+
+
+has log_file_handle => (
+    is      => 'ro',
+    isa     => IO,
+    default => sub { $_[0]->log_file || confess 'Must specify a log_file' },
+    coerce  => 1,
+);
+
 
 has out => (
-    is       => 'ro',
-    isa      => IO,
-    coerce   => 1,
-    default  => sub { [fileno(STDERR), '>'] },
+    is      => 'ro',
+    isa     => IO,
+    coerce  => 1,
 );
 
-has log_prefix  => (
+
+has out_prefix  => (
     is       => 'ro',
     isa      => Str,
     default  => '',
 );
+
 
 has nocolor => (
     is       => 'ro',
@@ -52,34 +82,118 @@ has nocolor => (
     default  => 0,
 );
 
+
+has noscreen => (
+    is       => 'ro',
+    isa      => Bool,
+    default  => 0,
+);
+
+
+has colors  => (
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub {{
+        info        => $COLOR_NORMAL,
+        notice      => $COLOR_NORMAL,
+        warning     => $COLOR_BOLD_YELLOW,
+        error       => $COLOR_BOLD_YELLOW,
+    }},
+);
+
+
+has log_handler => (
+    is       => 'rw',
+    isa      => 'Log::Dispatch',
+    lazy     => 1,
+    builder  => '_build_log_handler',
+    handles  => {
+        debug => 'debug',
+        note  => 'info',
+        info  => 'notice',
+        whine => 'warning',
+        # fatal is handled below.
+    },
+);
+
 #-----------------------------------------------------------------------------
 
-sub BUILDARGS {
-    my ($class, %args) = @_;
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
 
-    $args{verbose} = $LEVEL_QUIET if delete $args{quiet};
+    my $args = $class->$orig(@_);
 
-    return \%args;
-}
+    # Translate numeric verbosity to a named log level.  If you
+    # specified an explicit log_level, then it has priority.
+
+    if (my $verbose = delete $args->{verbose}) {
+        $verbose = min(max($verbose, -2), 2);
+        $args->{log_level} ||= $level_map{$verbose};
+    };
+
+    $args->{log_level} = 'critical' if delete $args->{quiet};
+
+    return $args;
+};
 
 #-----------------------------------------------------------------------------
-# Methods
 
-=method write( $message )
+sub _build_log_handler {
+    my ($self) = @_;
 
-Unconditionally writes a log message
+    my $log = Log::Dispatch->new();
 
-=cut
+    #-----------------------------
+    # The terminal...
 
-sub write {
-    my ($self, $message) = @_;
+    unless ($self->noscreen) {
 
-    # Split up multi-line messages and prepend the prefix to each line
+        my $type = 'Log::Dispatch::Screen';
+        $type   .= '::Color' unless $self->nocolor;
 
-    chomp $message;
-    my $prefix = $self->log_prefix();
-    $message = join "\n$prefix", split m{\n}, $message;
-    return print { $self->out() } sprintf("%s%s\n", $prefix, $message);
+        my $colors  = $self->nocolor ? {} : $self->colors;
+
+        $log->add( $type->new(min_level => $self->log_level,
+                              color     => $colors,
+                              stderr    => 1,
+                              newline   => 1) );
+    }
+
+
+    #-----------------------------
+    # Output handle to client...
+
+    if ($self->out) {
+        my $type = 'Log::Dispatch::Handle';
+
+        my $cb = sub { my %args = @_;
+                       return $self->out_prefix . $args{message} };
+
+        $log->add( $type->new(min_level => $self->log_level,
+                              handle    => $self->out,
+                              callbacks => [ $cb ],
+                              newline   => 1) );
+    }
+
+    #-----------------------------
+    # Repository log file...
+
+    if ($self->log_file) {
+        my $type = 'Log::Dispatch::File';
+
+        my $cb = sub { my %args = @_;
+                       my $now = localtime;
+                       return sprintf '[%s] %s: %s', $now, uc $args{log_level}, $args{message} };
+
+        $log->add( $type->new(min_level => $self->log_level,
+                              handle    => $self->logfile,
+                              mode      => 'append',
+                              callbacks => [ $cb ],
+                              newline   => 1) );
+    }
+
+    return $log;
 }
 
 #-----------------------------------------------------------------------------
@@ -88,67 +202,17 @@ sub write {
 
 Logs a message if C<verbose> is 1 or higher.
 
-=cut
-
-sub debug {
-    my ($self, $message) = @_;
-
-    $self->write($message) if $self->verbose() >= $LEVEL_DEBUG;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
 =method note( $message )
 
 Logs a message if C<verbose> is 2 or higher.
-
-=cut
-
-sub note {
-    my ($self, $message) = @_;
-
-    $self->write($message) if $self->verbose() >= $LEVEL_NOTE;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
 
 =method info( $message )
 
 Logs a message if C<verbose> is 0 or higher.
 
-=cut
-
-sub info {
-    my ($self, $message) = @_;
-
-    $self->write($message) if $self->verbose() >= $LEVEL_INFO;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
 =method whine( $message )
 
 Logs a message to C<verbose> is -1 or higher.
-
-=cut
-
-sub whine {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $message = _colorize("$message", 'bold yellow') unless $self->nocolor();
-    $self->write($message) if $self->verbose() >= $LEVEL_WARN;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
 
 =method fatal( $message )
 
@@ -159,31 +223,9 @@ Dies with the given message.
 sub fatal {
     my ($self, $message) = @_;
 
-    chomp $message;
-    $message = _colorize("$message", 'bold red') unless $self->nocolor();
-
-    die "$message\n";                     ## no critic (RequireCarping)
+    $self->log_handler->log_and_die(level => 'fatal', message => $message);
 }
 
-#-----------------------------------------------------------------------------
-
-sub _colorize {
-    my ($string, $color) = @_;
-
-    return $string if not defined $color;
-    return $string if $color eq q{};
-
-    # TODO: Don't colorize if not going to a terminal?
-
-    # $terminator is a purely cosmetic change to make the color end at the end
-    # of the line rather than right before the next line. It is here because
-    # if you use background colors, some console windows display a little
-    # fragment of colored background before the next uncolored (or
-    # differently-colored) line.
-
-    my $terminator = chomp $string ? "\n" : q{};
-    return  Term::ANSIColor::colored( $string, $color ) . $terminator;
-}
 
 #-----------------------------------------------------------------------------
 

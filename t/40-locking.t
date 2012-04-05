@@ -42,6 +42,7 @@ if ($pid) {
 else {
     # child
     print "Starting: $$\n";
+    warn "Will be sleeping for 70 seconds, don't be alarmed...\n";
     $pinto->add_action('Nop', sleep => 70);
     $pinto->run_actions();
     exit 0;

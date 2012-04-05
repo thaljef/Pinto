@@ -5,6 +5,7 @@ package Pinto::Config;
 use Moose;
 
 use MooseX::Configuration;
+use MooseX::Aliases;
 
 use MooseX::Types::Moose qw(Str Bool Int);
 use Pinto::Types qw(Dir File);
@@ -22,19 +23,10 @@ use namespace::autoclean;
 has root       => (
     is         => 'ro',
     isa        => Dir,
+    alias      => 'root_dir',
     required   => 1,
     coerce     => 1,
 );
-
-
-has root_dir   => (            # An alias for 'root'
-    is         => 'ro',
-    isa        => Dir,
-    init_arg   => undef,
-    default    => sub { return $_[0]->root() },
-    lazy       => 1,
-);
-
 
 has authors_dir => (
     is        => 'ro',
@@ -153,10 +145,10 @@ has sources  => (
 
 
 has sources_list => (
-    is         => 'ro',
     isa        => 'ArrayRef[URI]',
     builder    => '_build_sources_list',
-    auto_deref => 1,
+    traits     => ['Array'],
+    handles    => { sources_list => 'elements' },
     init_arg   => undef,
     lazy       => 1,
 );
