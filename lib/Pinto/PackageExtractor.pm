@@ -46,7 +46,7 @@ sub provides {
     # Must stringify, cuz D::M doesn't like Path::Class objects
     my $archive = $args{archive}->stringify();
 
-    $self->note("Extracting packages from archive $archive");
+    $self->info("Extracting packages from archive $archive");
 
     my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
                    catch { throw_error "Unable to extract packages from $archive: $_" };
@@ -58,7 +58,7 @@ sub provides {
         push @provides, {name => $pkg_name, version => $pkg_ver};
     }
 
-    $self->whine("$archive contains no packages") if not @provides;
+    $self->warning("$archive contains no packages") if not @provides;
 
     return $self->_versionize(@provides);
 }
@@ -73,7 +73,7 @@ sub requires {
 
     my $archive = $args{archive};
 
-    $self->note("Extracting prerequisites from $archive");
+    $self->info("Extracting prerequisites from $archive");
 
     my %prereqs =   try { Dist::Requires->new()->prerequisites(dist => $archive)          }
                   catch { throw_error "Unable to extract prerequisites from $archive: $_" };
@@ -105,7 +105,7 @@ sub _versionize {
             push @versionized, \%pkg_spec;
         }
         elsif ( $self->lax() ) {
-            $self->whine("Package $vname has invalid version. Ignoring it");
+            $self->warning("Package $vname has invalid version. Ignoring it");
         }
         else {
             throw_error "Package $vname has invalid version: $@";

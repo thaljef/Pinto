@@ -118,7 +118,7 @@ sub run {
     my ($self) = @_;
 
     # Divert any warnings to our logger
-    local $SIG{__WARN__} = sub { $self->whine(@_) };
+    local $SIG{__WARN__} = sub { $self->warning(@_) };
 
     $self->locker->lock();
     $self->repos->initialize() unless $self->noinit();
@@ -128,7 +128,7 @@ sub run {
     }
 
     if (not $self->_result->changes_made) {
-        $self->note('No changes were made');
+        $self->info('No changes were made');
         goto BATCH_DONE;
     }
 

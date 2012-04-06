@@ -96,7 +96,7 @@ sub fetch_temporary {
 sub _fetch {
     my ($self, $url, $to) = @_;
 
-    $self->note("Fetching $url");
+    $self->info("Fetching $url");
 
     my $result = eval { $self->ua->mirror($url, $to) } or throw_fatal $@;
 

@@ -55,7 +55,7 @@ sub find_or_import {
     my ($pkg_name, $pkg_ver) = ($pkg_spec->{name}, $pkg_spec->{version});
     my $pkg_vname = "$pkg_name-$pkg_ver";
 
-    $self->note("Looking for package $pkg_vname");
+    $self->info("Looking for package $pkg_vname");
 
     my $where   = {name => $pkg_name, is_latest => 1};
     my $got_pkg = $self->repos->select_packages( $where )->single();
@@ -107,7 +107,7 @@ sub import_prerequisites {
         }
         catch {
              my $prereq_vname = "$prereq->{name}-$prereq->{version}";
-             $self->whine("Skipping prerequisite $prereq_vname. $_");
+             $self->error("Skipping prerequisite $prereq_vname. $_");
              # Mark the prereq as done so we don't try to import it again
              $seen{ $prereq->{name} } = $prereq;
              undef;  # returned by try{}
@@ -163,7 +163,7 @@ sub _extract_prerequisites {
     # to figure out the prerequisites by other means.
 
     my @prereqs = try   { $self->extractor->requires( archive => $archive ) }
-                  catch { $self->whine("Unable to extract prerequisites from $archive: $_"); () };
+                  catch { $self->error("Unable to extract prerequisites from $archive: $_"); () };
 
     return @prereqs;
 }
@@ -183,7 +183,7 @@ sub _import_distribution {
     $self->fetch(from => $url, to => $destination);
 
     my @pkg_specs = $self->extractor->provides(archive => $destination);
-    $self->info(sprintf "Importing distribution $url providing %d packages", scalar @pkg_specs);
+    $self->notice(sprintf "Importing distribution $url providing %d packages", scalar @pkg_specs);
 
     my $struct = { path     => $path,
                    source   => $source,

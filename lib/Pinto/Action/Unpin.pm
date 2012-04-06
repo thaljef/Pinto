@@ -28,11 +28,11 @@ sub execute {
     my $pkg   = $self->repos->select_packages($where)->first();
 
     if (not $pkg) {
-        $self->whine("Package $name does not exist in the repository, or is not pinned");
+        $self->error("Package $name does not exist in the repository, or is not pinned");
         return 0;
     }
 
-    $self->info("Unpinning package $pkg");
+    $self->notice("Unpinning package $pkg");
 
     $pkg->is_pinned(undef);
     $pkg->update();

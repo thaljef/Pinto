@@ -33,7 +33,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
     my $file = $args{file};
-    $self->note("Writing index at $file");
+    $self->info("Writing index at $file");
 
     my @records = $self->_get_index_records();
     my $count = @records;

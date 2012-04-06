@@ -43,7 +43,7 @@ override execute => sub {
     my @pkgs = $dist->packages();
     my $count = @pkgs;
 
-    $self->info("Removing distribution $dist with $count packages");
+    $self->notice("Removing distribution $dist with $count packages");
 
     $self->repos->remove_distribution($dist);
 

@@ -1,6 +1,6 @@
-package Pinto::Logger;
+# ABSTRACT: Record events in the repository log file (and elsewhere).
 
-# ABSTRACT: Writes log messages.
+package Pinto::Logger;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
@@ -44,14 +44,8 @@ has log_handler => (
     is       => 'ro',
     isa      => 'Log::Dispatch',
     builder  => '_build_log_handler',
+    handles  => [qw(debug info notice warning error)], # fatal is handled below
     lazy     => 1,
-    handles  => {
-        debug => 'debug',
-        note  => 'info',
-        info  => 'notice',
-        whine => 'warning',
-        # fatal is handled below.
-    },
 );
 
 #-----------------------------------------------------------------------------
@@ -107,28 +101,6 @@ sub add_output {
 
 #-----------------------------------------------------------------------------
 
-=method debug( $message )
-
-Logs a message if C<verbose> is 1 or higher.
-
-=method note( $message )
-
-Logs a message if C<verbose> is 2 or higher.
-
-=method info( $message )
-
-Logs a message if C<verbose> is 0 or higher.
-
-=method whine( $message )
-
-Logs a message to C<verbose> is -1 or higher.
-
-=method fatal( $message )
-
-Dies with the given message.
-
-=cut
-
 sub fatal {
     my ($self, $message) = @_;
 
@@ -145,3 +117,25 @@ __PACKAGE__->meta->make_immutable();
 1;
 
 __END__
+
+=head1 LOGGING METHODS
+
+The following methods are available for writing to the logs at various
+levels (listed in order of increasing priority).  Each method takes a
+single message as an argument.
+
+=item debug
+
+=item info
+
+=item notice
+
+=item warning
+
+=item error
+
+=item fatal
+
+Note that C<fatal> causes the application to C<croak>.
+
+=cut

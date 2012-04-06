@@ -72,7 +72,7 @@ sub _do_mirror {
     my $url = URI->new($dist_spec->{source} . '/authors/id/' . $dist_spec->{path});
     my @path_parts = split m{ / }mx, $dist_spec->{path};
 
-    $self->info("Mirroring distribution at $url");
+    $self->notice("Mirroring distribution at $url");
 
     my $destination = $self->repos->root_dir->file( qw(authors id), @path_parts );
     $self->fetch(from => $url, to => $destination);
@@ -100,7 +100,7 @@ sub _handle_mirror_error {
 
     if ( blessed($error) && $error->isa('Pinto::Exception') ) {
         $self->add_exception($error);
-        $self->whine($error);
+        $self->warning($error);
         return 0;
     }
 

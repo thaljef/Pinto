@@ -107,7 +107,7 @@ augment tag => sub {
     my $tag = $now->strftime( $args{tag} );
     my $msg = $args{message};
 
-    $self->info("Tagging at $tag");
+    $self->notice("Tagging at $tag");
 
     $self->_git->run( tag => '-m', $msg, $tag );
 

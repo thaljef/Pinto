@@ -72,7 +72,7 @@ override execute => sub {
     $self->fetch(from => $archive, to => $destination);
 
     my @pkg_specs = $self->_extract_packages_and_check_authorship();
-    $self->info(sprintf "Adding distribution $path with %d packages", scalar @pkg_specs);
+    $self->notice(sprintf "Adding distribution $path with %d packages", scalar @pkg_specs);
 
     my $struct = { path     => $path,
                    source   => 'LOCAL',

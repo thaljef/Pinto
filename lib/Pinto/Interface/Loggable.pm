@@ -15,7 +15,7 @@ use namespace::autoclean;
 has logger => (
     is         => 'ro',
     isa        => 'Pinto::Logger',
-    handles    => [ qw(debug note info whine fatal) ],
+    handles    => [ qw(debug info notice warning error fatal) ],
     required   => 1,
 );
 

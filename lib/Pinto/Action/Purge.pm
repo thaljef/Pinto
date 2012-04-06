@@ -26,7 +26,7 @@ override execute => sub {
     my $dists = $self->repos->db->select_distributions();
 
     my $count = $dists->count();
-    $self->info("Removing all $count distributions from the repository");
+    $self->notice("Removing all $count distributions from the repository");
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
