@@ -6,6 +6,12 @@
      (Karen Etheridge).  You can set the logging level in the
      repository's config file.
 
+     Other Stuff:
+
+     A lot of files have been moved around in this release (and the
+     last couple releases).  I suggest removing your current Pinto
+     before installing this one, to avoid accumulating cruft.
+
 0.035     2012-04-04 19:00:35 America/Los_Angeles
 
      New Features:
