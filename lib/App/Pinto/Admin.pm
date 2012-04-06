@@ -11,6 +11,8 @@ use List::Util qw(min);
 use Log::Dispatch::Screen;
 use Log::Dispatch::Screen::Color;
 
+use Pinto::Constants qw(:all);
+
 use App::Cmd::Setup -app;
 
 #------------------------------------------------------------------------------
@@ -93,22 +95,7 @@ sub log_colors {
 
 #------------------------------------------------------------------------------
 
-my $COLOR_NORMAL      = { text => undef,    background => undef };
-my $COLOR_BOLD_YELLOW = { text => 'yellow', background => undef, bold => 1 };
-my $COLOR_BOLD_RED    = { text => 'red',    background => undef, bold => 1 };
-
-#------------------------------------------------------------------------------
-
-sub default_log_colors {
-
-  return { debug       => $COLOR_NORMAL,
-           info        => $COLOR_NORMAL,
-           notice      => $COLOR_NORMAL,
-           warning     => $COLOR_BOLD_YELLOW,
-           error       => $COLOR_BOLD_RED,
-           critical    => $COLOR_BOLD_RED,
-         };
-}
+sub default_log_colors { return $PINTO_DEFAULT_LOG_COLORS }
 
 #------------------------------------------------------------------------------
 
