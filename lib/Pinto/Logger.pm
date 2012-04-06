@@ -1,43 +1,21 @@
 package Pinto::Logger;
 
-# ABSTRACT: A simple logger
+# ABSTRACT: Writes log messages.
 
 use Moose;
-use MooseX::Aliases;
-use MooseX::Types::Moose qw(HashRef Int Bool Str);
+use MooseX::Types::Moose qw(Str);
 
-use Readonly;
+use DateTime;
 use Log::Dispatch;
 use Log::Dispatch::File;
-use Log::Dispatch::Handle;
-use Log::Dispatch::Screen;
-use Log::Dispatch::Screen::Color;
-use List::Util qw(min max);
-use DateTime;
 
-use Pinto::Types qw(IO File);
+use Pinto::Types qw(Dir File);
 
 use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
 # VERSION
-
-#-----------------------------------------------------------------------------
-
-Readonly my %level_map => (
-    -2   => 'critical',
-    -1   => 'warn',
-     0   => 'notice',    # info and notice appear in opposite order in LD.
-     1   => 'info',
-     2   => 'debug',     # this level or higher means "everything"
-);
-
-#-----------------------------------------------------------------------------
-
-my $COLOR_NORMAL      = { text => undef,    background => undef };
-my $COLOR_BOLD_YELLOW = { text => 'yellow', background => undef, bold => 1 };
-my $COLOR_BOLD_RED    = { text => 'red',    background => undef, bold => 1 };
 
 #-----------------------------------------------------------------------------
 # Roles
@@ -50,7 +28,7 @@ with qw(Pinto::Interface::Configurable);
 has log_level => (
     is      => 'ro',
     isa     => Str,
-    default => 'notice',
+    default => sub { $_[0]->config->log_level },
 );
 
 
@@ -62,51 +40,11 @@ has log_file => (
 );
 
 
-has out => (
-    is      => 'ro',
-    isa     => IO,
-    coerce  => 1,
-);
-
-
-has out_prefix  => (
-    is       => 'ro',
-    isa      => Str,
-    default  => '',
-);
-
-
-has nocolor => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => 0,
-);
-
-
-has noscreen => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => 0,
-);
-
-
-has colors  => (
-    is      => 'ro',
-    isa     => HashRef,
-    default => sub {{
-        info        => $COLOR_NORMAL,
-        notice      => $COLOR_NORMAL,
-        warning     => $COLOR_BOLD_YELLOW,
-        error       => $COLOR_BOLD_YELLOW,
-    }},
-);
-
-
 has log_handler => (
-    is       => 'rw',
+    is       => 'ro',
     isa      => 'Log::Dispatch',
-    lazy     => 1,
     builder  => '_build_log_handler',
+    lazy     => 1,
     handles  => {
         debug => 'debug',
         note  => 'info',
@@ -118,84 +56,53 @@ has log_handler => (
 
 #-----------------------------------------------------------------------------
 
-around BUILDARGS => sub {
-    my $orig  = shift;
-    my $class = shift;
-
-    my $args = $class->$orig(@_);
-
-    # Translate numeric verbosity to a named log level.  If you
-    # specified an explicit log_level, then it has priority.
-
-    if (my $verbose = delete $args->{verbose}) {
-        $verbose = min(max($verbose, -2), 2);
-        $args->{log_level} ||= $level_map{$verbose};
-    };
-
-    $args->{log_level} = 'critical' if delete $args->{quiet};
-
-    return $args;
-};
-
-#-----------------------------------------------------------------------------
-
 sub _build_log_handler {
     my ($self) = @_;
 
-    my $log_dir = $self->config->log_dir;
+    my $log_dir = $self->log_file->dir;
     $log_dir->mkpath if not -e $log_dir;
 
-    my $log = Log::Dispatch->new();
+    my $log_filename = $self->log_file->stringify;
 
-    #-----------------------------
-    # Repository log file...
-
-    my $type = 'Log::Dispatch::File';
-
-    my $cb = sub { my %args = @_;
-                   return DateTime->now->iso8601 . uc(" $args{level}: ") . $args{message} };
-
-    $log->add( $type->new(min_level   => 'notice',
-                          filename    => $self->log_file->stringify,
-                          mode        => 'append',
-                          permissions => 0644,
-                          callbacks   => [ $cb ],
-                          newline     => 1) );
+    my $cb = sub { my %args  = @_;
+                   my $msg   = $args{message};
+                   my $level = uc $args{level};
+                   my $now   = DateTime->now->iso8601;
+                   return "$now $level: $msg" };
 
 
-    #-----------------------------
-    # The terminal...
+    my $out = Log::Dispatch::File->new( min_level   => 'notice',
+                                        filename    => $log_filename,
+                                        mode        => 'append',
+                                        permissions => 0644,
+                                        callbacks   => $cb,
+                                        newline     => 1 );
 
-    unless ($self->noscreen) {
+    my $handler = Log::Dispatch->new();
+    $handler->add($out);
 
-        my $type = 'Log::Dispatch::Screen';
-        $type   .= '::Color' unless $self->nocolor;
+    return $handler;
+}
 
-        my $colors  = $self->nocolor ? {} : $self->colors;
+#-----------------------------------------------------------------------------
 
-        $log->add( $type->new(min_level => $self->log_level,
-                              color     => $colors,
-                              stderr    => 1,
-                              newline   => 1) );
-    }
+=method add_output( $obj )
 
+Adds the object to the output destinations that this logger writes to.
+The object must be an instance of a L<Log::Dispatch::Output> subclass,
+such as L<Log::Dispatch::Screen> or L<Log::Dispatch::Handle>.
 
-    #-----------------------------
-    # Output handle to client...
+=cut
 
-    if ($self->out) {
-        my $type = 'Log::Dispatch::Handle';
+sub add_output {
+    my ($self, $output) = @_;
 
-        my $cb = sub { my %args = @_;
-                       return $self->out_prefix . $args{message} };
+    my $base_class = 'Log::Dispatch::Output';
+    $output->isa($base_class) or confess "Argument is not a $base_class";
 
-        $log->add( $type->new(min_level => $self->log_level,
-                              handle    => $self->out,
-                              callbacks => [ $cb ],
-                              newline   => 1) );
-    }
+    $self->log_handler->add($output);
 
-    return $log;
+    return $self;
 }
 
 #-----------------------------------------------------------------------------
@@ -225,7 +132,7 @@ Dies with the given message.
 sub fatal {
     my ($self, $message) = @_;
 
-    $self->log_handler->log_and_die(level => 'fatal', message => $message);
+    $self->log_handler->log_and_croak(level => 'fatal', message => $message);
 }
 
 

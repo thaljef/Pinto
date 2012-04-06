@@ -127,11 +127,12 @@ has log_file => (
 );
 
 
-has basename => (
-    is        => 'ro',
-    isa       => Str,
-    init_arg  => undef,
-    default   => 'pinto.ini',
+has log_level  => (
+    is         => 'ro',
+    isa        => Str,
+    key        => 'log_level',
+    default    => 'notice',
+    documentation => 'Minimum logging level for the log file',
 );
 
 
@@ -150,6 +151,15 @@ has noinit => (
     key      => 'noinit',
     default  => 0,
     documentation => 'Do not pull/update from VCS before each operation',
+);
+
+
+has store => (
+    is        => 'ro',
+    isa       => Str,
+    key       => 'store',
+    default   => 'Pinto::Store::File',
+    documentation => 'Name of class that handles storage of your repository',
 );
 
 
@@ -172,12 +182,11 @@ has sources_list => (
 );
 
 
-has store => (
+has basename => (
     is        => 'ro',
     isa       => Str,
-    key       => 'store',
-    default   => 'Pinto::Store::File',
-    documentation => 'Name of class that handles storage of your repository',
+    init_arg  => undef,
+    default   => 'pinto.ini',
 );
 
 #------------------------------------------------------------------------------

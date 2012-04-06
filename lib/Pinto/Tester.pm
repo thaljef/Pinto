@@ -71,7 +71,6 @@ sub _build_pinto {
 
     my %defaults     = ( root    => $self->root() );
     my %log_defaults = ( log_handler => Test::Log::Dispatch->new(),
-                         noscreen    => 1,
                          verbose     => 3, );
 
 
@@ -90,7 +89,7 @@ sub reset_buffer { goto &reset_log }
 sub reset_log {
     my ($self) = @_;
 
-    $self->pinto->logger->log_handler(Test::Log::Dispatch->new);
+    $self->pinto->logger->log_handler->clear;
 
     return $self;
 }

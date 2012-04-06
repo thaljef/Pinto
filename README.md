@@ -105,6 +105,34 @@ and permits users masquerade as anybody they want to be.  This is
 actually intentional and designed to encourage collaboration among
 developers.
 
+# METHODS
+
+## new_batch( %batch_args )
+
+Prepares this Pinto to run a new batch of Actions.  Any prior batch will
+be discarded.
+
+## add_action( $action_name, %action_args )
+
+Constructs the action with the given names and arguments, and adds it
+to the current batch.  You must first call `new_batch` before you can
+add any actions.  The precise class of the Action will be formed by
+prepending 'Pinto::Action::' to the action name.  See the
+documentation for the corresponding Action class for a details about
+the arguments it supports.
+
+## run_actions()
+
+Executes all the actions that are currently in the batch for this
+Pinto.  Returns a [Pinto::Result](http://search.cpan.org/perldoc?Pinto::Result) object that indicates whether the
+batch was successful and contains any warning or error messages that
+might have occurred along the way.
+
+## add_logger( $obj )
+
+Convenience method for installing additional endpoints for logging.
+The object must be an instance of a [Log::Dispatch::Output](http://search.cpan.org/perldoc?Log::Dispatch::Output) subclass.
+
 # BUT WHERE IS THE API?
 
 For now, the Pinto API is private, undocumented, and subject to
