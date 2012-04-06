@@ -4,7 +4,7 @@ Pinto - Curate your own CPAN-like repository
 
 # VERSION
 
-version 0.035
+version 0.036
 
 # SYNOPSIS
 
@@ -135,9 +135,10 @@ The object must be an instance of a [Log::Dispatch::Output](http://search.cpan.o
 
 # BUT WHERE IS THE API?
 
-For now, the Pinto API is private, undocumented, and subject to
-radical change without notice.  In the meantime, the command line
-utilities mentioned in the ["SYNOPSIS"](#SYNOPSIS) are your public interface.
+For now, the Pinto API is private and subject to radical change
+without notice.  Any module documentation you see is purely for my own
+references.  In the meantime, the command line utilities mentioned in
+the ["SYNOPSIS"](#SYNOPSIS) are your public user interface.
 
 # SUPPORT
 
