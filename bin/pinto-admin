@@ -121,6 +121,12 @@ index when they are the "latest" version.  Otherwise, development
 releases are accepted into the repository but never included in the
 index.  Defaults to 0.
 
+=item log_level = debug|notice|info|warn|error
+
+Sets the minimum logging level for the repository's log file.  The
+default is C<notice>.  This is independent of the screen logs
+that L<pinto-admin> and L<pinto-server> emit.
+
 =item noinit = 0|1
 
 If true, L<Pinto> will not pull/update the repository from the VCS
