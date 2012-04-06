@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 11);
+use Test::More;
 
 use Path::Class;
 
@@ -17,7 +17,6 @@ my $pinto = $t->pinto();
 
 $t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 $t->path_exists_ok( [qw(.pinto db pinto.db)] );
-$t->path_exists_ok( [qw(.pinto log pinto.log)] );
 $t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
 $t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
 $t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
@@ -40,3 +39,5 @@ is $pinto->config->store(),     'MyStore', 'Got custom store';
 is $pinto->config->sources(),   'MySource', 'Got custom source';
 
 #------------------------------------------------------------------------------
+
+done_testing();

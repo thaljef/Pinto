@@ -176,7 +176,7 @@ sub _handle_action_error {
 
     if ( blessed($error) && $error->isa('Pinto::Exception') ) {
         $self->_result->add_exception($error);
-        $self->whine($error);
+        $self->warning($error);
         return $self;
     }
 

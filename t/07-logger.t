@@ -19,15 +19,18 @@ use Pinto::Logger;
     my $logger   = Pinto::Logger->new(root => $root);
     my $log_file = $root->subdir( qw(.pinto log) )->file('pinto.log');
 
-    $logger->info('info');   # Should get logged
-    $logger->debug('debug'); # Should not get logged
+    $logger->error('error');     # Logged
+    $logger->warning('warning'); # Logged
+    $logger->notice('notice');   # Logged
+    $logger->info('info');       # Not Logged
+    $logger->debug('info');      # Not Logged
 
     ok -e $log_file, "log file exists at $log_file";
 
     my @lines = $log_file->slurp();
-    is scalar @lines, 1, 'log file contains one line';
+    is scalar @lines, 3, 'log file contains one line';
 
-    like $lines[0], qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} NOTICE: info$/,
+    like $lines[-1], qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} NOTICE: notice$/,
         'logged message is correct';
 }
 

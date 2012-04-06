@@ -87,7 +87,7 @@ sub insert_distribution {
 
     $self->debug("Inserting distribution $dist into database");
 
-    $self->whine("Developer distribution $dist will not be indexed")
+    $self->warning("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
 
     my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
