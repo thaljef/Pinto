@@ -1,4 +1,4 @@
-# ABSTRACT: An action for listing contents of a repository
+# ABSTRACT: List the contents of a repository
 
 package Pinto::Action::List;
 
