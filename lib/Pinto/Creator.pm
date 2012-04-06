@@ -21,8 +21,8 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Loggable
-         Pinto::Interface::Configurable
+with qw( Pinto::Role::Loggable
+         Pinto::Role::Configurable
          Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------

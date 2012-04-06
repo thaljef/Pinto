@@ -21,8 +21,8 @@ use MooseX::Types::Moose qw(Str Bool);
 #-----------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Interface::Loggable
-         Pinto::Interface::Configurable );
+with qw( Pinto::Role::Loggable
+         Pinto::Role::Configurable );
 
 #------------------------------------------------------------------------------
 # Attributes

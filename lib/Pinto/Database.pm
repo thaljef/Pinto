@@ -30,8 +30,8 @@ has schema => (
 #-------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Interface::Configurable
-         Pinto::Interface::Loggable
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable
          Pinto::Role::PathMaker );
 
 #-------------------------------------------------------------------------------

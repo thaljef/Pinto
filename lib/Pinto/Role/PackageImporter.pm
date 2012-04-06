@@ -28,7 +28,7 @@ has extractor => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Interface::Loggable
+with qw( Pinto::Role::Loggable
          Pinto::Role::FileFetcher
 );
 
