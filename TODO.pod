@@ -4,29 +4,40 @@
 
 =item Support dist path and dist URL targets for Import action
 
-=item Support --fallback on Package::Locator
+So that you can import a specific distribution, not just the
+latest distribution that contains a particular package.
 
 =item Exception hierarchy/handling
 
-=item Remove the whole permission mechanism
+Current regime is too complicated.  Maybe just croak on any error,
+rather than trying to continue with the rest of the batch.
 
 =back
 
-=head1 A LITTLE LESS IMPORTANT
+=head1 LESS IMPORTANT
 
 =over
 
 =item Documentation review
 
+Need to add the 'documentation' key to all my attributes.  Also, need
+to figure out how to get Pod::Weaver to consolidate
+
 =item API documentation
 
 =item Support target_perl option
 
-=item Use standard logging module
+So you can specify which perl to compute dependencies with.  Because
+the perl you want to deploy with may not be the one that you use to
+run Pinto.
 
 =item More robust list action
 
+Actually, I think it is good enough for now
+
 =item Query language?
+
+Not yet -- no clear use case.
 
 =back
 
@@ -50,14 +61,13 @@ In no particular order...
 
 =over 4
 
-=item Implement --force option for the mirror command (always fetch new index)  WHY?
+=item Create a hook mechanism to do stuff before or after an Action
 
-=item Implement --soft option for the mirror command (never fetch new index): WHY?
+Like to notify people when the repository contents have changed.  Or
+to kick off a build when the repository changes.
 
 =item Enable plugins for visiting and filtering. See CPAN::Mini and
 CPAN::Mini::Visit.
-
-=item Make file/directory permissions configurable. Not sure this is needed.
 
 =item Standardize API, using named parameters except where it makes
 sense not to.
@@ -79,14 +89,12 @@ added in the last action (if any).
 =item Look into using Path::Class::SVN or Alien::SVN instead of using
 my home-grown interface to Subversion.
 
-=item Consider using MooseX::Params::Validate on methods.
-
-=item Consider MooseX::Declare for method signatures.
-
 =item Profile and look for performance optimizations.
 
-=item Add --package option to the Add action, to excplicitly 
-declare what the archive provides (in case META is whack).
+=item Add --package option to the Add action
+
+To excplicitly declare what packages the archive provides, in cases
+where the META is whack or the packages can't be discovered.
 
 =back
 
@@ -95,13 +103,6 @@ declare what the archive provides (in case META is whack).
 =head2 Features inspired by XPAN
 
 =over 4
-
-=item Add recursion to Action::Add.  
-
-Currently, all the recursion stuff is baked into Action::Import.  So
-that probably needs to pulled out into a role that both Action classes
-can use.  Then the add command needs an option to turn recursion
-on/off (probably on by default).
 
 =item Implement a "dry-run" feature.  
 
@@ -116,7 +117,7 @@ back at the right level.  Finally, each Action must return 0 if
 changed and does not need to be committed to VCS.
 
 =item Warn when an imported/added package conflicts with a pinned
-package.  
+package.
 
 Each time a package is added, Pinto looks at all the other packages
 with the same name and sorts them according to version number, whether
@@ -131,15 +132,7 @@ incoming prereq is blocked by an older pinned package.
 
 =over 4
 
-=item Use a real logger.  
-
-Right now, I have rolled my own simple logger -- I don't know why.
-Should probably be using MooseX::Role::Loggable or something like
-that.  Also, I think Pinto should record the logs to a file in the
-repository (in addition to STDOUT), and that file should be committed
-to VCS.
-
-=item Optimize generation of CHECKSUMS files.  
+=item Optimize generation of CHECKSUMS files.
 
 At the moment, I'm using Adreas' module, which generates a CHECKSUMS
 file by recomputing md5s for everything in the directory.  I think
@@ -149,7 +142,7 @@ directory already contains a lot of dists.  Better to just compute the
 md5 for the new dist and append it to the ones that are already in the
 CHECKSUMS file.
 
-=item Come up with a strategy for schema migration.  
+=item Come up with a strategy for schema migration.
 
 I'm using SQLite and DBIx::Class.  Every time the database schema
 changes, I break compatibility with all the existing repos (if there
@@ -157,14 +150,14 @@ are any).  So I need some way for Pinto to upgrade its own schema.  I
 know there are frameworks for doing this but I just haven't learned
 them.  Or maybe just use something like KiokuDB.
 
-=item Document the architecture.  
+=item Document the architecture.
 
 Pinto has a pretty well-defined architecture -- there are distinct
 layers and separations of concern.  It may not be the *right*
 architecture, but it is definitely there.  I need to capture it on
 paper so I (and others) can reason about it.
 
-=item Document the API.  
+=item Document the API.
 
 Only the command-line interface has any real documentation.  The
 internal API has started to become stable and needs to get some
@@ -176,8 +169,7 @@ documentation love.
 
 =over 4
 
-=item I would love to make Pinto extensible in the way that
-Dist::Zilla is.  
+=item Make Pinto extensible in the way that Dist::Zilla is.
 
 For example, I can imagine roles like BeforeAddition/AfterAddition and
 BeforeRemoval/AfterRemoval that provide hooks where plugins can make
