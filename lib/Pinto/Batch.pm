@@ -134,8 +134,6 @@ sub run {
 
     $self->repos->write_index();
 
-    $self->debug( $self->message_string() );
-
     if (not $self->nocommit) {
         my $msg = $self->message_string();
         my $tag = $self->tag();
