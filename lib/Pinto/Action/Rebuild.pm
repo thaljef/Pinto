@@ -16,7 +16,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Rebuild );
+with qw( Pinto::Role::Interface::Action::Rebuild );
 
 #------------------------------------------------------------------------------
 

@@ -16,11 +16,11 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Nop );
+with qw( Pinto::Role::Interface::Action::Nop );
 
 #------------------------------------------------------------------------------
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     if ( my $sleep = $self->sleep() ) {
@@ -29,7 +29,7 @@ override execute => sub {
     }
 
     return 0;
-};
+}
 
 #------------------------------------------------------------------------------
 

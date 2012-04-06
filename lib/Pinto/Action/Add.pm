@@ -26,7 +26,7 @@ extends qw( Pinto::Action );
 
 with qw( Pinto::Role::FileFetcher
          Pinto::Role::PackageImporter
-         Pinto::Interface::Action::Add );
+         Pinto::Role::Interface::Action::Add );
 
 #------------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ sub _build_extractor {
 #------------------------------------------------------------------------------
 # Public methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $archive = $self->archive();
@@ -88,7 +88,7 @@ override execute => sub {
     }
 
     return 1;
-};
+}
 
 #------------------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-	package Pinto::Action;
+package Pinto::Action;
 
 # ABSTRACT: Base class for Actions
 
@@ -48,14 +48,6 @@ has exceptions => (
 
 with qw( Pinto::Interface::Configurable
          Pinto::Interface::Loggable );
-
-#------------------------------------------------------------------------------
-# Methods
-
-sub execute {
-    my ($self) = @_;
-    croak 'This is an abstract method';
-}
 
 #------------------------------------------------------------------------------
 

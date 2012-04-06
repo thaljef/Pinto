@@ -20,7 +20,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Clean );
+with qw( Pinto::Role::Interface::Action::Clean );
 
 #------------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ has confirm => (
 #------------------------------------------------------------------------------
 # Methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $outdated = $self->_select_outdated_distributions();
@@ -52,7 +52,7 @@ override execute => sub {
     }
 
     return $removed;
-};
+}
 
 #------------------------------------------------------------------------------
 

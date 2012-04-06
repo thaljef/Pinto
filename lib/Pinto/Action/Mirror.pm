@@ -22,7 +22,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 with qw( Pinto::Role::FileFetcher
-         Pinto::Interface::Action::Mirror );
+         Pinto::Role::Interface::Action::Mirror );
 
 #------------------------------------------------------------------------------
 

@@ -19,7 +19,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 with qw( Pinto::Role::PackageImporter
-         Pinto::Interface::Action::Import );
+         Pinto::Role::Interface::Action::Import );
 
 #------------------------------------------------------------------------------
 

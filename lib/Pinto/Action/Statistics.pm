@@ -18,7 +18,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Statistics );
+with qw( Pinto::Role::Interface::Action::Statistics );
 
 #------------------------------------------------------------------------------
 

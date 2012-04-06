@@ -19,12 +19,12 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Remove );
+with qw( Pinto::Role::Interface::Action::Remove );
 
 #------------------------------------------------------------------------------
 
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $path    = $self->path();
@@ -50,7 +50,7 @@ override execute => sub {
     $self->add_message( Pinto::Util::removed_dist_message($dist) );
 
     return 1;
-};
+}
 
 #------------------------------------------------------------------------------
 

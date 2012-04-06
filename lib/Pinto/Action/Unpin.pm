@@ -16,7 +16,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Unpin );
+with qw( Pinto::Role::Interface::Action::Unpin );
 
 #------------------------------------------------------------------------------
 

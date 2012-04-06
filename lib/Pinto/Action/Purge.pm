@@ -16,11 +16,11 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Purge );
+with qw( Pinto::Role::Interface::Action::Purge );
 
 #------------------------------------------------------------------------------
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $dists = $self->repos->db->select_distributions();
@@ -35,7 +35,7 @@ override execute => sub {
     $self->add_message("Purged all $count distributions" ) if $count;
 
     return $count;
-};
+}
 
 #------------------------------------------------------------------------------
 

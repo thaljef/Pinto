@@ -18,7 +18,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Action::Verify );
+with qw( Pinto::Role::Interface::Action::Verify );
 
 #------------------------------------------------------------------------------
 # Methods
