@@ -121,13 +121,6 @@ index when they are the "latest" version.  Otherwise, development
 releases are accepted into the repository but never included in the
 index.  Defaults to 0.
 
-=item sources = URL [ URL URL ... ]
-
-A space-delimited list of the URLs of the repositories that L<Pinto>
-will pull foreign distributions from.  These could be public CPAN
-mirrors, a private L<CPAN::Mini> mirror, or other Pinto repositories.
-Defaults to L<http://cpan.perl.org>.
-
 =item noinit = 0|1
 
 If true, L<Pinto> will not pull/update the repository from the VCS
@@ -146,6 +139,13 @@ L<Pinto::Store::VCS::Svn> and L<Pinto::Store::VCS::Git> will also
 store your repository inside a version control system (VCS).  See the
 documentation for each of those modules for information on setting up
 L<Pinto> with a VCS.
+
+=item sources = URL [ URL URL ... ]
+
+A space-delimited list of the URLs of the repositories that L<Pinto>
+will pull foreign distributions from.  These could be public CPAN
+mirrors, a private L<CPAN::Mini> mirror, or other Pinto repositories.
+Defaults to L<http://cpan.perl.org>.
 
 =back
 
