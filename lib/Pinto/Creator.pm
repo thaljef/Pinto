@@ -52,7 +52,7 @@ sub create {
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);
 
-   # Create cache dir
+    # Create cache dir
     my $cache_dir = $self->config->cache_dir();
     $self->mkpath($cache_dir);
 
