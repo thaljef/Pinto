@@ -28,9 +28,9 @@ sub opt_spec {
     return (
 
         [ 'index!'            => 'Limit to packages in the index (negatable)' ],
-        [ 'distributions|d=s' => 'Limit to matching distribution paths' ],
+        [ 'distributions|D=s' => 'Limit to matching distribution paths' ],
         [ 'noinit'            => 'Do not pull/update from VCS' ],
-        [ 'packages|p=s'      => 'Limit to matching package names' ],
+        [ 'packages|P=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'format=s'          => 'Format specification (See POD for details)' ],
 
