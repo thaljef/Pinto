@@ -5,11 +5,13 @@ package Pinto::Config;
 use Moose;
 
 use MooseX::Configuration;
+use MooseX::Types::Moose qw(Str Bool Int);
+use MooseX::Types::Log::Dispatch qw(LogLevel);
 use MooseX::Aliases;
 
-use MooseX::Types::Moose qw(Str Bool Int);
-use Pinto::Types qw(Dir File);
 use URI;
+
+use Pinto::Types qw(Dir File);
 
 use namespace::autoclean;
 
@@ -129,7 +131,7 @@ has log_file => (
 
 has log_level  => (
     is         => 'ro',
-    isa        => Str,
+    isa        => LogLevel,
     key        => 'log_level',
     default    => 'notice',
     documentation => 'Minimum logging level for the log file',
