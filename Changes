@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.036     2012-04-09 00:14:50 America/Los_Angeles
+
      New Features:
 
      Pinto now logs activity to $root_dir/.pinto/logs/pinto.log
