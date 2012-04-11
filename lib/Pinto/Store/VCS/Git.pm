@@ -32,7 +32,7 @@ has _git => (
 sub _build__git {
     my ($self) = @_;
 
-    my $root = $self->config->root_dir();
+    my $root = $self->config->root_dir->absolute->resolve();
     my $dir  = $root;
     my $work_tree;
 
@@ -55,7 +55,8 @@ augment add_path => sub {
     my ($self, %args) = @_;
 
     # With git, all paths must be relative to the top of the work tree
-    my $path = $args{path}->relative( $self->_git->work_tree() );
+    # The path we are adding may also be relative, so we need to resolve that too
+    my $path = $args{path}->absolute->resolve->relative( $self->_git->work_tree() );
     $self->_git->run( 'add' => $path->stringify() );
     $self->mark_path_for_commit($path);
 
@@ -70,7 +71,8 @@ augment remove_path => sub {
     my ($self, %args) = @_;
 
     # With git, all paths must be relative to the top of the work tree
-    my $path = $args{path}->relative( $self->_git->work_tree() );
+    # The path we are remove may also be relative, so we need to resolve that too
+    my $path = $args{path}->absolute->resolve->relative( $self->_git->work_tree() );
     $self->_git->run( rm => '-f',  $path->stringify() );
     $self->mark_path_for_commit($path);
 
