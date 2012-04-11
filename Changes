@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+     No code changes.  Just fixed dependency declarations.
+     Thanks CPAN Testers!
+
 0.036     2012-04-09 00:14:50 America/Los_Angeles
 
      New Features:
