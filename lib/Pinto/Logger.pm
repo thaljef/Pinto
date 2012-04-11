@@ -20,7 +20,7 @@ use namespace::autoclean;
 #-----------------------------------------------------------------------------
 # Roles
 
-with qw(Pinto::Interface::Configurable);
+with qw(Pinto::Role::Configurable);
 
 #-----------------------------------------------------------------------------
 # Attributes
