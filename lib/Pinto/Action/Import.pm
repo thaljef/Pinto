@@ -26,7 +26,6 @@ with qw( Pinto::Role::PackageImporter
 sub execute {
     my ($self) = @_;
 
-    $DB::single = 1;
     my ($dist, $imported_flag) = $self->find_or_import( $self->target );
     return 0 if not $dist;
 
