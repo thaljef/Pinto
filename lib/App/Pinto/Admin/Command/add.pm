@@ -90,7 +90,7 @@ your author identity at any time using the C<--author> option.
 
 By default, Pinto also recursively imports all the distributions that
 are required to provide the prerequisite packages for the newly added
-distribution.  When searching for those prerequisite pakcages, Pinto first
+distribution.  When searching for those prerequisite packages, Pinto first
 looks at the the packages that already exist in the local repository,
 then Pinto looks at the packages that are available available on the
 remote repositories.  At present, Pinto takes the *first* package it
@@ -154,7 +154,7 @@ Pinto repository within the VCS.
 
 =item --norecurse
 
-Prevents L<Pinto> from recursively importing distribtuions required to
+Prevents L<Pinto> from recursively importing distributions required to
 satisfy the prerequisites of the added distribution.  Imported
 distributions are pulled from whatever remote repositories are
 configured as the C<source> for this local repository.
