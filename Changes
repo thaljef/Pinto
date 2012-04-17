@@ -1,5 +1,16 @@
 {{$NEXT}}
 
+     New Features:
+
+     The "import" command will now import a particular distribution
+     if you specify it using the right notation.  See POD for details
+     (Steven Leung).
+
+     Bug Fixes:
+
+     The Git store would fail if you specified the --root as a
+     relative path that contained any "../" updirs (William Wolf).
+
 0.037     2012-04-10 19:57:09 America/Los_Angeles
 
      No code changes.  Just fixed dependency declarations.
