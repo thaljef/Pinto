@@ -2,11 +2,6 @@
 
 =over 4
 
-=item Support dist path and dist URL targets for Import action
-
-So that you can import a specific distribution, not just the
-latest distribution that contains a particular package.
-
 =item Exception hierarchy/handling
 
 Current regime is too complicated.  Maybe just croak on any error,
