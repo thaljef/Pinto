@@ -99,7 +99,7 @@ sub _import_by_package_spec {
 
 
     my $dist = $self->repos->import_distribution( url   => $dist_url,
-                                                  stack => $self->stack() );
+                                                  stack => $self->stack );
 
     return ($dist, 1);
 }
@@ -116,6 +116,7 @@ sub _import_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
+        $self->repos->register_distribution(dist => $got_dist, stack => $self->stack);
         return ($got_dist, 0);
     }
 
