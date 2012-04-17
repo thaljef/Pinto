@@ -47,6 +47,9 @@ sub execute {
         and $self->fatal("Stack $stack_name already exists");
 
     $where->{description} = $self->description();
+
+    $self->info("Creating stack $stack_name");
+
     $self->repos->db->create_stack( $where );
 
     return 1;

@@ -44,7 +44,7 @@ sub execute {
     my $stack = $self->repos->get_stack( name => $stack_name )
         or $self->fatal("Stack $stack_name does not exist");
 
-    $self->notice("Removing stack $stack");
+    $self->info("Removing stack $stack");
 
     $stack->delete();
 
