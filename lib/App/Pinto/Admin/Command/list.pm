@@ -43,14 +43,17 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Arguments are not allowed')
-        if @{ $args };
+    $self->usage_error('Multiple arguments are not allowed')
+        if @{ $args } > 1;
 
     $self->usage_error('Cannot specify packages and distributions together')
         if $opts->{packages} and $opts->{distributions};
 
     $opts->{format} = eval qq{"$opts->{format}"} ## no critic qw(StringyEval)
         if $opts->{format};
+
+    $opts->{stack} = $args->[0]
+        if $args->[0];
 
     return 1;
 }
@@ -78,7 +81,11 @@ precise filtering, consider running the output through C<grep>.
 
 =head1 COMMAND ARGUMENTS
 
-None.
+As an alternative to the C<--stack> option, you can also specify the
+stack as an argument. So the following examples are equivalent:
+
+  pinto-admin --root /some/dir list --stack dev
+  pinto-admin --root /some/dir list dev
 
 =head1 COMMAND OPTIONS
 
@@ -90,7 +97,7 @@ Limits the listing to records for packages that are in the index.  Using
 the C<--noindex> option has the opposite effect of limiting the listing
 to records for packages that are not in the index.
 
-=item -d=PATTERN
+=item -D=PATTERN
 
 =item --distributions=PATTERN
 
@@ -145,7 +152,7 @@ considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
 
-=item -p=PATTERN
+=item -P=PATTERN
 
 =item --packages=PATTERN
 
