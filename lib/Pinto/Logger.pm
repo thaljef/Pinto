@@ -124,6 +124,8 @@ The following methods are available for writing to the logs at various
 levels (listed in order of increasing priority).  Each method takes a
 single message as an argument.
 
+=over
+
 =item debug
 
 =item info
@@ -137,5 +139,7 @@ single message as an argument.
 =item fatal
 
 Note that C<fatal> causes the application to C<croak>.
+
+=back
 
 =cut
