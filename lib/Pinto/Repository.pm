@@ -320,7 +320,7 @@ sub register_distribution {
     my ($self, %args) = @_;
 
     my $dist  = $args{dist};
-    my $stack = $args{stack};
+    my $stack = $args{stack} || 'default';
 
     $stack = $self->get_stack(name => $stack)
         || throw_error "No such stack named $stack";
