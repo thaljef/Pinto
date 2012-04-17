@@ -231,7 +231,7 @@ sub add_distribution {
     $dist_struct->{packages} = \@pkg_specs;
 
     my $count = $index ? @pkg_specs : '?';
-    $self->info("Adding distribution $dist_path with $count packages");
+    $self->notice("Adding distribution $dist_path with $count packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
@@ -305,7 +305,7 @@ sub remove_distribution {
     my $dist = $args{dist};
 
     my $count = $dist->package_count();
-    $self->info("Removing distribution $dist with $count packages");
+    $self->notice("Removing distribution $dist with $count packages");
 
     $self->db->delete_distribution($dist);
 
