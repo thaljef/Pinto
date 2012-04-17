@@ -29,6 +29,13 @@ has stack => (
     default => 'default',
 );
 
+
+# TODO: Move this into the Attribute role
+
+has '+format' => (
+    default  => "%m%s%y %-40n %12v  %p\n",
+);
+
 #------------------------------------------------------------------------------
 # TODO: Move this builder into the Interface role
 
