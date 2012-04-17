@@ -35,7 +35,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my $file  = $args{file};
     my $stack = $args{stack} || 'default';
 
-    $self->notice("Writing index for stack $stack at $file");
+    $self->info("Writing index for stack $stack at $file");
 
     my @records = $self->_get_index_records($stack);
     my $count = @records;
