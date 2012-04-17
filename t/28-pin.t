@@ -28,32 +28,36 @@ my $pinto = $t->pinto();
 my $archive = $auth_dir->file('FooOnly-0.01.tar.gz');
 
 $pinto->new_batch();
-$pinto->add_action('Add', author => $auth, archive => $archive);
-$pinto->add_action('Pin',  package => 'Foo');
+$pinto->add_action('Stack::Create', stack => 'dev');
+$pinto->add_action('Add',  stack => 'dev', author => $auth, archive => $archive);
+$pinto->add_action('Pin',  stack => 'dev', package => 'Foo');
 
-$t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$auth/FooOnly-0.01.tar.gz/Foo-0.01", 1 );
+$t->result_ok( $pinto->run_actions );
+$t->package_ok( "$auth/FooOnly-0.01/Foo-0.01/dev" );
 
 #-----------------------------------------------------------------------------
 # Now add a dist with a newer Foo, but pinned Foo should still be latest
 
 my $newer_archive = $auth_dir->file('FooAndBar-0.02.tar.gz');
 
-$pinto->add_action('Add', author => $auth, archive => $newer_archive);
+$pinto->add_action('Add', author => $auth, archive => $newer_archive, stack => 'dev');
 
-$t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$auth/FooAndBar-0.02.tar.gz/Foo-0.02", 0 );
-$t->package_loaded_ok( "$auth/FooOnly-0.01.tar.gz/Foo-0.01",   1 );
+$t->result_ok( $pinto->run_actions );
+$t->package_ok( "$auth/FooOnly-0.01.tar.gz/Foo-0.01/dev" );
 
 #-----------------------------------------------------------------------------
-# Unpin Foo.  The higher Foo should now be latest
+# Unpin Foo and add newer Foo again. The higher Foo should now be latest
 
-$pinto->new_batch();
-$pinto->add_action('Unpin',  package => 'Foo');
+{
+    local $TODO = 'Not sure how to do pinning on stacks';
 
-$t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$auth/FooAndBar-0.02.tar.gz/Foo-0.02", 1 );
-$t->package_loaded_ok( "$auth/FooOnly-0.01.tar.gz/Foo-0.01",   0 );
+    $pinto->new_batch();
+    $pinto->add_action('Unpin', stack => 'dev', package => 'Foo');
+    $pinto->add_action('Add',   stack => 'dev', author => $auth, archive => $newer_archive);
+
+    $t->result_ok( $pinto->run_actions );
+    $t->package_ok( "$auth/FooAndBar-0.02.tar.gz/Foo-0.02/dev" );
+}
 
 #-----------------------------------------------------------------------------
 # TODO: Test interraction of pinning with mirroring and importing.

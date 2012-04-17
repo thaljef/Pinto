@@ -5,59 +5,51 @@ use warnings;
 
 use Test::More;
 
+use IO::String;
+use File::Temp;
+use Path::Class;
+use Log::Dispatch::Handle;
+
 use Pinto::Logger;
 
 #-----------------------------------------------------------------------------
+{
+    my $temp     = File::Temp->newdir();
+    my $root     = dir($temp->dirname);
+    my $logger   = Pinto::Logger->new(root => $root);
+    my $log_file = $root->subdir( qw(.pinto log) )->file('pinto.log');
 
-my $buffer = '';
-my $logger = Pinto::Logger->new( out => \$buffer );
+    $logger->error('error');     # Logged
+    $logger->warning('warning'); # Logged
+    $logger->notice('notice');   # Logged
+    $logger->info('info');       # Not Logged
+    $logger->debug('info');      # Not Logged
 
-$logger->debug("debug");
-is($buffer, '', 'debug message not logged');
+    ok -e $log_file, "log file exists at $log_file";
 
-$logger->note("note");
-is($buffer, '', 'note message not logged');
+    my @lines = $log_file->slurp();
+    is scalar @lines, 3, 'log file contains one line';
 
-$logger->info("info");
-like($buffer, qr/info/, 'info message not logged');
-
-$logger->whine("whine");
-like($buffer, qr/whine/, 'whine message was logged');
-
-#-----------------------------------------------------------------------------
-
-my $quiet_buffer = '';
-my $quiet_logger = Pinto::Logger->new( verbose => 3,
-                                       quiet   => 1,
-                                       out     => \$quiet_buffer );
-
-$quiet_logger->debug("debug");
-is($quiet_buffer, '', 'debug message not logged when quiet');
-
-$quiet_logger->info("note");
-is($quiet_buffer, '', 'note message not logged when quiet');
-
-$quiet_logger->info("info");
-is($quiet_buffer, '', 'info message not logged when quiet');
-
-$quiet_logger->whine("whine");
-is($quiet_buffer, '', 'whine message not logged when quiet');
-
+    like $lines[-1], qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} NOTICE: notice$/,
+        'logged message is correct';
+}
 
 #-----------------------------------------------------------------------------
+{
+    my $temp     = File::Temp->newdir();
+    my $root     = dir($temp->dirname);
+    my $logger   = Pinto::Logger->new(root => $root);
 
-my $loud_buffer = '';
-my $loud_logger = Pinto::Logger->new( verbose => 3,
-                                      out     => \$loud_buffer );
+    my $buffer = '';
+    my $handle = IO::String->new(\$buffer);
+    my $output = Log::Dispatch::Handle->new( min_level => 'debug',
+                                             handle    => $handle );
 
-$loud_logger->debug("debug");
-like($loud_buffer, qr/debug/, 'debug message logged when loud');
+    $logger->add_output($output);
+    $logger->debug('debug');
 
-$loud_logger->info("note");
-like($loud_buffer, qr/note/, 'info message logged when loud');
-
-$loud_logger->info("info");
-like($loud_buffer, qr/info/, 'info message logged when loud');
+    is $buffer, 'debug', 'Logger wrote to custom output object';
+}
 
 #-----------------------------------------------------------------------------
 

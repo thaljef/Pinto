@@ -37,7 +37,7 @@ has description => (
 #------------------------------------------------------------------------------
 # Methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $stack_name = $self->stack();
@@ -50,7 +50,7 @@ override execute => sub {
     $self->repos->db->create_stack( $where );
 
     return 1;
-};
+}
 
 #------------------------------------------------------------------------------
 

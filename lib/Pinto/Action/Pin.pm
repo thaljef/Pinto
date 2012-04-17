@@ -1,6 +1,6 @@
-package Pinto::Action::Pin;
-
 # ABSTRACT: Force a package into the index
+
+package Pinto::Action::Pin;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
@@ -14,17 +14,19 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has package => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
+with qw( Pinto::Role::Interface::Action::Pin );
+
+#------------------------------------------------------------------------------
+
+has reason   => (
+    is        => 'ro',
+    isa       => Str,
+    default   => 'no reason was given',
 );
 
 
@@ -33,13 +35,6 @@ has stack   => (
     isa       => StackName,
     required  => 1,
     coerce    => 1,
-);
-
-
-has reason   => (
-    is        => 'ro',
-    isa       => Str,
-    default   => 'no reason was given',
 );
 
 #------------------------------------------------------------------------------
@@ -71,13 +66,13 @@ sub execute {
 
     if (not $pkg_stk) {
         my ($pkg, $stk) = ( $self->package(), $self->stack() );
-        $self->whine("Package $pkg is not in stack $stk");
+        $self->warning("Package $pkg is not in stack $stk");
         return 0;
     }
 
 
     if ( $pkg_stk->is_pinned() ) {
-        $self->whine(sprintf "Package $pkg_stk is already pinned: %s", $pkg_stk->reason());
+        $self->warning(sprintf "Package $pkg_stk is already pinned: %s", $pkg_stk->reason());
         return 0;
     }
 

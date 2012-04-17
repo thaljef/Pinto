@@ -21,23 +21,12 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Interface::Loggable
-         Pinto::Interface::Configurable
+with qw( Pinto::Role::Loggable
+         Pinto::Role::Configurable
          Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------
-# Construction
 
-sub BUILDARGS {
-    my ($class, %args) = @_;
-
-    $args{logger} ||= Pinto::Logger->new( %args );
-    $args{config} ||= Pinto::Config->new( %args );
-
-    return \%args;
-}
-
-#------------------------------------------------------------------------------
 
 sub create {
     my ($self, %args) = @_;
@@ -63,7 +52,7 @@ sub create {
     my $modules_dir = $self->config->modules_dir();
     $self->mkpath($modules_dir);
 
-   # Create cache dir
+    # Create cache dir
     my $cache_dir = $self->config->cache_dir();
     $self->mkpath($cache_dir);
 
@@ -80,7 +69,7 @@ sub create {
     # Write authors index
     $self->_write_mailrc();
 
-    $self->info("Created new repository at directory $root_dir");
+    $self->notice("Created new repository at directory $root_dir");
 
     return $self;
 }

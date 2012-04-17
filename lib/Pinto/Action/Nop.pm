@@ -1,12 +1,8 @@
-package Pinto::Action::Nop;
-
 # ABSTRACT: A no-op action
 
+package Pinto::Action::Nop;
+
 use Moose;
-
-use MooseX::Types::Moose qw(Int);
-
-extends 'Pinto::Action';
 
 use namespace::autoclean;
 
@@ -16,15 +12,15 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-has sleep => (
-    is      => 'ro',
-    isa     => Int,
-    default => 0,
-);
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-override execute => sub {
+with qw( Pinto::Role::Interface::Action::Nop );
+
+#------------------------------------------------------------------------------
+
+sub execute {
     my ($self) = @_;
 
     if ( my $sleep = $self->sleep() ) {
@@ -33,7 +29,7 @@ override execute => sub {
     }
 
     return 0;
-};
+}
 
 #------------------------------------------------------------------------------
 

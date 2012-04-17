@@ -25,10 +25,11 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'devel'      => 'Include development releases in the repository index' ],
-        [ 'noinit'     => 'Do not pull/update from VCS before each operation' ],
-        [ 'source=s@'  => 'URL of repository for foreign distributions (repeatable)' ],
-        [ 'store=s'    => 'Name of class that handles storage of your repository' ],
+        [ 'devel'       => 'Include development releases in the repository index' ],
+        [ 'log_level=s' => 'Minimum logging level for the repository log file'    ],
+        [ 'noinit'      => 'Do not pull/update from VCS before each operation'    ],
+        [ 'source=s@'   => 'URL of repository for foreign distributions (repeatable)' ],
+        [ 'store=s'     => 'Name of class that handles storage of your repository' ],
     );
 }
 

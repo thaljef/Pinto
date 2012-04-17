@@ -46,7 +46,7 @@ has description => (
 #------------------------------------------------------------------------------
 # Methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $txn_guard = $self->repos->db->schema->txn_scope_guard(); # BEGIN transaction
@@ -58,7 +58,7 @@ override execute => sub {
     $txn_guard->commit(); #END transaction
 
     return 1;
-};
+}
 
 #------------------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ sub _check_stacks {
 sub _copy_stack {
     my ($self, $from_stack) = @_;
 
-    $self->note( sprintf 'Creating new stack %s', $self->to_stack() );
+    $self->notice( sprintf 'Creating new stack %s', $self->to_stack() );
 
     my $changes = { name => $self->to_stack() };
     $changes->{description} = $self->description() if $self->has_description();
@@ -95,7 +95,7 @@ sub _copy_stack {
 sub _copy_stack_members {
     my ($self, $from_stack, $to_stack) = @_;
 
-    $self->note("Copying stack $from_stack into stack $to_stack");
+    $self->notice("Copying stack $from_stack into stack $to_stack");
 
     for my $packages_stack ( $from_stack->packages_stack() ) {
         $self->debug(sprintf 'Copying package %s into stack %s', $packages_stack->package(), $to_stack);

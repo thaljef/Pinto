@@ -28,14 +28,12 @@ sub opt_spec {
     return (
 
         [ 'index!'            => 'Limit to packages in the index (negatable)' ],
-        [ 'distributions|d=s' => 'Limit to matching distribution paths' ],
+        [ 'distributions|D=s' => 'Limit to matching distribution paths' ],
         [ 'noinit'            => 'Do not pull/update from VCS' ],
-        [ 'packages|p=s'      => 'Limit to matching package names' ],
+        [ 'packages|P=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'format=s'          => 'Format specification (See POD for details)' ],
         [ 'stack|s=s'         => 'List a stack other than the default' ],
-
-
 
     );
 }
@@ -53,19 +51,6 @@ sub validate_args {
 
     $opts->{format} = eval qq{"$opts->{format}"} ## no critic qw(StringyEval)
         if $opts->{format};
-
-    my $stack = delete $opts->{stack} || 'default';
-    $opts->{where}->{'stack.name'} = $stack;
-
-    my $pinned = delete $opts->{pinned};
-    $opts->{where}->{pin} = { '!=' => undef } if $pinned;
-    $opts->{where}->{pin} = undef if defined $pinned and $pinned == 0;
-
-    my $pkg_name = delete $opts->{packages};
-    $opts->{where}->{'package.name'} = { like => "%$pkg_name%" } if $pkg_name;
-
-    my $dist_path = delete $opts->{distributions};
-    $opts->{where}->{'package.distribution.path'} = { like => "%$dist_path%" } if $dist_path;
 
     return 1;
 }

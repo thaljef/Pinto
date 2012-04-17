@@ -1,6 +1,6 @@
-package Pinto::Action::Purge;
-
 # ABSTRACT: Remove all distributions from the repository
+
+package Pinto::Action::Purge;
 
 use Moose;
 
@@ -12,17 +12,21 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-override execute => sub {
+with qw( Pinto::Role::Interface::Action::Purge );
+
+#------------------------------------------------------------------------------
+
+sub execute {
     my ($self) = @_;
 
     my $dists = $self->repos->db->select_distributions();
 
     my $count = $dists->count();
-    $self->info("Removing all $count distributions from the repository");
+    $self->notice("Purging all $count distributions from the repository");
 
     my $removed = 0;
     while ( my $dist = $dists->next() ) {
@@ -30,10 +34,10 @@ override execute => sub {
         $removed++
     }
 
-    $self->add_message("Purged all $removed distributions" ) if $removed;
+    $self->add_message("Purged all $count distributions" ) if $removed;
 
     return $removed;
-};
+}
 
 #------------------------------------------------------------------------------
 

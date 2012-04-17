@@ -38,7 +38,7 @@ $pinto->new_batch();
 $pinto->add_action( 'Add', archive => $archive, author => $auth1 );
 
 $t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$auth1/$dist/$pkg", 1 );
+$t->package_ok( "$auth1/$dist/$pkg" );
 
 #------------------------------------------------------------------------------
 # Removing the local dist...
@@ -54,7 +54,6 @@ $pinto->new_batch();
 $pinto->add_action('Remove', path => $dist, author => $auth1 );
 
 $t->result_ok( $pinto->run_actions() );
-$t->package_not_loaded_ok( "$auth1/$dist/$pkg" );
 $t->path_not_exists_ok( [ qw( authors id A AU AUTHOR ) ] );
 $t->repository_empty_ok();
 
@@ -64,7 +63,7 @@ $t->repository_empty_ok();
 $pinto->new_batch();
 $pinto->add_action('Add', archive => $archive, author => $auth1);
 $t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$auth1/$dist/$pkg", 1 );
+$t->package_ok( "$auth1/$dist/$pkg" );
 
 #------------------------------------------------------------------------------
 # Now remove via full path name...
@@ -73,7 +72,6 @@ $pinto->new_batch();
 $pinto->add_action('Remove', path => "A/AU/AUTHOR1/$dist");
 
 $t->result_ok( $pinto->run_actions() );
-$t->package_not_loaded_ok( "$auth1/$dist/$pkg" );
 $t->path_not_exists_ok( [ qw( authors id A AU AUTHOR ) ] );
 $t->repository_empty_ok();
 

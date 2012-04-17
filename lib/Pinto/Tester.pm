@@ -10,6 +10,7 @@ use Carp;
 use IO::String;
 use Path::Class;
 use File::Temp qw(tempdir);
+use Test::Log::Dispatch;
 
 use Pinto;
 use Pinto::Util;
@@ -28,18 +29,18 @@ extends 'Test::Builder::Module';
 #------------------------------------------------------------------------------
 
 has pinto_args => (
-   is         => 'ro',
    isa        => HashRef,
    default    => sub { {} },
-   auto_deref => 1,
+   traits     => ['Hash'],
+   handles    => { pinto_args => 'elements' },
 );
 
 
 has creator_args => (
-   is         => 'ro',
    isa        => HashRef,
    default    => sub { {} },
-   auto_deref => 1,
+   traits     => ['Hash'],
+   handles    => { creator_args => 'elements' },
 );
 
 
@@ -54,15 +55,7 @@ has pinto => (
 has root => (
    is       => 'ro',
    isa      => Dir,
-   default  => sub { dir( File::Temp::tempdir(CLEANUP => 1) ) },
-);
-
-
-has buffer => (
-   is         => 'ro',
-   isa        => ScalarRef,
-   default    => sub { \my $buffer },
-   writer     => '_set_buffer',
+   default  => sub { dir( tempdir(CLEANUP => 1) ) },
 );
 
 
@@ -78,30 +71,27 @@ has tb => (
 sub _build_pinto {
     my ($self) = @_;
 
-    my $creator = Pinto::Creator->new( root => $self->root() );
+    my %defaults     = ( root    => $self->root() );
+    my %log_defaults = ( log_handler => Test::Log::Dispatch->new(),
+                         verbose     => 3, );
+
+
+    my $creator = Pinto::Creator->new(%defaults, %log_defaults);
     $creator->create( $self->creator_args() );
 
-    my %defaults = ( out => $self->buffer(), verbose => 3, root => $self->root() );
-
-    return Pinto->new(%defaults, $self->pinto_args());
-}
-#------------------------------------------------------------------------------
-
-sub bufferstr {
-    my ($self)  = @_;
-
-    return ${ $self->buffer() };
+    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args());
+    return $pinto;
 }
 
 #------------------------------------------------------------------------------
 
-sub reset_buffer {
-    my ($self, $new_buffer) = @_;
+# for backcompat
+sub reset_buffer { goto &reset_log }
 
-    $new_buffer ||= \my $buffer;
-    my $io = IO::String->new( ${$new_buffer} );
-    $self->pinto->logger->{out} = $io; # Hack!
-    $self->_set_buffer($new_buffer);
+sub reset_log {
+    my ($self) = @_;
+
+    $self->pinto->logger->log_handler->clear;
 
     return $self;
 }
@@ -158,7 +148,7 @@ sub package_ok {
     $self->tb->is_eq($pkg->package->version(), $pkg_ver, "$pkg_name has correct version");
 
     my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_archive . '.tar.gz')->as_foreign('Unix');
+    my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
     $self->tb->is_eq($pkg->package->distribution->path(), $dist_path, "$pkg_name has correct dist path");
 
     my $archive = $pkg->package->distribution->archive( $self->root() );
@@ -168,6 +158,7 @@ sub package_ok {
 
     return;
 }
+
 
 #------------------------------------------------------------------------------
 
@@ -214,7 +205,7 @@ sub log_like {
 
     $name ||= 'Log output matches';
 
-    $self->tb->like( $self->bufferstr(), $rx, $name );
+    $self->pinto->logger->log_handler->contains_ok($rx, $name);
 
     return;
 }
@@ -226,7 +217,7 @@ sub log_unlike {
 
     $name ||= 'Log output does not match';
 
-    $self->tb->unlike( $self->bufferstr(), $rx, $name );
+    $self->pinto->logger->log_handler->does_not_contain_ok($rx, $name);
 
     return;
 }
@@ -255,16 +246,27 @@ sub populate {
 sub parse_pkg_spec {
     my ($spec) = @_;
 
+    # Remove all whitespace from spec
     $spec =~ s{\s+}{}g;
 
-    # Looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack"
-    $spec =~ m{ ^ ([^/]+) / ([^/]+) / ([^-]+) - (.+) / (.+)$ }mx
-        or croak "Could not parse pkg spec: $spec";
+    # Spec looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack"
+    my ($author, $dist_archive, $pkg, $stack_name) = split m{/}x, $spec;
 
-    # TODO: use sexy named captures instead
-    my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack) = ($1, $2, $3, $4, $5);
+    # Spec must at least have these
+    croak "Could not parse pkg spec: $spec"
+       if not ($author and $dist_archive and $pkg);
 
-    return ($author, $dist_archive, $pkg_name, $pkg_ver, $stack);
+    # Append the usual suffix to the archive
+    $dist_archive .= '.tar.gz' unless $dist_archive =~ m{\.tar\.gz$}x;
+
+    # Parse package name/version
+    my ($pkg_name, $pkg_version) = split m{-}x, $pkg;
+
+    # Set defaults
+    $stack_name  ||= 'default';
+    $pkg_version ||= 0;
+
+    return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name);
 }
 
 #------------------------------------------------------------------------------

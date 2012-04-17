@@ -1,9 +1,8 @@
-package Pinto::Action::Unpin;
-
 # ABSTRACT: Loosen a package that has been pinned
 
+package Pinto::Action::Unpin;
+
 use Moose;
-use MooseX::Types::Moose qw(Str);
 
 use Pinto::Types qw(StackName);
 
@@ -15,17 +14,13 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has package => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
+with qw( Pinto::Role::Interface::Action::Unpin );
 
+#------------------------------------------------------------------------------
 
 has stack   => (
     is      => 'ro',
@@ -34,7 +29,6 @@ has stack   => (
 );
 
 #------------------------------------------------------------------------------
-# Construction
 
 sub BUILD {
     my ($self) = @_;
@@ -58,7 +52,7 @@ sub execute {
     my $stack = $self->repos->get_stack(name => $stack_name);
 
     if (not $stack) {
-        $self->whine("Stack $stack_name does not exist");
+        $self->warning("Stack $stack_name does not exist");
         return;
     }
 
@@ -76,7 +70,7 @@ sub _do_unpin {
     my $pkg_stk  = $self->repos->db->select_package_stacks($where, $attrs)->single();
 
     if (not $pkg_stk) {
-        $self->whine("Package $pkg_name is not in stack $stack");
+        $self->warning("Package $pkg_name is not in stack $stack");
         return;
     }
 

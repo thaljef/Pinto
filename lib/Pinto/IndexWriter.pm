@@ -24,7 +24,7 @@ has db => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw(Pinto::Interface::Loggable);
+with qw(Pinto::Role::Loggable);
 
 #------------------------------------------------------------------------------
 # Methods
@@ -32,10 +32,10 @@ with qw(Pinto::Interface::Loggable);
 sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
-    my $file = $args{file};
+    my $file  = $args{file};
     my $stack = $args{stack} || 'default';
 
-    $self->note("Writing index for stack $stack at $file");
+    $self->notice("Writing index for stack $stack at $file");
 
     my @records = $self->_get_index_records($stack);
     my $count = @records;

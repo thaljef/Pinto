@@ -1,6 +1,6 @@
-package Pinto::Action::Clean;
-
 # ABSTRACT: Remove all outdated distributions from the repository
+
+package Pinto::Action::Clean;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
@@ -15,9 +15,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Interface::Action::Clean );
 
 #------------------------------------------------------------------------------
 
@@ -30,7 +33,7 @@ has confirm => (
 #------------------------------------------------------------------------------
 # Methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $outdated = $self->_select_outdated_distributions();
@@ -42,14 +45,14 @@ override execute => sub {
             next if not $self->_prompt_for_confirmation($dist);
         }
 
-        $self->info("Removing distribution $dist");
+        $self->notice("Removing distribution $dist");
         $self->repos->remove_distribution($dist);
         $self->add_message( "Removed outdated distribution $dist" );
         $removed++;
     }
 
     return $removed;
-};
+}
 
 #------------------------------------------------------------------------------
 

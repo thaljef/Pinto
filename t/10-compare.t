@@ -3,50 +3,29 @@
 use strict;
 use warnings;
 
+use Test::More;
 use Test::Exception;
-use Test::More (tests => 22);
 
-use Pinto::Tester::Util qw(make_dist make_pkg);
+use Pinto::Tester::Util qw(make_dist_obj make_pkg_obj);
 
 #------------------------------------------------------------------------------
 # Test package specification is as follows:
 #
-#   dist_name-dist_mtime/pkg_name-pkg_version-source
-#
-# where source = 1 (local) or 0 (foreign)
+#   dist_name-dist_mtime/pkg_name-pkg_version
 #
 # For example:
 #
-#   Foo-1/Bar-0.3-1
+#   Foo-1/Bar-0.3
 #
-# Means local pacakge Bar version 0.3 in dist Foo with mtime 1
+# Means pacakge Bar version 0.3 in dist Foo with mtime 1
 #------------------------------------------------------------------------------
 
-# Comparing locals to locals
-package_compare_ok( 'Dist-1/Pkg-undef-1', 'Dist-1/Pkg-1-1'   );
-package_compare_ok( 'Dist-1/Pkg-0-1',     'Dist-1/Pkg-1-1'   );
-package_compare_ok( 'Dist-1/Pkg-1-1',     'Dist-1/Pkg-2-1'   );
-package_compare_ok( 'Dist-1/Pkg-1-1',     'Dist-2/Pkg-1-1'   );
-package_compare_ok( 'Dist-1/Pkg-1.1.1-1', 'Dist-1/Pkg-1.1.2-1'   );
-package_compare_ok( 'Dist-1/Pkg-1.1.1-1', 'Dist-2/Pkg-1.1.1-1'   );
-
-
-# Comparing foreign to foreign
-package_compare_ok( 'Dist-1/Pkg-undef-0', 'Dist-1/Pkg-1-0'   );
-package_compare_ok( 'Dist-1/Pkg-0-0',     'Dist-1/Pkg-1-0'   );
-package_compare_ok( 'Dist-1/Pkg-1-0',     'Dist-1/Pkg-2-0'   );
-package_compare_ok( 'Dist-1/Pkg-1-0',     'Dist-2/Pkg-1-0'   );
-package_compare_ok( 'Dist-1/Pkg-1.1.1-0', 'Dist-1/Pkg-1.1.2-0'   );
-package_compare_ok( 'Dist-1/Pkg-1.1.1-0', 'Dist-2/Pkg-1.1.1-0'   );
-
-
-# Comparing foreign to local
-package_compare_ok( 'Dist-1/Pkg-1-0',     'Dist-1/Pkg-undef-1' );
-package_compare_ok( 'Dist-1/Pkg-1-0',     'Dist-1/Pkg-0-1'     );
-package_compare_ok( 'Dist-1/Pkg-2-0',     'Dist-1/Pkg-1-1'     );
-package_compare_ok( 'Dist-2/Pkg-1-0',     'Dist-1/Pkg-1-1'     );
-package_compare_ok( 'Dist-1/Pkg-1.1.2-0', 'Dist-1/Pkg-1.1.1-1' );
-package_compare_ok( 'Dist-2/Pkg-1.1.1-0', 'Dist-1/Pkg-1.1.1-1' );
+package_compare_ok( 'Dist-1/Pkg-undef', 'Dist-1/Pkg-1'       );
+package_compare_ok( 'Dist-1/Pkg-0',     'Dist-1/Pkg-1'       );
+package_compare_ok( 'Dist-1/Pkg-1',     'Dist-1/Pkg-2'       );
+package_compare_ok( 'Dist-1/Pkg-1',     'Dist-2/Pkg-1'       );
+package_compare_ok( 'Dist-1/Pkg-1.1.1', 'Dist-1/Pkg-1.1.2'   );
+package_compare_ok( 'Dist-1/Pkg-1.1.1', 'Dist-2/Pkg-1.1.1'   );
 
 
 # Exceptions
@@ -77,6 +56,7 @@ sub package_compare_ok {
 }
 
 #------------------------------------------------------------------------------
+my $id = 0;
 
 sub _make_pkg {
     my ($spec) = @_;
@@ -85,19 +65,22 @@ sub _make_pkg {
     my ($dist_name, $mtime)  = split '-', $dist_spec;
     my ($pkg_name, $pkg_version, $is_local) = split '-', $pkg_spec;
 
-    my $dist = make_dist(
+    my $dist = make_dist_obj(
           path     => "A/AU/AUTHOR/$dist_name-0.00.tar.gz",
-          source   => $is_local ? undef : 'FOREIGN',
           mtime    => $mtime || 0,
+          id       => $id++,
     );
 
-    my $pkg = make_pkg(
+    my $pkg = make_pkg_obj(
           name         => $pkg_name,
           version      => $pkg_version,
           distribution => $dist,
+          id           => $id++,
     );
 
     return $pkg;
 }
 
 #------------------------------------------------------------------------------
+
+done_testing;

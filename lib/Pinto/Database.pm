@@ -30,8 +30,8 @@ has schema => (
 #-------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Interface::Configurable
-         Pinto::Interface::Loggable
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable
          Pinto::Role::PathMaker );
 
 #-------------------------------------------------------------------------------
@@ -97,7 +97,8 @@ sub create_distribution {
     # TODO: Decide if the distinction between developer/release
     # distributions really makes sense.  Now that we have stacks,
     # we might not really need to make this distinction.
-    $self->whine("Developer distribution $dist will not be indexed")
+
+    $self->warning("Developer distribution $dist will not be indexed")
         if $dist->is_devel() and not $self->config->devel();
 
     for my $pkg ( $dist->packages() ) {
@@ -158,18 +159,18 @@ sub register {
     my $incumbent_pkg = $incumbent->package();
 
     if ( $incumbent_pkg == $pkg ) {
-        $self->whine("Package $pkg is already in stack $stack");
+        $self->warning("Package $pkg is already in stack $stack");
         return;
     }
 
     if ($incumbent_pkg > $pkg) {
-        $self->whine("Stack $stack already contains newer package $pkg");
+        $self->warning("Stack $stack already contains newer package $pkg");
         return;
     }
 
     if ( $incumbent_pkg < $pkg and $incumbent->is_pinned() ) {
         my $pkg_name = $pkg->name();
-        $self->whine("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
+        $self->warning("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
         return;
     }
 

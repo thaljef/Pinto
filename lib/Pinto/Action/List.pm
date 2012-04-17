@@ -1,13 +1,11 @@
-package Pinto::Action::List;
-
 # ABSTRACT: List the contents of a repository
 
+package Pinto::Action::List;
+
 use Moose;
+use MooseX::Types::Moose qw(HashRef);
 
-use Carp qw(croak);
-
-use MooseX::Types::Moose qw(Str HashRef);
-use Pinto::Types qw(IO);
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -16,43 +14,51 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
-
-#------------------------------------------------------------------------------
-
-has out => (
-    is      => 'ro',
-    isa     => IO,
-    coerce  => 1,
-    default => sub { [fileno(STDOUT), '>'] },
-);
-
-
-has format => (
-    is      => 'ro',
-    isa     => Str,
-    default => "%y%s%m %-40n %-12v %p\n",
-);
-
-
-has where => (
-    is      => 'ro',
-    isa     => HashRef,
-    default => sub { {} },
-);
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-override execute => sub {
+with qw( Pinto::Role::Interface::Action::List );
+
+#------------------------------------------------------------------------------
+
+has stack => (
+    is      => 'ro',
+    isa     => StackName,
+    default => 'default',
+);
+
+#------------------------------------------------------------------------------
+# TODO: Move this builder into the Interface role
+
+sub _build_where {
+    my ($self) = @_;
+
+    my $where = { 'stack.name' => $self->stack };
+
+    my $pkg_name = $self->packages();
+    $where->{'package.name'} = { like => "%$pkg_name%" } if $pkg_name;
+
+    my $dist_path = $self->distributions();
+    $where->{'package.distribution.path'} = { like => "%$dist_path%" } if $dist_path;
+
+    my $pinned = $self->pinned();
+    $where->{pin} = { '!=' => undef } if $pinned;
+
+    return $where;
+}
+
+
+#------------------------------------------------------------------------------
+
+sub execute {
     my ($self) = @_;
 
     my $where = $self->where();
-    $where->{'stack.name'} ||= 'default';
 
     if (not $self->repos->get_stack( name => $where->{'stack.name'} )) {
-        $self->whine("No such stack named $where->{'stack.name'}");
+        $self->warning("No such stack named $where->{'stack.name'}");
         return 1;
     }
 
@@ -67,7 +73,7 @@ override execute => sub {
     }
 
     return 0;
-};
+}
 
 #------------------------------------------------------------------------------
 

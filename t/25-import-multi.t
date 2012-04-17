@@ -29,31 +29,31 @@ my $pinto = $t->pinto();
 # Import recursively w/ multiple repositories
 
 $pinto->new_batch();
-$pinto->add_action('Import', package_name => 'Salad');
+$pinto->add_action('Import', target => 'Salad');
 
 $t->result_ok( $pinto->run_actions() );
-$t->package_loaded_ok( "$them/Salad-1.0.0.tar.gz/Salad-1.0.0", 1 );
+$t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");
 
 # Salad requires Dressing-0
-$t->package_loaded_ok( "$them/Dressing-v1.9.0.tar.gz/Dressing-v1.9.0", 1);
+$t->package_ok( "$them/Dressing-v1.9.0/Dressing-v1.9.0" );
 
 # And salad requires Lettuce-1.0
 
 # Repository 'b' has Lettuce 0.8, but that is too low
-$t->package_not_loaded_ok( "$them/Lettuce-0.8.tar.gz/Lettuce-0.8", 1 );
+# $t->package_not_loaded_ok( "$them/Lettuce-0.8.tar.gz/Lettuce-0.8" );
 
 # Only repository 'c' has Letuce >= 1.0
-$t->package_loaded_ok( "$them/Lettuce-2.0.tar.gz/Lettuce-2.0", 1 );
+$t->package_ok( "$them/Lettuce-2.0/Lettuce-2.0" );
 
 # Dressing-v1.9.0 requires Oil-3.0
 # Repository 'b' has Oil-3.0, but repository 'c' has Oil-4.0.
 # We should only have the newer one of the two.
-$t->package_not_loaded_ok( "$them/Oil-3.0.tar.gz/Oil-3.0" );
-$t->package_loaded_ok( "$them/Oil-4.0.tar.gz/Oil-4.0", 1 );
+# $t->package_not_loaded_ok( "$them/Oil-3.0.tar.gz/Oil-3.0" );
+$t->package_ok( "$them/Oil-4.0/Oil-4.0" );
 
 # Dressing-v1.9.0 requires Vinegar-v5.1.2
 # Only repository 'b' has any Vinegar at all
-$t->package_loaded_ok( "$them/Vinegar-v5.1.3.tar.gz/Vinegar-v5.1.3", 1 );
+$t->package_ok( "$them/Vinegar-v5.1.3/Vinegar-v5.1.3" );
 
 #------------------------------------------------------------------------------
 # Now, let's suppose we decide that we must use a patched version of Oil-3.0
@@ -69,10 +69,10 @@ $pinto->add_action('Add', archive => $archive, author => $us);
 $t->result_ok( $pinto->run_actions() );
 
 # Our Oil-3.0 should be latest
-$t->package_loaded_ok( "$us/Oil-3.0.tar.gz/Oil-3.0", 1 );
+# $t->package_ok( "$us/Oil-3.0/Oil-3.0" );
 
 # And their Oil-4.0 should not be latest
-$t->package_loaded_ok( "$them/Oil-4.0.tar.gz/Oil-4.0", 0 );
+# $t->package_loaded_ok( "$them/Oil-4.0.tar.gz/Oil-4.0", 0 );
 
 #------------------------------------------------------------------------------
 done_testing();

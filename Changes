@@ -1,10 +1,54 @@
 {{$NEXT}}
 
+0.038     2012-04-16 18:14:57 America/Los_Angeles
+
+     New Features:
+
+     The "import" command will now import a particular distribution
+     if you specify it using the right notation.  See POD for details
+     (Steven Leung).
+
+     Bug Fixes:
+
+     The Git store would fail if you specified the --root as a
+     relative path that contained any "../" updirs (William Wolf).
+
+0.037     2012-04-10 19:57:09 America/Los_Angeles
+
+     No code changes.  Just fixed dependency declarations.
+     Thanks CPAN Testers!
+
+0.036     2012-04-09 00:14:50 America/Los_Angeles
+
+     New Features:
+
+     Pinto now logs activity to $root_dir/.pinto/logs/pinto.log
+     (Karen Etheridge).  You can set the logging level in the
+     repository's config file.
+
+     Other Stuff:
+
+     A lot of files have been moved around in this release (and the
+     last couple releases).  I suggest removing your current Pinto
+     before installing this one, to avoid accumulating cruft.
+
+0.035     2012-04-04 19:00:35 America/Los_Angeles
+
      New Features:
 
      The value for the --author option now defaults to the 'user'
      specified in your ~/.pause file.  If that file does not exist,
      then it still defaults to your current login username.
+
+     Other Changes:
+
+     All diagnostic messages from pinto-admin now go to STDERR
+     rather than STDOUT.  So you can cleanly directy the output
+     into a file (like with the `list` command).
+
+     Refactored a lot of redundant code into roles that are shared
+     with Pinto::Remote.  But if you're not looking at the Pinto
+     internals, you won't notice it.
 
 0.033     2012-03-15 06:55:39 America/Los_Angeles
 

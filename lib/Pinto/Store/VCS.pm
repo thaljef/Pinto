@@ -32,7 +32,7 @@ has _paths => (
 augment initialize => sub {
     my ($self) = @_;
 
-    $self->note('Updating working copy');
+    $self->info('Updating working copy');
 
     inner();
 
@@ -68,7 +68,7 @@ augment remove_path => sub {
 augment commit => sub {
     my ($self) = @_;
 
-    $self->info('Committing changes to VCS');
+    $self->notice('Committing changes to VCS');
 
     inner();
 

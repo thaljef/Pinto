@@ -1,6 +1,6 @@
-package Pinto::Action::Mirror;
-
 # ABSTRACT: Pull all the latest distributions into your repository
+
+package Pinto::Action::Mirror;
 
 use Moose;
 
@@ -17,30 +17,21 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
-# Moose Attributes
+
+with qw( Pinto::Role::FileFetcher
+         Pinto::Role::Interface::Action::Mirror );
+
+#------------------------------------------------------------------------------
 
 has stack => (
     is      => 'ro',
     isa     => StackName,
     default => 'default',
 );
-
-
-# has force => (
-#    is      => 'ro',
-#    isa     => Bool,
-#    default => 0,
-# );
-
-#------------------------------------------------------------------------------
-# Moose Roles
-
-with qw(Pinto::Role::FileFetcher);
 
 #------------------------------------------------------------------------------
 
@@ -85,12 +76,12 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _do_mirror {
-  my ($self, $struct) = @_;
+    my ($self, $struct) = @_;
 
-  my $dist = $self->repos->mirror_distribution( struct => $struct,
-                                                stack  => $self->stack() );
+    my $dist = $self->repos->mirror_distribution( struct => $struct,
+                                                  stack  => $self->stack );
 
-  return 1;
+    return 1;
 }
 
 #------------------------------------------------------------------------------
@@ -104,7 +95,7 @@ sub _handle_mirror_error {
 
     if ( blessed($error) && $error->isa('Pinto::Exception') ) {
         $self->add_exception($error);
-        $self->whine($error);
+        $self->warning($error);
         return 0;
     }
 
@@ -129,7 +120,7 @@ sub _fix_versions {
         my ($pkg_name, $pkg_ver) = ( $pkg_spec->{name}, $pkg_spec->{version} );
 
         if ( not eval { version->parse( $pkg_ver ); 1} ) {
-            $self->whine("Package $pkg_name-$pkg_ver has invalid version.  Forcing it to 0");
+            $self->warning("Package $pkg_name-$pkg_ver has invalid version.  Forcing it to 0");
             $pkg_ver = 0;
         }
 

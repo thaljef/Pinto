@@ -91,7 +91,7 @@ augment tag => sub {
     my $msg    = $args{mmessage};
     my $origin = $self->svn_location();
 
-    $self->info("Tagging at $tag");
+    $self->notice("Tagging at $tag");
 
     Pinto::Util::Svn::svn_tag(from => $origin, to => $tag, message => $msg);
 

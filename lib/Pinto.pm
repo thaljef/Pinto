@@ -3,6 +3,7 @@ package Pinto;
 # ABSTRACT: Curate your own CPAN-like repository
 
 use Moose;
+use MooseX::Types::Moose qw(Bool Str);
 
 use Carp;
 use Try::Tiny;
@@ -10,7 +11,6 @@ use Class::Load;
 
 use Pinto::Config;
 use Pinto::Logger;
-use Pinto::Locker;
 use Pinto::Batch;
 use Pinto::Repository;
 
@@ -26,15 +26,8 @@ use namespace::autoclean;
 has repos   => (
     is         => 'ro',
     isa        => 'Pinto::Repository',
-    lazy_build => 1,
-);
-
-
-has locker  => (
-    is         => 'ro',
-    isa        => 'Pinto::Locker',
-    init_arg   =>  undef,
-    lazy_build => 1,
+    builder    => '_build_repos',
+    lazy       => 1,
 );
 
 
@@ -46,25 +39,22 @@ has _batch => (
 );
 
 
+has _action_base_class => (
+    is         => 'ro',
+    isa        => Str,
+    default    => 'Pinto::Action',
+    init_arg   => undef,
+);
+
+
 #------------------------------------------------------------------------------
 # Moose roles
 
-with qw( Pinto::Interface::Configurable
-         Pinto::Interface::Loggable );
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 # Construction
-
-sub BUILDARGS {
-    my ($class, %args) = @_;
-
-    $args{logger} ||= Pinto::Logger->new( %args );
-    $args{config} ||= Pinto::Config->new( %args );
-
-    return \%args;
-}
-
-#------------------------------------------------------------------------------
 
 sub BUILD {
     my ($self) = @_;
@@ -91,16 +81,14 @@ sub _build_repos {
 }
 
 #------------------------------------------------------------------------------
-
-sub _build_locker {
-    my ($self) = @_;
-
-    return Pinto::Locker->new( config => $self->config(),
-                               logger => $self->logger() );
-}
-
-#------------------------------------------------------------------------------
 # Public methods
+
+=method new_batch( %batch_args )
+
+Prepares this Pinto to run a new batch of Actions.  Any prior batch will
+be discarded.
+
+=cut
 
 sub new_batch {
     my ($self, %args) = @_;
@@ -117,10 +105,25 @@ sub new_batch {
 
 #------------------------------------------------------------------------------
 
+=method add_action( $action_name, %action_args )
+
+Constructs the action with the given names and arguments, and adds it
+to the current batch.  You must first call C<new_batch> before you can
+add any actions.  The precise class of the Action will be formed by
+prepending 'Pinto::Action::' to the action name.  See the
+documentation for the corresponding Action class for a details about
+the arguments it supports.
+
+=cut
+
 sub add_action {
     my ($self, $action_name, %args) = @_;
 
-    my $action_class = "Pinto::Action::$action_name";
+    my $batch = $self->_batch()
+        or confess 'You must create a batch first';
+
+    my $action_class = $self->_action_base_class . "::$action_name";
+
     Class::Load::load_class($action_class);
 
     my $action =  $action_class->new( config => $self->config(),
@@ -128,28 +131,50 @@ sub add_action {
                                       repos  => $self->repos(),
                                       %args );
 
-    $self->_batch->enqueue($action);
+    $batch->enqueue($action);
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
+=method run_actions()
+
+Executes all the actions that are currently in the batch for this
+Pinto.  Returns a L<Pinto::Result> object that indicates whether the
+batch was successful and contains any warning or error messages that
+might have occurred along the way.
+
+=cut
+
 sub run_actions {
     my ($self) = @_;
 
-    my $batch = $self->_batch() or confess 'You must create a batch first';
+    my $batch = $self->_batch()
+        or confess 'You must create a batch first';
 
-    # Divert any warnings to our logger
-    local $SIG{__WARN__} = sub { $self->whine(@_) };
+    my $result = try   { $self->_batch->run() }
+                 catch { $self->fatal($_)     };
 
-    # Shit happens here!
-    $self->locker->lock();
-    my $r = $self->_batch->run();
-    $self->locker->unlock();
+    return $result;
 
-    return $r;
+}
 
+#------------------------------------------------------------------------------
+
+=method add_logger( $obj )
+
+Convenience method for installing additional endpoints for logging.
+The object must be an instance of a L<Log::Dispatch::Output> subclass.
+
+=cut
+
+sub add_logger {
+    my ($self, @args) = @_;
+
+    $self->logger->add_output(@args);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -274,8 +299,9 @@ developers.
 
 =head1 BUT WHERE IS THE API?
 
-For now, the Pinto API is private, undocumented, and subject to
-radical change without notice.  In the meantime, the command line
-utilities mentioned in the L</SYNOPSIS> are your public interface.
+For now, the Pinto API is private and subject to radical change
+without notice.  Any module documentation you see is purely for my own
+references.  In the meantime, the command line utilities mentioned in
+the L</SYNOPSIS> are your public user interface.
 
 =cut

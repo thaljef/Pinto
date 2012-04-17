@@ -5,10 +5,13 @@ package Pinto::Config;
 use Moose;
 
 use MooseX::Configuration;
-
 use MooseX::Types::Moose qw(Str Bool Int);
-use Pinto::Types qw(Dir File);
+use MooseX::Types::Log::Dispatch qw(LogLevel);
+use MooseX::Aliases;
+
 use URI;
+
+use Pinto::Types qw(Dir File);
 
 use namespace::autoclean;
 
@@ -22,19 +25,10 @@ use namespace::autoclean;
 has root       => (
     is         => 'ro',
     isa        => Dir,
+    alias      => 'root_dir',
     required   => 1,
     coerce     => 1,
 );
-
-
-has root_dir   => (            # An alias for 'root'
-    is         => 'ro',
-    isa        => Dir,
-    init_arg   => undef,
-    default    => sub { return $_[0]->root() },
-    lazy       => 1,
-);
-
 
 has authors_dir => (
     is        => 'ro',
@@ -117,11 +111,30 @@ has cache_dir => (
 );
 
 
-has basename => (
+has log_dir => (
     is        => 'ro',
-    isa       => Str,
+    isa       => Dir,
     init_arg  => undef,
-    default   => 'pinto.ini',
+    default   => sub { return $_[0]->pinto_dir->subdir('log') },
+    lazy      => 1,
+);
+
+
+has log_file => (
+    is        => 'ro',
+    isa       => File,
+    init_arg  => undef,
+    default   => sub { return $_[0]->log_dir->file('pinto.log') },
+    lazy      => 1,
+);
+
+
+has log_level  => (
+    is         => 'ro',
+    isa        => LogLevel,
+    key        => 'log_level',
+    default    => 'notice',
+    documentation => 'Minimum logging level for the log file',
 );
 
 
@@ -143,6 +156,15 @@ has noinit => (
 );
 
 
+has store => (
+    is        => 'ro',
+    isa       => Str,
+    key       => 'store',
+    default   => 'Pinto::Store::File',
+    documentation => 'Name of class that handles storage of your repository',
+);
+
+
 has sources  => (
     is        => 'ro',
     isa       => Str,
@@ -153,21 +175,20 @@ has sources  => (
 
 
 has sources_list => (
-    is         => 'ro',
     isa        => 'ArrayRef[URI]',
     builder    => '_build_sources_list',
-    auto_deref => 1,
+    traits     => ['Array'],
+    handles    => { sources_list => 'elements' },
     init_arg   => undef,
     lazy       => 1,
 );
 
 
-has store => (
+has basename => (
     is        => 'ro',
     isa       => Str,
-    key       => 'store',
-    default   => 'Pinto::Store::File',
-    documentation => 'Name of class that handles storage of your repository',
+    init_arg  => undef,
+    default   => 'pinto.ini',
 );
 
 #------------------------------------------------------------------------------

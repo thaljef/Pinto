@@ -19,7 +19,12 @@ use namespace::autoclean;
 # VERSION
 
 #-------------------------------------------------------------------------------
-# Attributes
+
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable
+         Pinto::Role::FileFetcher );
+
+#-------------------------------------------------------------------------------
 
 has db => (
     is         => 'ro',
@@ -50,16 +55,7 @@ has extractor => (
     lazy_build => 1,
 );
 
-
 #-------------------------------------------------------------------------------
-# Roles
-
-with qw( Pinto::Interface::Configurable
-         Pinto::Interface::Loggable
-         Pinto::Role::FileFetcher );
-
-#-------------------------------------------------------------------------------
-# Builders
 
 sub _build_db {
     my ($self) = @_;

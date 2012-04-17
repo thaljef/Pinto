@@ -48,7 +48,7 @@ has dryrun => (
 #------------------------------------------------------------------------------
 # Methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $source_stack_name = $self->from_stack();
@@ -87,7 +87,7 @@ override execute => sub {
 
     my $status = $self->dryrun() ? 0 : 1;
     return $status;
-};
+}
 
 #------------------------------------------------------------------------------
 
@@ -111,7 +111,7 @@ sub _merge_pkg_stk {
     # pin to the target.
 
     if ($target == $source) {
-        $self->note("$source and $target are the same");
+        $self->notice("$source and $target are the same");
         if ($source->is_pinned) {
             $self->info("Adding pin to $target");
             return 0 if $self->dryrun();
@@ -130,7 +130,7 @@ sub _merge_pkg_stk {
 
     if ($target > $source) {
         if ( $source->is_pinned() ) {
-            $self->whine("$source is pinned to a version older than $target");
+            $self->warning("$source is pinned to a version older than $target");
             return 1;
         }
         $self->info("$target is already newer than $source");
@@ -146,7 +146,7 @@ sub _merge_pkg_stk {
 
     if ($target < $source) {
         if ( $target->is_pinned() ) {
-            $self->whine("$target is pinned to a version older than $source");
+            $self->warning("$target is pinned to a version older than $source");
             return 1;
         }
         my $source_pkg = $source->package();

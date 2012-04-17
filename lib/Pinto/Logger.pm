@@ -1,14 +1,15 @@
+# ABSTRACT: Record events in the repository log file (and elsewhere).
+
 package Pinto::Logger;
 
-# ABSTRACT: A simple logger
-
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
-use MooseX::Types::Moose qw(Int Bool);
-use Pinto::Types qw(IO);
+use DateTime;
+use Log::Dispatch;
+use Log::Dispatch::File;
 
-use Readonly;
-use Term::ANSIColor 2.02;
+use Pinto::Types qw(Dir File);
 
 use namespace::autoclean;
 
@@ -17,160 +18,95 @@ use namespace::autoclean;
 # VERSION
 
 #-----------------------------------------------------------------------------
+# Roles
 
-Readonly my $LEVEL_QUIET => -2;
-Readonly my $LEVEL_WARN  => -1;
-Readonly my $LEVEL_INFO  =>  0;
-Readonly my $LEVEL_NOTE  =>  1;
-Readonly my $LEVEL_DEBUG =>  2;
+with qw(Pinto::Role::Configurable);
 
 #-----------------------------------------------------------------------------
-# Moose attributes
+# Attributes
 
-has verbose  => (
-    is       => 'ro',
-    isa      => Int,
-    default  => $LEVEL_INFO,
+has log_level => (
+    is      => 'ro',
+    isa     => Str,
+    default => sub { $_[0]->config->log_level },
 );
 
-has out => (
-    is       => 'ro',
-    isa      => IO,
-    coerce   => 1,
-    default  => sub { [fileno(STDOUT), '>'] },
+
+has log_file => (
+    is      => 'ro',
+    isa     => File,
+    default => sub { $_[0]->config->log_file },
+    coerce  => 1,
 );
 
-has nocolor => (
+
+has log_handler => (
     is       => 'ro',
-    isa      => Bool,
-    default  => 0,
+    isa      => 'Log::Dispatch',
+    builder  => '_build_log_handler',
+    handles  => [qw(debug info notice warning error)], # fatal is handled below
+    lazy     => 1,
 );
 
 #-----------------------------------------------------------------------------
 
-sub BUILDARGS {
-    my ($class, %args) = @_;
+sub _build_log_handler {
+    my ($self) = @_;
 
-    $args{verbose} = $LEVEL_QUIET if delete $args{quiet};
+    my $log_dir = $self->log_file->dir;
+    $log_dir->mkpath if not -e $log_dir;
 
-    return \%args;
+    my $log_filename = $self->log_file->stringify;
+
+    my $cb = sub { my %args  = @_;
+                   my $msg   = $args{message};
+                   my $level = uc $args{level};
+                   my $now   = DateTime->now->iso8601;
+                   return "$now $level: $msg" };
+
+
+    my $out = Log::Dispatch::File->new( min_level   => 'notice',
+                                        filename    => $log_filename,
+                                        mode        => 'append',
+                                        permissions => 0644,
+                                        callbacks   => $cb,
+                                        newline     => 1 );
+
+    my $handler = Log::Dispatch->new();
+    $handler->add($out);
+
+    return $handler;
 }
 
 #-----------------------------------------------------------------------------
-# Private methods
 
-sub _logit {
-    my ($self, $message) = @_;
+=method add_output( $obj )
 
-    return print { $self->out() } "$message\n";
-}
-
-#-----------------------------------------------------------------------------
-# Public methods
-
-=method debug( $message )
-
-Logs a message if C<verbose> is 1 or higher.
+Adds the object to the output destinations that this logger writes to.
+The object must be an instance of a L<Log::Dispatch::Output> subclass,
+such as L<Log::Dispatch::Screen> or L<Log::Dispatch::Handle>.
 
 =cut
 
-sub debug {
-    my ($self, $message) = @_;
+sub add_output {
+    my ($self, $output) = @_;
 
-    chomp $message;
-    $self->_logit($message) if $self->verbose() >= $LEVEL_DEBUG;
+    my $base_class = 'Log::Dispatch::Output';
+    $output->isa($base_class) or confess "Argument is not a $base_class";
 
-    return 1;
+    $self->log_handler->add($output);
+
+    return $self;
 }
 
 #-----------------------------------------------------------------------------
-
-=method note( $message )
-
-Logs a message if C<verbose> is 2 or higher.
-
-=cut
-
-sub note {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $self->_logit($message) if $self->verbose() >= $LEVEL_NOTE;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
-=method info( $message )
-
-Logs a message if C<verbose> is 0 or higher.
-
-=cut
-
-sub info {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $self->_logit($message) if $self->verbose() >= $LEVEL_INFO;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
-=method whine( $message )
-
-Logs a message to C<verbose> is -1 or higher.
-
-=cut
-
-sub whine {
-    my ($self, $message) = @_;
-
-    chomp $message;
-    $message = _colorize("$message", 'bold yellow') unless $self->nocolor();
-    $self->_logit($message) if $self->verbose() >= $LEVEL_WARN;
-
-    return 1;
-}
-
-#-----------------------------------------------------------------------------
-
-=method fatal( $message )
-
-Dies with the given message.
-
-=cut
 
 sub fatal {
     my ($self, $message) = @_;
 
-    chomp $message;
-    $message = _colorize("$message", 'bold red') unless $self->nocolor();
-
-    die "$message\n";                     ## no critic (RequireCarping)
+    $self->log_handler->log_and_croak(level => 'fatal', message => $message);
 }
 
-#-----------------------------------------------------------------------------
-
-sub _colorize {
-    my ($string, $color) = @_;
-
-    return $string if not defined $color;
-    return $string if $color eq q{};
-
-    # TODO: Don't colorize if not going to a terminal?
-
-    # $terminator is a purely cosmetic change to make the color end at the end
-    # of the line rather than right before the next line. It is here because
-    # if you use background colors, some console windows display a little
-    # fragment of colored background before the next uncolored (or
-    # differently-colored) line.
-
-    my $terminator = chomp $string ? "\n" : q{};
-    return  Term::ANSIColor::colored( $string, $color ) . $terminator;
-}
 
 #-----------------------------------------------------------------------------
 
@@ -181,3 +117,29 @@ __PACKAGE__->meta->make_immutable();
 1;
 
 __END__
+
+=head1 LOGGING METHODS
+
+The following methods are available for writing to the logs at various
+levels (listed in order of increasing priority).  Each method takes a
+single message as an argument.
+
+=over
+
+=item debug
+
+=item info
+
+=item notice
+
+=item warning
+
+=item error
+
+=item fatal
+
+Note that C<fatal> causes the application to C<croak>.
+
+=back
+
+=cut

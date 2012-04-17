@@ -1,13 +1,10 @@
+# ABSTRACT: Import a package into the repository
+
 package Pinto::Action::Import;
 
-# ABSTRACT: Import a foreign distribution into the repository
-
-use version;
-
 use Moose;
-use MooseX::Types::Moose qw(Str Bool);
 
-use Pinto::Types qw(Vers StackName);
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -16,27 +13,11 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
+
 
 #------------------------------------------------------------------------------
-# Attributes
-
-has package_name => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
-
-
-has minimum_version => (
-    is      => 'ro',
-    isa     => Vers,
-    default => sub { version->parse(0) },
-    coerce  => 1,
-);
-
 
 has stack => (
     is      => 'ro',
@@ -44,32 +25,17 @@ has stack => (
     default => 'default',
 );
 
-
-has norecurse => (
-   is      => 'ro',
-   isa     => Bool,
-   default => 0,
-);
-
-#------------------------------------------------------------------------------
-# Roles
-
-with qw( Pinto::Role::PackageImporter );
-
 #------------------------------------------------------------------------------
 
-# TODO: Allow the import target to be specified as a package/version,
-# dist path, or a particular URL.  Then do the right thing for each.
+with qw( Pinto::Role::PackageImporter
+         Pinto::Role::Interface::Action::Import );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $wanted = { name    => $self->package_name(),
-                   version => $self->minimum_version() };
-
-    my ($dist, $imported_flag) = $self->find_or_import( $wanted, $self->stack() );
+    my ($dist, $imported_flag) = $self->find_or_import( $self->target );
     return 0 if not $dist;
 
     $self->add_message( Pinto::Util::imported_dist_message($dist) )

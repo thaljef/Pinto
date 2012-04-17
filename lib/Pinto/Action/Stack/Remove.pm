@@ -33,7 +33,7 @@ has stack => (
 #------------------------------------------------------------------------------
 # Methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my $stack_name = $self->stack();
@@ -44,12 +44,12 @@ override execute => sub {
     my $stack = $self->repos->get_stack( name => $stack_name )
         or $self->fatal("Stack $stack_name does not exist");
 
-    $self->note("Removing stack $stack");
+    $self->notice("Removing stack $stack");
 
     $stack->delete();
 
     return 1;
-};
+}
 
 #------------------------------------------------------------------------------
 

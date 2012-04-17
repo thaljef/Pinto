@@ -8,6 +8,7 @@ use DateTime;
 use Path::Class;
 use Try::Tiny;
 
+use Pinto::Locker;
 use Pinto::Result;
 
 use Pinto::Types 0.017 qw(Dir);
@@ -17,8 +18,14 @@ use MooseX::Types::Moose qw(Str Bool);
 
 # VERSION
 
+#-----------------------------------------------------------------------------
+# Roles
+
+with qw( Pinto::Role::Loggable
+         Pinto::Role::Configurable );
+
 #------------------------------------------------------------------------------
-# Moose attributes
+# Attributes
 
 has repos    => (
     is       => 'ro',
@@ -28,13 +35,14 @@ has repos    => (
 
 
 has messages => (
-    is         => 'ro',
     isa        => 'ArrayRef[Str]',
     traits     => [ 'Array' ],
-    handles    => {add_message => 'push'},
+    handles    => {
+        add_message => 'push',
+        messages    => 'elements',
+    },
     default    => sub { [] },
     init_arg   => undef,
-    auto_deref => 1,
 );
 
 
@@ -59,7 +67,14 @@ has tag => (
     predicate => 'has_tag',
 );
 
-#-----------------------------------------------------------------------------
+
+has locker  => (
+    is         => 'ro',
+    isa        => 'Pinto::Locker',
+    init_arg   =>  undef,
+    lazy_build => 1,
+);
+
 
 has actions => (
     is       => 'ro',
@@ -73,7 +88,6 @@ has actions => (
 #-----------------------------------------------------------------------------
 # Private attributes
 
-
 has _result => (
     is       => 'ro',
     isa      => 'Pinto::Result',
@@ -82,12 +96,16 @@ has _result => (
 );
 
 #-----------------------------------------------------------------------------
-# Roles
+# Builders
 
-with qw( Pinto::Interface::Loggable
-         Pinto::Interface::Configurable );
+sub _build_locker {
+    my ($self) = @_;
 
-#-----------------------------------------------------------------------------
+    return Pinto::Locker->new( config => $self->config(),
+                               logger => $self->logger() );
+}
+
+#------------------------------------------------------------------------------
 # Public methods
 
 =method run()
@@ -99,27 +117,32 @@ Runs all the actions in this Batch.  Returns a L<Pinto::Result>.
 sub run {
     my ($self) = @_;
 
+    # Divert any warnings to our logger
+    local $SIG{__WARN__} = sub { $self->warning(@_) };
+
+    $self->locker->lock();
     $self->repos->initialize() unless $self->noinit();
 
     while ( my $action = $self->dequeue() ) {
         $self->_run_action($action);
     }
 
-    if ( not  $self->_result->changes_made() ) {
-        $self->note('No changes were made');
-        return $self->_result();
+    if (not $self->_result->changes_made) {
+        $self->info('No changes were made');
+        goto BATCH_DONE;
     }
 
     $self->repos->write_index();
 
-    $self->debug( $self->message_string() );
+    if (not $self->nocommit) {
+        my $msg = $self->message_string();
+        my $tag = $self->tag();
+        $self->repos->commit(message => $msg);
+        $self->repos->tag(tag => $tag, message => $msg) if $tag;
+    }
 
-    return $self->_result() if $self->nocommit();
-
-    my $msg = $self->message_string();
-    $self->repos->commit( message => $msg );
-    $self->repos->tag( tag => $self->tag(), message => $msg ) if $self->has_tag();
-
+  BATCH_DONE:
+    $self->locker->unlock();
     return $self->_result();
 }
 
@@ -151,7 +174,7 @@ sub _handle_action_error {
 
     if ( blessed($error) && $error->isa('Pinto::Exception') ) {
         $self->_result->add_exception($error);
-        $self->whine($error);
+        $self->warning($error);
         return $self;
     }
 

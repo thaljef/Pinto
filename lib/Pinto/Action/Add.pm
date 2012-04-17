@@ -1,6 +1,6 @@
-package Pinto::Action::Add;
+# ABSTRACT: Add one distribution to the repository
 
-# ABSTRACT: Add a local distribution to the repository
+package Pinto::Action::Add;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);
@@ -19,27 +19,10 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
-# Attrbutes
-
-has archive => (
-    is       => 'ro',
-    isa      => File,
-    required => 1,
-    coerce   => 1,
-);
-
-
-has norecurse => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
-
 
 has pin   => (
     is      => 'ro',
@@ -55,16 +38,14 @@ has stack => (
 );
 
 #------------------------------------------------------------------------------
-# Roles
 
-with qw( Pinto::Interface::Authorable
+with qw( Pinto::Role::FileFetcher
          Pinto::Role::PackageImporter
-);
+         Pinto::Role::Interface::Action::Add );
 
 #------------------------------------------------------------------------------
-# Public methods
 
-override execute => sub {
+sub execute {
     my ($self) = @_;
 
     my ($dist) = $self->repos->add_distribution( archive   => $self->archive,
@@ -81,7 +62,7 @@ override execute => sub {
     }
 
     return 1;
-};
+}
 
 #------------------------------------------------------------------------------
 
