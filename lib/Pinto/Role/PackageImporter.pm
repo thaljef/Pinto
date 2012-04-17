@@ -119,22 +119,20 @@ sub _import_by_distribution_spec {
         return ($got_dist, 0);
     }
 
-    my $dist_url = $self->repos->cache->locate( distribution => $path );
+    my $dist_url = $self->repos->cache->locate( distribution => $path )
+      or throw_error "Cannot find $dspec anywhere";
 
-    if ($dist_url) {
-        $self->debug("Found package $dspec at $dist_url");
+    $self->debug("Found package $dspec at $dist_url");
 
-        if ( Pinto::Util::isa_perl($dist_url) ) {
-            $self->debug("Distribution $dist_url is a perl.  Skipping it.");
-            return;
-        }
-
-        return ($self->_import_distribution($dist_url), 1);
+    if ( Pinto::Util::isa_perl($dist_url) ) {
+        $self->debug("Distribution $dist_url is a perl.  Skipping it.");
+        return;
     }
 
-    throw_error "Cannot find $dspec anywhere";
+    my $dist = $self->repos->import_distribution( url   => $dist_url,
+                                                  stack => $self->stack );
 
-    return;
+    return ($dist, 1);
 }
 
 #------------------------------------------------------------------------------
@@ -214,17 +212,6 @@ sub _extract_prerequisites {
                   catch { $self->error("Unable to extract prerequisites from $archive: $_"); () };
 
     return map { Pinto::PackageSpec->new($_) } @prereqs;
-}
-
-#------------------------------------------------------------------------------
-
-sub _import_distribution {
-    my ($self, $url) = @_;
-
-    my $dist = $self->repos->import_distribution( url   => $url,
-                                                  stack => $self->stack );
-
-    return $dist;
 }
 
 #------------------------------------------------------------------------------
