@@ -4,10 +4,12 @@ package Pinto::Role::PackageImporter;
 
 use Moose::Role;
 
+use Carp;
 use Try::Tiny;
 
 use Pinto::PackageExtractor;
 use Pinto::Exceptions qw(throw_error);
+use Pinto::PackageSpec;
 use Pinto::Util;
 
 use namespace::autoclean;
@@ -50,18 +52,34 @@ sub _build_extractor {
 #------------------------------------------------------------------------------
 
 sub find_or_import {
-    my ($self, $pkg_spec) = @_;
+    my ($self, $target) = @_;
 
-    my ($pkg_name, $pkg_ver) = ($pkg_spec->{name}, $pkg_spec->{version});
-    my $pkg_vname = "$pkg_name-$pkg_ver";
+    if ( $target->isa('Pinto::PackageSpec') ){
+        return $self->_import_by_package_spec($target);
+    }
+    elsif ($target->isa('Pinto::DistributionSpec') ){
+        return $self->_import_by_distribution_spec($target);
+    }
+    else {
+        my $type = ref $target;
+        confess "Don't know how to import $type";
+    }
 
-    $self->info("Looking for package $pkg_vname");
+}
+
+#------------------------------------------------------------------------------
+
+sub _import_by_package_spec {
+    my ($self, $pspec) = @_;
+
+    $self->info("Looking for package $pspec");
+    my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
 
     my $where   = {name => $pkg_name, is_latest => 1};
     my $got_pkg = $self->repos->select_packages( $where )->single();
 
     if ($got_pkg and $got_pkg->version() >= $pkg_ver) {
-        $self->info("Already have package $pkg_vname or newer as $got_pkg");
+        $self->info("Already have package $pspec or newer as $got_pkg");
         return ($got_pkg->distribution(), 0);
     }
 
@@ -69,7 +87,7 @@ sub find_or_import {
                                                 version => $pkg_ver,
                                                 latest  => 1 );
     if ($dist_url) {
-        $self->debug("Found package $pkg_vname or newer in $dist_url");
+        $self->debug("Found package $pspec or newer in $dist_url");
 
         if ( Pinto::Util::isa_perl($dist_url) ) {
             $self->debug("Distribution $dist_url is a perl.  Skipping it.");
@@ -79,11 +97,44 @@ sub find_or_import {
         return ($self->_import_distribution($dist_url), 1);
     }
 
-    throw_error "Cannot find $pkg_vname anywhere";
+    throw_error "Cannot find $pspec anywhere";
 
     return;
 }
 
+#------------------------------------------------------------------------------
+
+sub _import_by_distribution_spec {
+    my ($self, $dspec) = @_;
+
+    $self->info("Looking for distribution $dspec");
+
+    my $path     = $dspec->path;
+    my $where    = {path => $path};
+    my $got_dist = $self->repos->select_distributions( $where )->single();
+
+    if ($got_dist) {
+        $self->info("Already have distribution $dspec");
+        return ($got_dist, 0);
+    }
+
+    my $dist_url = $self->repos->cache->locate( distribution => $path );
+
+    if ($dist_url) {
+        $self->debug("Found package $dspec at $dist_url");
+
+        if ( Pinto::Util::isa_perl($dist_url) ) {
+            $self->debug("Distribution $dist_url is a perl.  Skipping it.");
+            return;
+        }
+
+        return ($self->_import_distribution($dist_url), 1);
+    }
+
+    throw_error "Cannot find $dspec anywhere";
+
+    return;
+}
 
 #------------------------------------------------------------------------------
 
@@ -165,7 +216,7 @@ sub _extract_prerequisites {
     my @prereqs = try   { $self->extractor->requires( archive => $archive ) }
                   catch { $self->error("Unable to extract prerequisites from $archive: $_"); () };
 
-    return @prereqs;
+    return map { Pinto::PackageSpec->new($_) } @prereqs;
 }
 
 #------------------------------------------------------------------------------

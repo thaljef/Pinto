@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH $command [OPTIONS] PACKAGE_NAME ...
-%c --root=PATH $command [OPTIONS] < LIST_OF_PACKAGE_NAMES
+%c --root=PATH $command [OPTIONS] TARGET ...
+%c --root=PATH $command [OPTIONS] < LIST_OF_TARGETS
 END_USAGE
 
     chomp $usage;
@@ -58,12 +58,7 @@ sub execute {
     return 0 if not @args;
 
     $self->pinto->new_batch(%{$opts});
-
-    for my $arg (@args) {
-        my ($name, $version) = split m/ - /mx, $arg, 2;
-        $self->pinto->add_action('Import', %{$opts}, package => $name,
-                                                     version => ($version || 0));
-    }
+    $self->pinto->add_action($self->action_name, %{$opts}, target => $_) for @args;
     my $result = $self->pinto->run_actions();
 
     return $result->is_success() ? 0 : 1;
@@ -79,21 +74,21 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir import [OPTIONS] PACKAGE_NAME ...
-  pinto-admin --root=/some/dir import [OPTIONS] < LIST_OF_PACKAGE_NAMES
+  pinto-admin --root=/some/dir import [OPTIONS] TARGET ...
+  pinto-admin --root=/some/dir import [OPTIONS] < LIST_OF_TARGETS
 
 =head1 DESCRIPTION
 
-This command locates a package on one of your remote repositories and
-then imports the distribution providing that package into your local
-repository.  Then it recursively locates and imports all the
-distributions that provide the packages to satisfy the prerequisites
-for that distribution.
+This command locates a package in your upstream repositories and then
+imports the distribution providing that package into your repository.
+Then it recursively locates and imports all the distributions that are
+necessary to satisfy its prerequisites.  You can also request to
+directly import a particular distribution.
 
 When locating packages, Pinto first looks at the the packages that
 already exist in the local repository, then Pinto looks at the
-packages that are available available on the remote repositories.  At
-present, Pinto takes the *first* package it can find that satisfies
+packages that are available available on the upstream repositories.
+At present, Pinto takes the *first* package it can find that satisfies
 the prerequisite.  In the future, you may be able to direct Pinto to
 instead choose the *latest* package that satisfies the prerequisite.
 (NOT SURE THOSE LAST TWO STATEMENTS ARE TRUE).
@@ -107,22 +102,18 @@ higher version.
 
 =head1 COMMAND ARGUMENTS
 
-To import a distribution that provides a particular package, just give
-the name of the package.  For example:
+Arguments are the targets that you want to import.  Targets can be
+specified as packages (with or without a minimum version number) or
+as particular distributions.  For example:
 
-  Foo::Bar
-
-To specify a minimum version for that package, append '-' and the
-minimum version number to the name.  For example:
-
-  Foo::Bar-1.2
+  Foo::Bar                                 # Imports any version of Foo::Bar
+  Foo::Bar-1.2                             # Imports Foo::Bar 1.2 or higher
+  SHAKESPEARE/King-Lear-1.2.tar.gz         # Imports a specific distribuion
+  SHAKESPEARE/tragedies/Hamlet-4.2.tar.gz  # Ditto, but from a subdirectory
 
 You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"
 or ';') will be ignored.
-
-In the future, you may be able to specify distribution paths or
-specific URLs for import as well.
 
 =head1 COMMAND OPTIONS
 
