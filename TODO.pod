@@ -2,12 +2,26 @@
 
 =over 4
 
-=item Exception hierarchy/handling
+=item Make the Store transactional
 
-Current regime is too complicated.  Maybe just croak on any error,
-rather than trying to continue with the rest of the batch.
+=item Rollback a stack to prior revision
 
-=item Add a history mechanism to document changes
+=item View history for entire repository or stack
+
+=item Examine the delta between two stacks
+
+=item Keep track of dependencies
+
+=item Use Module::Faker to generate test dists on the fly
+
+=item Rewrite tests with Test::Class
+
+=item Write test cases for Stack operations
+
+=item Extract new Roles into Pinto-Common
+
+=item Re-examine log levels for messages
+
 
 =back
 
