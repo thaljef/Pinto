@@ -27,7 +27,6 @@ CREATE TABLE stack (
 
 create TABLE pin (
        id         INTEGER PRIMARY KEY NOT NULL,
-       ctime      INTEGER             NOT NULL,
        reason     TEXT                NOT NULL
 );
 
@@ -42,28 +41,37 @@ create TABLE package_stack (
        FOREIGN KEY(pin)     REFERENCES pin(id)
 );
 
-/*
-create TABLE revision (
+
+CREATE TABLE revision (
        id          INTEGER PRIMARY KEY NOT NULL,
-       stack       INTEGER             NOT NULL,
-       log         TEXT                NOT NULL,
-       user        TEXT                NOT NULL,
-       ctime       INTEGER             NOT NULL,
-       FOREIGN KEY(stack)   REFERENCES stack(id),
+       message     TEXT                NOT NULL,
+       username    TEXT                NOT NULL,
+       ctime       INTEGER             NOT NULL
 );
 
 
-create TABLE package_stack_change (
+CREATE TABLE package_stack_history (
+       id                  INTEGER PRIMARY KEY NOT NULL,
+       stack               INTEGER             NOT NULL,
+       package             INTEGER             NOT NULL,
+       pin                 INTEGER             DEFAULT NULL,
+       created_revision    INTEGER             NOT NULL,
+       deleted_revision    INTEGER             DEFAULT NULL,
+       FOREIGN KEY(stack)             REFERENCES stack(id),
+       FOREIGN KEY(package)           REFERENCES package(id),
+       FOREIGN KEY(pin)               REFERENCES pin(id),
+       FOREIGN KEY(created_revision)  REFERENCES revision(id),
+       FOREIGN KEY(deleted_revision)  REFERENCES revision(id)
+);
+
+/*
+CREATE TABLE dependency (
        id           INTEGER PRIMARY KEY NOT NULL,
-       type         INTEGER             NOT NULL,
-       revision     INTEGER             NOT NULL,
-       stack        INTEGER             NOT NULL,
-       package      INTEGER             NOT NULL,
-       pin          INTEGER             DEFAULT NULL,
-       FOREIGN KEY(revision)  REFERENCES revision(id),
-       FOREIGN KEY(stack)     REFERENCES stack(id),
-       FOREIGN KEY(package)   REFERENCES package(id),
-       FOREIGN KEY(pin)       REFERENCES pin(id)
+       distribution INTEGER             NOT NULL,
+       prerequisite TEXT                NOT NULL,
+       version      TEXT                NOT NULL,
+       stage        TEXT                DEFAULT NULL,  
+       FOREIGN KEY(distribution)  REFERENCES distribution(id),
 );
 */
 

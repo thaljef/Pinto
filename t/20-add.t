@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Exception;
 
 use Path::Class;
 use FindBin qw($Bin);
@@ -54,18 +55,14 @@ $t->package_ok( "$auth/$dist/$pkg2/dev" );
 #-----------------------------------------------------------------------------
 # Exceptions...
 
-$t->reset_buffer();
-$pinto->new_batch();
-$pinto->add_action( 'Add', archive => $archive, author => $auth );
-$t->result_not_ok( $pinto->run_actions() );
-$t->log_like( qr/already exists/, 'Cannot add same dist twice' );
+$pinto->new_batch;
+$pinto->add_action('Add', archive => $archive, author => $auth);
+throws_ok {$pinto->run_actions} qr/already exists/, 'Cannot add same dist twice';
 
-$t->reset_buffer();
 $pinto->new_batch();
-$pinto->add_action( 'Add', archive => 'none_such', author => $auth );
-$t->result_not_ok( $pinto->run_actions() );
-$t->log_like( qr/none_such does not exist/, 'Cannot add nonexistant archive' );
+$pinto->add_action('Add', archive => 'none_such', author => $auth);
+throws_ok {$pinto->run_actions} qr/does not exist/, 'Cannot add nonexistant archive';
 
 #-----------------------------------------------------------------------------
 
-done_testing();
+done_testing;
