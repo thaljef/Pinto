@@ -13,8 +13,6 @@ use Digest::MD5;
 use Digest::SHA;
 use Readonly;
 
-use Pinto::Exceptions qw(throw_version throw_error);
-
 use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
@@ -62,7 +60,7 @@ sub parse_dist_url {
     }
     else {
 
-        throw_error 'Unable to parse url: $url';
+        confess 'Unable to parse url: $url';
     }
 
 }

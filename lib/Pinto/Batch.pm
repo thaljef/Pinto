@@ -3,7 +3,6 @@ package Pinto::Batch;
 # ABSTRACT: Runs a series of actions
 
 use Moose;
-
 use MooseX::Types::Moose qw(Str Bool);
 
 use Carp;

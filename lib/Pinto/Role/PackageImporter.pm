@@ -8,7 +8,6 @@ use Carp;
 use Try::Tiny;
 
 use Pinto::PackageExtractor;
-use Pinto::Exceptions qw(throw_error);
 use Pinto::PackageSpec;
 use Pinto::Util;
 
@@ -88,7 +87,7 @@ sub _import_by_package_spec {
                                                 latest  => 1 );
 
 
-    throw_error "Cannot find $pspec anywhere" if not $dist_url;
+    confess "Cannot find $pspec anywhere" if not $dist_url;
 
     $self->debug("Found package $pspec or newer in $dist_url");
 
@@ -121,7 +120,7 @@ sub _import_by_distribution_spec {
     }
 
     my $dist_url = $self->repos->cache->locate( distribution => $path )
-      or throw_error "Cannot find $dspec anywhere";
+      or confess "Cannot find $dspec anywhere";
 
     $self->debug("Found package $dspec at $dist_url");
 

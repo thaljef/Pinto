@@ -4,10 +4,9 @@ package Pinto::Role::PathMaker;
 
 use Moose::Role;
 
+use Carp;
 use Path::Class;
 use Try::Tiny;
-
-use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
 
@@ -35,15 +34,15 @@ sub mkpath {
 
     $path = dir($path) if not eval {$path->isa('Path::Class')};
 
-    throw_fatal "$path is not a Path::Class::Dir" if not $path->is_dir();
-    throw_fatal "$path is an existing file" if -f $path;
+    confess "$path is not a Path::Class::Dir" if not $path->is_dir();
+    confess "$path is an existing file" if -f $path;
 
     return 0 if -e $path;
 
     $self->debug("Making directory $path");
 
     try   { $path->mkpath() }
-    catch { throw_fatal "Failed to make directory $path: $_" };
+    catch { confess "Failed to make directory $path: $_" };
 
     return 1;
 }

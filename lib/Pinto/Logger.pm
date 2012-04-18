@@ -5,6 +5,7 @@ package Pinto::Logger;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 
+use Carp;
 use DateTime;
 use Log::Dispatch;
 use Log::Dispatch::File;

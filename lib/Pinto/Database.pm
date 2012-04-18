@@ -4,12 +4,12 @@ package Pinto::Database;
 
 use Moose;
 
+use Carp;
 use Try::Tiny;
 use Path::Class;
 
 use Pinto::Schema;
 use Pinto::IndexWriter;
-use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
 
@@ -44,7 +44,7 @@ sub _build_schema {
 
     my $connection;
     try   { $connection = Pinto::Schema->connect($dsn) }
-    catch { throw_fatal "Database error: $_" };
+    catch { confess "Database error: $_" };
 
     return $connection;
 }

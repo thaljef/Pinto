@@ -4,7 +4,7 @@ package Pinto::Store::File;
 
 use Moose;
 
-use Pinto::Exceptions qw(throw_fatal);
+use Carp;
 
 use namespace::autoclean;
 
@@ -24,12 +24,12 @@ augment remove_path => sub {
     my ($self, %args) = @_;
 
     my $path = $args{path};
-    $path->remove() or throw_fatal "Failed to remove path $path: $!";
+    $path->remove() or confess "Failed to remove path $path: $!";
 
     while (my $dir = $path->parent()) {
         last if $dir->children();
         $self->debug("Removing empty directory $dir");
-        $dir->remove() or throw_fatal "Failed to remove directory $dir: $!";
+        $dir->remove() or confess "Failed to remove directory $dir: $!";
         $path = $dir;
     }
 

@@ -5,11 +5,10 @@ package Pinto::Util::Svn;
 use strict;
 use warnings;
 
+use Carp;
 use List::MoreUtils qw(firstidx);
 use Path::Class;
 use IPC::Run;
-
-use Pinto::Exceptions qw(throw_fatal);
 
 #--------------------------------------------------------------------------
 
@@ -134,7 +133,7 @@ sub location {
     _svn( command => ['info', $path], buffer => \$buffer);
 
     $buffer =~ /^ URL: \s+ (\S+) $/xm
-        or throw_fatal "Unable to parse svn info: $buffer";
+        or confess "Unable to parse svn info: $buffer";
 
     return $1; ## no critic qw(Capture)
 }
@@ -207,7 +206,7 @@ sub _svn {
         }
 
         my $command_string = join ' ', @{ $command };
-        throw_fatal "Command failed: $command_string\n" . ${ $buffer };
+        confess "Command failed: $command_string\n" . ${ $buffer };
     }
 
     return $ok;

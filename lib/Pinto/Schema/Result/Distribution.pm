@@ -130,7 +130,6 @@ use CPAN::DistnameInfo;
 use String::Format;
 
 use Pinto::Util;
-use Pinto::Exceptions qw(throw_error);
 
 use overload ( '""' => 'to_string' );
 

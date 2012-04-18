@@ -4,14 +4,13 @@ package Pinto::Repository;
 
 use Moose;
 
-use Try::Tiny;
+use Carp;
 use Class::Load;
 
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::Types qw(Dir);
-use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
 
@@ -192,11 +191,11 @@ sub add_distribution {
     my $index   = $args{index}  || 1;
     my $pin     = $args{pin};
 
-    throw_error "Archive $archive does not exist"  if not -e $archive;
-    throw_error "Archive $archive is not readable" if not -r $archive;
+    confess "Archive $archive does not exist"  if not -e $archive;
+    confess "Archive $archive is not readable" if not -r $archive;
 
     $stack = $self->get_stack(name => $stack)
-        || throw_error qq{No such stack named "$stack"};
+        || confess qq{No such stack named "$stack"};
 
     $pin = $self->db->create_pin( {reason => $pin} )
         if $pin;
@@ -206,7 +205,7 @@ sub add_distribution {
     my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
 
     $self->get_distribution(path => $dist_path)
-        and throw_error "Distribution $dist_path already exists";
+        and confess "Distribution $dist_path already exists";
 
     my $dist_struct = { path     => $dist_path,
                         source   => $source,
@@ -241,7 +240,7 @@ sub mirror_distribution {
     my $stack  = $args{stack};
 
     $stack = $self->get_stack(name => $stack)
-        || throw_error qq{No such stack named "$stack"};
+        or confess qq{No such stack named "$stack"};
 
     my $url = URI->new($struct->{source} . '/authors/id/' . $struct->{path});
     $self->info("Mirroring distribution at $url");
@@ -273,7 +272,7 @@ sub import_distribution {
     my ($source, $path, $author) = Pinto::Util::parse_dist_url( $url );
 
     my $existing = $self->get_distribution( path => $path );
-    throw_error "Distribution $path already exists" if $existing;
+    confess "Distribution $path already exists" if $existing;
 
     my $archive = $self->fetch_temporary(url => $url);
 
@@ -310,7 +309,7 @@ sub register_distribution {
     my $stack = $args{stack} || 'default';
 
     $stack = $self->get_stack(name => $stack)
-        || throw_error "No such stack named $stack";
+        || confess "No such stack named $stack";
 
     $self->info("Registering distribution $dist on stack $stack");
 

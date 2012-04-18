@@ -5,11 +5,10 @@ package Pinto::PackageExtractor;
 use Moose;
 use MooseX::Types::Moose qw(Bool);
 
+use Carp;
 use Try::Tiny;
 use Dist::Requires 0.005;  # Bug fixes, better tempdir cleanup
 use Dist::Metadata 0.922;  # Supports zip
-
-use Pinto::Exceptions qw(throw_error);
 
 use version;
 use namespace::autoclean;
@@ -49,7 +48,7 @@ sub provides {
     $self->info("Extracting packages from archive $archive");
 
     my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions()  }
-                   catch { throw_error "Unable to extract packages from $archive: $_" };
+                   catch { confess "Unable to extract packages from $archive: $_" };
 
     my @provides;
     for my $pkg_name ( sort keys %{ $provides } ) {
@@ -76,7 +75,7 @@ sub requires {
     $self->info("Extracting prerequisites from $archive");
 
     my %prereqs =   try { Dist::Requires->new()->prerequisites(dist => $archive)          }
-                  catch { throw_error "Unable to extract prerequisites from $archive: $_" };
+                  catch { confess "Unable to extract prerequisites from $archive: $_" };
 
     my @prereqs;
     for my $pkg_name ( sort keys %prereqs ) {
@@ -108,7 +107,7 @@ sub _versionize {
             $self->warning("Package $vname has invalid version. Ignoring it");
         }
         else {
-            throw_error "Package $vname has invalid version: $@";
+            confess "Package $vname has invalid version: $@";
         }
     }
 

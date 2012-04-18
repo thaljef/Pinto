@@ -4,11 +4,10 @@ package Pinto::Role::FileFetcher;
 
 use Moose::Role;
 
+use Carp;
 use File::Temp;
 use Path::Class;
 use LWP::UserAgent;
-
-use Pinto::Exceptions qw(throw_fatal throw_error);
 
 use namespace::autoclean;
 
@@ -98,7 +97,7 @@ sub _fetch {
 
     $self->debug("Fetching $url");
 
-    my $result = eval { $self->ua->mirror($url, $to) } or throw_fatal $@;
+    my $result = eval { $self->ua->mirror($url, $to) } or confess $@;
 
     if ($result->is_success()) {
         return 1;
@@ -107,7 +106,7 @@ sub _fetch {
         return 0;
     }
     else {
-        throw_error "Failed to fetch $url: " . $result->status_line();
+        confess "Failed to fetch $url: " . $result->status_line();
     }
 
     # Should never get here
