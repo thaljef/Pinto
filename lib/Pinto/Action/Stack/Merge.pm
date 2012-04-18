@@ -1,6 +1,6 @@
-package Pinto::Action::Stack::Merge;
-
 # ABSTRACT: Merge packages from one stack into another
+
+package Pinto::Action::Stack::Merge;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
@@ -85,8 +85,7 @@ sub execute {
     $self->info('Dry run merge -- no changes were made')
         if $self->dryrun();
 
-    my $status = $self->dryrun() ? 0 : 1;
-    return $status;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------
@@ -102,6 +101,7 @@ sub _merge_pkg_stk {
          $self->info("Adding package $pkg to stack $to_stack");
          return 0 if $self->dryrun();
          $source->copy( {stack => $to_stack} );
+         $self->result->changed;
          return 0;
      }
 
@@ -117,6 +117,7 @@ sub _merge_pkg_stk {
             return 0 if $self->dryrun();
             $target->pin( $source->pin() );
             $target->update();
+            $self->result->changed;
             return 0;
         }
         return 0;
@@ -154,6 +155,7 @@ sub _merge_pkg_stk {
         return 0 if $self->dryrun();
         $target->package( $source_pkg );
         $target->update();
+        $self->result->changed;
         return 0;
     }
 

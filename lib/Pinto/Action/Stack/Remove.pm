@@ -1,13 +1,8 @@
+# ABSTRACT: Delete a stack
+
 package Pinto::Action::Stack::Remove;
 
-# ABSTRACT: An action to delete a stack
-
 use Moose;
-
-use MooseX::Types::Moose qw(Str);
-use Pinto::Types qw(StackName);
-
-use Pinto::Exceptions qw(throw_fatal);
 
 use namespace::autoclean;
 
@@ -16,19 +11,12 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has stack => (
-    is       => 'ro',
-    isa      => StackName,
-    required => 1,
-    coerce   => 1,
-);
+with qw( Pinto::Role::Interface::Action::Stack::Remove );
 
 #------------------------------------------------------------------------------
 # Methods
@@ -36,7 +24,7 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack_name = $self->stack();
+    my $stack_name = $self->stack;
 
     $self->fatal( 'You cannot remove the default stack' )
         if $stack_name eq 'default';
@@ -46,9 +34,9 @@ sub execute {
 
     $self->info("Removing stack $stack");
 
-    $stack->delete();
+    $stack->delete;
 
-    return 1;
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

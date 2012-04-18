@@ -7,6 +7,7 @@ use Moose;
 use Try::Tiny;
 use Class::Load;
 
+use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::Types qw(Dir);
@@ -29,76 +30,62 @@ with qw( Pinto::Role::Configurable
 has db => (
     is         => 'ro',
     isa        => 'Pinto::Database',
+    lazy       => 1,
     handles    => [ qw(write_index select_distributions select_packages) ],
-    lazy_build => 1,
+    default    => sub { Pinto::Database->new( config => $_[0]->config,
+                                              logger => $_[0]->logger ) },
 );
 
 
 has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
+    lazy       => 1,
     handles    => [ qw(initialize commit tag) ],
-    lazy_build => 1,
+    default    => sub { my $store_class = $_[0]->config->store;
+                        Class::Load::load_class($store_class);
+                        $store_class->new( config => $_[0]->config,
+                                           logger => $_[0]->logger ) },
 );
 
 
 has cache => (
     is         => 'ro',
     isa        => 'Pinto::IndexCache',
-    lazy_build => 1,
+    lazy       => 1,
+    default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
+                                                logger => $_[0]->logger ) },
+);
+
+
+has locker  => (
+    is         => 'ro',
+    isa        => 'Pinto::Locker',
+    lazy       => 1,
+    handles    => [ qw(lock unlock) ],
+    default    => sub { Pinto::Locker->new( config => $_[0]->config,
+                                            logger => $_[0]->logger ) },
 );
 
 
 has extractor => (
     is         => 'ro',
     isa        => 'Pinto::PackageExtractor',
-    lazy_build => 1,
+    lazy       => 1,
+    default    => sub { Pinto::PackageExtractor->new( config => $_[0]->config,
+                                                      logger => $_[0]->logger ) },
+);
+
+
+has revision => (
+    is         => 'rw',
+    isa        => 'Pinto::Schema::Result::Revision',
+    clearer    => 'clear_revision',
+    predicate  => 'has_open_revision',
+    init_arg   => undef,
 );
 
 #-------------------------------------------------------------------------------
-
-sub _build_db {
-    my ($self) = @_;
-
-    return Pinto::Database->new( config => $self->config(),
-                                 logger => $self->logger() );
-}
-
-#-------------------------------------------------------------------------------
-
-sub _build_store {
-    my ($self) = @_;
-
-    my $store_class = $self->config->store();
-
-    try   { Class::Load::load_class( $store_class ) }
-    catch { throw_fatal "Unable to load store class $store_class: $_" };
-
-    return $store_class->new( config => $self->config(),
-                              logger => $self->logger() );
-}
-
-#-------------------------------------------------------------------------------
-
-sub _build_cache {
-    my ($self) = @_;
-
-    return Pinto::IndexCache->new( config => $self->config(),
-                                   logger => $self->logger() );
-}
-
-#------------------------------------------------------------------------------
-
-sub _build_extractor {
-    my ($self) = @_;
-
-    return Pinto::PackageExtractor->new( config => $self->config(),
-                                         logger => $self->logger() );
-}
-
-
-#-------------------------------------------------------------------------------
-# Methods
 
 =method get_latest_package( name => $package_name )
 
@@ -332,6 +319,60 @@ sub register_distribution {
     }
 
     return $dist;
+}
+
+#-------------------------------------------------------------------------------
+
+sub open_revision {
+    my ($self, %args) = @_;
+
+    confess 'Revision already in progress' if $self->has_open_revision;
+
+    $self->lock;
+
+    my $revision = $self->db->schema->resultset('Revision')->create(\%args);
+
+    $self->debug('Opened revision ' . $revision->id);
+
+    $self->revision($revision);
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub kill_revision {
+    my ($self, %args) = @_;
+
+    confess 'No revision has been opened' if not $self->has_open_revision;
+
+    $self->debug('Killing revision ' . $self->revision->id);
+
+    $self->revision->delete;
+
+    $self->clear_revision;
+
+    $self->unlock;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub close_revision {
+    my ($self, %args) = @_;
+
+    confess 'No revision has been opened' if not $self->has_open_revision;
+
+    $self->debug('Closing revision ' . $self->revision->id);
+
+    $self->revision->update(\%args);
+
+    $self->clear_revision;
+
+    $self->locker->unlock;
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------

@@ -138,7 +138,7 @@ sub action_ok {
 sub package_ok {
     my ($self, $pkg_spec) = @_;
 
-    my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name)
+    my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
         = parse_pkg_spec($pkg_spec);
 
     my $pkg = $self->pinto->repos->get_stack_member(package => $pkg_name, stack => $stack_name);
@@ -154,6 +154,9 @@ sub package_ok {
     my $archive = $pkg->package->distribution->archive( $self->root() );
     $self->tb->ok(-e $archive, "Archive $archive exists");
 
+    $self->tb->ok($pkg->pin, "$pkg_spec is pinned") if $is_pinned;
+    $self->tb->ok(!$pkg->pin, "$pkg_spec is not pinned") if defined $is_pinned and not $is_pinned;
+
     $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
 
     return;
@@ -165,8 +168,14 @@ sub package_ok {
 sub result_ok {
     my ($self, $result) = @_;
 
-    $self->tb->ok( $result->is_success(), 'Result was succesful' )
-        || $self->tb->diag( "Diagnostics: " . $result->to_string() );
+    my $ok = $self->tb->ok( $result->is_success, 'Result indicates action was succesful' );
+
+    if (not $ok) {
+        my @msgs = @{ $self->pinto->logger->log_handler->msgs };
+        $self->tb->diag('Output was...');
+        $self->tb->diag($_->{message}) for @msgs;
+        $self->tb->diag('No output was seen') if not @msgs;
+    }
 
     return;
 }
@@ -176,7 +185,34 @@ sub result_ok {
 sub result_not_ok {
     my ($self, $result) = @_;
 
-    $self->tb->ok( !$result->is_success(), 'Result was not succesful' );
+    $self->tb->ok( !$result->is_success, 'Result indicates action was not succesful' );
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub result_changed_ok {
+    my ($self, $result) = @_;
+
+    my $ok = $self->tb->ok( $result->made_changes, 'Result indicates changes were made' );
+
+    if (not $ok) {
+        my @msgs = @{ $self->pinto->logger->log_handler->msgs };
+        $self->tb->diag('Output was...');
+        $self->tb->diag($_->{message}) for @msgs;
+        $self->tb->diag('No output was seen') if not @msgs;
+    }
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub result_not_changed_ok {
+    my ($self, $result) = @_;
+
+    $self->tb->ok( !$result->made_changes, 'Result indicates changes were not made' );
 
     return;
 }
@@ -249,8 +285,8 @@ sub parse_pkg_spec {
     # Remove all whitespace from spec
     $spec =~ s{\s+}{}g;
 
-    # Spec looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack"
-    my ($author, $dist_archive, $pkg, $stack_name) = split m{/}x, $spec;
+    # Spec looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack/+"
+    my ($author, $dist_archive, $pkg, $stack_name, $is_pinned) = split m{/}x, $spec;
 
     # Spec must at least have these
     croak "Could not parse pkg spec: $spec"
@@ -259,6 +295,9 @@ sub parse_pkg_spec {
     # Append the usual suffix to the archive
     $dist_archive .= '.tar.gz' unless $dist_archive =~ m{\.tar\.gz$}x;
 
+    # Normalize the is_pinned flag
+    $is_pinned = ($is_pinned eq '+' ? 1 : 0) if defined $is_pinned;
+
     # Parse package name/version
     my ($pkg_name, $pkg_version) = split m{-}x, $pkg;
 
@@ -266,7 +305,7 @@ sub parse_pkg_spec {
     $stack_name  ||= 'default';
     $pkg_version ||= 0;
 
-    return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name);
+    return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);
 }
 
 #------------------------------------------------------------------------------

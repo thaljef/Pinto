@@ -23,20 +23,21 @@ with qw( Pinto::Role::Interface::Action::Purge );
 sub execute {
     my ($self) = @_;
 
-    my $dists = $self->repos->db->select_distributions();
+    my $dists = $self->repos->db->select_distributions;
+    my $count = $dists->count;
 
-    my $count = $dists->count();
-    $self->notice("Purging all $count distributions from the repository");
-
-    my $removed = 0;
-    while ( my $dist = $dists->next() ) {
-        $self->repos->remove_distribution(dist => $dist);
-        $removed++
+    if (not $count) {
+        $self->info('Repository contains no distributions');
+        return $self->result;
     }
 
-    $self->add_message("Purged all $count distributions" ) if $removed;
+    $self->notice("Purging all $count distributions from the repository");
 
-    return $removed;
+    while ( my $dist = $dists->next ) {
+        $self->repos->remove_distribution(dist => $dist);
+    }
+
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

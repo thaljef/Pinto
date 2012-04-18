@@ -103,6 +103,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 package_stack_histories
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::PackageStackHistory>
+
+=cut
+
+__PACKAGE__->has_many(
+  "package_stack_histories",
+  "Pinto::Schema::Result::PackageStackHistory",
+  { "foreign.package" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
 =head2 packages_stack
 
 Type: has_many
@@ -119,8 +134,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-02 10:59:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dcF0GQSLdGQjuqyu9bkmXg
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-17 22:37:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hmI7c3l/2OVKQz63PWgtGg
 
 #------------------------------------------------------------------------------
 

@@ -142,7 +142,7 @@ sub register {
     $stack ||= $self->select_stacks( {name => 'default'} )->single();
 
     if (my $pkg_stack = $pkg->packages_stack_rs->find( {stack => $stack} ) ) {
-        $self->debug("$pkg is already on stack $stack");
+        $self->debug("Package $pkg is already on stack $stack");
         return $pkg_stack;
     }
 
@@ -159,7 +159,7 @@ sub register {
     my $incumbent_pkg = $incumbent->package();
 
     if ( $incumbent_pkg == $pkg ) {
-        $self->warning("Package $pkg is already in stack $stack");
+        $self->warning("Package $pkg is already on stack $stack");
         return;
     }
 

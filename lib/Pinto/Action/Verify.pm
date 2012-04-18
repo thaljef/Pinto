@@ -26,14 +26,14 @@ with qw( Pinto::Role::Interface::Action::Verify );
 sub execute {
     my ($self) = @_;
 
-    my $rs    = $self->repos->select_distributions();
+    my $rs  = $self->repos->select_distributions();
 
-    while ( my $dist = $rs->next() ) {
-        my $archive = $dist->archive( $self->repos->root_dir() );
+    while ( my $dist = $rs->next ) {
+        my $archive = $dist->archive( $self->repos->root_dir );
         print { $self->out } "Missing distribution $archive\n" if not -e $archive;
     }
 
-    return 0;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

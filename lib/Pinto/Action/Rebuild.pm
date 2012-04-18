@@ -25,9 +25,7 @@ sub execute {
 
     $self->_recompute() if $self->recompute();
 
-    $self->add_message('Rebuilt the index');
-
-    return 1;
+    return $self->result->changed; # To force rewrite of index
 }
 
 #------------------------------------------------------------------------------
@@ -45,8 +43,6 @@ sub _recompute {
         $self->debug("Recomputing latest version of package $name");
         $self->repos->db->mark_latest( $rs->first() );
     }
-
-    $self->add_message('Recalculated the latest version of all packages');
 
     return $self;
 }

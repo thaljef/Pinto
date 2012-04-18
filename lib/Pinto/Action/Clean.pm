@@ -36,8 +36,7 @@ has confirm => (
 sub execute {
     my ($self) = @_;
 
-    my $outdated = $self->_select_outdated_distributions();
-    my $removed  = 0;
+    my $outdated = $self->_select_outdated_distributions;
 
     while ( my $dist = $outdated->next() ) {
 
@@ -47,11 +46,10 @@ sub execute {
 
         $self->notice("Removing distribution $dist");
         $self->repos->remove_distribution($dist);
-        $self->add_message( "Removed outdated distribution $dist" );
-        $removed++;
+        $self->result->changed;
     }
 
-    return $removed;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

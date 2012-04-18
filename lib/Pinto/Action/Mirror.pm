@@ -46,7 +46,6 @@ sub execute {
     my $rs    = $self->repos->select_distributions(undef, $attrs);
     my %seen  = map { $_ => 1 } $rs->all();
 
-
     my $count = 0;
     for my $struct ( $self->repos->cache->contents() ) {
 
@@ -61,16 +60,12 @@ sub execute {
             next;
         }
 
-        $count += try   { $self->_do_mirror($struct)      }
-                  catch { $self->_handle_mirror_error($_) };
+        try   { $self->_do_mirror($struct) }
+        catch { $self->_handle_error($_)   };
 
     }
 
-    return 0 if not $count;
-
-    $self->add_message("Mirrored $count distributions");
-
-    return 1;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------
@@ -81,12 +76,14 @@ sub _do_mirror {
     my $dist = $self->repos->mirror_distribution( struct => $struct,
                                                   stack  => $self->stack );
 
-    return 1;
+    $self->result->changed;
+
+    return;
 }
 
 #------------------------------------------------------------------------------
 
-sub _handle_mirror_error {
+sub _handle_error {
     my ($self, $error)  = @_;
 
     # TODO: Be more selective about which errors we swallow.  Right
@@ -94,9 +91,8 @@ sub _handle_mirror_error {
     # are fatal.
 
     if ( blessed($error) && $error->isa('Pinto::Exception') ) {
-        $self->add_exception($error);
-        $self->warning($error);
-        return 0;
+        $self->error($error);
+        $self->result->failed;
     }
 
     $self->fatal($error);
@@ -120,7 +116,8 @@ sub _fix_versions {
         my ($pkg_name, $pkg_ver) = ( $pkg_spec->{name}, $pkg_spec->{version} );
 
         if ( not eval { version->parse( $pkg_ver ); 1} ) {
-            $self->warning("Package $pkg_name-$pkg_ver has invalid version.  Forcing it to 0");
+            my $pkg_vname = "$pkg_name-$pkg_ver";
+            $self->warning("Package $pkg_vname has invalid version.  Forcing it to 0");
             $pkg_ver = 0;
         }
 

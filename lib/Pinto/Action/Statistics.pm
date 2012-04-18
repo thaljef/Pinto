@@ -1,5 +1,5 @@
-
 # ABSTRACT: Report statistics about the repository
+
 package Pinto::Action::Statistics;
 
 use Moose;
@@ -28,7 +28,7 @@ sub execute {
     my $stats = Pinto::Statistics->new( db => $self->repos->db() );
     print { $self->out() } $stats->to_formatted_string();
 
-    return 0;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

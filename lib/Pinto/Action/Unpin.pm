@@ -37,7 +37,7 @@ sub BUILD {
     # I think we also want it here so we can do it as early as possible
 
     $self->fatal('The default stack cannot have pins anyway')
-        if $self->stack() eq 'default';
+        if $self->stack eq 'default';
 
     return $self;
 }
@@ -48,15 +48,17 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack_name = $self->stack();
-    my $stack = $self->repos->get_stack(name => $stack_name);
+    my $stack = $self->repos->get_stack( name => $self->stack );
 
     if (not $stack) {
-        $self->warning("Stack $stack_name does not exist");
-        return;
+        my $stack_name = $self->stack;
+        $self->error("Stack $stack_name does not exist"); # Make fatal?
+        return $self->result->failed;
     }
 
-    return $self->_do_unpin($stack);
+    $self->_do_unpin($stack);
+
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------
@@ -64,26 +66,29 @@ sub execute {
 sub _do_unpin {
     my ($self, $stack) = @_;
 
-    my $pkg_name = $self->package();
+    my $pkg_name = $self->package;
     my $attrs    = { prefetch => 'package' };
-    my $where    = { 'package.name' => $pkg_name, stack => $stack->id() };
-    my $pkg_stk  = $self->repos->db->select_package_stacks($where, $attrs)->single();
+    my $where    = { 'package.name' => $pkg_name, stack => $stack->id };
+    my $pkg_stk  = $self->repos->db->select_package_stacks($where, $attrs)->single;
 
     if (not $pkg_stk) {
-        $self->warning("Package $pkg_name is not in stack $stack");
+        $self->error("Package $pkg_name is not in stack $stack"); # Make fatal?
+        $self->result->failed;
         return;
     }
 
-    if (not $pkg_stk->is_pinned()) {
-        $self->whine("Package $pkg_stk is not pinned");
+    if (not $pkg_stk->is_pinned) {
+        $self->warning("Package $pkg_stk is not pinned");
+        $self->result->failed;
         return;
     }
 
     $self->info("Unpinning package $pkg_stk");
     $pkg_stk->pin(undef);
-    $pkg_stk->update();
+    $pkg_stk->update;
+    $self->result->changed;
 
-    return 1;
+    return;
 }
 
 #------------------------------------------------------------------------------

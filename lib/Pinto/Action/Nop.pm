@@ -23,12 +23,12 @@ with qw( Pinto::Role::Interface::Action::Nop );
 sub execute {
     my ($self) = @_;
 
-    if ( my $sleep = $self->sleep() ) {
+    if (my $sleep = $self->sleep) {
         $self->debug("Process $$ sleeping for $sleep seconds");
-        sleep $self->sleep();
+        sleep $self->sleep;
     }
 
-    return 0;
+    return $self->result->new;
 }
 
 #------------------------------------------------------------------------------

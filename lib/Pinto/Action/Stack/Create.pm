@@ -1,11 +1,8 @@
+# ABSTRACT: Create a new empty stack
+
 package Pinto::Action::Stack::Create;
 
-# ABSTRACT: An action to create a new empty stack
-
 use Moose;
-
-use MooseX::Types::Moose qw(Str);
-use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -14,45 +11,31 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has stack => (
-    is       => 'ro',
-    isa      => StackName,
-    required => 1,
-    coerce   => 1,
-);
-
-has description => (
-    is      => 'ro',
-    isa     => Str,
-    default => 'no description was given',
-);
+with qw( Pinto::Role::Interface::Action::Stack::Create );
 
 #------------------------------------------------------------------------------
-# Methods
 
 sub execute {
     my ($self) = @_;
 
-    my $stack_name = $self->stack();
-    my $where = {name => $stack_name};
+    my $stack_name = $self->stack;
 
-    $self->repos->db->select_stacks( $where )->single()
+    $self->repos->get_stack( name => $stack_name )
         and $self->fatal("Stack $stack_name already exists");
-
-    $where->{description} = $self->description();
 
     $self->info("Creating stack $stack_name");
 
-    $self->repos->db->create_stack( $where );
+    my $attrs = { name        => $stack_name,
+                  description => $self->description };
 
-    return 1;
+    $self->repos->db->create_stack( $attrs );
+
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

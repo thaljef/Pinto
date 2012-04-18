@@ -1,11 +1,8 @@
-package Pinto::Action::Stack::Copy;
-
 # ABSTRACT: An action to create a new stack by copying another
 
-use Moose;
+package Pinto::Action::Stack::Copy;
 
-use MooseX::Types::Moose qw(Str);
-use Pinto::Types qw(StackName);
+use Moose;
 
 use namespace::autoclean;
 
@@ -14,50 +11,23 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has from_stack => (
-    is       => 'ro',
-    isa      => StackName,
-    required => 1,
-    coerce   => 1,
-);
-
-
-has to_stack => (
-    is       => 'ro',
-    isa      => StackName,
-    required => 1,
-    coerce   => 1,
-);
-
-
-has description => (
-    is        => 'ro',
-    isa       => Str,
-    predicate => 'has_description',
-);
+with qw( Pinto::Role::Interface::Action::Stack::Copy );
 
 #------------------------------------------------------------------------------
-# Methods
 
 sub execute {
     my ($self) = @_;
-
-    my $txn_guard = $self->repos->db->schema->txn_scope_guard(); # BEGIN transaction
 
     my $from_stack = $self->_check_stacks();
     my $to_stack   = $self->_copy_stack($from_stack);
     $self->_copy_stack_members($from_stack, $to_stack);
 
-    $txn_guard->commit(); #END transaction
-
-    return 1;
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------
@@ -65,11 +35,11 @@ sub execute {
 sub _check_stacks {
     my ($self) = @_;
 
-    my $from_stack_name = $self->from_stack();
+    my $from_stack_name = $self->from_stack;
     my $from_stack = $self->repos->get_stack( name => $from_stack_name )
         or $self->fatal("Source stack $from_stack_name does not exist");
 
-    my $to_stack_name = $self->to_stack();
+    my $to_stack_name = $self->to_stack;
     $self->repos->get_stack( name => $to_stack_name )
         and $self->fatal("Target stack $to_stack_name already exists");
 
@@ -83,8 +53,8 @@ sub _copy_stack {
 
     $self->notice( sprintf 'Creating new stack %s', $self->to_stack() );
 
-    my $changes = { name => $self->to_stack() };
-    $changes->{description} = $self->description() if $self->has_description();
+    my $changes = { name => $self->to_stack };
+    $changes->{description} = $self->description if $self->has_description();
     my $to_stack = $from_stack->copy( $changes );
 
     return $to_stack;
@@ -97,9 +67,10 @@ sub _copy_stack_members {
 
     $self->notice("Copying stack $from_stack into stack $to_stack");
 
-    for my $packages_stack ( $from_stack->packages_stack() ) {
-        $self->debug(sprintf 'Copying package %s into stack %s', $packages_stack->package(), $to_stack);
-        $packages_stack->copy( { stack => $to_stack->id() } );
+    for my $packages_stack ( $from_stack->packages_stack ) {
+        my $pkg = $packages_stack->package;
+        $self->debug("Copying package $pkg into stack $to_stack");
+        $packages_stack->copy( { stack => $to_stack->id } );
     }
 
     # TODO: Make sure both stacks have the same mtime after copying

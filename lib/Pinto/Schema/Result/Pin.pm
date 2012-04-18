@@ -29,11 +29,6 @@ __PACKAGE__->table("pin");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 ctime
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 reason
 
   data_type: 'text'
@@ -44,8 +39,6 @@ __PACKAGE__->table("pin");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "ctime",
-  { data_type => "integer", is_nullable => 0 },
   "reason",
   { data_type => "text", is_nullable => 0 },
 );
@@ -64,6 +57,21 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
+=head2 package_stack_histories
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::PackageStackHistory>
+
+=cut
+
+__PACKAGE__->has_many(
+  "package_stack_histories",
+  "Pinto::Schema::Result::PackageStackHistory",
+  { "foreign.pin" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
 =head2 packages_stack
 
 Type: has_many
@@ -80,22 +88,12 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-01 18:42:22
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:N9evlt2OEnxXQb9QtpgwUw
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-17 22:37:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uSdwY2IZ9xHyiYOppQLYTA
 
 #------------------------------------------------------------------------------
 
 # VERSION
-
-#------------------------------------------------------------------------------
-
-sub new {
-    my ($class, $attrs) = @_;
-
-    $attrs->{ctime}  ||= time;
-
-    return $class->SUPER::new($attrs);
-}
 
 #------------------------------------------------------------------------------
 

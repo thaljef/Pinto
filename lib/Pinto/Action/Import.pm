@@ -1,4 +1,4 @@
-# ABSTRACT: Import a package into the repository
+# ABSTRACT: Import an upstream distribution into the repository
 
 package Pinto::Action::Import;
 
@@ -15,7 +15,6 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 
 extends qw( Pinto::Action );
-
 
 #------------------------------------------------------------------------------
 
@@ -35,20 +34,19 @@ with qw( Pinto::Role::PackageImporter
 sub execute {
     my ($self) = @_;
 
-    my ($dist, $imported_flag) = $self->find_or_import( $self->target );
-    return 0 if not $dist;
+    my ($dist, $did_import) = $self->find_or_import( $self->target );
+    return $self->result if not $dist;
 
-    $self->add_message( Pinto::Util::imported_dist_message($dist) )
-        if $imported_flag;
 
-    unless ( $self->norecurse() ) {
-        my $archive = $dist->archive( $self->repos->root_dir() );
-        my @imported_prereqs = $self->import_prerequisites($archive, $self->stack() );
-        $self->add_message( Pinto::Util::imported_prereq_dist_message( $_ ) ) for @imported_prereqs;
-        $imported_flag += @imported_prereqs;
+    unless ( $self->norecurse ) {
+        my $archive = $dist->archive( $self->repos->root_dir );
+        my @imported_prereqs = $self->import_prerequisites( $archive, $self->stack );
+        $did_import += @imported_prereqs;
     }
 
-    return $imported_flag;
+    $self->result->changed if $did_import;
+
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

@@ -62,11 +62,10 @@ sub _build_where {
 sub execute {
     my ($self) = @_;
 
-    my $where = $self->where();
+    my $where = $self->where;
 
     if (not $self->repos->get_stack( name => $where->{'stack.name'} )) {
-        $self->warning("No such stack named $where->{'stack.name'}");
-        return 1;
+        $self->fatal("No such stack named $where->{'stack.name'}");
     }
 
     my $attrs = { order_by => [ qw(package.name package.version package.distribution.path) ],
@@ -74,12 +73,12 @@ sub execute {
 
     my $rs = $self->repos->db->select_package_stacks($where, $attrs);
 
-    my $format = $self->format();
-    while( my $package_stack = $rs->next() ) {
-        print { $self->out() } $package_stack->to_string($format);
+    my $format = $self->format;
+    while( my $package_stack = $rs->next ) {
+        print { $self->out } $package_stack->to_string($format);
     }
 
-    return 0;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------
