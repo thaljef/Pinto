@@ -37,8 +37,8 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Must specify at least one stack name')
-        if not @{$args};
+    $self->usage_error('Must specify one stack name')
+        if @{$args} != 1;
 
     return 1;
 }
