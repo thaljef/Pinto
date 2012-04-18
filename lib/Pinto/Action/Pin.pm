@@ -83,8 +83,8 @@ sub execute {
     }
 
     # TODO: Decide how to handle pinning of developer distributions
-    # $self->whine("This repository does not permit pinning developer packages")
-    #     and return 0 if $pkg->distribution->is_devel() and not $self->config->devel();
+    # $self->error("This repository does not permit pinning developer packages")
+    #     and return $self->result if $pkg->distribution->is_devel and not $self->config->devel;
 
     $self->info( sprintf 'Pinning package %s on stack %s',
                  $pkg_stk->package, $pkg_stk->stack );
