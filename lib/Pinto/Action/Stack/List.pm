@@ -30,7 +30,7 @@ sub execute {
     my @stacks = $self->repos->db->select_stacks(undef, $attrs)->all;
     my $longest = max( map { length $_->name } @stacks );
 
-    my $format = $self->format || "%${longest}k: %e\n";
+    my $format = $self->format || "%${longest}k: %e (last modified: %U)\n";
     for my $stack ( @stacks ) {
         print { $self->out } $stack->to_string($format);
     }
