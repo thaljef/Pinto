@@ -20,9 +20,9 @@ requires qw(repos);
 
 has stack => (
     is       => 'ro',
-    isa      => 'Str | Object',
+    isa      => 'Pinto::Schema::Result::Stack',
     writer   => '_set_stack',
-    default  => 'default',
+    init_arg => undef,
 );
 
 #------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ sub BUILD {};
 
 before BUILD => sub {
     my ($self, $args) = @_;
-    my $stack_name = $self->stack;
+    my $stack_name = $args->{stack} || 'default';
     my $stack = $self->repos->get_stack(name => $stack_name);
     confess "No such stack $stack_name" if not $stack;
     $self->_set_stack($stack);
