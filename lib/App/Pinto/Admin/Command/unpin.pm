@@ -87,8 +87,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir unpin [OPTIONS] PACKAGE_NAME ...
-  pinto-admin --root=/some/dir unpin [OPTIONS] < LIST_OF_PACKAGE_NAMES
+  pinto-admin --root=/some/dir unpin [OPTIONS] STACK_NAME PACKAGE_NAME ...
+  pinto-admin --root=/some/dir unpin [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
 
 =head1 DESCRIPTION
 

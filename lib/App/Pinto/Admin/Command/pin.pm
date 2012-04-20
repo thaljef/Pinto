@@ -24,7 +24,6 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
-        [ 'reason|R=s'  => 'Explanation of why this package is pinned' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
 }
@@ -137,11 +136,6 @@ VCS-based storage mechanism.  This can speed up operations
 considerably, but should only be used if you *know* that your working
 copy is up-to-date and you are going to be the only actor touching the
 Pinto repository within the VCS.
-
-=item --reason=TEXT
-
-Annotates the pin with a descriptive explanation for why this package
-is pinned.  For example: 'Versions later than 2.1 will break our app'
 
 =item --tag=NAME
 
