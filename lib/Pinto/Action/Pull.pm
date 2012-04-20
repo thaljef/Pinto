@@ -1,6 +1,6 @@
-# ABSTRACT: Import an upstream distribution into the repository
+# ABSTRACT: Pull an upstream distribution into the repository
 
-package Pinto::Action::Import;
+package Pinto::Action::Pull;
 
 use Moose;
 
@@ -16,8 +16,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Import
-         Pinto::Role::Attribute::stack
+with qw( Pinto::Role::Interface::Action::Pull
          Pinto::Role::PackageImporter );
 
 #------------------------------------------------------------------------------

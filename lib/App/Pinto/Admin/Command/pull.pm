@@ -1,6 +1,6 @@
-package App::Pinto::Admin::Command::import;
+# ABSTRACT: pull distributions from upstream repositories
 
-# ABSTRACT: get selected distributions from a remote repository
+package App::Pinto::Admin::Command::pull;
 
 use strict;
 use warnings;
@@ -17,7 +17,7 @@ use base 'App::Pinto::Admin::Command';
 
 #-----------------------------------------------------------------------------
 
-sub command_names { return qw( import ) }
+sub command_names { return qw( pull ) }
 
 #-----------------------------------------------------------------------------
 
@@ -28,7 +28,8 @@ sub opt_spec {
         [ 'message|m=s' => 'Prepend a message to the VCS log' ],
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
-        [ 'norecurse'   => 'Do not recursively import prereqs' ],
+        [ 'norecurse'   => 'Do not recursively pull prereqs' ],
+        [ 'pin'         => 'Pin all added packages to the stack' ],
         [ 'stack|s=s'   => 'Put packages into this stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
@@ -75,16 +76,16 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir import [OPTIONS] TARGET ...
-  pinto-admin --root=/some/dir import [OPTIONS] < LIST_OF_TARGETS
+  pinto-admin --root=/some/dir pull [OPTIONS] TARGET ...
+  pinto-admin --root=/some/dir pull [OPTIONS] < LIST_OF_TARGETS
 
 =head1 DESCRIPTION
 
 This command locates a package in your upstream repositories and then
-imports the distribution providing that package into your repository.
-Then it recursively locates and imports all the distributions that are
+pulls the distribution providing that package into your repository.
+Then it recursively locates and pulls all the distributions that are
 necessary to satisfy its prerequisites.  You can also request to
-directly import a particular distribution.
+directly pull a particular distribution.
 
 When locating packages, Pinto first looks at the the packages that
 already exist in the local repository, then Pinto looks at the
@@ -94,22 +95,22 @@ the prerequisite.  In the future, you may be able to direct Pinto to
 instead choose the *latest* package that satisfies the prerequisite.
 (NOT SURE THOSE LAST TWO STATEMENTS ARE TRUE).
 
-Imported distributions will be assigned to their original author
+Pulled distributions will be assigned to their original author
 (compare this to the C<add> command which makes B<you> the author of
-the distribution).  Also, packages provided by imported distributions
+the distribution).  Also, packages provided by pulled distributions
 are still considered foreign, so locally added packages will always
-override ones that you imported, even if the imported package has a
+override ones that you pulled, even if the pulled package has a
 higher version.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the targets that you want to import.  Targets can be
+Arguments are the targets that you want to pull.  Targets can be
 specified as packages (with or without a minimum version number) or
 as particular distributions.  For example:
 
-  Foo::Bar                                 # Imports any version of Foo::Bar
-  Foo::Bar-1.2                             # Imports Foo::Bar 1.2 or higher
-  SHAKESPEARE/King-Lear-1.2.tar.gz         # Imports a specific distribuion
+  Foo::Bar                                 # Pulls any version of Foo::Bar
+  Foo::Bar-1.2                             # Pulls Foo::Bar 1.2 or higher
+  SHAKESPEARE/King-Lear-1.2.tar.gz         # Pulls a specific distribuion
   SHAKESPEARE/tragedies/Hamlet-4.2.tar.gz  # Ditto, but from a subdirectory
 
 You can also pipe arguments to this command over STDIN.  In that case,
@@ -146,8 +147,8 @@ Pinto repository within the VCS.
 
 =item --norecurse
 
-Prevents L<Pinto> from recursively importing any distributions
-required to satisfy prerequisites.
+Prevents L<Pinto> from recursively pulling any distributions required
+to satisfy prerequisites.
 
 =item --stack=NAME
 
