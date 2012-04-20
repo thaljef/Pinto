@@ -6,10 +6,6 @@ use Moose::Role;
 
 use Carp;
 
-use Pinto::Types qw(StackName);
-use Pinto::Meta::Attribute::Trait::Postable;
-use Pinto::Meta::Attribute::Trait::Inflatable;
-
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -24,20 +20,22 @@ requires qw(repos);
 
 has stack => (
     is       => 'ro',
-    isa      => StackName,
-    traits   => [ qw(Postable Inflatable) ],
-    inflator => '_inflate_stack',
+    isa      => 'Str | Object',
+    writer   => '_set_stack',
     default  => 'default',
 );
 
 #------------------------------------------------------------------------------
 
-sub _inflate_stack {
-    my ($self, $stack_name) = @_;
+sub BUILD {};
+
+before BUILD => sub {
+    my ($self, $args) = @_;
+    my $stack_name = $self->stack;
     my $stack = $self->repos->get_stack(name => $stack_name);
-    confess "No such stack stack_name" if not $stack;
-    return $stack;
-}
+    confess "No such stack $stack_name" if not $stack;
+    $self->_set_stack($stack);
+};
 
 #------------------------------------------------------------------------------
 
