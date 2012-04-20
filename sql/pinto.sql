@@ -26,21 +26,14 @@ CREATE TABLE stack (
 );
 
 
-create TABLE pin (
-       id         INTEGER PRIMARY KEY NOT NULL,
-       reason     TEXT                DEFAULT NULL
-);
-
-
 create TABLE package_stack (
        id           INTEGER PRIMARY KEY NOT NULL,
        stack        INTEGER             NOT NULL,
        package      INTEGER             NOT NULL,
-       pin          INTEGER             DEFAULT NULL,
+       is_pinned    INTEGER             NOT NULL,
 
        FOREIGN KEY(stack)   REFERENCES stack(id),
-       FOREIGN KEY(package) REFERENCES package(id),
-       FOREIGN KEY(pin)     REFERENCES pin(id)
+       FOREIGN KEY(package) REFERENCES package(id)
 );
 
 
@@ -73,12 +66,11 @@ CREATE TABLE package_stack_history (
        event               TEXT                NOT NULL,
        stack               INTEGER             NOT NULL,
        package             INTEGER             NOT NULL,
-       pin                 INTEGER             DEFAULT NULL,
+       pin                 INTEGER             NOT NULL,
 
        FOREIGN KEY(revision)  REFERENCES revision(id),
        FOREIGN KEY(stack)     REFERENCES stack(id),
-       FOREIGN KEY(package)   REFERENCES package(id),
-       FOREIGN KEY(pin)       REFERENCES pin(id)
+       FOREIGN KEY(package)   REFERENCES package(id)
 );
 
 /*
