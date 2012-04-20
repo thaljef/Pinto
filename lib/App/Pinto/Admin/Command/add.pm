@@ -30,7 +30,7 @@ sub opt_spec {
         [ 'nocommit'    => 'Do not commit changes to VCS' ],
         [ 'noinit'      => 'Do not pull/update from VCS' ],
         [ 'norecurse'   => 'Do not recursively import prereqs' ],
-        [ 'pin=s'       => 'Pin all added packages to the stack' ],
+        [ 'pin'         => 'Pin all added packages to the stack' ],
         [ 'stack|s=s'   => 'Put packages into this stack' ],
         [ 'tag=s'       => 'Specify a VCS tag name' ],
     );
@@ -152,11 +152,10 @@ satisfy the prerequisites of the added distribution.  Imported
 distributions are pulled from whatever remote repositories are
 configured as the C<source> for this local repository.
 
-=item --pin=REASON
+=item --pin
 
 Pins all the packages in the distribution to the stack, so they cannot
-be changed until you unpin them.  The C<REASON> is a brief description
-of why want to pin these packages.
+be changed until you unpin them.
 
 =item --stack=NAME
 

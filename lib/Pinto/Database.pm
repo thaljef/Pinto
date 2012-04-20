@@ -86,34 +86,17 @@ sub select_package_stacks {
 #-------------------------------------------------------------------------------
 
 sub create_distribution {
-    my ($self, $struct, $stack, $pin) = @_;
+    my ($self, $struct) = @_;
 
     $self->debug("Inserting distribution $struct->{path} into database");
-
-    my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
-
     my $dist = $self->schema->resultset('Distribution')->create($struct);
 
     # TODO: Decide if the distinction between developer/release
     # distributions really makes sense.  Now that we have stacks,
     # we might not really need to make this distinction.
-
-    $self->warning("Developer distribution $dist will not be indexed")
-        if $dist->is_devel() and not $self->config->devel();
-
-    for my $pkg ( $dist->packages() ) {
-
-        # Always register on the default stack, unless that's
-        # where we are supposed to register it anyway.
-        $self->register($pkg) if $stack->name() ne 'default';
-
-        # If the registration fails, then it cannot be pinned
-        # TODO: Throw exception instead of jumping to next $pkg ?
-        my $pkg_stack = $self->register($pkg, $stack) or next;
-        $pkg_stack->pin($pin) && $pkg_stack->update() if $pin;
-    }
-
-    $txn_guard->commit(); #END transaction
+    #
+    # $self->warning("Developer distribution $dist will not be indexed")
+    #    if $dist->is_devel() and not $self->config->devel();
 
     return $dist;
 }
@@ -139,11 +122,9 @@ sub delete_distribution {
 sub register {
     my ($self, $pkg, $stack) = @_;
 
-    $stack ||= $self->select_stacks( {name => 'default'} )->single();
-
     if (my $pkg_stack = $pkg->packages_stack_rs->find( {stack => $stack} ) ) {
         $self->debug("Package $pkg is already on stack $stack");
-        return $pkg_stack;
+        return 0;
     }
 
     my $attrs     = { join => [ qw(package stack) ] };
@@ -151,38 +132,46 @@ sub register {
     my $incumbent = $self->select_package_stacks( $where, $attrs )->single();
 
     if (not $incumbent) {
-        $self->debug("Adding $pkg to stack $stack");
-        my $pkg_stack = $self->create_pkg_stack( {package => $pkg, stack => $stack} );
-        return $pkg_stack;
+        $self->debug("Registering $pkg on stack $stack");
+        $self->create_pkg_stack( {package => $pkg, stack => $stack} );
+        return 1;
     }
 
     my $incumbent_pkg = $incumbent->package();
 
     if ( $incumbent_pkg == $pkg ) {
         $self->warning("Package $pkg is already on stack $stack");
-        return;
-    }
-
-    if ($incumbent_pkg > $pkg) {
-        $self->warning("Stack $stack already contains newer package $pkg");
-        return;
+        return 0;
     }
 
     if ( $incumbent_pkg < $pkg and $incumbent->is_pinned() ) {
         my $pkg_name = $pkg->name();
-        $self->warning("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
-        return;
+        $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
+        return 0;
     }
 
-    # If we get here, then we know that the incoming package is newer
-    # than the incumbent, and the incumbent is not pinned.  So we can
-    # go ahead and register it in this stack.
+
+    my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
+                                                       : ('notice',  'Upgrading');
 
     $incumbent->delete();
-    $self->debug("Upgrading package $incumbent_pkg to $pkg in stack $stack");
-    my $pkg_stack = $self->create_pkg_stack( {package => $pkg, stack => $stack} );
+    $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
+    $self->create_pkg_stack( {package => $pkg, stack => $stack} );
 
-    return $pkg_stack;
+    return 1;
+}
+
+#-------------------------------------------------------------------------------
+
+sub pin {
+    my ($self, $pkg, $stack) = @_;
+
+    my $where = {stack => $stack->id};
+    my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
+    confess "Package $pkg is not on stack $stack" if not $pkg_stk;
+    $pkg_stk->update( {is_pinned => 1} );
+
+    return $pkg_stk;
 }
 
 #-------------------------------------------------------------------------------

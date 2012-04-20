@@ -29,6 +29,17 @@ __PACKAGE__->table("package_stack_history");
   is_auto_increment: 1
   is_nullable: 0
 
+=head2 revision
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 event
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 stack
 
   data_type: 'integer'
@@ -44,48 +55,23 @@ __PACKAGE__->table("package_stack_history");
 =head2 pin
 
   data_type: 'integer'
-  default_value: null
-  is_foreign_key: 1
-  is_nullable: 1
-
-=head2 created_revision
-
-  data_type: 'integer'
-  is_foreign_key: 1
   is_nullable: 0
-
-=head2 deleted_revision
-
-  data_type: 'integer'
-  default_value: null
-  is_foreign_key: 1
-  is_nullable: 1
 
 =cut
 
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+  "revision",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "event",
+  { data_type => "text", is_nullable => 0 },
   "stack",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "pin",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
-  "created_revision",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "deleted_revision",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
+  { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -102,41 +88,6 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 created_revision
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "created_revision",
-  "Pinto::Schema::Result::Revision",
-  { id => "created_revision" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
-
-=head2 deleted_revision
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "deleted_revision",
-  "Pinto::Schema::Result::Revision",
-  { id => "deleted_revision" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "CASCADE",
-  },
-);
-
 =head2 package
 
 Type: belongs_to
@@ -152,24 +103,19 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 pin
+=head2 revision
 
 Type: belongs_to
 
-Related object: L<Pinto::Schema::Result::Pin>
+Related object: L<Pinto::Schema::Result::Revision>
 
 =cut
 
 __PACKAGE__->belongs_to(
-  "pin",
-  "Pinto::Schema::Result::Pin",
-  { id => "pin" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "CASCADE",
-  },
+  "revision",
+  "Pinto::Schema::Result::Revision",
+  { id => "revision" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 =head2 stack
@@ -188,8 +134,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-17 22:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uFck4OJ9sjl3TgXTwSVRDw
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-19 21:54:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xTm8NvzFjMH1+9lEwMJ//w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

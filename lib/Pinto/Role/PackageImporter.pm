@@ -35,7 +35,7 @@ with qw( Pinto::Role::Loggable
 #------------------------------------------------------------------------------
 # Required interface
 
-requires qw( repos stack );
+requires qw( repos );
 
 #------------------------------------------------------------------------------
 # Builders
@@ -74,11 +74,12 @@ sub _import_by_package_spec {
 
     my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
     my $latest = $self->repos->get_latest_package(name => $pkg_name);
+    $DB::single = 1;
 
-    if ($latest && $latest->version() >= $pkg_ver) {
+    if ($latest && $latest->version >= $pkg_ver) {
         my $dist = $latest->distribution();
         $self->notice("Already have package $pspec or newer as $latest");
-        $self->repos->register_distribution(dist => $dist, stack => $self->stack);
+        $self->repos->register(distribution => $dist, stack => $self->stack);
         return ($dist, 0);
     }
 
@@ -97,8 +98,7 @@ sub _import_by_package_spec {
     }
 
 
-    my $dist = $self->repos->import_distribution( url   => $dist_url,
-                                                  stack => $self->stack );
+    my $dist = $self->repos->pull(url => $dist_url);
 
     return ($dist, 1);
 }
@@ -115,7 +115,7 @@ sub _import_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
-        $self->repos->register_distribution(dist => $got_dist, stack => $self->stack);
+        $self->repos->register(distribution => $got_dist, stack => $self->stack);
         return ($got_dist, 0);
     }
 
@@ -129,8 +129,7 @@ sub _import_by_distribution_spec {
         return;
     }
 
-    my $dist = $self->repos->import_distribution( url   => $dist_url,
-                                                  stack => $self->stack );
+    my $dist = $self->repos->pull(url => $dist_url);
 
     return ($dist, 1);
 }

@@ -3,12 +3,7 @@
 package Pinto::Action::Add;
 
 use Moose;
-use MooseX::Attribute::Deflator;
-use MooseX::Attribute::LazyInflator;
-use MooseX::Types::Moose qw(Maybe Str);
-
-use Pinto::Types qw(StackName);
-use Pinto::Meta::Attribute::Trait::Inflatable;
+use MooseX::Types::Moose qw(Bool);
 
 use namespace::autoclean;
 
@@ -24,8 +19,8 @@ extends qw( Pinto::Action );
 
 has pin   => (
     is      => 'ro',
-    isa     => Maybe[Str],
-    default => undef,
+    isa     => Bool,
+    default => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -39,13 +34,14 @@ with qw( Pinto::Role::Interface::Action::Add
 sub execute {
     my ($self) = @_;
 
-    $DB::single = 1;
-    my $stack = $self->stack;
+    my $dist  = $self->repos->add( archive   => $self->archive,
+                                   author    => $self->author );
 
-    my $dist  = $self->repos->add_distribution( archive   => $self->archive,
-                                                author    => $self->author );
+    $self->repos->register( distribution  => $dist,
+                            stack         => $self->stack );
 
-    $self->repos->register->( dist => $dist, stack => $stack );
+    $self->repos->pin( distribution   => $dist,
+                       stack          => $self->stack) if $self->pin;
 
     return $self->result->changed;
 }

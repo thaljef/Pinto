@@ -10,6 +10,7 @@ use Class::Load;
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
+use Pinto::PackageExtractor;
 use Pinto::Types qw(Dir);
 
 use namespace::autoclean;
@@ -181,24 +182,16 @@ sub get_stack_member {
 
 #-------------------------------------------------------------------------------
 
-sub add_distribution {
+sub add {
     my ($self, %args) = @_;
 
     my $archive = $args{archive};
     my $author  = $args{author};
     my $source  = $args{source} || 'LOCAL';
-    my $stack   = $args{stack}  || 'default';
     my $index   = $args{index}  || 1;
-    my $pin     = $args{pin};
 
     confess "Archive $archive does not exist"  if not -e $archive;
     confess "Archive $archive is not readable" if not -r $archive;
-
-    $stack = $self->get_stack(name => $stack)
-        || confess qq{No such stack named "$stack"};
-
-    $pin = $self->db->create_pin( {reason => $pin} )
-        if $pin;
 
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($author);
@@ -223,7 +216,7 @@ sub add_distribution {
     # repository, so if there is an error in the DB, we can stop and
     # the repository will still be clean.
 
-    my $dist = $self->db->create_distribution( $dist_struct, $stack, $pin );
+    my $dist = $self->db->create_distribution( $dist_struct );
     my $repo_archive = $dist->archive( $self->root_dir() );
     $self->fetch( from => $archive, to => $repo_archive );
     $self->store->add_archive( $repo_archive );
@@ -232,15 +225,12 @@ sub add_distribution {
 }
 
 #------------------------------------------------------------------------------
+# TODO: Maybe refactor this to use the add() method
 
-sub mirror_distribution {
+sub mirror {
     my ($self, %args) = @_;
 
     my $struct = $args{struct};
-    my $stack  = $args{stack};
-
-    $stack = $self->get_stack(name => $stack)
-        or confess qq{No such stack named "$stack"};
 
     my $url = URI->new($struct->{source} . '/authors/id/' . $struct->{path});
     $self->info("Mirroring distribution at $url");
@@ -263,12 +253,10 @@ sub mirror_distribution {
 #------------------------------------------------------------------------------
 
 
-sub import_distribution {
+sub pull {
     my ($self, %args) = @_;
 
-    my $url   = $args{url};
-    my $stack = $args{stack};
-
+    my $url = $args{url};
     my ($source, $path, $author) = Pinto::Util::parse_dist_url( $url );
 
     my $existing = $self->get_distribution( path => $path );
@@ -276,10 +264,9 @@ sub import_distribution {
 
     my $archive = $self->fetch_temporary(url => $url);
 
-    my $dist = $self->add_distribution( archive   => $archive,
-                                        author    => $author,
-                                        source    => $source,
-                                        stack     => $stack );
+    my $dist = $self->add( archive   => $archive,
+                           author    => $author,
+                           source    => $source );
     return $dist;
 }
 
@@ -302,24 +289,47 @@ sub remove_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub register_distribution {
+sub register {
     my ($self, %args) = @_;
 
-    my $dist  = $args{dist};
-    my $stack = $args{stack} || 'default';
+    my $dist  = $args{distribution};
+    my $pkg   = $args{package};
+    my $stack = $args{stack};
+    my $did_register = 0;
 
-    $stack = $self->get_stack(name => $stack)
-        || confess "No such stack named $stack";
-
-    $self->info("Registering distribution $dist on stack $stack");
-
-    for my $pkg ( $dist->packages() ) {
-        $self->db->register($pkg, $stack);
+    if ($dist) {
+        $self->info("Registering distribution $dist on stack $stack");
+        $did_register += $self->db->register($_, $stack) for $dist->packages;
+    }
+    elsif ($pkg) {
+        $self->info("Registering package $pkg on stack $stack");
+        $did_register += $self->db->register($pkg, $stack);
     }
 
-    return $dist;
+    return $did_register;
 }
 
+#-------------------------------------------------------------------------------
+
+sub pin {
+    my ($self, %args) = @_;
+
+    my $dist   = $args{distribution};
+    my $pkg    = $args{package};
+    my $stack  = $args{stack};
+
+    if ($dist) {
+        $self->info("Pinning distribution $dist on stack $stack");
+        $self->db->pin($_, $stack) for $dist->packages;
+    }
+    elsif ($pkg) {
+        $self->info("Pinning package $pkg on stack $stack");
+        $self->db->pin($pkg, $stack);
+    }
+
+    return $self;
+
+}
 #-------------------------------------------------------------------------------
 
 sub open_revision {

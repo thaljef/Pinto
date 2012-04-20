@@ -41,12 +41,10 @@ __PACKAGE__->table("package_stack");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 pin
+=head2 is_pinned
 
   data_type: 'integer'
-  default_value: null
-  is_foreign_key: 1
-  is_nullable: 1
+  is_nullable: 0
 
 =cut
 
@@ -57,13 +55,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "pin",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
+  "is_pinned",
+  { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -95,26 +88,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 pin
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Pin>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "pin",
-  "Pinto::Schema::Result::Pin",
-  { id => "pin" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "CASCADE",
-  },
-);
-
 =head2 stack
 
 Type: belongs_to
@@ -131,8 +104,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-01 18:42:22
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zk+raQ7ozJVCzgcnTc6qQw
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-19 21:54:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4mVn9D/f/BqE6xbohlOglQ
 
 #------------------------------------------------------------------------------
 
@@ -149,9 +122,12 @@ use overload ( '""'     => 'to_string',
 
 #-------------------------------------------------------------------------------
 
-sub is_pinned {
-    my ($self) = @_;
-    return defined $self->pin();
+sub new {
+    my ($class, $attrs) = @_;
+
+    $attrs->{is_pinned} ||= 0;
+
+    return $class->SUPER::new($attrs);
 }
 
 #-------------------------------------------------------------------------------

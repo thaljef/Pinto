@@ -71,7 +71,7 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 package_stack_history_created_revisions
+=head2 package_stack_histories
 
 Type: has_many
 
@@ -80,30 +80,15 @@ Related object: L<Pinto::Schema::Result::PackageStackHistory>
 =cut
 
 __PACKAGE__->has_many(
-  "package_stack_history_created_revisions",
+  "package_stack_histories",
   "Pinto::Schema::Result::PackageStackHistory",
-  { "foreign.created_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
-);
-
-=head2 package_stack_history_deleted_revisions
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::PackageStackHistory>
-
-=cut
-
-__PACKAGE__->has_many(
-  "package_stack_history_deleted_revisions",
-  "Pinto::Schema::Result::PackageStackHistory",
-  { "foreign.deleted_revision" => "self.id" },
+  { "foreign.revision" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-17 22:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:VVz9G8zOj6db5i8BEGj/Zg
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-19 21:54:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ePbeWee1r0gDVGZl2EKBYg
 
 #-------------------------------------------------------------------------------
 
