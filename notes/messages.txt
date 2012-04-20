@@ -4,6 +4,20 @@ Expelled AUTHOR/Dist-1.2.tar.gz/stack
 Pinned   AUTHOR/Dist-1.2.tar.gz/Package-1.2/stack
 Unpinned AUTHOR/Dist-1.2.tar.gz/Package-1.2/stack
 
+#---------------
+
+A AUTHOR/Dist-1.2.tar.gz/Package-1.2/stack
+R AUTHOR/Dist-1.1.tar.gz/Package-1.1/stack
+
+A AUTHOR/Dist-1.2.tar.gz/Package-1.2/stack
+R AUTHOR/Dist-1.1.tar.gz/Package-1.2/stack/+
+
+#---------------
+
+P AUTHOR/Dist-1.2.tar.gz/Package-1.2/stack
+U AUTHOR/Dist-1.1.tar.gz/Package-1.2/stack
+
+#---------------
 
 Use cases...
 * See log for entire repository (Which stack did we do X on?)
