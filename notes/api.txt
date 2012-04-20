@@ -1,0 +1,29 @@
+# API ideas...
+
+# Finding stuff
+$repos->get_package(name => $name);
+$repos->get_package(name => $name, version => $version);
+$repos->get_distribution(path => $name);
+
+# Getting dists
+$repos->pull(url => $url);
+$repos->mirror(struct => $struct);
+$repos->add(archive => $archive, author => $author);
+
+# Register/Unregister
+$repos->register(distribution => $dist, stack => $stack);
+$repos->unregister(distribution => $dist, stack => $stack);
+
+# Pin/Unpin
+$repos->pin(distribution => $dist, stack => $stack);
+$repos->unpin(distribution => $dist, stack => $stack);
+
+# Misc
+$repos->find(distribution => $path);
+$repos->find(package => $name, version => $v);
+$repos->prerequisites(distribution => $dist);
+$repos->prerequisites(package => $pkg);
+
+#-------
+
+Upgrade or downgrade packages in stack?
