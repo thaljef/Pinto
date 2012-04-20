@@ -13,6 +13,7 @@ CREATE TABLE package (
        name          TEXT                NOT NULL,
        version       TEXT                NOT NULL,
        distribution  INTEGER             NOT NULL,
+
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
 
@@ -27,7 +28,7 @@ CREATE TABLE stack (
 
 create TABLE pin (
        id         INTEGER PRIMARY KEY NOT NULL,
-       reason     TEXT                NOT NULL
+       reason     TEXT                DEFAULT NULL
 );
 
 
@@ -36,6 +37,7 @@ create TABLE package_stack (
        stack        INTEGER             NOT NULL,
        package      INTEGER             NOT NULL,
        pin          INTEGER             DEFAULT NULL,
+
        FOREIGN KEY(stack)   REFERENCES stack(id),
        FOREIGN KEY(package) REFERENCES package(id),
        FOREIGN KEY(pin)     REFERENCES pin(id)
@@ -50,18 +52,33 @@ CREATE TABLE revision (
 );
 
 
+/*
+
+Rev Stack Insert Package Pin
+Rev Stack Delete Package Pin
+
+#------
+
+Rev Stack A Package Pin
+Rev Stack R Package Pin
+Rev Stack P Package Pin
+Rev Stack U Package Pin
+
+*/
+
+
 CREATE TABLE package_stack_history (
        id                  INTEGER PRIMARY KEY NOT NULL,
+       revision            INTEGER             NOT NULL,
+       event               TEXT                NOT NULL,
        stack               INTEGER             NOT NULL,
        package             INTEGER             NOT NULL,
        pin                 INTEGER             DEFAULT NULL,
-       created_revision    INTEGER             NOT NULL,
-       deleted_revision    INTEGER             DEFAULT NULL,
-       FOREIGN KEY(stack)             REFERENCES stack(id),
-       FOREIGN KEY(package)           REFERENCES package(id),
-       FOREIGN KEY(pin)               REFERENCES pin(id),
-       FOREIGN KEY(created_revision)  REFERENCES revision(id),
-       FOREIGN KEY(deleted_revision)  REFERENCES revision(id)
+
+       FOREIGN KEY(revision)  REFERENCES revision(id),
+       FOREIGN KEY(stack)     REFERENCES stack(id),
+       FOREIGN KEY(package)   REFERENCES package(id),
+       FOREIGN KEY(pin)       REFERENCES pin(id)
 );
 
 /*
