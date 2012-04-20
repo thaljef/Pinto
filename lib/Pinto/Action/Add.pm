@@ -3,9 +3,12 @@
 package Pinto::Action::Add;
 
 use Moose;
+use MooseX::Attribute::Deflator;
+use MooseX::Attribute::LazyInflator;
 use MooseX::Types::Moose qw(Maybe Str);
 
 use Pinto::Types qw(StackName);
+use Pinto::Meta::Attribute::Trait::Inflatable;
 
 use namespace::autoclean;
 
@@ -25,33 +28,24 @@ has pin   => (
     default => undef,
 );
 
-
-has stack => (
-    is      => 'ro',
-    isa     => StackName,
-    default => 'default',
-);
-
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::FileFetcher
-         Pinto::Role::PackageImporter
-         Pinto::Role::Interface::Action::Add );
+
+with qw( Pinto::Role::Interface::Action::Add
+         Pinto::Role::Attribute::stack );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $dist = $self->repos->add_distribution( archive   => $self->archive,
-                                               author    => $self->author,
-                                               stack     => $self->stack,
-                                               pin       => $self->pin );
+    $DB::single = 1;
+    my $stack = $self->stack;
 
-    unless ( $self->norecurse ) {
-        my $archive = $dist->archive( $self->repos->root_dir );
-        $self->import_prerequisites( $archive, $self->stack );
-    }
+    my $dist  = $self->repos->add_distribution( archive   => $self->archive,
+                                                author    => $self->author );
+
+    $self->repos->register->( dist => $dist, stack => $stack );
 
     return $self->result->changed;
 }
