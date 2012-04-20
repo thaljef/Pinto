@@ -33,7 +33,10 @@ my $inflator = Class::MOP::class_of(%s)->find_attribute_by_name('%s')->inflator;
 return ref $inflator ? $inflator->(%s, $value) : %s->$inflator($value);
 END_CODE
 
-    return sprintf $code, $source, $instance, $instance, quotemeta($self->name), $instance, $instance;
+    return sprintf $code,
+                   $source, $instance,
+                   $instance, quotemeta($self->name),
+                   $instance, $instance;
 };
 
 #-----------------------------------------------------------------------------
