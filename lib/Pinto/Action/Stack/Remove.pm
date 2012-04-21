@@ -19,22 +19,27 @@ extends 'Pinto::Action';
 with qw( Pinto::Role::Interface::Action::Stack::Remove );
 
 #------------------------------------------------------------------------------
-# Methods
+
+sub BUILD {
+    my ($self, $args) = @_;
+
+    my $stk_name = $self->stack;
+    confess "Stack $stk_name does not exist"
+        if not $self->repos->get_stack(name => $stk_name);
+
+    confess 'You cannot remove the default stack'
+        if $stk_name eq 'default';
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 
 sub execute {
     my ($self) = @_;
 
-    my $stack_name = $self->stack;
-
-    $self->fatal( 'You cannot remove the default stack' )
-        if $stack_name eq 'default';
-
-    my $stack = $self->repos->get_stack( name => $stack_name )
-        or $self->fatal("Stack $stack_name does not exist");
-
-    $self->info("Removing stack $stack");
-
-    $stack->delete;
+    $self->repos->remove_stack( name => $self->stack );
 
     return $self->result->changed;
 }
