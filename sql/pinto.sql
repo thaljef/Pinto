@@ -18,6 +18,9 @@ CREATE TABLE package (
 );
 
 
+/* TODO: Add boolean is_merged field to indicate whether
+   the stack has been merged since it was last modified */
+
 CREATE TABLE stack (
        id          INTEGER PRIMARY KEY NOT NULL,
        name        TEXT                NOT NULL,
@@ -25,6 +28,12 @@ CREATE TABLE stack (
        description TEXT                DEFAULT NULL 
 );
 
+/* TOOD: Denormalize this table to include package name,
+   version, and dist path.  Then use indexes to ensure
+   data integrity.  This might also make it faster to
+   generate indexes, which will be important when we
+   need to do it on the fly.  Then also, consider
+   renaming this table to something like "index" */
 
 create TABLE package_stack (
        id           INTEGER PRIMARY KEY NOT NULL,
@@ -37,6 +46,13 @@ create TABLE package_stack (
 );
 
 
+/* TODO: Add a checksum (md5) that captures the state
+   of the stack at that point in history.  Use this
+   to verify that rollbacks are correct.  This implies
+   that a revisions can only happen on one stack at a 
+   time.  Not sure I want to commit to that */
+
+
 CREATE TABLE revision (
        id          INTEGER PRIMARY KEY NOT NULL,
        message     TEXT                NOT NULL,
@@ -47,10 +63,7 @@ CREATE TABLE revision (
 
 /*
 
-Rev Stack Insert Package Pin
-Rev Stack Delete Package Pin
-
-#------
+Reporting ideas...
 
 Rev Stack A Package Pin
 Rev Stack R Package Pin
@@ -83,6 +96,8 @@ CREATE TABLE dependency (
        FOREIGN KEY(distribution)  REFERENCES distribution(id),
 );
 */
+
+/* TODO: Put proper indexes in place */
 
 CREATE UNIQUE INDEX distribution_idx      ON distribution(path);
 CREATE UNIQUE INDEX package_idx           ON package(name, distribution);
