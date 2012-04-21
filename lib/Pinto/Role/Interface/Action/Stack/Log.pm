@@ -1,11 +1,9 @@
-# ABSTRACT: Interface for Action::Stack::Create
+# ABSTRACT: Interface for Action::Stack::Log
 
-package Pinto::Role::Interface::Action::Stack::Create;
+package Pinto::Role::Interface::Action::Stack::Log;
 
 use Moose::Role;
-use MooseX::Types::Moose qw(Str);
-
-use Pinto::Types qw(StackName);
+use MooseX::Types::Moose qw(Bool Int);
 
 use namespace::autoclean;
 
@@ -15,22 +13,22 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action );
+with qw( Pinto::Role::Interface::Action
+         Pinto::Role::Attribute::stack
+         Pinto::Role::Attribute::out );
 
 #------------------------------------------------------------------------------
 
-has stack => (
-   is       => 'ro',
-   isa      => StackName,
-   coerce   => 1,
-   required => 1,
+has revision => (
+    is        => 'ro',
+    isa       => Int,
+    predicate => 'has_revision',
 );
 
-
-has description => (
+has detailed => (
     is      => 'ro',
-    isa     => Str,
-    default => 'no description was given',
+    isa     => Bool,
+    default => 0,
 );
 
 #------------------------------------------------------------------------------
