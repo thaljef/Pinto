@@ -61,16 +61,16 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my $stack_name = shift @{ $args };
+    my $stack = shift @{ $args };
 
-    my @package_names = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    return 0 if not @package_names;
+    my @targets = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
+    return 0 if not @targets;
 
     $self->pinto->new_batch( %{$opts} );
 
-    for my $package_name (@package_names) {
-        $self->pinto->add_action($self->action_name(), %{$opts}, package => $package_name,
-                                                                 stack   => $stack_name );
+    for my $target (@targets) {
+        $self->pinto->add_action($self->action_name(), %{$opts}, target => $target,
+                                                                 stack   => $stack );
     }
 
     my $result = $self->pinto->run_actions();
