@@ -1,0 +1,25 @@
+Exception strategy...
+
+All untrapped error messages need to go through the log so they get
+transmitted to the client
+
+Exceptions that originate from an Action do not require a stack trace.
+
+Exception that arise due to invalid user input do not require a stack
+trace.
+
+Exceptions that are not expected (db, network, file system) do require
+a stack trace.
+
+If the log level is debug, then all errors should be recorded with a
+stack trace.
+
+Data validation strategy...
+
+Actions should validate as much as possible during construction.
+
+The Repository should validate arguments.
+
+The Database & collaborators may not validate arguments.
+
+
