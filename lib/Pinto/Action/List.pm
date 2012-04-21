@@ -56,6 +56,17 @@ sub _build_where {
     return $where;
 }
 
+#------------------------------------------------------------------------------
+
+sub BUILD {
+    my ($self, $args) = @_;
+
+    my $stk_name = $self->stack;
+    $self->repos->get_stack(name => $stk_name)
+        or $self->fatal("Stack $stk_name does not exist");
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
@@ -69,7 +80,7 @@ sub execute {
     }
 
     my $attrs = { order_by => [ qw(package.name package.version package.distribution.path) ],
-                  prefetch => [ 'pin', 'stack', { 'package' => 'distribution' } ] };
+                  prefetch => [ 'stack', { 'package' => 'distribution' } ] };
 
     my $rs = $self->repos->db->select_package_stacks($where, $attrs);
 
