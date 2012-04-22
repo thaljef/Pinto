@@ -141,7 +141,10 @@ sub package_ok {
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
         = parse_pkg_spec($pkg_spec);
 
-    my $pkg = $self->pinto->repos->get_stack_member(package => $pkg_name, stack => $stack_name);
+    my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
+    my $attrs = {prefetch => [ qw(package stack) ]};
+    my $pkg = $self->pinto->repos->db->schema->resultset('PackageStack')->find($where, $attrs);
+
     return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $pkg;
 
     $self->tb->ok(1, "$pkg_spec is loaded");
@@ -222,10 +225,10 @@ sub result_not_changed_ok {
 sub repository_empty_ok {
     my ($self) = @_;
 
-    my @dists = $self->pinto->repos->select_distributions()->all();
+    my @dists = $self->pinto->repos->db->select_distributions->all;
     $self->tb->is_eq(scalar @dists, 0, 'Database has no distributions');
 
-    my @pkgs = $self->pinto->repos->select_packages()->all();
+    my @pkgs = $self->pinto->repos->db->select_packages->all;
     $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
 
     my $dir = dir( $self->root(), qw(authors id) );

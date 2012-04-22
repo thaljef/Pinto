@@ -42,8 +42,13 @@ __PACKAGE__->table("stack");
 =head2 description
 
   data_type: 'text'
-  default_value: null
-  is_nullable: 1
+  is_nullable: 0
+
+=head2 is_merged
+
+  data_type: 'integer'
+  default_value: 0
+  is_nullable: 0
 
 =cut
 
@@ -55,7 +60,9 @@ __PACKAGE__->add_columns(
   "mtime",
   { data_type => "integer", is_nullable => 0 },
   "description",
-  { data_type => "text", default_value => \"null", is_nullable => 1 },
+  { data_type => "text", is_nullable => 0 },
+  "is_merged",
+  { data_type => "integer", default_value => 0, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -117,8 +124,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-17 22:37:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uR7vptgVMmlXRcMVOMJF/g
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-21 21:09:25
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:e/DqD6ti2Z6piqmugzqaKg
 
 #----------------------------------------------------------------------------------------
 

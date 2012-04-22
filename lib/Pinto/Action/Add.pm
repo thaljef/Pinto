@@ -27,6 +27,7 @@ has pin   => (
 
 
 with qw( Pinto::Role::Interface::Action::Add
+         Pinto::Role::PackageImporter
          Pinto::Role::Attribute::stack );
 
 #------------------------------------------------------------------------------
@@ -41,7 +42,9 @@ sub execute {
                             stack         => $self->stack );
 
     $self->repos->pin( distribution   => $dist,
-                       stack          => $self->stack) if $self->pin;
+                       stack          => $self->stack ) if $self->pin;
+
+    $self->pull_prerequisites( $dist ) unless $self->norecurse;
 
     return $self->result->changed;
 }

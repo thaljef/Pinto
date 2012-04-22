@@ -76,7 +76,7 @@ has cache => (
     is         => 'ro',
     isa        => 'Pinto::IndexCache',
     lazy       => 1,
-    does       => [ qw(locate) ],
+    handles    => [ qw(locate) ],
     default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
                                                 logger => $_[0]->logger ) },
 );
@@ -233,17 +233,24 @@ sub add {
     $self->get_distribution(path => $dist_path)
         and confess "Distribution $dist_path already exists";
 
+    # Assemble the basic structure...
     my $dist_struct = { path     => $dist_path,
                         source   => $source,
                         mtime    => Pinto::Util::mtime($archive),
                         md5      => Pinto::Util::md5($archive),
                         sha256   => Pinto::Util::sha256($archive) };
 
-    my @pkg_specs = $index ? $self->extractor->provides( archive => $archive ) : ();
-    $dist_struct->{packages} = \@pkg_specs;
+    # Add provided packages...
+    my @provides = $self->extractor->provides( archive => $archive );
+    $dist_struct->{packages} = \@provides;
 
-    my $count = $index ? @pkg_specs : '?';
-    $self->notice("Adding distribution $dist_path with $count packages");
+    # Add required packages...
+    my @requires = $self->extractor->requires( archive => $archive );
+    $dist_struct->{prerequisites} = \@requires;
+
+    my $p = @provides;
+    my $r = @requires;
+    $self->notice("Adding distribution $dist_path providing $p and requiring $r packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and

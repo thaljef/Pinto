@@ -114,9 +114,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head2 prerequisites
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-03-16 03:49:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eT1x5zQ5MB8UeZLqUPSrAw
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Prerequisite>
+
+=cut
+
+__PACKAGE__->has_many(
+  "prerequisites",
+  "Pinto::Schema::Result::Prerequisite",
+  { "foreign.distribution" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-21 21:05:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4zqhvq2ivThmdfWj4yS3Ew
 
 #-------------------------------------------------------------------------------
 
