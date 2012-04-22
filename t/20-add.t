@@ -43,12 +43,11 @@ $pinto = $t->pinto();
 
 $pinto->new_batch();
 $pinto->add_action('Stack::Create', stack => 'dev');
+$t->result_ok( $pinto->run_actions() );
+
 $pinto->add_action('Add', archive => $archive, author => $auth, stack => 'dev');
 $t->result_ok( $pinto->run_actions() );
 
-# Should be on both the default and dev stacks
-$t->package_ok( "$auth/$dist/$pkg1/default" );
-$t->package_ok( "$auth/$dist/$pkg2/default" );
 $t->package_ok( "$auth/$dist/$pkg1/dev" );
 $t->package_ok( "$auth/$dist/$pkg2/dev" );
 
