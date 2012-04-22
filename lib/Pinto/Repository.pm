@@ -266,43 +266,6 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-=method mirror( struct => {} )
-
-Mirrors a distribution archive from another repository.  The
-C<struct> defines the attributes of the distribution and any packages
-it contains. TODO: document the members of the struct.  The pacakges
-provided by the distribution will not be indexed.  Returns a
-L<Pinto::Schema::Result::Distribution> object representing the newly
-mirrored distribution.
-
-=cut
-
-sub mirror {
-    my ($self, %args) = @_;
-
-    my $struct = $args{struct};
-
-    # TODO: Maybe refactor this to use the add() method
-    my $url = URI->new($struct->{source} . '/authors/id/' . $struct->{path});
-    $self->info("Mirroring distribution at $url");
-
-    my $temp_archive  = $self->fetch_temporary(url => $url);
-    $struct->{mtime}  = Pinto::Util::mtime($temp_archive);
-    $struct->{md5}    = Pinto::Util::md5($temp_archive);
-    $struct->{sha256} = Pinto::Util::sha256($temp_archive);
-
-    my $dist = $self->db->create_distribution($struct);
-
-    my @path_parts = split m{ / }mx, $struct->{path};
-    my $repo_archive = $self->root_dir->file( qw(authors id), @path_parts );
-    $self->fetch(from => $temp_archive, to => $repo_archive);
-    $self->store->add_archive($repo_archive);
-
-    return $dist;
-}
-
-#------------------------------------------------------------------------------
-
 =method pull( url => $url )
 
 Pulls a distribution archive from a remote repository and C<add>s it
