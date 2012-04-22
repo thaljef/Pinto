@@ -18,14 +18,12 @@ CREATE TABLE package (
 );
 
 
-/* TODO: Add boolean is_merged field to indicate whether
-   the stack has been merged since it was last modified */
-
 CREATE TABLE stack (
        id          INTEGER PRIMARY KEY NOT NULL,
        name        TEXT                NOT NULL,
        mtime       INTEGER             NOT NULL,
-       description TEXT                DEFAULT NULL 
+       description TEXT                NOT NULL,
+       is_merged   INTEGER             NOT NULL DEFAULT 0 
 );
 
 /* TOOD: Denormalize this table to include package name,
@@ -61,18 +59,6 @@ CREATE TABLE revision (
 );
 
 
-/*
-
-Reporting ideas...
-
-Rev Stack A Package Pin
-Rev Stack R Package Pin
-Rev Stack P Package Pin
-Rev Stack U Package Pin
-
-*/
-
-
 CREATE TABLE package_stack_history (
        id                  INTEGER PRIMARY KEY NOT NULL,
        revision            INTEGER             NOT NULL,
@@ -86,16 +72,15 @@ CREATE TABLE package_stack_history (
        FOREIGN KEY(package)   REFERENCES package(id)
 );
 
-/*
-CREATE TABLE dependency (
+
+CREATE TABLE prerequisite (
        id           INTEGER PRIMARY KEY NOT NULL,
        distribution INTEGER             NOT NULL,
-       prerequisite TEXT                NOT NULL,
+       name         TEXT                NOT NULL,
        version      TEXT                NOT NULL,
-       stage        TEXT                DEFAULT NULL,  
-       FOREIGN KEY(distribution)  REFERENCES distribution(id),
+  
+       FOREIGN KEY(distribution)  REFERENCES distribution(id)
 );
-*/
 
 /* TODO: Put proper indexes in place */
 
