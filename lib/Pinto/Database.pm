@@ -1,6 +1,6 @@
-package Pinto::Database;
-
 # ABSTRACT: Interface to the Pinto database
+
+package Pinto::Database;
 
 use Moose;
 
@@ -89,16 +89,8 @@ sub create_distribution {
     my ($self, $struct) = @_;
 
     $self->debug("Inserting distribution $struct->{path} into database");
-    my $dist = $self->schema->resultset('Distribution')->create($struct);
 
-    # TODO: Decide if the distinction between developer/release
-    # distributions really makes sense.  Now that we have stacks,
-    # we might not really need to make this distinction.
-    #
-    # $self->warning("Developer distribution $dist will not be indexed")
-    #    if $dist->is_devel() and not $self->config->devel();
-
-    return $dist;
+    return $self->schema->resultset('Distribution')->create($struct);
 }
 
 #-------------------------------------------------------------------------------
@@ -108,13 +100,7 @@ sub delete_distribution {
 
     $self->debug("Deleting distribution $dist from database");
 
-    my $txn_guard = $self->schema->txn_scope_guard(); # BEGIN transaction
-
-    $dist->delete();
-
-    $txn_guard->commit(); # END transaction
-
-    return $self;
+    return $dist->delete();
 }
 
 #-------------------------------------------------------------------------------
@@ -128,8 +114,8 @@ sub register {
     }
 
     my $attrs     = { join => [ qw(package stack) ] };
-    my $where     = { 'package.name' => $pkg->name(), 'stack' => $stack->id() };
-    my $incumbent = $self->select_package_stacks( $where, $attrs )->single();
+    my $where     = { 'package.name' => $pkg->name, 'stack' => $stack->id };
+    my $incumbent = $self->select_package_stacks($where, $attrs)->single;
 
     if (not $incumbent) {
         $self->debug("Registering $pkg on stack $stack");
@@ -137,7 +123,7 @@ sub register {
         return 1;
     }
 
-    my $incumbent_pkg = $incumbent->package();
+    my $incumbent_pkg = $incumbent->package;
 
     if ( $incumbent_pkg == $pkg ) {
         $self->warning("Package $pkg is already on stack $stack");
@@ -158,6 +144,9 @@ sub register {
     $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
     $self->create_pkg_stack( {package => $pkg, stack => $stack} );
 
+    # TODO: Maybe return -1 if downgraded, +1 if upgraded.  Or maybe return
+    # the new pkg_stk and the incumbent so caller can inspect them.
+
     return 1;
 }
 
@@ -168,10 +157,36 @@ sub pin {
 
     my $where = {stack => $stack->id};
     my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
-    confess "Package $pkg is not on stack $stack" if not $pkg_stk;
+
+    confess "Package $pkg is not on stack $stack"
+        if not $pkg_stk;
+
+    $self->warning("Package $pkg is already pinned on stack $stack")
+        and return 0 if $pkg_stk->is_pinned;
+
     $pkg_stk->update( {is_pinned => 1} );
 
-    return $pkg_stk;
+    return 1;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub unpin {
+    my ($self, $pkg, $stack) = @_;
+
+    my $where = {stack => $stack->id};
+    my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
+
+    confess "Package $pkg is not on stack $stack"
+        if not $pkg_stk;
+
+    $self->warning("Package $pkg is not pinned on $stack")
+        and return 0 unless $pkg_stk->is_pinned;
+
+    $pkg_stk->update( {is_pinned => 1} );
+
+    return 1;
 }
 
 #-------------------------------------------------------------------------------

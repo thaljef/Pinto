@@ -83,12 +83,8 @@ sub _import_by_package_spec {
         return ($dist, 0);
     }
 
-    my $dist_url = $self->repos->cache->locate( package => $pkg_name,
-                                                version => $pkg_ver,
-                                                latest  => 1 );
-
-
-    confess "Cannot find $pspec anywhere" if not $dist_url;
+    my $dist_url = $self->repos->locate(package => $pspec, latest => 1)
+        or $self->fatal("Cannot find $pspec anywhere");
 
     $self->debug("Found package $pspec or newer in $dist_url");
 
@@ -119,7 +115,7 @@ sub _import_by_distribution_spec {
         return ($got_dist, 0);
     }
 
-    my $dist_url = $self->repos->cache->locate( distribution => $path )
+    my $dist_url = $self->repos->locate( distribution => $dspec )
       or confess "Cannot find $dspec anywhere";
 
     $self->debug("Found package $dspec at $dist_url");
