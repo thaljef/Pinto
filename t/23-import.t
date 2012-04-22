@@ -29,10 +29,10 @@ my $pinto = $t->pinto();
 $t->repository_empty_ok();
 
 #------------------------------------------------------------------------------
-# Simple import...
+# Simple pull...
 
 $pinto->new_batch();
-$pinto->add_action('Import', norecurse => 1, target => 'Salad');
+$pinto->add_action('Pull', norecurse => 1, target => 'Salad');
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");
@@ -50,10 +50,10 @@ $t->result_ok( $pinto->run_actions() );
 $t->package_ok( "$us/$dist/Oil-3.0" );
 
 #------------------------------------------------------------------------------
-# Import recursive...
+# Pull recursive...
 
 $pinto->new_batch();
-$pinto->add_action('Import', target => 'Salad');
+$pinto->add_action('Pull', target => 'Salad');
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0" );

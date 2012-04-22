@@ -26,10 +26,10 @@ my $t = Pinto::Tester->new( creator_args => {sources => $sources} );
 my $pinto = $t->pinto();
 
 #------------------------------------------------------------------------------
-# Import recursively w/ multiple repositories
+# Pull recursively w/ multiple repositories
 
 $pinto->new_batch();
-$pinto->add_action('Import', target => 'Salad');
+$pinto->add_action('Pull', target => 'Salad');
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");

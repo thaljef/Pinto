@@ -29,10 +29,10 @@ my $pinto = $t->pinto();
 $t->repository_empty_ok();
 
 #------------------------------------------------------------------------------
-# Import by distribution spec (rather than by package spec)
+# Pull by distribution spec (rather than by package spec)
 
 $pinto->new_batch();
-$pinto->add_action('Import', target => "$them/Salad-1.0.0.tar.gz");
+$pinto->add_action('Pull', target => "$them/Salad-1.0.0.tar.gz");
 
 $t->result_ok( $pinto->run_actions() );
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0" );
