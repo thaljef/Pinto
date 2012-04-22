@@ -141,8 +141,8 @@ sub package_ok {
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
         = parse_pkg_spec($pkg_spec);
 
-    my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
     my $attrs = {prefetch => [ qw(package stack) ]};
+    my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
     my $pkg = $self->pinto->repos->db->schema->resultset('PackageStack')->find($where, $attrs);
 
     return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $pkg;
