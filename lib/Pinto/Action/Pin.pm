@@ -1,11 +1,8 @@
-# ABSTRACT: Force a package into the index
+# ABSTRACT: Force a package to stay in a stack
 
 package Pinto::Action::Pin;
 
 use Moose;
-use MooseX::Types::Moose qw(Str);
-
-use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -23,23 +20,6 @@ with qw( Pinto::Role::Interface::Action::Pin );
 
 #------------------------------------------------------------------------------
 
-has reason   => (
-    is        => 'ro',
-    isa       => Str,
-    default   => 'no reason was given',
-);
-
-
-has stack   => (
-    is        => 'ro',
-    isa       => StackName,
-    required  => 1,
-    coerce    => 1,
-);
-
-#------------------------------------------------------------------------------
-# Construction
-
 sub BUILD {
     my ($self) = @_;
 
@@ -47,55 +27,59 @@ sub BUILD {
     # I think we also want it here so we can do it as early as possible
 
     $self->fatal('You cannot place pins on the default stack')
-        if $self->stack eq 'default';
+        if $self->stack->name eq 'default';
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
-# Methods
 
 sub execute {
     my ($self) = @_;
+    my $target = $self->target;
 
-    my $stack_name = $self->stack;
-
-    if (not $self->repos->get_stack( name => $stack_name )) {
-        $self->error("Stack $stack_name does not exist"); # Make fatal?
-        return $self->result->failed;
+    if ( $target->isa('Pinto::PackageSpec') ){
+        $self->_pin_package($target);
     }
-
-    # TODO: something like $stack->get_package( package => $self->package );
-
-    my $pkg_stk = $self->repos->get_stack_member( package => $self->package,
-                                                  stack   => $self->stack );
-
-    if (not $pkg_stk) {
-        my ($pkg) = $self->package;
-        $self->error("Package $pkg is not in stack $stack_name"); # Make fatal?
-        return $self->result->failed;
+    elsif ( $target->isa('Pinto::DistributionSpec') ){
+        $self->_pin_distribution($target);
     }
-
-
-    if ( $pkg_stk->is_pinned ) {
-        $self->warning(sprintf "Package $pkg_stk is already pinned: %s", $pkg_stk->reason);
-        return $self->result;
+    else {
+        my $type = ref $target;
+        confess "Don't know how to pin target type $type";
     }
-
-    # TODO: Decide how to handle pinning of developer distributions
-    # $self->error("This repository does not permit pinning developer packages")
-    #     and return $self->result if $pkg->distribution->is_devel and not $self->config->devel;
-
-    $self->info( sprintf 'Pinning package %s on stack %s',
-                 $pkg_stk->package, $pkg_stk->stack );
-
-    # TODO: Should we just use the message as the reason (or vice-versa) ?
-
-    my $pin = $self->repos->db->create_pin( { reason => $self->reason } );
-    $pkg_stk->pin($pin);
-    $pkg_stk->update;
 
     return $self->result->changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub _pin_package {
+    my ($self, $pspec) = @_;
+
+    my ($pkg_name, $stk_name) = ($pspec->name, $self->stack->name);
+    my $pkg_stk = $self->repos->get_stack_member( package => $pkg_name,
+                                                  stack   => $stk_name );
+
+    confess "Package $pkg_name is not on stack $stk_name"
+        if not $pkg_stk;
+
+    retun $self->repos->pin( package => $pkg_stk->package,
+                             stack   => $self->stack );
+}
+
+#------------------------------------------------------------------------------
+
+sub _pin_distribution {
+   my ($self, $dspec) = @_;
+
+   my $dist = $self->repos->get_distribution(path => $dspec->path);
+
+   confess "Distribution $dspec does not exist"
+       if not $dist;
+
+   return $self->repos->pin( distribution => $dist,
+                             stack        => $self->stack );
 }
 
 #------------------------------------------------------------------------------
