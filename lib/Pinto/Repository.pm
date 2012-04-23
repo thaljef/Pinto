@@ -5,8 +5,8 @@ package Pinto::Repository;
 use Moose;
 
 use Carp;
-use Class::Load;
 
+use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
@@ -58,9 +58,7 @@ has store => (
     isa        => 'Pinto::Store',
     lazy       => 1,
     handles    => [ qw(initialize commit tag) ],
-    default    => sub { my $store_class = $_[0]->config->store;
-                        Class::Load::load_class($store_class);
-                        $store_class->new( config => $_[0]->config,
+    default    => sub { Pinto::Store->new( config => $_[0]->config,
                                            logger => $_[0]->logger ) },
 );
 

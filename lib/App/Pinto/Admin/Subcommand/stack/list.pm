@@ -23,8 +23,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'format=s' => 'Format of the listing'       ],
-        [ 'noinit'   => 'Do not pull/update from VCS' ],
+        [ 'format=s' => 'Format of the listing' ],
     );
 }
 
@@ -37,7 +36,7 @@ sub usage_desc {
 
     my $usage =  <<"END_USAGE";
 %c --root=PATH stack $command [OPTIONS]
-%c --root=PATH stack $command [OPTIONS] STACK_NAME
+%c --root=PATH stack $command [OPTIONS] STACK
 END_USAGE
 
     chomp $usage;
@@ -102,7 +101,7 @@ repository.  Or it will list the members of a particular stack.
 =head1 SUBCOMMAND ARGUMENTS
 
 If given no arguments, then the names and descriptions of the stacks
-are shown.  If given a C<STACK_NAME> argument, then the members of
+are shown.  If given a C<STACK> argument, then the members of
 that stack will be listed.  So the following two commands are
 equivalent:
 
@@ -125,15 +124,6 @@ placeholders.  Valid placeholders are:
   %u             Last modification time of stack (as integer)
   %U             Last modification time of stack (as human-readable string)
   %%             A literal '%'
-
-=item --noinit
-
-Prevents L<Pinto> from pulling/updating the repository from the VCS
-before the operation.  This is only relevant if you are using a
-VCS-based storage mechanism.  This can speed up operations
-considerably, but should only be used if you *know* that your working
-copy is up-to-date and you are going to be the only actor touching the
-Pinto repository within the VCS.
 
 =back
 

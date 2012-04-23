@@ -27,9 +27,7 @@ sub opt_spec {
     return (
         [ 'devel'       => 'Include development releases in the repository index' ],
         [ 'log_level=s' => 'Minimum logging level for the repository log file'    ],
-        [ 'noinit'      => 'Do not pull/update from VCS before each operation'    ],
         [ 'source=s@'   => 'URL of repository for foreign distributions (repeatable)' ],
-        [ 'store=s'     => 'Name of class that handles storage of your repository' ],
     );
 }
 
@@ -95,24 +93,6 @@ None.
 Instructs L<Pinto> to include development releases in the index.  A
 development release is any archive that includes an underscore (_) in
 the last component of the version number.
-
-=item --noinit
-
-Prevents L<Pinto> from pulling/updating the repository from the VCS
-before all operations.  This is only relevant if you are using a
-VCS-based storage mechanism.  This can speed up operations
-considerably, but should only be used if you *know* that your working
-copy is up-to-date and you are going to be the only actor touching the
-Pinto repository within the VCS.
-
-=item --store CLASS_NAME
-
-The name of the class that will handle storage for your repository.
-The default is L<Pinto::Store> which just stores files on the local
-dist.  But you can also use a VCS-based store, such as
-L<Pinto::Store::VCS::Svn> or L<Pinto::Store::VCS::Git>.  Each Store
-has its own idiosyncrasies, so check the documentation of your Store
-for specific details on its usage.
 
 =item --source URL
 

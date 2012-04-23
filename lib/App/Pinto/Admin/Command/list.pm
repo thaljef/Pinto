@@ -29,7 +29,6 @@ sub opt_spec {
 
         [ 'index!'            => 'Limit to packages in the index (negatable)' ],
         [ 'distributions|D=s' => 'Limit to matching distribution paths' ],
-        [ 'noinit'            => 'Do not pull/update from VCS' ],
         [ 'packages|P=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'format=s'          => 'Format specification (See POD for details)' ],
@@ -142,15 +141,6 @@ justification, using the usual notation.  For example, this is what
 the default format looks like.
 
   %x%m%s %-38n %v %p\n
-
-=item --noinit
-
-Prevents L<Pinto> from pulling/updating the repository from the VCS
-before the operation.  This is only relevant if you are using a
-VCS-based storage mechanism.  This can speed up operations
-considerably, but should only be used if you *know* that your working
-copy is up-to-date and you are going to be the only actor touching the
-Pinto repository within the VCS.
 
 =item -P=PATTERN
 

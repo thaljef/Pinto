@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 12);
+use Test::More;
 use Test::Exception;
 
 use Path::Class;
@@ -20,8 +20,6 @@ use Pinto::Config;
     my %default_cases = (
         root      => 'nowhere',
         sources   => 'http://cpan.perl.org',
-        store     => 'Pinto::Store::File',
-        noinit    => 0,
         devel     => 0,
     );
 
@@ -34,9 +32,7 @@ use Pinto::Config;
    my %custom_cases = (
         root      => 'nowhere',
         sources   => 'http://cpan.pair.com  http://metacpan.org',
-        store     => 'Pinto::Store::VCS::Git',
-        noinit    => 1,
-        devel     => 1,
+        devel     => 1
     );
 
     $cfg = Pinto::Config->new(%custom_cases);
@@ -56,3 +52,5 @@ use Pinto::Config;
 
 
 #------------------------------------------------------------------------------
+
+done_testing;

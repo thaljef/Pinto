@@ -1,6 +1,6 @@
-package App::Pinto::Admin::Subcommand::stack::merge;
-
 # ABSTRACT: merge one stack into another
+
+package App::Pinto::Admin::Subcommand::stack::merge;
 
 use strict;
 use warnings;
@@ -24,10 +24,7 @@ sub opt_spec {
 
     return (
         [ 'dryrun'          => 'Do not actually perform the merge' ],
-        [ 'message|m=s'     => 'Prepend a message to the VCS log'  ],
-        [ 'nocommit'        => 'Do not commit changes to VCS'      ],
-        [ 'noinit'          => 'Do not pull/update from VCS'       ],
-        [ 'tag=s'           => 'Specify a VCS tag name'            ],
+        [ 'message|m=s'     => 'Message for the revision log'  ],
     );
 }
 
@@ -35,8 +32,7 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Must specify FROM_STACK_NAME and TO_STACK_NAME')
-        if @{$args} != 2;
+    $self->usage_error('Must specify FROM_STACK and TO_STACK') if @{$args} != 2;
 
     return 1;
 }
@@ -49,7 +45,7 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH stack $command [OPTIONS] FROM_STACK_NAME TO_STACK_NAME
+%c --root=PATH stack $command [OPTIONS] FROM_STACK TO_STACK
 END_USAGE
 
     chomp $usage;
@@ -78,7 +74,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir stack merge [OPTIONS] SOURCE_STACK_NAME TARGET_STACK_NAME
+  pinto-admin --root=/some/dir stack merge [OPTIONS] SOURCE_STACK TARGET_STACK
 
 =head1 DESCRIPTION
 
@@ -117,39 +113,12 @@ name of the C<TARGET> stack.
 
 =item --dryrun
 
-Instructs L<Pinto> to do a dry run of the merge.  Conflicts will be
-reported, but the stacks will not actually be merged.
+Conflicts will be reported, but the stacks will not be merged and the
+repository will not be changed.
 
 =item --message=MESSAGE
 
-Prepends the MESSAGE to the VCS log message that L<Pinto> generates.
-This is only relevant if you are using a VCS-based storage mechanism
-for L<Pinto>.
-
-=item --nocommit
-
-Prevents L<Pinto> from committing changes in the repository to the VCS
-after the operation.  This is only relevant if you are
-using a VCS-based storage mechanism.  Beware this will leave your
-working copy out of sync with the VCS.  It is up to you to then commit
-or rollback the changes using your VCS tools directly.  Pinto will not
-commit old changes that were left from a previous operation.
-
-=item --noinit
-
-Prevents L<Pinto> from pulling/updating the repository from the VCS
-before the operation.  This is only relevant if you are using a
-VCS-based storage mechanism.  This can speed up operations
-considerably, but should only be used if you *know* that your working
-copy is up-to-date and you are going to be the only actor touching the
-Pinto repository within the VCS.
-
-=item --tag=NAME
-
-Instructs L<Pinto> to tag the head revision of the repository at
-C<NAME>.  This is only relevant if you are using a VCS-based storage
-mechanism.  The syntax of the C<NAME> depends on the type of VCS you
-are using.
+Use the given MESSAGE for the revision log message.
 
 =back
 

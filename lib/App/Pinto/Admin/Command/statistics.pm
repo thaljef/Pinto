@@ -19,16 +19,6 @@ sub command_names { return qw( statistics stats ) }
 
 #------------------------------------------------------------------------------
 
-sub opt_spec {
-    my ($self, $app) = @_;
-
-    return (
-        [ 'noinit'      => 'Do not pull/update from VCS' ],
-    );
-}
-
-#------------------------------------------------------------------------------
-
 sub usage_desc {
     my ($self) = @_;
 
@@ -51,7 +41,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir statistics [OPTIONS]
+  pinto-admin --root=/some/dir statistics
 
 =head1 DESCRIPTION
 
@@ -63,16 +53,7 @@ None
 
 =head1 COMMAND OPTIONS
 
-=over 4
-
-=item --noinit
-
-Prevents L<Pinto> from pulling/updating the repository from the VCS
-before the operation.  This is only relevant if you are using a
-VCS-based storage mechanism.  This can speed up operations
-considerably, but should only be used if you *know* that your working
-copy is up-to-date and you are going to be the only actor touching the
-Pinto repository within the VCS.
+None
 
 =back
 

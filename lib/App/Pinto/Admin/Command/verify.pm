@@ -15,16 +15,6 @@ use base 'App::Pinto::Admin::Command';
 
 #-----------------------------------------------------------------------------
 
-sub opt_spec {
-    my ($self, $app) = @_;
-
-    return (
-        [ 'noinit'    => 'Do not pull/update from VCS' ],
-    );
-}
-
-#-----------------------------------------------------------------------------
-
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
@@ -69,6 +59,5 @@ None
 =head1 COMMAND OPTIONS
 
 None
-
 
 =cut

@@ -147,24 +147,6 @@ has devel => (
 );
 
 
-has noinit => (
-    is       => 'ro',
-    isa      => Bool,
-    key      => 'noinit',
-    default  => 0,
-    documentation => 'Do not pull/update from VCS before each operation',
-);
-
-
-has store => (
-    is        => 'ro',
-    isa       => Str,
-    key       => 'store',
-    default   => 'Pinto::Store::File',
-    documentation => 'Name of class that handles storage of your repository',
-);
-
-
 has sources  => (
     is        => 'ro',
     isa       => Str,
