@@ -71,6 +71,20 @@ sub isa_perl {
 
 #-------------------------------------------------------------------------------
 
+Readonly my %VCS_FILES => (map {$_ => 1} qw(.svn .git .gitignore CVS));
+
+sub is_vcs_file {
+    my ($file) = @_;
+
+    $file = file($file) unless eval { $file->isa('Path::Class::File') };
+
+    return exists $VCS_FILES{ $file->basename() };
+}
+
+
+
+#-------------------------------------------------------------------------------
+
 sub mtime {
     my ($file) = @_;
 
