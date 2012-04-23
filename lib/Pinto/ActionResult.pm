@@ -19,11 +19,19 @@ has made_changes => (
     default   => 0,
 );
 
+
 has is_success => (
     is         => 'ro',
     isa        => Bool,
     writer     => '_set_is_success',
     default    => 1,
+);
+
+
+has exit_status => (
+    is         => 'ro',
+    isa        => Bool,
+    default    => sub { not $_[0]->is_success },
 );
 
 #-----------------------------------------------------------------------------
