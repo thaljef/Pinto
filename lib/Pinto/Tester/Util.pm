@@ -90,7 +90,7 @@ sub parse_dist_spec {
 
     $spec =~ s{\s+}{}g;  # Remove any whitespace
     $spec =~ m{ ^ (?: (.+) /)? (.+) = (.+) (?: ~> (.+) )? $ }mx
-        or croak "Could not parse distribution spec: $spec";
+        or confess "Could not parse distribution spec: $spec";
 
     my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
 

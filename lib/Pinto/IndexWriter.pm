@@ -4,7 +4,6 @@ package Pinto::IndexWriter;
 
 use Moose;
 
-use Carp;
 use PerlIO::gzip;
 
 #------------------------------------------------------------------------------
@@ -39,7 +38,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my @records = $self->_get_index_records($stack);
     my $count = @records;
 
-    open my $fh, '>:gzip', $file or confess "Cannot open $file: $!";
+    open my $fh, '>:gzip', $file or $self->fatal("Cannot open $file: $!");
     $self->_write_header($fh, $file, $count);
     $self->_write_records($fh, @records);
     close $fh;

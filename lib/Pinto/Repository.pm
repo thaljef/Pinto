@@ -4,8 +4,6 @@ package Pinto::Repository;
 
 use Moose;
 
-use Carp;
-
 use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
@@ -221,15 +219,15 @@ sub add {
     my $source  = $args{source} || 'LOCAL';
     my $index   = $args{index}  || 1;  # Is this needed?
 
-    confess "Archive $archive does not exist"  if not -e $archive;
-    confess "Archive $archive is not readable" if not -r $archive;
+    $self->fatal("Archive $archive does not exist")  if not -e $archive;
+    $self->fatal("Archive $archive is not readable") if not -r $archive;
 
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
 
     $self->get_distribution(path => $dist_path)
-        and confess "Distribution $dist_path already exists";
+        and $self->fatal("Distribution $dist_path already exists");
 
     # Assemble the basic structure...
     my $dist_struct = { path     => $dist_path,
@@ -285,7 +283,7 @@ sub pull {
     my ($source, $path, $author) = Pinto::Util::parse_dist_url( $url );
 
     my $existing = $self->get_distribution( path => $path );
-    confess "Distribution $path already exists" if $existing;
+    $self->fatal("Distribution $path already exists") if $existing;
 
     my $archive = $self->fetch_temporary(url => $url);
 
@@ -481,10 +479,10 @@ sub merge_stack {
 
 
     my $from_stk = $self->repos->get_stack(name => $from_stk_name)
-        or confess "Stack $from_stk_name does not exist";
+        or $self->fatal("Stack $from_stk_name does not exist");
 
     my $to_stk = $self->repos->get_stack(name => $to_stk_name)
-        or confess "Stack $to_stk_name does not exist";
+        or $self->fatal("Stack $to_stk_name does not exist");
 
     my $conflicts;
     my $where = { stack => $from_stk->id };
@@ -585,7 +583,7 @@ sub _merge_pkg_stk {
     # So if we get here then either our logic is flawed or something
     # weird has happened in the database.
 
-    confess "Unable to merge $from_pkg_stk into $to_pkg_stk";
+    $self->fatal("Unable to merge $from_pkg_stk into $to_pkg_stk");
 }
 
 #-------------------------------------------------------------------------------
@@ -610,7 +608,8 @@ sub _merge_pkg_stk {
 sub open_revision {
     my ($self, %args) = @_;
 
-    confess 'Revision already in progress' if $self->has_open_revision;
+    $self->fatal('Revision already in progress')
+        if $self->has_open_revision;
 
     $self->lock;
 
@@ -628,7 +627,8 @@ sub open_revision {
 sub kill_revision {
     my ($self, %args) = @_;
 
-    confess 'No revision has been opened' if not $self->has_open_revision;
+    $self->fatal('No revision has been opened')
+        if not $self->has_open_revision;
 
     $self->debug('Killing revision ' . $self->revision->id);
 
@@ -646,7 +646,8 @@ sub kill_revision {
 sub close_revision {
     my ($self, %args) = @_;
 
-    confess 'No revision has been opened' if not $self->has_open_revision;
+    $self->fatal('No revision has been opened')
+        if not $self->has_open_revision;
 
     $self->debug('Closing revision ' . $self->revision->id);
 

@@ -5,8 +5,6 @@ package Pinto::Action::Stack::Merge;
 use Moose;
 use MooseX::Types::Moose qw(Bool);
 
-use Carp;
-
 use Pinto::Types qw(StackName);
 
 use namespace::autoclean;

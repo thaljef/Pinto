@@ -311,7 +311,7 @@ sub parse_pkg_spec {
     my ($author, $dist_archive, $pkg, $stack_name, $is_pinned) = split m{/}x, $spec;
 
     # Spec must at least have these
-    croak "Could not parse pkg spec: $spec"
+    confess "Could not parse pkg spec: $spec"
        if not ($author and $dist_archive and $pkg);
 
     # Append the usual suffix to the archive

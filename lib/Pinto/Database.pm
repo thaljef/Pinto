@@ -4,7 +4,6 @@ package Pinto::Database;
 
 use Moose;
 
-use Carp;
 use Try::Tiny;
 use Path::Class;
 
@@ -44,7 +43,7 @@ sub _build_schema {
 
     my $connection;
     try   { $connection = Pinto::Schema->connect($dsn) }
-    catch { confess "Database error: $_" };
+    catch { $self->fatal("Database error: $_") };
 
     return $connection;
 }
@@ -158,7 +157,7 @@ sub pin {
     my $where = {stack => $stack->id};
     my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
 
-    confess "Package $pkg is not on stack $stack"
+    $self->fatal("Package $pkg is not on stack $stack")
         if not $pkg_stk;
 
     $self->warning("Package $pkg is already pinned on stack $stack")
@@ -178,7 +177,7 @@ sub unpin {
     my $where = {stack => $stack->id};
     my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
 
-    confess "Package $pkg is not on stack $stack"
+    $self->fatal("Package $pkg is not on stack $stack")
         if not $pkg_stk;
 
     $self->warning("Package $pkg is not pinned on $stack")

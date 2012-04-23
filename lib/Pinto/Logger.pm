@@ -5,7 +5,6 @@ package Pinto::Logger;
 use Moose;
 use MooseX::Types::Moose qw(Str);
 
-use Carp;
 use DateTime;
 use Log::Dispatch;
 use Log::Dispatch::File;
@@ -93,7 +92,7 @@ sub add_output {
     my ($self, $output) = @_;
 
     my $base_class = 'Log::Dispatch::Output';
-    $output->isa($base_class) or confess "Argument is not a $base_class";
+    $output->isa($base_class) or $self->fatal("Argument is not a $base_class");
 
     $self->log_handler->add($output);
 
@@ -104,8 +103,8 @@ sub add_output {
 
 sub fatal {
     my ($self, $message) = @_;
-
-    $self->log_handler->log_and_croak(level => 'fatal', message => $message);
+    my $meth = $self->log_level eq 'debug' ? 'log_and_confess' : 'log_and_die';
+    $self->log_handler->$meth(level => 'fatal', message => $message);
 }
 
 
@@ -139,7 +138,7 @@ single message as an argument.
 
 =item fatal
 
-Note that C<fatal> causes the application to C<croak>.
+Note that C<fatal> causes the application to throw an exception.
 
 =back
 

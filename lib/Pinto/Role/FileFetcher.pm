@@ -1,10 +1,9 @@
-package Pinto::Role::FileFetcher;
-
 # ABSTRACT: Something that fetches remote files
+
+package Pinto::Role::FileFetcher;
 
 use Moose::Role;
 
-use Carp;
 use File::Temp;
 use Path::Class;
 use LWP::UserAgent;
@@ -19,9 +18,10 @@ use namespace::autoclean;
 # Attributes
 
 has ua => (
-    is         => 'ro',
-    isa        => 'LWP::UserAgent',
-    lazy_build => 1,
+    is      => 'ro',
+    isa     => 'LWP::UserAgent',
+    lazy    => 1,
+    builder => '_build_ua',
 );
 
 #------------------------------------------------------------------------------
@@ -97,7 +97,8 @@ sub _fetch {
 
     $self->debug("Fetching $url");
 
-    my $result = eval { $self->ua->mirror($url, $to) } or confess $@;
+    my $result = eval { $self->ua->mirror($url, $to) }
+        or $self->fatal( $@ );
 
     if ($result->is_success()) {
         return 1;
@@ -106,7 +107,8 @@ sub _fetch {
         return 0;
     }
     else {
-        confess "Failed to fetch $url: " . $result->status_line();
+        my $msg = "Failed to fetch $url: " . $result->status_line();
+        $self->fatal($msg);
     }
 
     # Should never get here

@@ -24,10 +24,10 @@ sub BUILD {
     my ($self, $args) = @_;
 
     my $stk_name = $self->stack;
-    confess "Stack $stk_name does not exist"
+    $self->fatal("Stack $stk_name does not exist")
         if not $self->repos->get_stack(name => $stk_name);
 
-    confess 'You cannot remove the default stack'
+    $self->fatal('You cannot remove the default stack')
         if $stk_name eq 'default';
 
     return $self;
