@@ -20,7 +20,6 @@ sub opt_spec {
 
     return (
         [ 'message|m=s' => 'Message for the revision log' ],
-        [ 'recompute'   => 'Also recompute latest versions' ],
     );
 }
 
@@ -35,6 +34,9 @@ sub validate_args {
 }
 
 #------------------------------------------------------------------------------
+# TODO this command may be completely useless now that we have stacks.
+#------------------------------------------------------------------------------
+
 1;
 
 __END__
@@ -67,25 +69,6 @@ None.
 =item --message=MESSAGE
 
 Use the given MESSAGE as the revision log message.
-
-=item --recompute
-
-Instructs L<Pinto> to also recompute what it thinks is the 'latest'
-version of each package in the repository.  This is useful if you've
-upgraded to a newer version of Pinto that has different (hopefully
-better) logic for determining the 'latest' version.
-
-Beware that the C<--recompute> option could change the contents of the
-index file, thereby affecting which packages clients will pull from
-the repository.  And if you subsequently run the C<clean> command, you
-will loose the distributions that were in the old index, but are not
-in the new one.
-
-=item --tag=NAME
-
-Instructs L<Pinto> to tag the head revision of the repository at NAME.
-This is only relevant if you are using a VCS-based storage mechanism.
-The syntax of the NAME depends on the type of VCS you are using.
 
 =back
 

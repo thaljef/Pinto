@@ -40,12 +40,3 @@ augment remove_path => sub {
 1;
 
 __END__
-
-=head1 DESCRIPTION
-
-L<Pinto::Store::File> is the default back-end for a Pinto repository.
-It basically just represents files on disk.  You should look at
-L<Pinto::Store::VCS::Svn> or L<Pinto::Store::VCS::Git> for a more
-interesting example.
-
-=cut

@@ -21,10 +21,6 @@ use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
-Readonly my %VCS_FILES => (map {$_ => 1} qw(.svn .git .gitignore CVS));
-
-#-------------------------------------------------------------------------------
-
 =func author_dir( @base, $author )
 
 Given the name of an C<$author>, returns the directory where the
@@ -63,23 +59,6 @@ sub parse_dist_url {
         confess 'Unable to parse url: $url';
     }
 
-}
-
-#-------------------------------------------------------------------------------
-
-=func is_vcs_file($path)
-
-Given a path (which may be a file or directory), returns true if that path
-is part of the internals of a version control system (e.g. Git, Subversion).
-
-=cut
-
-sub is_vcs_file {
-    my ($file) = @_;
-
-    $file = file($file) unless eval { $file->isa('Path::Class::File') };
-
-    return exists $VCS_FILES{ $file->basename() };
 }
 
 #-------------------------------------------------------------------------------
