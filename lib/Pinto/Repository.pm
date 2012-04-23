@@ -347,8 +347,8 @@ sub unregister {
 =method pin( distribution => $dist, stack => $stack )
 
 Pins all the packages in the distribution to the stack.  These
-packages cannot be displaced until you unpin them.  Returns a true
-value if any packages were actually pinned.
+packages cannot be displaced until you unpin them.  Returns the
+number of packages were actually pinned.
 
 =cut
 
@@ -371,8 +371,8 @@ sub pin {
 =method unpin( distribution => $dist, stack => $stack )
 
 Unpins all the packages in the distribution from the stack.  These
-packages can be displaced.  Returns a true value if any packages were
-actually unpinned.
+packages can then be displaced.  Returns the number of packages that
+were actually unpinned.
 
 =cut
 

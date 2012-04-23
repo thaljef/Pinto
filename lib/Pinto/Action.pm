@@ -4,7 +4,7 @@ package Pinto::Action;
 
 use Moose;
 
-use Pinto::ActionResult;
+use Pinto::Result;
 
 use namespace::autoclean;
 
@@ -28,8 +28,8 @@ has repos => (
 
 has result => (
     is       => 'ro',
-    isa      => 'Pinto::ActionResult',
-    default  => sub { Pinto::ActionResult->new },
+    isa      => 'Pinto::Result',
+    default  => sub { Pinto::Result->new },
     init_arg => undef,
     lazy     => 1,
 );

@@ -41,8 +41,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH $command [OPTIONS] ARCHIVE_FILE_OR_URL ...
-%c --root=PATH $command [OPTIONS] < LIST_OF_ARCHIVE_FILES_OR_URLS
+%c --root=PATH $command [OPTIONS] ARCHIVE_FILE ...
+%c --root=PATH $command [OPTIONS] < LIST_OF_ARCHIVE_FILES
 END_USAGE
 
     chomp $usage;
@@ -51,18 +51,11 @@ END_USAGE
 
 #------------------------------------------------------------------------------
 
-sub execute {
-    my ($self, $opts, $args) = @_;
+sub args_attribute { return 'archives' }
 
-    my @args = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    return 0 if not @args;
+#------------------------------------------------------------------------------
 
-    $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action($self->action_name(), %{$opts}, archive => $_) for @args;
-    my $result = $self->pinto->run_actions();
-
-    return $result->is_success() ? 0 : 1;
-}
+sub args_from_stdin { return 1 }
 
 #------------------------------------------------------------------------------
 

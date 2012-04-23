@@ -17,25 +17,43 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has pin   => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
+
+with qw( Pinto::Role::Interface::Action::Add
+         Pinto::Role::PackageImporter );
 
 #------------------------------------------------------------------------------
 
+sub BUILD {
+    my ($self, $args) = @_;
 
-with qw( Pinto::Role::Interface::Action::Add
-         Pinto::Role::PackageImporter
-         Pinto::Role::Attribute::stack );
+    my @missing = grep { not -e $_ } $self->archives;
+    $self->error("Archive $_ does not exist") for @missing;
+
+    my @unreadable = grep { -e $_ and not -r $_ } $self->archives;
+    $self->error("Archive $_ is not readable") for @unreadable;
+
+    $self->fatal("Some archives are missing or unreadable")
+      if @missing or @unreadable;
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $dist  = $self->repos->add( archive   => $self->archive,
+    $self->_execute($_) for $self->archives;
+
+    return $self->result->changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub _execute {
+    my ($self, $archive) = @_;
+
+    my $dist  = $self->repos->add( archive   => $archive,
                                    author    => $self->author );
 
     $self->repos->register( distribution  => $dist,
@@ -46,7 +64,7 @@ sub execute {
 
     $self->pull_prerequisites( $dist ) unless $self->norecurse;
 
-    return $self->result->changed;
+    return;
 }
 
 #------------------------------------------------------------------------------

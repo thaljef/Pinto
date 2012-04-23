@@ -3,15 +3,13 @@ package Pinto;
 # ABSTRACT: Curate your own CPAN-like repository
 
 use Moose;
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::Types::Moose qw(Str);
 
-use Carp;
 use Try::Tiny;
 use Class::Load;
 
 use Pinto::Config;
 use Pinto::Logger;
-use Pinto::Batch;
 use Pinto::Repository;
 
 use namespace::autoclean;
@@ -21,7 +19,6 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# Attributes
 
 has repos   => (
     is         => 'ro',
@@ -31,15 +28,7 @@ has repos   => (
 );
 
 
-has _batch => (
-    is         => 'ro',
-    isa        => 'Pinto::Batch',
-    writer     => '_set_batch',
-    init_arg   => undef,
-);
-
-
-has _action_base_class => (
+has action_base_class => (
     is         => 'ro',
     isa        => Str,
     default    => 'Pinto::Action',
@@ -54,7 +43,7 @@ with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
-# Construction
+# TODO: move this to the Repository BUILDer.
 
 sub BUILD {
     my ($self) = @_;
@@ -81,83 +70,52 @@ sub _build_repos {
 }
 
 #------------------------------------------------------------------------------
-# Public methods
 
-=method new_batch( %batch_args )
+=method run( $action_name => %action_args )
 
-Prepares this Pinto to run a new batch of Actions.  Any prior batch will
-be discarded.
-
-=cut
-
-sub new_batch {
-    my ($self, %args) = @_;
-
-    my $batch = Pinto::Batch->new( config => $self->config(),
-                                   logger => $self->logger(),
-                                   repos  => $self->repos(),
-                                   %args );
-
-   $self->_set_batch( $batch );
-
-   return $self;
-}
-
-#------------------------------------------------------------------------------
-
-=method add_action( $action_name, %action_args )
-
-Constructs the action with the given names and arguments, and adds it
-to the current batch.  You must first call C<new_batch> before you can
-add any actions.  The precise class of the Action will be formed by
-prepending 'Pinto::Action::' to the action name.  See the
-documentation for the corresponding Action class for a details about
-the arguments it supports.
+Runs the Action with the given C<$action_name>, passing the
+C<%action_args> to its constructor.  Returns a L<Pinto::Result>.
 
 =cut
 
-sub add_action {
+sub run {
     my ($self, $action_name, %args) = @_;
 
-    my $batch = $self->_batch()
-        or confess 'You must create a batch first';
+    # Divert any warnings to our logger
+    local $SIG{__WARN__} = sub { $self->warning(@_) };
 
-    my $action_class = $self->_action_base_class . "::$action_name";
-
+    # Load the Action class
+    my $action_class = $self->action_base_class . "::$action_name";
     Class::Load::load_class($action_class);
 
-    my $action =  $action_class->new( config => $self->config(),
-                                      logger => $self->logger(),
-                                      repos  => $self->repos(),
+
+    # Construct the Action
+    my $action =  $action_class->new( config => $self->config,
+                                      logger => $self->logger,
+                                      repos  => $self->repos,
                                       %args );
 
-    $batch->enqueue($action);
+    # Open a revision
+    # TODO: only do this if the Action is mutating
+    $self->repos->open_revision( username => $args{username},
+                                 message  => $args{message} );
 
-    return $self;
-}
 
-#------------------------------------------------------------------------------
+    # Do it!
+    my $result = try   { $action->execute }
+                 catch { $self->repos->kill_revision and $self->fatal($_) };
 
-=method run_actions()
 
-Executes all the actions that are currently in the batch for this
-Pinto.  Returns a L<Pinto::Result> object that indicates whether the
-batch was successful and contains any warning or error messages that
-might have occurred along the way.
-
-=cut
-
-sub run_actions {
-    my ($self) = @_;
-
-    my $batch = $self->_batch()
-        or confess 'You must create a batch first';
-
-    my $result = try   { $self->_batch->run() }
-                 catch { $self->fatal($_)     };
+    if ($result->made_changes) {
+        $self->repos->close_revision;
+        $self->repos->write_index;
+    }
+    else {
+        $self->info('No changes were made');
+        $self->repos->kill_revision;
+    }
 
     return $result;
-
 }
 
 #------------------------------------------------------------------------------

@@ -31,10 +31,8 @@ $t->repository_empty_ok();
 #------------------------------------------------------------------------------
 # Simple pull...
 
-$pinto->new_batch();
-$pinto->add_action('Pull', norecurse => 1, target => 'Salad');
-
-$t->result_ok( $pinto->run_actions() );
+$DB::single = 1;
+$t->run_ok('Pull', {norecurse => 1, targets => 'Salad'});
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");
 
 #------------------------------------------------------------------------------
@@ -43,37 +41,21 @@ $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");
 my $dist = 'Oil-3.0.tar.gz';
 my $archive = $auth_dir->file($dist);
 
-$pinto->new_batch();
-$pinto->add_action('Add', archive => $archive, author => $us);
-
-$t->result_ok( $pinto->run_actions() );
+$t->run_ok('Add', {archives => $archive, author => $us});
 $t->package_ok( "$us/$dist/Oil-3.0" );
 
 #------------------------------------------------------------------------------
 # Pull recursive...
 
-$pinto->new_batch();
-$pinto->add_action('Pull', target => 'Salad');
-
-$t->result_ok( $pinto->run_actions() );
+$t->run_ok('Pull', {targets => 'Salad'});
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0" );
 
 # Salad requires Dressing-0 and Lettuce-1.0
 $t->package_ok( "$them/Dressing-v1.9.0/Dressing-v1.9.0" );
 
-# The 'a' repository only has Lettuce-0.08, so we shouldn't import it
-# $t->package_not_loaded_ok( "$them/Lettuce-0.8.tar.gz/Lettuce-0.08" );
-$t->log_like( qr{Cannot find Lettuce-1.0 anywhere} );
-
 # Dressing-v1.9.0 requires Oil-3.0 and Vinegar-v5.1.2.
 # But we already have our own local copy of Oil (from above)
 $t->package_ok( "$us/Oil-3.0/Oil-3.0", 1);
-
-# So we should not have imported their Oil
-# $t->package_not_loaded_ok( "$them/Oil-3.0.tar.gz/Oil-3.0" );
-
-# Lastly, the 'a' repository does not have Vinegar at all
-# $t->package_not_loaded_ok( "$them/Vinegar-v5.1.2.tar.gz/Vinegar-v5.1.2" );
 
 #------------------------------------------------------------------------------
 

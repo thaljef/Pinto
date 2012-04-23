@@ -34,14 +34,38 @@ sub pinto {
 
 #-----------------------------------------------------------------------------
 
+sub validate_args {
+    my ($self, $opts, $args) = @_;
+
+    $self->usage_error("Arguments are not allowed")
+      if @{ $args } and not $self->args_attribute;
+
+    return 1;
+}
+
+#------------------------------------------------------------------------------
+
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->pinto->new_batch( %{$opts} );
-    $self->pinto->add_action( $self->action_name(), %{$opts} );
-    my $result = $self->pinto->run_actions();
+    my %args = $self->process_args($args);
+    my $result = $self->pinto->run($self->action_name, %{$opts}, %args);
 
-    return $result->is_success() ? 0 : 1;
+    return $result->exit_status;
+}
+
+#-----------------------------------------------------------------------------
+
+sub process_args {
+    my ($self, $args) = @_;
+
+    my $attr = $self->args_attribute or return;
+
+    if ( ! @{$args} && $self->args_from_stdin) {
+        return ($attr => [ Pinto::Util::args_from_fh(\*STDIN) ]);
+    }
+
+    return ($attr => $args);
 }
 
 #-----------------------------------------------------------------------------
@@ -64,9 +88,15 @@ sub action_name {
 
 #-----------------------------------------------------------------------------
 
-sub command_namespace_prefix {
-    return __PACKAGE__;
-}
+sub args_attribute { return '' }
+
+#-----------------------------------------------------------------------------
+
+sub args_from_stdin { return 0 }
+
+#-----------------------------------------------------------------------------
+
+sub command_namespace_prefix { return __PACKAGE__ }
 
 #-----------------------------------------------------------------------------
 1;

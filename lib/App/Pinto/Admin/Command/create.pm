@@ -27,18 +27,8 @@ sub opt_spec {
     return (
         [ 'devel'       => 'Include development releases in the repository index' ],
         [ 'log_level=s' => 'Minimum logging level for the repository log file'    ],
-        [ 'source=s@'   => 'URL of repository for foreign distributions (repeatable)' ],
+        [ 'source=s@'   => 'URL of upstream repository (repeatable)' ],
     );
-}
-
-#------------------------------------------------------------------------------
-
-sub validate_args {
-    my ($self, $opts, $args) = @_;
-
-    $self->usage_error('Arguments are not allowed') if @{ $args };
-
-    return 1;
 }
 
 #------------------------------------------------------------------------------

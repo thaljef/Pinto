@@ -1,4 +1,4 @@
-# ABSTRACT: Pull an upstream distribution into the repository
+# ABSTRACT: Pull upstream distributions into the repository
 
 package Pinto::Action::Pull;
 
@@ -36,8 +36,18 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my ($dist, $did_pull) = $self->find_or_pull( $self->target );
-    return $self->result if not $dist;
+    $self->_execute($_) for $self->targets;
+
+    return $self->result;
+}
+
+#------------------------------------------------------------------------------
+
+sub _execute {
+    my ($self, $target) = @_;
+
+    my ($dist, $did_pull) = $self->find_or_pull( $target );
+    return if not $dist;
 
     unless ( $self->norecurse ) {
         my @prereq_dists = $self->pull_prerequisites( $dist );
@@ -46,7 +56,7 @@ sub execute {
 
     $self->result->changed if $did_pull;
 
-    return $self->result;
+    return;
 }
 
 #------------------------------------------------------------------------------

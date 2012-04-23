@@ -23,13 +23,6 @@ with qw( Pinto::Role::Interface::Action::List );
 
 #------------------------------------------------------------------------------
 
-has stack => (
-    is      => 'ro',
-    isa     => StackName,
-    default => 'default',
-);
-
-
 # TODO: Move this into the Attribute role
 
 has '+format' => (

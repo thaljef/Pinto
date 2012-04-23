@@ -1,6 +1,6 @@
-package Pinto::ActionResult;
+package Pinto::Result;
 
-# ABSTRACT: The result from running one Action
+# ABSTRACT: The result from running an Action
 
 use Moose;
 

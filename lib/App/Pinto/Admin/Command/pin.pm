@@ -44,22 +44,11 @@ END_USAGE
 
 #------------------------------------------------------------------------------
 
-sub execute {
-    my ($self, $opts, $args) = @_;
+sub args_attribute { return 'targets' }
 
-    my @targets = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    return 0 if not @targets;
+#------------------------------------------------------------------------------
 
-    $self->pinto->new_batch( %{$opts} );
-
-    for my $target (@targets) {
-        $self->pinto->add_action($self->action_name, %{$opts}, target => $target);
-    }
-
-    my $result = $self->pinto->run_actions;
-
-    return $result->is_success ? 0 : 1;
-}
+sub args_from_stdin { return 1 }
 
 #------------------------------------------------------------------------------
 

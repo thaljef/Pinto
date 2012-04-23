@@ -11,6 +11,7 @@ use IO::String;
 use Path::Class;
 use File::Temp qw(tempdir);
 use Test::Log::Dispatch;
+use Test::Exception;
 
 use Pinto;
 use Pinto::Util;
@@ -124,13 +125,31 @@ sub path_not_exists_ok {
 
 #------------------------------------------------------------------------------
 
-sub action_ok {
-    my ($self, $action, $batch_args, $action_args) = @_;
+sub run_ok {
+    my ($self, $action_name, $args) = @_;
 
-    $self->pinto->new_batch( %{ $batch_args || {} } );
-    $self->pinto->add_action($action, %{ $action_args || {} } );
+    my $result = $self->pinto->run($action_name, %{ $args });
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    $self->result_ok( $self->pinto->run_actions() );
+    $self->result_ok($result);
+
+    return $result;
+}
+
+#------------------------------------------------------------------------------
+
+sub run_throws_ok {
+    my ($self, $action_name, $args, $error_regex, $name) = @_;
+
+    my $result;
+    my $ok = throws_ok { $result = $self->pinto->run($action_name, %{$args}) }
+      $error_regex, $name;
+
+    if (not $ok) {
+        my @msgs = @{ $self->pinto->logger->log_handler->msgs };
+        $self->tb->diag('Output was...');
+        $self->tb->diag($_->{message}) for @msgs;
+        $self->tb->diag('No output was seen') if not @msgs;
+    }
 }
 
 #------------------------------------------------------------------------------

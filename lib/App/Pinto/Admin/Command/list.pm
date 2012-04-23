@@ -5,9 +5,6 @@ package App::Pinto::Admin::Command::list;
 use strict;
 use warnings;
 
-use Readonly;
-use List::MoreUtils qw(none);
-
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Admin::Command';

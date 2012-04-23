@@ -25,7 +25,7 @@ with qw( Pinto::Role::Configurable
 
 =method initialize()
 
-This method is called before each batch of Pinto events, and is
+This method is called before each L<Pinto::Action> is executed, and is
 responsible for doing any setup work that is required by the Store.
 This could include making a directory on the file system, checking out
 or updating a working copy, cloning, or pulling commits.  If the
@@ -47,12 +47,12 @@ sub initialize {
 
 =method commit(message => 'what happened')
 
-This method is called after each batch of Pinto events and is
-responsible for doing any work that is required to commit the Store.
-This could include scheduling files for addition/deletion, pushing
-commits to a remote repository.  If the commit fails, an exception
-should be thrown.  The default implementation does nothing.  Returns a
-reference to this Store.
+This method is called after each L<Pinto::Action> is responsible for
+doing any work that is required to commit the Store.  This could
+include scheduling files for addition/deletion, pushing commits to a
+remote repository.  If the commit fails, an exception should be
+thrown.  The default implementation does nothing.  Returns a reference
+to this Store.
 
 =cut
 
@@ -151,7 +151,7 @@ sub update_checksums {
 
     #return 0 if not -e $dir;  # Smells fishy
 
-    my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children();
+    my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children;
     return 0 if not @children;
 
     my $cs_file = $dir->file('CHECKSUMS');

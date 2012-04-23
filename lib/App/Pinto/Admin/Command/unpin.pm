@@ -22,6 +22,7 @@ sub opt_spec {
 
     return (
         [ 'message|m=s' => 'Message for the revision log' ],
+        [ 'stack|s=s'   => 'Name of stack to unpin' ],
     );
 }
 
@@ -33,8 +34,8 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH $command [OPTIONS] STACK_NAME PACKAGE_NAME ...
-%c --root=PATH $command [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
+%c --root=PATH $command [OPTIONS] TARGET ...
+%c --root=PATH $command [OPTIONS] < LIST_OF_TARGETS
 END_USAGE
 
     chomp $usage;
@@ -43,37 +44,11 @@ END_USAGE
 
 #------------------------------------------------------------------------------
 
-sub validate_args {
-    my ($self, $opts, $args) = @_;
-
-    $self->usage_error("Must specify a STACK_NAME and at least one PACKAGE_NAME")
-        if @{ $args } < 2;
-
-    return 1;
-
-}
+sub args_attribute { return 'targets' }
 
 #------------------------------------------------------------------------------
 
-sub execute {
-    my ($self, $opts, $args) = @_;
-
-    my $stack_name = shift @{ $args };
-
-    my @package_names = @{$args} ? @{$args} : Pinto::Util::args_from_fh(\*STDIN);
-    return 0 if not @package_names;
-
-    $self->pinto->new_batch( %{$opts} );
-
-    for my $package_name (@package_names) {
-        $self->pinto->add_action($self->action_name(), %{$opts}, package => $package_name,
-                                                                 stack   => $stack_name );
-    }
-
-    my $result = $self->pinto->run_actions();
-
-    return $result->is_success() ? 0 : 1;
-}
+sub args_from_stdin { return 1 }
 
 #------------------------------------------------------------------------------
 
@@ -84,8 +59,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir unpin [OPTIONS] STACK_NAME PACKAGE_NAME ...
-  pinto-admin --root=/some/dir unpin [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
+  pinto-admin --root=/some/dir unpin [OPTIONS] TARGET ...
+  pinto-admin --root=/some/dir unpin [OPTIONS] < LIST_OF_TARGETS
 
 =head1 DESCRIPTION
 
@@ -107,7 +82,11 @@ or ';') will be ignored.
 
 =item --message=MESSAGE
 
-Use the given MESSAGE as the revision log message
+Use the given MESSAGE as the revision log message.
+
+=item --stack=NAME
+
+Unpin the package on the stack with the given NAME.  Defaults to C<default>.
 
 =back
 

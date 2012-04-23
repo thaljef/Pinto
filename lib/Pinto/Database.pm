@@ -184,7 +184,7 @@ sub unpin {
     $self->warning("Package $pkg is not pinned on $stack")
         and return 0 unless $pkg_stk->is_pinned;
 
-    $pkg_stk->update( {is_pinned => 1} );
+    $pkg_stk->update( {is_pinned => 0} );
 
     return 1;
 }

@@ -23,32 +23,24 @@ my $them     = 'LOCAL';  # Foreign author, used by CPAN::Faker
 # Setup...
 
 my $t = Pinto::Tester->new( creator_args => {sources => $sources} );
-my $pinto = $t->pinto();
 
 #------------------------------------------------------------------------------
 # Pull recursively w/ multiple repositories
 
-$pinto->new_batch();
-$pinto->add_action('Pull', target => 'Salad');
-
-$t->result_ok( $pinto->run_actions() );
+$t->run_ok('Pull', {targets => 'Salad'});
 $t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");
 
 # Salad requires Dressing-0
 $t->package_ok( "$them/Dressing-v1.9.0/Dressing-v1.9.0" );
 
 # And salad requires Lettuce-1.0
-
 # Repository 'b' has Lettuce 0.8, but that is too low
-# $t->package_not_loaded_ok( "$them/Lettuce-0.8.tar.gz/Lettuce-0.8" );
-
 # Only repository 'c' has Letuce >= 1.0
 $t->package_ok( "$them/Lettuce-2.0/Lettuce-2.0" );
 
 # Dressing-v1.9.0 requires Oil-3.0
 # Repository 'b' has Oil-3.0, but repository 'c' has Oil-4.0.
 # We should only have the newer one of the two.
-# $t->package_not_loaded_ok( "$them/Oil-3.0.tar.gz/Oil-3.0" );
 $t->package_ok( "$them/Oil-4.0/Oil-4.0" );
 
 # Dressing-v1.9.0 requires Vinegar-v5.1.2
@@ -63,16 +55,11 @@ my $auth_dir = dir( $Bin, qw(data fakepan repos b authors id L LO LOCAL) );
 my $archive  = $auth_dir->file( 'Oil-3.0.tar.gz' );
 my $us       = 'US'; # Local author
 
-$pinto->new_batch();
-$pinto->add_action('Add', archive => $archive, author => $us);
-
-$t->result_ok( $pinto->run_actions() );
+$t->run_ok('Add', {archives => $archive, author => $us});
 
 # Our Oil-3.0 should be latest
-# $t->package_ok( "$us/Oil-3.0/Oil-3.0" );
-
-# And their Oil-4.0 should not be latest
-# $t->package_loaded_ok( "$them/Oil-4.0.tar.gz/Oil-4.0", 0 );
+$t->package_ok( "$us/Oil-3.0/Oil-3.0" );
 
 #------------------------------------------------------------------------------
-done_testing();
+
+done_testing;

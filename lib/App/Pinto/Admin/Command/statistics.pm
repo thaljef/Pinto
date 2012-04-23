@@ -25,7 +25,7 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
  my $usage =  <<"END_USAGE";
-%c --root=PATH $command [OPTIONS]
+%c --root=PATH $command
 END_USAGE
 
     chomp $usage;

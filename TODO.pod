@@ -2,12 +2,6 @@
 
 =over 4
 
-=item Eliminate VCS backend
-
-=item Eliminate the Batch -- just one action at a time
-
-=item Allow Actions to take multiple targets
-
 =item Log all exceptions (no confessing)
 
 =item Add hooks before/after adding and pulling
