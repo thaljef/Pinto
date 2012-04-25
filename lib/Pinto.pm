@@ -97,7 +97,8 @@ sub run {
 
     # Open a revision
     # TODO: only do this if the Action is mutating
-    $self->repos->open_revision( username => $args{username},
+    $self->repos->open_revision( stack    => $action->stack,
+                                 username => $args{username},
                                  message  => $args{message} );
 
 

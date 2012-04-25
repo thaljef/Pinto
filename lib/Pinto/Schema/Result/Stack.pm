@@ -44,12 +44,6 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
-=head2 is_merged
-
-  data_type: 'integer'
-  default_value: 0
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -61,8 +55,6 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "description",
   { data_type => "text", is_nullable => 0 },
-  "is_merged",
-  { data_type => "integer", default_value => 0, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -123,9 +115,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head2 revisions
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-21 21:09:25
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:e/DqD6ti2Z6piqmugzqaKg
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Revision>
+
+=cut
+
+__PACKAGE__->has_many(
+  "revisions",
+  "Pinto::Schema::Result::Revision",
+  { "foreign.stack" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-25 09:25:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:B4myucZMrgvA8wyxATfmlQ
 
 #----------------------------------------------------------------------------------------
 

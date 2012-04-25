@@ -17,13 +17,18 @@ CREATE TABLE package (
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
 
+/* TODO: Consider keeping track of if (and possibly when)
+   a stack has been merged.  Then only allow a merged
+   stack to be deleted.  Similarly, consider marking
+   a stack as "deleted" rather than actually deleting it,
+   so that you can potentially restore it by rolling it
+   back. */
 
 CREATE TABLE stack (
        id          INTEGER PRIMARY KEY NOT NULL,
        name        TEXT                NOT NULL,
        mtime       INTEGER             NOT NULL,
-       description TEXT                NOT NULL,
-       is_merged   INTEGER             NOT NULL DEFAULT 0 
+       description TEXT                NOT NULL 
 );
 
 /* TOOD: Denormalize this table to include package name,
@@ -53,9 +58,13 @@ create TABLE package_stack (
 
 CREATE TABLE revision (
        id          INTEGER PRIMARY KEY NOT NULL,
+       number      INTEGER             NOT NULL,
+       stack       INTEGER             NOT NULL,
        message     TEXT                NOT NULL,
        username    TEXT                NOT NULL,
-       ctime       INTEGER             NOT NULL
+       ctime       INTEGER             NOT NULL,
+
+       FOREIGN KEY(stack)   REFERENCES stack(id)
 );
 
 

@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Log all exceptions (no confessing)
-
 =item Add hooks before/after adding and pulling
 
 =item Ensure there is an open revision before each Repos operation

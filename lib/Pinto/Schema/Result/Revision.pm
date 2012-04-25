@@ -29,6 +29,17 @@ __PACKAGE__->table("revision");
   is_auto_increment: 1
   is_nullable: 0
 
+=head2 number
+
+  data_type: 'integer'
+  is_nullable: 0
+
+=head2 stack
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =head2 message
 
   data_type: 'text'
@@ -49,6 +60,10 @@ __PACKAGE__->table("revision");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+  "number",
+  { data_type => "integer", is_nullable => 0 },
+  "stack",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "message",
   { data_type => "text", is_nullable => 0 },
   "username",
@@ -86,16 +101,32 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head2 stack
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-19 21:54:29
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ePbeWee1r0gDVGZl2EKBYg
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Stack>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "stack",
+  "Pinto::Schema::Result::Stack",
+  { id => "stack" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-25 09:25:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WkPUVMjdFjNbyH0IjceHuQ
 
 #-------------------------------------------------------------------------------
 
-# ABSTRACT: Represents a distribution archive
+# ABSTRACT: Identifies a set of changes to the repository
 
 #-------------------------------------------------------------------------------
 
+# VERSION
 
 #------------------------------------------------------------------------------
 
@@ -103,12 +134,24 @@ sub new {
     my ($class, $attrs) = @_;
 
     $attrs->{ctime}    ||= time;
-    $attrs->{username} ||= $ENV{USER};
-    $attrs->{message}  ||= 'No message was given';
+    $attrs->{username} ||= $ENV{USER};              # TODO: maybe mandatory?
+    $attrs->{message}  ||= 'No message was given';  # TODO: maybe no default?
 
-    return $class->SUPER::new($attrs);
+    my $self = $class->SUPER::new($attrs);
+    $self->number( $self->last_number + 1 );
+
+    return $self;
 }
 
+#------------------------------------------------------------------------------
+
+sub last_number {
+    my ($self) = @_;
+
+    my $where = {stack => $self->stack->id};
+
+    return $self->result_source->resultset->search($where)->count;
+}
 
 #------------------------------------------------------------------------------
 
