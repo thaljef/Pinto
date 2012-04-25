@@ -246,7 +246,7 @@ sub add {
 
     my $p = @provides;
     my $r = @requires;
-    $self->notice("Adding distribution $dist_path providing $p and requiring $r packages");
+    $self->info("Archvie $dist_path provides $p and requires $r packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
@@ -357,7 +357,6 @@ sub pin {
     my $stack   = $args{stack};
     my $did_pin = 0;
 
-    $self->notice("Pinning distribution $dist on stack $stack");
     $did_pin += $self->db->pin($_, $stack) for $dist->packages;
 
     return $did_pin;
@@ -381,7 +380,6 @@ sub unpin {
     my $stack  = $args{stack};
     my $did_unpin = 0;
 
-    $self->notice("Unpinning distribution $dist from stack $stack");
     $did_unpin += $self->db->unpin($_, $stack) for $dist->packages;
 
     return $did_unpin;
@@ -395,8 +393,6 @@ sub unpin {
 
 sub create_stack {
     my ($self, %args) = @_;
-
-    $self->info("Creating stack $args{name}");
 
     my $stack = $self->db->create_stack( \%args );
 
@@ -417,8 +413,6 @@ sub remove_stack {
 
     $self->fatal( 'You cannot remove the default stack' )
         if $stk_name eq 'default';
-
-    $self->info("Removing stack $stk_name");
 
     my $stack = $self->get_stack( name => $stk_name );
 
@@ -611,8 +605,11 @@ sub open_revision {
     $self->fatal('Revision already in progress')
         if $self->has_open_revision;
 
-    $self->lock;
+    my $stk_name = $args{stack};
+    my $stack = $self->get_stack(name => $stk_name)
+      or $self->fatal("Stack $stk_name does not exist");
 
+    $args{stack} = $stack->id;
     my $revision = $self->db->schema->resultset('Revision')->create(\%args);
 
     $self->debug('Opened revision ' . $revision->id);
@@ -627,7 +624,7 @@ sub open_revision {
 sub kill_revision {
     my ($self, %args) = @_;
 
-    $self->fatal('No revision has been opened')
+    $self->warning('No revision has been opened') and return $self
         if not $self->has_open_revision;
 
     $self->debug('Killing revision ' . $self->revision->id);
@@ -635,8 +632,6 @@ sub kill_revision {
     $self->revision->delete;
 
     $self->clear_revision;
-
-    $self->unlock;
 
     return $self;
 }
