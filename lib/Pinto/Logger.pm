@@ -100,11 +100,15 @@ sub add_output {
 }
 
 #-----------------------------------------------------------------------------
+# TODO: We usually end up getting both the log message and the same
+# "croak" message on the screen.  I would prefer to only get one of
+# them.  And I would also like to get a full strack trace on the screen
+# (and possibly in the log file) when running in debug mode.
 
 sub fatal {
     my ($self, $message) = @_;
-    my $meth = $self->log_level eq 'debug' ? 'log_and_confess' : 'log_and_die';
-    $self->log_handler->$meth(level => 'fatal', message => $message);
+    chomp $message; # ???
+    $self->log_handler->log_and_croak(level => 'critical', message => $message);
 }
 
 
