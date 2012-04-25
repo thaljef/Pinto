@@ -31,14 +31,15 @@ sub execute {
 }
 
 #------------------------------------------------------------------------------
+# TODO: Consolidate package and dist pinning to one method.
 
 sub _execute {
     my ($self, $target) = @_;
 
-    return $self->_unpin_package($target)
+    return $self->_unpin_package($target, $stack)
         if $target->isa('Pinto::PackageSpec');
 
-    return $self->_unpin_distribution($target)
+    return $self->_unpin_distribution($target, $stack)
         if $target->isa('Pinto::DistributionSpec');
 
     my $type = ref $target;
@@ -48,34 +49,37 @@ sub _execute {
 #------------------------------------------------------------------------------
 
 sub _unpin_package {
-    my ($self, $pspec) = @_;
+    my ($self, $pspec, $stack) = @_;
 
-    my ($pkg_name, $stk_name) = ($pspec->name, $self->stack->name);
+    my $pkg_name = $pspec->name;
     my $pkg = $self->repos->get_package( name  => $pkg_name,
-                                         stack => $stk_name );
+                                         stack => $stack );
 
-    $self->fatal("Package $pkg_name is not on stack $stk_name")
+    $self->fatal("Package $pkg_name is not on stack $stack")
         if not $pkg;
 
     my $dist = $pkg->distribution;
+    $self->notice("Unpinning $dist from stack $stack");
 
     return $self->repos->unpin( distribution => $dist,
-                                stack        => $self->stack );
+                                stack        => $stack );
 }
 
 
 #------------------------------------------------------------------------------
 
 sub _unpin_distribution {
-   my ($self, $dspec) = @_;
+   my ($self, $dspec, $stack) = @_;
 
    my $dist = $self->repos->get_distribution(path => $dspec->path);
 
    $self->fatal("Distribution $dspec does not exist")
        if not $dist;
 
+   $self->notice("Unpinning $dist from stack $stack");
+
    return $self->repos->unpin( distribution => $dist,
-                               stack        => $self->stack );
+                               stack        => $stack );
 }
 
 #------------------------------------------------------------------------------

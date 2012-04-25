@@ -160,13 +160,13 @@ sub get_package {
         my $attrs = { prefetch => [ qw(package stack) ] };
         my $where = { 'package.name' => $pkg_name, 'stack.name' => $stk_name };
         my $pkg_stk = $self->db->select_package_stacks($where, $attrs)->single;
-        return $pkg_stk->package;
+        return $pkg_stk ? $pkg_stk->package : ();
     }
     else {
         my $where  = { name => $pkg_name };
         my @pkgs   = $self->db->select_packages( $where )->all;
         my $latest = (sort {$a <=> $b} @pkgs)[-1];
-        return $latest;
+        return $latest ? $latest : ();
     }
 }
 
@@ -308,10 +308,12 @@ sub register {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
-    my $stack = $args{stack};
-    my $did_register = 0;
+    my $stack = $self->get_stack(name => $args{stack})
+      or $self->fatal("Stack $args{stack} does not exist");
 
     $self->info("Registering distribution $dist on stack $stack");
+
+    my $did_register = 0;
     $did_register += $self->db->register($_, $stack) for $dist->packages;
 
     return $did_register;
@@ -341,6 +343,9 @@ sub unregister {
 }
 
 #-------------------------------------------------------------------------------
+# TODO: Consider allowing callers to pass a package instead of dist,
+# and then do the right thing.
+
 
 =method pin( distribution => $dist, stack => $stack )
 
@@ -353,10 +358,16 @@ number of packages were actually pinned.
 sub pin {
     my ($self, %args) = @_;
 
-    my $dist    = $args{distribution};
-    my $stack   = $args{stack};
-    my $did_pin = 0;
+    my $dist  = $args{distribution};
+    my $stack = $self->get_stack(name => $args{stack})
+        or $self->fatal("Stack $args{stack} does not exist");
 
+    # TODO: Should we first register all the packages on the stack?
+    # They might not be the stack contains another dist with
+    # overlapping packages.  But this could change the stack
+    # composition in ways that the user does not expect.
+
+    my $did_pin = 0;
     $did_pin += $self->db->pin($_, $stack) for $dist->packages;
 
     return $did_pin;
@@ -376,10 +387,11 @@ were actually unpinned.
 sub unpin {
     my ($self, %args) = @_;
 
-    my $dist   = $args{distribution};
-    my $stack  = $args{stack};
-    my $did_unpin = 0;
+    my $dist  = $args{distribution};
+    my $stack = $self->get_stack(name => $args{stack})
+        or $self->fatal("Stack $args{stack} does not exist");
 
+    my $did_unpin = 0;
     $did_unpin += $self->db->unpin($_, $stack) for $dist->packages;
 
     return $did_unpin;
@@ -605,9 +617,8 @@ sub open_revision {
     $self->fatal('Revision already in progress')
         if $self->has_open_revision;
 
-    my $stk_name = $args{stack};
-    my $stack = $self->get_stack(name => $stk_name)
-      or $self->fatal("Stack $stk_name does not exist");
+    my $stack = $self->get_stack(name => $args{stack})
+      or $self->fatal("Stack $args{stack} does not exist");
 
     $args{stack} = $stack->id;
     my $revision = $self->db->schema->resultset('Revision')->create(\%args);

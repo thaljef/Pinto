@@ -17,7 +17,6 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-
 with qw( Pinto::Role::Interface::Action::Add
          Pinto::Role::PackageImporter );
 
@@ -43,7 +42,9 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    $self->_execute($_) for $self->archives;
+    my $stack = $self->repos->get_stack(name => $self->stack);
+
+    $self->_execute($_, $stack) for $self->archives;
 
     return $self->result->changed;
 }
@@ -51,16 +52,18 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $archive) = @_;
+    my ($self, $archive, $stack) = @_;
+
+    $self->notice("Adding distribution archive $archive");
 
     my $dist  = $self->repos->add( archive   => $archive,
                                    author    => $self->author );
 
     $self->repos->register( distribution  => $dist,
-                            stack         => $self->stack );
+                            stack         => $stack );
 
     $self->repos->pin( distribution   => $dist,
-                       stack          => $self->stack ) if $self->pin;
+                       stack          => $stack ) if $self->pin;
 
     $self->pull_prerequisites( $dist ) unless $self->norecurse;
 

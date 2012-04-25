@@ -157,7 +157,7 @@ sub pin {
     my $where = {stack => $stack->id};
     my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
 
-    $self->fatal("Package $pkg is not on stack $stack")
+    $self->fatal("Package $pkg is not onstack $stack")
         if not $pkg_stk;
 
     $self->warning("Package $pkg is already pinned on stack $stack")
@@ -177,10 +177,10 @@ sub unpin {
     my $where = {stack => $stack->id};
     my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
 
-    $self->fatal("Package $pkg is not on stack $stack")
-        if not $pkg_stk;
+    #$self->warning("Package $pkg is not on stack $stack")
+    return 0 if not $pkg_stk;
 
-    $self->warning("Package $pkg is not pinned on $stack")
+    $self->warning("Package $pkg is not pinned on stack $stack")
         and return 0 unless $pkg_stk->is_pinned;
 
     $pkg_stk->update( {is_pinned => 0} );

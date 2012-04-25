@@ -21,18 +21,6 @@ with qw( Pinto::Role::Interface::Action::Pull
 
 #------------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self, $args) = @_;
-
-    my $stk_name = $self->stack;
-    $self->fatal("Stack $stk_name does not exist")
-        if not $self->repos->get_stack(name => $stk_name);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub execute {
     my ($self) = @_;
 

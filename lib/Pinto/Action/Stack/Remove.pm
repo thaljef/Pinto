@@ -20,21 +20,6 @@ with qw( Pinto::Role::Interface::Action::Stack::Remove );
 
 #------------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self, $args) = @_;
-
-    my $stk_name = $self->stack;
-    $self->fatal("Stack $stk_name does not exist")
-        if not $self->repos->get_stack(name => $stk_name);
-
-    $self->fatal('You cannot remove the default stack')
-        if $stk_name eq 'default';
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 
 sub execute {
     my ($self) = @_;

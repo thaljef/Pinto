@@ -20,18 +20,6 @@ with qw( Pinto::Role::Interface::Action::Stack::Create );
 
 #------------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self, $args) = @_;
-
-    my $stk_name = $self->stack;
-    $self->fatal("Stack $stk_name already exists")
-        if $self->repos->get_stack(name => $stk_name);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub execute {
     my ($self) = @_;
 

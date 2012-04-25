@@ -1,8 +1,9 @@
-package Pinto::Action;
-
 # ABSTRACT: Base class for all Actions
 
+package Pinto::Action;
+
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
 use Pinto::Result;
 
