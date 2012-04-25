@@ -1,0 +1,23 @@
+Issue with revisions...
+
+Should each Action manage its own revision?
+  Pros: Each action has more control
+  Cons: Each action gets more (same) complexity
+
+Not all actions require a revision.
+
+Possible states:
+  Immutable/Success
+  Immutable/Failure
+  Mutable/Success/DidMutate
+  Mutable/Success/DidNotMutate
+  Mutable/Failure/DidMutate      - rollback
+  Mutable/Failure/DidNotMutate   - rollback
+
+When an action fails, who does the cleanup?
+
+Each MutatorAction requires a stack attribute
+
+Want a contract between action type and stack attribute
+
+But I want that at the interface level, not in concrete class.
