@@ -4,7 +4,7 @@ Pinto - Curate your own CPAN-like repository
 
 # VERSION
 
-version 0.038
+version 0.039
 
 # SYNOPSIS
 
@@ -107,26 +107,10 @@ developers.
 
 # METHODS
 
-## new_batch( %batch_args )
+## run( $action_name => %action_args )
 
-Prepares this Pinto to run a new batch of Actions.  Any prior batch will
-be discarded.
-
-## add_action( $action_name, %action_args )
-
-Constructs the action with the given names and arguments, and adds it
-to the current batch.  You must first call `new_batch` before you can
-add any actions.  The precise class of the Action will be formed by
-prepending 'Pinto::Action::' to the action name.  See the
-documentation for the corresponding Action class for a details about
-the arguments it supports.
-
-## run_actions()
-
-Executes all the actions that are currently in the batch for this
-Pinto.  Returns a [Pinto::Result](http://search.cpan.org/perldoc?Pinto::Result) object that indicates whether the
-batch was successful and contains any warning or error messages that
-might have occurred along the way.
+Runs the Action with the given `$action_name`, passing the
+`%action_args` to its constructor.  Returns a [Pinto::Result](http://search.cpan.org/perldoc?Pinto::Result).
 
 ## add_logger( $obj )
 
