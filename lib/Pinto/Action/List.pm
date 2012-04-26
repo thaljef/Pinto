@@ -5,8 +5,6 @@ package Pinto::Action::List;
 use Moose;
 use MooseX::Types::Moose qw(HashRef);
 
-use Pinto::Types qw(StackName);
-
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -23,14 +21,15 @@ with qw( Pinto::Role::Interface::Action::List );
 
 #------------------------------------------------------------------------------
 
-# TODO: Move this into the Attribute role
-
-has '+format' => (
-    default  => "%m%s%y %-40n %12v  %p\n",
+has where => (
+    is       => 'ro',
+    isa      => HashRef,
+    builder  => '_build_where',
+    init_arg => undef,
+    lazy     => 1,
 );
 
 #------------------------------------------------------------------------------
-# TODO: Move this builder into the Interface role
 
 sub _build_where {
     my ($self) = @_;
@@ -51,26 +50,13 @@ sub _build_where {
 
 #------------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self, $args) = @_;
-
-    my $stk_name = $self->stack;
-    $self->repos->get_stack(name => $stk_name)
-        or $self->fatal("Stack $stk_name does not exist");
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub execute {
     my ($self) = @_;
 
     my $where = $self->where;
 
-    if (not $self->repos->get_stack( name => $where->{'stack.name'} )) {
-        $self->fatal("No such stack named $where->{'stack.name'}");
-    }
+    $self->repos->get_stack( name => $where->{'stack.name'} )
+        or $self->fatal("No such stack named $where->{'stack.name'}");
 
     my $attrs = { order_by => [ qw(package.name package.version package.distribution.path) ],
                   prefetch => [ 'stack', { 'package' => 'distribution' } ] };
