@@ -23,9 +23,7 @@ with qw( Pinto::Role::Interface::Action::Pin );
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
-
-    $self->_execute($_, $stack) for $self->targets;
+    $self->_execute($_) for $self->targets;
 
     return $self->result->changed;
 }
@@ -33,51 +31,35 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $target, $stack) = @_;
+    my ($self, $target) = @_;
 
-    return $self->_pin_package($target, $stack)
-        if $target->isa('Pinto::PackageSpec');
+    my $dist;
+    my $stk_name = $self->stack;
 
-    return $self->_pin_distribution($target, $stack)
-        if $target->isa('Pinto::DistributionSpec');
+    if ($target->isa('Pinto::PackageSpec')) {
 
-    my $type = ref $target;
-    $self->fatal("Don't know how to pin target of type $type");
-}
+        my $pkg_name = $target->name;
+        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stk_name)
+            or $self->fatal("Package $pkg_name is not on stack $stk_name");
 
-#------------------------------------------------------------------------------
+        $dist = $pkg->distribution;
+    }
+    elsif ($target->isa('Pinto::DistributionSpec')) {
 
-sub _pin_package {
-    my ($self, $pspec, $stack) = @_;
+        $dist = $self->repos->get_distribution(path => $target->path)
+            or $self->fatal("Distribution $target does not exist");
+    }
+    else {
 
-    my $pkg_name = $pspec->name;
-    my $pkg = $self->repos->get_package( name  => $pkg_name,
-                                         stack => $stack->name );
+        my $type = ref $target;
+        $self->fatal("Don't know how to pin target of type $type");
+    }
 
-    $self->fatal("Package $pkg_name is not on stack $stack")
-        if not $pkg;
 
-    my $dist = $pkg->distribution;
-    $self->notice("Pinning $dist on stack $stack");
+    $self->notice("Pinning $dist on stack $stk_name");
+    $self->repos->pin(distribution => $dist, stack => $stk_name);
 
-    return $self->repos->pin( distribution => $dist,
-                              stack        => $stack );
-}
-
-#------------------------------------------------------------------------------
-
-sub _pin_distribution {
-   my ($self, $dspec, $stack) = @_;
-
-   my $dist = $self->repos->get_distribution(path => $dspec->path);
-
-   $self->fatal("Distribution $dspec does not exist")
-       if not $dist;
-
-   $self->notice("Pinning $dist on stack $stack");
-
-   return $self->repos->pin( distribution => $dist,
-                             stack        => $stack );
+    return;
 }
 
 #------------------------------------------------------------------------------

@@ -31,55 +31,37 @@ sub execute {
 }
 
 #------------------------------------------------------------------------------
-# TODO: Consolidate package and dist pinning to one method.
 
 sub _execute {
     my ($self, $target) = @_;
 
-    return $self->_unpin_package($target, $stack)
-        if $target->isa('Pinto::PackageSpec');
+    my $dist;
+    my $stk_name = $self->stack;
 
-    return $self->_unpin_distribution($target, $stack)
-        if $target->isa('Pinto::DistributionSpec');
+    if ($target->isa('Pinto::PackageSpec')) {
 
-    my $type = ref $target;
-    $self->fatal("Don't know how to unpin target of type $type");
-}
+        my $pkg_name = $target->name;
+        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stk_name)
+            or $self->fatal("Package $pkg_name is not on stack $stk_name");
 
-#------------------------------------------------------------------------------
+        $dist = $pkg->distribution;
+    }
+    elsif ($target->isa('Pinto::DistributionSpec')) {
 
-sub _unpin_package {
-    my ($self, $pspec, $stack) = @_;
+        $dist = $self->repos->get_distribution(path => $target->path)
+            or $self->fatal("Distribution $target does not exist");
+    }
+    else {
 
-    my $pkg_name = $pspec->name;
-    my $pkg = $self->repos->get_package( name  => $pkg_name,
-                                         stack => $stack );
-
-    $self->fatal("Package $pkg_name is not on stack $stack")
-        if not $pkg;
-
-    my $dist = $pkg->distribution;
-    $self->notice("Unpinning $dist from stack $stack");
-
-    return $self->repos->unpin( distribution => $dist,
-                                stack        => $stack );
-}
+        my $type = ref $target;
+        $self->fatal("Don't know how to pin target of type $type");
+    }
 
 
-#------------------------------------------------------------------------------
+    $self->notice("Unpinning $dist from stack $stk_name");
+    $self->repos->unpin(distribution => $dist, stack => $stk_name);
 
-sub _unpin_distribution {
-   my ($self, $dspec, $stack) = @_;
-
-   my $dist = $self->repos->get_distribution(path => $dspec->path);
-
-   $self->fatal("Distribution $dspec does not exist")
-       if not $dist;
-
-   $self->notice("Unpinning $dist from stack $stack");
-
-   return $self->repos->unpin( distribution => $dist,
-                               stack        => $stack );
+    return;
 }
 
 #------------------------------------------------------------------------------
