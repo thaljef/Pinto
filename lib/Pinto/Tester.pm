@@ -190,7 +190,8 @@ sub package_ok {
 sub result_ok {
     my ($self, $result) = @_;
 
-    my $ok = $self->tb->ok( $result->is_success, 'Result indicates action was succesful' );
+    my $ok = $self->tb->ok( $result->was_successful,
+                            'Result indicates action was succesful' );
 
     if (not $ok) {
         my @msgs = @{ $self->pinto->logger->log_handler->msgs };
@@ -207,7 +208,8 @@ sub result_ok {
 sub result_not_ok {
     my ($self, $result) = @_;
 
-    $self->tb->ok( !$result->is_success, 'Result indicates action was not succesful' );
+    $self->tb->ok( !$result->was_successful,
+                   'Result indicates action was not succesful' );
 
     return;
 }

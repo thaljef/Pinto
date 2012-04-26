@@ -20,12 +20,11 @@ has made_changes => (
 );
 
 
-# TODO: rename to "was_success"
 
-has is_success => (
+has was_successful => (
     is         => 'ro',
     isa        => Bool,
-    writer     => '_set_is_success',
+    writer     => '_set_was_successful',
     default    => 1,
 );
 
@@ -33,7 +32,7 @@ has is_success => (
 
 sub failed {
     my ($self) = @_;
-    $self->_set_is_success(0);
+    $self->_set_was_successful(0);
     return $self;
 }
 
@@ -49,7 +48,7 @@ sub changed {
 
 sub exit_status {
     my ($self) = @_;
-    return not $self->is_success;
+    return not $self->was_successful;
 }
 
 #-----------------------------------------------------------------------------
