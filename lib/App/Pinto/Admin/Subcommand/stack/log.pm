@@ -34,7 +34,7 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Must specify one stack name')
+    $self->usage_error('Must specify exactly one stack')
         if @{$args} != 1;
 
     return 1;
@@ -60,11 +60,9 @@ END_USAGE
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->pinto->new_batch(%{$opts});
-    $self->pinto->add_action($self->action_name(), %{$opts}, stack => $args->[0]);
-    my $result = $self->pinto->run_actions();
+    my $result = $self->pinto->run($self->action_name, %{$opts}, stack => $args->[0]);
 
-    return $result->is_success() ? 0 : 1;
+    return $result->exit_status;
 }
 
 #------------------------------------------------------------------------------

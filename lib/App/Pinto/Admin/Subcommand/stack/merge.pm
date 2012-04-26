@@ -32,7 +32,8 @@ sub opt_spec {
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Must specify FROM_STACK and TO_STACK') if @{$args} != 2;
+    $self->usage_error('Must specify FROM_STACK and TO_STACK')
+        if @{$args} != 2;
 
     return 1;
 }
@@ -57,12 +58,10 @@ END_USAGE
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->pinto->new_batch(%{$opts});
     my %stacks = ( from_stack => $args->[0], to_stack => $args->[1] );
-    $self->pinto->add_action($self->action_name(), %{$opts}, %stacks);
-    my $result = $self->pinto->run_actions();
+    my $result = $self->pinto->run($self->action_name, %{$opts}, %stacks);
 
-    return $result->is_success() ? 0 : 1;
+    return $result->exit_status;
 }
 
 #------------------------------------------------------------------------------

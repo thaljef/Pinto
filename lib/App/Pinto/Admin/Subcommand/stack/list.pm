@@ -62,23 +62,20 @@ sub validate_args {
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    $self->pinto->new_batch(%{$opts});
+    # NOTE: If an argument is given, it means to list the stack
+    # members, not the stacks themselves.  So we run the List action
+    # instead of the usual Stack::List action.
 
-    # HACK: If an argument is given, it means to list the stack members,
-    # not the stacks themselves.  So we run the List action instead of
-    # the usual Stack::List action.
-
+    my $result;
     if ( my $stack = $args->[0] ) {
         my $where = { 'stack.name' => $stack };
-        $self->pinto->add_action('List', %{$opts}, where => $where);
+        $result = $self->pinto->run('List', %{$opts}, where => $where);
     }
     else {
-        $self->pinto->add_action($self->action_name(), %{$opts});
+        $result = $self->pinto->run($self->action_name, %{$opts});
     }
 
-    my $result = $self->pinto->run_actions();
-
-    return $result->is_success() ? 0 : 1;
+    return $result->exit_status;
 }
 
 #------------------------------------------------------------------------------
