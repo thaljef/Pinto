@@ -333,10 +333,12 @@ sub unregister {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
-    my $stack = $args{stack};
-    my $did_unregister = 0;
+    my $stack = $self->get_stack(name => $args{stack})
+      or $self->fatal("Stack $args{stack} does not exist");
 
     $self->info("Unregistering distribution $dist from stack $stack");
+
+    my $did_unregister = 0;
     $did_unregister += $self->db->unregister($_, $stack) for $dist->packages;
 
     return $did_unregister;
