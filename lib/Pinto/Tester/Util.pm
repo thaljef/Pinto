@@ -80,16 +80,16 @@ sub make_dist_struct {
 sub parse_dist_spec {
     my ($spec) = @_;
 
-    # AUTHOR / Foo-1.2 = Foo-1.0,Bar-2 ~>Baz-1.1,Nuts-2.3
-    # -------- -------   ------------- ------------------
-    #    |        |             |               |
-    #  auth*    dist         provides       requires*
+    # AUTHOR / Foo-1.2 = Foo-1.0,Bar-2 ~Baz-1.1,Nuts-2.3
+    # -------- -------   ------------- -----------------
+    #    |        |             |             |
+    #  auth*    dist         provides      requires*
     #
     # * means optional (including the delimiter)
     #   All whitespace is ignored too
 
     $spec =~ s{\s+}{}g;  # Remove any whitespace
-    $spec =~ m{ ^ (?: (.+) /)? (.+) = (.+) (?: ~> (.+) )? $ }mx
+    $spec =~ m{ ^ (?: ([^/]+) /)? (.+) = ([^~]+) (?: ~ (.+) )? $ }mx
         or confess "Could not parse distribution spec: $spec";
 
     my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
