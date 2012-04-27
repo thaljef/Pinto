@@ -4,10 +4,6 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Exception;
-
-use Path::Class;
-use FindBin qw($Bin);
 
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
