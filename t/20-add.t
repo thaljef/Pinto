@@ -43,10 +43,13 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 # Exceptions...
 
 {
+  my $t = Pinto::Tester->new;
+
+  $t->run_ok('Add', {archives => $archive, author => $auth});
   $t->run_throws_ok( 'Add', {archives => $archive, author => $auth},
                      qr/already exists/, 'Cannot add same dist twice' );
 
-  $t->run_throws_ok( 'Add', {archives => [file('bogus')], author => $auth},
+  $t->run_throws_ok( 'Add', {archives => 'bogus', author => $auth},
                      qr/Some archives are missing/, 'Cannot add nonexistant archive' );
 }
 
