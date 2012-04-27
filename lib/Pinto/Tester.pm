@@ -196,7 +196,20 @@ sub package_ok {
     return;
 }
 
+#------------------------------------------------------------------------------
 
+sub package_not_ok {
+   my ($self, $pkg_spec) = @_;
+
+    my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
+        = parse_pkg_spec($pkg_spec);
+
+    my $attrs = {prefetch => [ qw(package stack) ]};
+    my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
+    my $reg = $self->pinto->repos->db->select_registries->find($where, $attrs);
+
+    return $self->tb->ok(!$reg, "$pkg_spec is not loaded");
+}
 #------------------------------------------------------------------------------
 
 sub result_ok {

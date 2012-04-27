@@ -18,6 +18,15 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
 {
 
   my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
+  $local->run_ok('Pull', {targets => 'Baz-1.2', norecurse => 1});
+  $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
+  $local->package_not_ok('PAUL/Nuts-2.3/Nuts-2.3');
+}
+
+#------------------------------------------------------------------------------
+{
+
+  my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
   $local->run_ok('Pull', {targets => 'Baz-1.2'});
   $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
   $local->package_ok('PAUL/Nuts-2.3/Nuts-2.3');
