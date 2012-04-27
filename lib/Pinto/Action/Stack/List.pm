@@ -3,9 +3,6 @@
 package Pinto::Action::Stack::List;
 
 use Moose;
-use MooseX::Types::Moose qw(Str HashRef);
-
-use List::Util qw(max);
 
 use namespace::autoclean;
 
