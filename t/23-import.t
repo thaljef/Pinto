@@ -5,58 +5,33 @@ use warnings;
 
 use Test::More;
 
-use Path::Class;
-use FindBin qw($Bin);
-
 use Pinto::Tester;
-
-#------------------------------------------------------------------------------
-# Fo this test, we're only using the 'b' repository...
-
-my $fakes    = dir( $Bin, qw(data fakepan repos b) );
-my $source   = URI->new("file://$fakes");
-my $auth_dir = $fakes->subdir( qw( authors id L LO LOCAL) );
-
-my $us       = 'US';    # The local author
-my $them     = 'LOCAL'; # Foreign author (used by CPAN::Faker)
-
-#------------------------------------------------------------------------------
-# Setup...
-
-my $t = Pinto::Tester->new( creator_args => {sources => "$source"} );
-my $pinto = $t->pinto();
-
-$t->repository_empty_ok();
-
-#------------------------------------------------------------------------------
-# Simple pull...
-
-$DB::single = 1;
-$t->run_ok('Pull', {norecurse => 1, targets => 'Salad'});
-$t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0");
-
-#------------------------------------------------------------------------------
-# Add a local copy of a dependency
-
-my $dist = 'Oil-3.0.tar.gz';
-my $archive = $auth_dir->file($dist);
-
-$t->run_ok('Add', {archives => $archive, author => $us});
-$t->package_ok( "$us/$dist/Oil-3.0" );
-
-#------------------------------------------------------------------------------
-# Pull recursive...
-
-$t->run_ok('Pull', {targets => 'Salad'});
-$t->package_ok( "$them/Salad-1.0.0/Salad-1.0.0" );
-
-# Salad requires Dressing-0 and Lettuce-1.0
-$t->package_ok( "$them/Dressing-v1.9.0/Dressing-v1.9.0" );
-
-# Dressing-v1.9.0 requires Oil-3.0 and Vinegar-v5.1.2.
-# But we already have our own local copy of Oil (from above)
-$t->package_ok( "$us/Oil-3.0/Oil-3.0", 1);
+use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-done_testing();
+my $source = Pinto::Tester->new;
+$source->populate('JOHN/Baz-1.2=Baz-1.2~Nuts-2.3');
+$source->populate('PAUL/Nuts-2.3=Nuts-2.3');
+
+#------------------------------------------------------------------------------
+{
+
+  my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
+  $local->run_ok('Pull', {targets => 'Baz-1.2'});
+  $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
+  $local->package_ok('PAUL/Nuts-2.3/Nuts-2.3');
+}
+
+#------------------------------------------------------------------------------
+{
+
+  my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
+  $local->run_throws_ok('Pull', {targets => 'Nowhere-1.2'},
+                         qr/Cannot find prerequisite Nowhere-1.2/);
+
+}
+
+#------------------------------------------------------------------------------
+
+done_testing;
