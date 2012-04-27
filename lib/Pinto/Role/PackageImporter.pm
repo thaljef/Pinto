@@ -139,7 +139,7 @@ sub pull_prerequisites {
         }
 
       NEW_PREREQ:
-        for my $new_prereq ( map { $_->as_spec } $dist->prerequisites ) {
+        for my $new_prereq ( map { $_->as_spec } $required_dist->prerequisites ) {
 
             # This is all pretty hacky.  It might be better to represent the queue
             # as a hash table instead of a list, since we really need to keep track
