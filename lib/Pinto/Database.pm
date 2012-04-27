@@ -155,7 +155,7 @@ sub pin {
     my ($self, $pkg, $stack) = @_;
 
     my $where = {stack => $stack->id};
-    my $registry = $pkg->search_related('registry', $where)->single;
+    my $registry = $pkg->search_related('registries', $where)->single;
 
     $self->fatal("Package $pkg is not on stack $stack")
         if not $registry;
@@ -175,7 +175,7 @@ sub unpin {
     my ($self, $pkg, $stack) = @_;
 
     my $where = {stack => $stack->id};
-    my $registry = $pkg->search_related('registery', $where)->single;
+    my $registry = $pkg->search_related('registries', $where)->single;
 
     #$self->warning("Package $pkg is not on stack $stack")
     return 0 if not $registry;
