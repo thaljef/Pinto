@@ -21,7 +21,6 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'message|m=s' => 'Message for the revision log' ],
         [ 'stack|s=s'   => 'Name of stack to unpin' ],
     );
 }
@@ -79,10 +78,6 @@ or ';') will be ignored.
 =head1 COMMAND OPTIONS
 
 =over 4
-
-=item --message=MESSAGE
-
-Use the given MESSAGE as the revision log message.
 
 =item --stack=NAME
 

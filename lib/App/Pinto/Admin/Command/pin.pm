@@ -21,7 +21,6 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'message|m=s' => 'Message for the revision log' ],
         [ 'stack|s=s'   => 'Stack on which to pin the target' ],
     );
 }
@@ -69,9 +68,9 @@ newer version is subsequently mirrored, imported, or added to that
 stack.  The pin is local to the stack and does not affect any other
 stacks.
 
-A package must be in the stack before you can pin it.  To add a
-package to the stack, please see the C<push> command.  To remove the
-pin from a package, please see the C<unpin> command.
+A package must be in the stack before you can pin it.  To bring a
+package into the stack, use the C<pull> command.  To remove the pin
+from a package, please see the C<unpin> command.
 
 =head1 COMMAND ARGUMENTS
 
@@ -85,9 +84,9 @@ or ';') will be ignored.
 
 =over 4
 
-=item --message=MESSAGE
+=item --stack=NAME
 
-Use the given MESSAGE as the revision log message.
+Name of the stack on which to pin the target.  Defaults to 'default'.
 
 =back
 

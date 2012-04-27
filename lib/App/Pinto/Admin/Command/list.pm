@@ -23,8 +23,6 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-
-        [ 'index!'            => 'Limit to packages in the index (negatable)' ],
         [ 'distributions|D=s' => 'Limit to matching distribution paths' ],
         [ 'packages|P=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],

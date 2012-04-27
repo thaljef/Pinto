@@ -25,9 +25,8 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'message|m=s' => 'Message for the revision log' ],
         [ 'norecurse'   => 'Do not recursively pull prereqs' ],
-        [ 'pin'         => 'Pin all added packages to the stack' ],
+        [ 'pin'         => 'Pin all the packages to the stack' ],
         [ 'stack|s=s'   => 'Put packages into this stack' ],
     );
 }
@@ -110,10 +109,6 @@ or ';') will be ignored.
 =head1 COMMAND OPTIONS
 
 =over 4
-
-=item --message=MESSAGE
-
-Use the given MESSAGE as the revision log message.
 
 =item --norecurse
 

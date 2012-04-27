@@ -26,9 +26,8 @@ sub opt_spec {
 
     return (
         [ 'author=s'    => 'Your (alphanumeric) author ID' ],
-        [ 'message|m=s' => 'Message for the revision log' ],
         [ 'norecurse'   => 'Do not recursively import prereqs' ],
-        [ 'pin'         => 'Pin all added packages to the stack' ],
+        [ 'pin'         => 'Pin packages to the stack' ],
         [ 'stack|s=s'   => 'Put packages into this stack' ],
     );
 }
@@ -110,10 +109,6 @@ alphanumeric characters (no spaces) and will be forced to uppercase.
 Defaults to the C<user> specified in your C<~/.pause> configuration
 file (if such file exists).  Otherwise, defaults to your current login
 username.
-
-=item --message=MESSAGE
-
-Use the given message as the revision log message.
 
 =item --norecurse
 
