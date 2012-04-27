@@ -35,14 +35,17 @@ sub _build_where {
 
     my $where = { 'stack.name' => $self->stack };
 
-    my $pkg_name = $self->packages();
-    $where->{'package.name'} = { like => "%$pkg_name%" } if $pkg_name;
+    if (my $pkg_name = $self->packages) {
+        $where->{'package.name'} = { like => "%$pkg_name%" }
+    }
 
-    my $dist_path = $self->distributions();
-    $where->{'package.distribution.path'} = { like => "%$dist_path%" } if $dist_path;
+    if (my $dist_path = $self->distributions) {
+        $where->{'package.distribution.path'} = { like => "%$dist_path%" };
+    }
 
-    my $pinned = $self->pinned();
-    $where->{pin} = { '!=' => undef } if $pinned;
+    if (my $pinned = $self->pinned) {
+        $where->{pin} = { '!=' => undef };
+    }
 
     return $where;
 }
