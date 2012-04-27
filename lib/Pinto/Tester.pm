@@ -277,10 +277,10 @@ sub repository_empty_ok {
 
 sub diag_log_contents {
     my ($self) = @_;
-    my @msgs = $self->pinto->logger->log_handler->msgs;
+    my $msgs = $self->pinto->logger->log_handler->msgs;
     $self->tb->diag('Log messages are...');
-    $self->tb->diag($_->{message}) for @msgs;
-    $self->tb->diag('No log messages seen') if not @msgs;
+    $self->tb->diag($_->{message}) for @$msgs;
+    $self->tb->diag('No log messages seen') if not @$msgs;
 }
 
 #------------------------------------------------------------------------------
