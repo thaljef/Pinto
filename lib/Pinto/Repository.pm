@@ -115,6 +115,22 @@ has revision => (
 
 #-------------------------------------------------------------------------------
 
+sub BUILD {
+    my ($self) = @_;
+
+    unless (    -e $self->config->db_file
+             && -e $self->config->modules_dir
+             && -e $self->config->authors_dir ) {
+
+        my $root_dir = $self->config->root_dir();
+        $self->fatal("Directory $root_dir does not look like a Pinto repository");
+    }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
 =method get_stack( name => $stack_name )
 
 Returns the L<Pinto::Schema::Result::Stack> object with the given

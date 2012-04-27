@@ -1,6 +1,6 @@
 package Pinto;
 
-# ABSTRACT: Curate your own CPAN-like repository
+# ABSTRACT: Curate a repository of Perl modules
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
@@ -8,8 +8,6 @@ use MooseX::Types::Moose qw(Str);
 use Try::Tiny;
 use Class::Load;
 
-use Pinto::Config;
-use Pinto::Logger;
 use Pinto::Repository;
 
 use namespace::autoclean;
@@ -23,8 +21,9 @@ use namespace::autoclean;
 has repos   => (
     is         => 'ro',
     isa        => 'Pinto::Repository',
-    builder    => '_build_repos',
     lazy       => 1,
+    default    => sub { Pinto::Repository->new( config => $_[0]->config,
+                                                logger => $_[0]->logger ) },
 );
 
 
@@ -37,37 +36,9 @@ has action_base_class => (
 
 
 #------------------------------------------------------------------------------
-# Moose roles
 
 with qw( Pinto::Role::Configurable
          Pinto::Role::Loggable );
-
-#------------------------------------------------------------------------------
-# TODO: move this to the Repository BUILDer.
-
-sub BUILD {
-    my ($self) = @_;
-
-    unless (    -e $self->config->db_file()
-             && -e $self->config->modules_dir()
-             && -e $self->config->authors_dir() ) {
-
-      my $root_dir = $self->config->root_dir();
-      $self->fatal("Directory $root_dir does not look like a Pinto repository");
-    }
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-# Builders
-
-sub _build_repos {
-    my ($self) = @_;
-
-    return Pinto::Repository->new( config => $self->config(),
-                                   logger => $self->logger() );
-}
 
 #------------------------------------------------------------------------------
 
@@ -90,8 +61,7 @@ sub run {
 
 
     # Construct the Action
-    my $action =  $action_class->new( config => $self->config,
-                                      logger => $self->logger,
+    my $action =  $action_class->new( logger => $self->logger,
                                       repos  => $self->repos,
                                       %args );
 
@@ -105,8 +75,8 @@ sub run {
                                      message  => $args{message} );
     }
 
-    my $result = try     { $action->execute }
-                 catch   { $self->repos->kill_revision if $is_mutator; $self->fatal($_) };
+    my $result = try   { $action->execute }
+                 catch { $self->repos->kill_revision if $is_mutator; $self->fatal($_) };
 
 
     return $result unless $is_mutator;
