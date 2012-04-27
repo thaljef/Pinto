@@ -49,39 +49,6 @@ create TABLE package_stack (
 );
 
 
-/* TODO: Add a checksum (md5) that captures the state
-   of the stack at that point in history.  Use this
-   to verify that rollbacks are correct.  This implies
-   that a revisions can only happen on one stack at a 
-   time.  Not sure I want to commit to that */
-
-
-CREATE TABLE revision (
-       id          INTEGER PRIMARY KEY NOT NULL,
-       number      INTEGER             NOT NULL,
-       stack       INTEGER             NOT NULL,
-       message     TEXT                NOT NULL,
-       username    TEXT                NOT NULL,
-       ctime       INTEGER             NOT NULL,
-
-       FOREIGN KEY(stack)   REFERENCES stack(id)
-);
-
-
-CREATE TABLE package_stack_history (
-       id                  INTEGER PRIMARY KEY NOT NULL,
-       revision            INTEGER             NOT NULL,
-       event               TEXT                NOT NULL,
-       stack               INTEGER             NOT NULL,
-       package             INTEGER             NOT NULL,
-       pin                 INTEGER             NOT NULL,
-
-       FOREIGN KEY(revision)  REFERENCES revision(id),
-       FOREIGN KEY(stack)     REFERENCES stack(id),
-       FOREIGN KEY(package)   REFERENCES package(id)
-);
-
-
 CREATE TABLE prerequisite (
        id           INTEGER PRIMARY KEY NOT NULL,
        distribution INTEGER             NOT NULL,

@@ -104,15 +104,6 @@ has extractor => (
                                                       logger => $_[0]->logger ) },
 );
 
-
-has revision => (
-    is         => 'rw',
-    isa        => 'Pinto::Schema::Result::Revision',
-    clearer    => 'clear_revision',
-    predicate  => 'has_open_revision',
-    init_arg   => undef,
-);
-
 #-------------------------------------------------------------------------------
 
 sub BUILD {
@@ -626,63 +617,6 @@ sub _merge_pkg_stk {
 =method get_or_locate(package => $name, version => $vers)
 
 =cut
-
-#-------------------------------------------------------------------------------
-
-sub open_revision {
-    my ($self, %args) = @_;
-
-    $self->fatal('Revision already in progress')
-        if $self->has_open_revision;
-
-    my $stack = $self->get_stack(name => $args{stack})
-      or $self->fatal("Stack $args{stack} does not exist");
-
-    $args{stack} = $stack->id;
-    my $revision = $self->db->schema->resultset('Revision')->create(\%args);
-
-    $self->debug('Opened revision ' . $revision->id);
-
-    $self->revision($revision);
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub kill_revision {
-    my ($self, %args) = @_;
-
-    $self->warning('No revision has been opened') and return $self
-        if not $self->has_open_revision;
-
-    $self->debug('Killing revision ' . $self->revision->id);
-
-    $self->revision->delete;
-
-    $self->clear_revision;
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub close_revision {
-    my ($self, %args) = @_;
-
-    $self->fatal('No revision has been opened')
-        if not $self->has_open_revision;
-
-    $self->debug('Closing revision ' . $self->revision->id);
-
-    $self->revision->update(\%args);
-
-    $self->clear_revision;
-
-    $self->locker->unlock;
-
-    return $self;
-}
 
 #-------------------------------------------------------------------------------
 

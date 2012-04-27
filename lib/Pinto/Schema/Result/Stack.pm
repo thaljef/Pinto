@@ -85,21 +85,6 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
-=head2 package_stack_histories
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::PackageStackHistory>
-
-=cut
-
-__PACKAGE__->has_many(
-  "package_stack_histories",
-  "Pinto::Schema::Result::PackageStackHistory",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
-);
-
 =head2 packages_stack
 
 Type: has_many
@@ -115,24 +100,9 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
-=head2 revisions
 
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->has_many(
-  "revisions",
-  "Pinto::Schema::Result::Revision",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-25 09:25:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:B4myucZMrgvA8wyxATfmlQ
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:42:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vefMxZRbxS6/CT42RAkQ2g
 
 #----------------------------------------------------------------------------------------
 

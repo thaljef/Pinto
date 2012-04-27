@@ -65,29 +65,16 @@ sub run {
                                       repos  => $self->repos,
                                       %args );
 
-    my $is_mutator = $action->does('Pinto::Role::Interface::MutatorAction');
-
-
-    # Open a revision if needed
-    if ( $is_mutator ) {
-        $self->repos->open_revision( stack    => $action->stack,
-                                     username => $args{username},
-                                     message  => $args{message} );
-    }
 
     my $result = try   { $action->execute }
-                 catch { $self->repos->kill_revision if $is_mutator; $self->fatal($_) };
+                 catch { $self->fatal($_) };
 
-
-    return $result unless $is_mutator;
 
     if ($result->made_changes) {
-        $self->repos->close_revision;
         $self->repos->write_index;
     }
     else {
         $self->info('No changes were made');
-        $self->repos->kill_revision;
     }
 
     return $result;
