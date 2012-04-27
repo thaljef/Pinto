@@ -120,7 +120,7 @@ sub _pull_by_distribution_spec {
 sub pull_prerequisites {
     my ($self, $dist) = @_;
 
-    my @prereq_queue = map { $_->as_spec } $dist->prerequisites;
+    my @prereq_queue = $dist->prerequisite_specs;
     my %visited = ($dist->path => 1);
     my @pulled;
     my %seen;
@@ -139,7 +139,7 @@ sub pull_prerequisites {
         }
 
       NEW_PREREQ:
-        for my $new_prereq ( map { $_->as_spec } $required_dist->prerequisites ) {
+        for my $new_prereq ( $required_dist->prerequisite_specs ) {
 
             # This is all pretty hacky.  It might be better to represent the queue
             # as a hash table instead of a list, since we really need to keep track
