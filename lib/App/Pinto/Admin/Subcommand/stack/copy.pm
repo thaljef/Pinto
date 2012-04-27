@@ -61,7 +61,7 @@ sub execute {
     my ($self, $opts, $args) = @_;
 
     my %stacks = ( from_stack => $args->[0], to_stack => $args->[1] );
-    my $result = $self->pinto->add_action($self->action_name, %{$opts}, %stacks);
+    my $result = $self->pinto->run($self->action_name, %{$opts}, %stacks);
 
     return $result->exit_status;
 }
