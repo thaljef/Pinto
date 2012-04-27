@@ -63,9 +63,8 @@ sub execute {
 
     my $rs = $self->repos->db->select_package_stacks($where, $attrs);
 
-    my $format = $self->format;
     while( my $package_stack = $rs->next ) {
-        print { $self->out } $package_stack->to_string($format);
+        print { $self->out } $package_stack->to_string($self->format);
     }
 
     return $self->result;

@@ -28,11 +28,9 @@ sub execute {
 
     my $attrs = { order_by => 'name' };
     my @stacks = $self->repos->db->select_stacks(undef, $attrs)->all;
-    my $longest = max( map { length $_->name } @stacks );
 
-    my $format = $self->format || "%${longest}k: %e (last modified: %U)\n";
     for my $stack ( @stacks ) {
-        print { $self->out } $stack->to_string($format);
+        print { $self->out } $stack->to_string($self->format);
     }
 
     return $self->result;
