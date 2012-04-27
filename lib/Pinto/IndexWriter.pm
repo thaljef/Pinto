@@ -102,11 +102,11 @@ sub _get_index_records {
     # as using an iterator to read each record lazily.
 
     my $where  = { 'stack.name' => $stack };
-    my $select = [ qw(package.name package.version package.distribution.path) ];
-    my $attrs  = { select => $select, join => ['stack', {package => 'distribution'}] };
+    my $select = [ qw(name version path) ];
+    my $attrs  = { select => $select, join => 'stack' };
 
-    my $records = $self->db->select_package_stacks( $where, $attrs );
-    my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor()->all();
+    my $records = $self->db->select_registries( $where, $attrs );
+    my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor->all;
 
     return @records;
 

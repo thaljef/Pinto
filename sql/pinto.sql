@@ -31,18 +31,15 @@ CREATE TABLE stack (
        description TEXT                NOT NULL 
 );
 
-/* TOOD: Denormalize this table to include package name,
-   version, and dist path.  Then use indexes to ensure
-   data integrity.  This might also make it faster to
-   generate indexes, which will be important when we
-   need to do it on the fly.  Then also, consider
-   renaming this table to something like "index" */
 
-create TABLE package_stack (
+create TABLE registry (
        id           INTEGER PRIMARY KEY NOT NULL,
        stack        INTEGER             NOT NULL,
        package      INTEGER             NOT NULL,
        is_pinned    INTEGER             NOT NULL,
+       name         TEXT                NOT NULL,
+       version      TEXT                NOT NULL,
+       path         TEXT                NOT NULL,
 
        FOREIGN KEY(stack)   REFERENCES stack(id),
        FOREIGN KEY(package) REFERENCES package(id)
@@ -58,9 +55,12 @@ CREATE TABLE prerequisite (
        FOREIGN KEY(distribution)  REFERENCES distribution(id)
 );
 
-/* TODO: Put proper indexes in place */
 
-CREATE UNIQUE INDEX distribution_idx      ON distribution(path);
-CREATE UNIQUE INDEX package_idx           ON package(name, distribution);
-CREATE UNIQUE INDEX stack_name_idx        ON stack(name);
-CREATE        INDEX package_name_idx      ON package(name);
+/* Schema::Loader names the indexes for us */
+CREATE UNIQUE INDEX a ON distribution(path);
+CREATE UNIQUE INDEX b ON package(name, distribution);
+CREATE UNIQUE INDEX c ON stack(name);
+CREATE UNIQUE INDEX d ON registry(stack, name);
+CREATE UNIQUE INDEX e ON prerequisite(distribution, name);
+CREATE        INDEX f ON registry(stack);
+CREATE        INDEX g ON package(name);

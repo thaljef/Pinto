@@ -1,12 +1,12 @@
 use utf8;
-package Pinto::Schema::Result::PackageStack;
+package Pinto::Schema::Result::Registry;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Pinto::Schema::Result::PackageStack
+Pinto::Schema::Result::Registry
 
 =cut
 
@@ -15,11 +15,11 @@ use warnings;
 
 use base 'DBIx::Class::Core';
 
-=head1 TABLE: C<package_stack>
+=head1 TABLE: C<registry>
 
 =cut
 
-__PACKAGE__->table("package_stack");
+__PACKAGE__->table("registry");
 
 =head1 ACCESSORS
 
@@ -46,6 +46,21 @@ __PACKAGE__->table("package_stack");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 version
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 path
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -57,6 +72,12 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
   { data_type => "integer", is_nullable => 0 },
+  "name",
+  { data_type => "text", is_nullable => 0 },
+  "version",
+  { data_type => "text", is_nullable => 0 },
+  "path",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -70,6 +91,22 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<stack_name_unique>
+
+=over 4
+
+=item * L</stack>
+
+=item * L</name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("stack_name_unique", ["stack", "name"]);
 
 =head1 RELATIONS
 
@@ -104,8 +141,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-19 21:54:29
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:4mVn9D/f/BqE6xbohlOglQ
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 01:37:15
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:VbYQ4CiEaWLOePxxm5OXKA
 
 #------------------------------------------------------------------------------
 
@@ -125,6 +162,9 @@ use overload ( '""'     => 'to_string',
 sub new {
     my ($class, $attrs) = @_;
 
+    $attrs->{name}      ||= $attrs->{package}->name;
+    $attrs->{version}   ||= $attrs->{package}->version;
+    $attrs->{path}      ||= $attrs->{package}->distribution->path;
     $attrs->{is_pinned} ||= 0;
 
     return $class->SUPER::new($attrs);
@@ -133,15 +173,16 @@ sub new {
 #-------------------------------------------------------------------------------
 
 sub compare {
-    my ($pstk_a, $pstk_b) = @_;
+    my ($reg_a, $reg_b) = @_;
 
-    confess "Can only compare Pinto::PackageStack objects"
-        if __PACKAGE__ ne ref $pstk_a || __PACKAGE__ ne ref $pstk_b;
+    my $pkg = __PACKAGE__;
+    confess "Can only compare $pkg objects"
+        if ($pkg ne ref $reg_a) || ($pkg ne ref $reg_b);
 
-    return 0 if $pstk_a->id() == $pstk_b->id();
+    return 0 if $reg_a->id == $reg_b->id;
 
-    my $r =   ( $pstk_a->is_pinned()  <=> $pstk_b->is_pinned()  )
-           || ( $pstk_a->package()    <=> $pstk_b->package()    );
+    my $r =   ( $reg_a->is_pinned <=> $reg_b->is_pinned  )
+           || ( $reg_a->package   <=> $reg_b->package    );
 
     return $r;
 };
@@ -152,24 +193,24 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-         'n' => sub { $self->package->name()                                   },
-         'N' => sub { $self->package->vname()                                  },
-         'v' => sub { $self->package->version->stringify()                     },
-         'm' => sub { $self->package->distribution->is_devel()  ? 'd' : 'r'    },
-         'p' => sub { $self->package->distribution->path()                     },
-         'P' => sub { $self->package->distribution->archive()                  },
-         's' => sub { $self->package->distribution->is_local()  ? 'l' : 'f'    },
-         'S' => sub { $self->package->distribution->source()                   },
-         'a' => sub { $self->package->distribution->author()                   },
-         'd' => sub { $self->package->distribution->name()                     },
-         'D' => sub { $self->package->distribution->vname()                    },
-         'w' => sub { $self->package->distribution->version()                  },
-         'u' => sub { $self->package->distribution->url()                      },
-         'k' => sub { $self->stack->name()                                     },
-         'e' => sub { $self->stack->description()                              },
-         'u' => sub { $self->stack->mtime()                                    },
-         'U' => sub { scalar localtime $self->stack->mtime()                   },
-         'y' => sub { $self->is_pinned()                        ? '+' : ' '    },
+         'n' => sub { $self->name                                            },
+         'N' => sub { $self->package->vname                                  },
+         'v' => sub { $self->version                                         },
+         'm' => sub { $self->package->distribution->is_devel  ? 'd' : 'r'    },
+         'p' => sub { $self->path                                            },
+         'P' => sub { $self->package->distribution->archive                  },
+         's' => sub { $self->package->distribution->is_local  ? 'l' : 'f'    },
+         'S' => sub { $self->package->distribution->source                   },
+         'a' => sub { $self->package->distribution->author                   },
+         'd' => sub { $self->package->distribution->name                     },
+         'D' => sub { $self->package->distribution->vname                    },
+         'w' => sub { $self->package->distribution->version                  },
+         'u' => sub { $self->package->distribution->url                      },
+         'k' => sub { $self->stack->name                                     },
+         'e' => sub { $self->stack->description                              },
+         'u' => sub { $self->stack->mtime                                    },
+         'U' => sub { scalar localtime $self->stack->mtime                   },
+         'y' => sub { $self->is_pinned                        ? '+' : ' '    },
     );
 
     # Some attributes are just undefined, usually because of
@@ -192,3 +233,4 @@ sub default_format {
 1;
 
 __END__
+

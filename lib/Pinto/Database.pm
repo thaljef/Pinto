@@ -73,13 +73,13 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
-sub select_package_stacks {
+sub select_registries {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
     $attrs ||= { pefetch => [ qw( package stack pin ) ] };
 
-    return $self->schema->resultset('PackageStack')->search($where, $attrs);
+    return $self->schema->resultset('Registry')->search($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------
@@ -107,18 +107,18 @@ sub delete_distribution {
 sub register {
     my ($self, $pkg, $stack) = @_;
 
-    if (my $pkg_stack = $pkg->packages_stack_rs->find( {stack => $stack} ) ) {
+    if (my $pkg_stack = $pkg->registries_rs->find( {stack => $stack} ) ) {
         $self->debug("Package $pkg is already on stack $stack");
         return 0;
     }
 
     my $attrs     = { join => [ qw(package stack) ] };
     my $where     = { 'package.name' => $pkg->name, 'stack' => $stack->id };
-    my $incumbent = $self->select_package_stacks($where, $attrs)->single;
+    my $incumbent = $self->select_registries($where, $attrs)->single;
 
     if (not $incumbent) {
         $self->debug("Registering $pkg on stack $stack");
-        $self->create_pkg_stack( {package => $pkg, stack => $stack} );
+        $self->create_registry( {package => $pkg, stack => $stack} );
         return 1;
     }
 
@@ -155,15 +155,15 @@ sub pin {
     my ($self, $pkg, $stack) = @_;
 
     my $where = {stack => $stack->id};
-    my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
+    my $registry = $pkg->search_related('registry', $where)->single;
 
-    $self->fatal("Package $pkg is not onstack $stack")
-        if not $pkg_stk;
+    $self->fatal("Package $pkg is not on stack $stack")
+        if not $registry;
 
     $self->warning("Package $pkg is already pinned on stack $stack")
-        and return 0 if $pkg_stk->is_pinned;
+        and return 0 if $registry->is_pinned;
 
-    $pkg_stk->update( {is_pinned => 1} );
+    $registry->update( {is_pinned => 1} );
 
     return 1;
 }
@@ -175,27 +175,27 @@ sub unpin {
     my ($self, $pkg, $stack) = @_;
 
     my $where = {stack => $stack->id};
-    my $pkg_stk = $pkg->search_related('packages_stack', $where)->single;
+    my $registry = $pkg->search_related('registery', $where)->single;
 
     #$self->warning("Package $pkg is not on stack $stack")
-    return 0 if not $pkg_stk;
+    return 0 if not $registry;
 
     $self->warning("Package $pkg is not pinned on stack $stack")
-        and return 0 unless $pkg_stk->is_pinned;
+        and return 0 unless $registry->is_pinned;
 
-    $pkg_stk->update( {is_pinned => 0} );
+    $registry->update( {is_pinned => 0} );
 
     return 1;
 }
 
 #-------------------------------------------------------------------------------
 
-sub create_pkg_stack {
+sub create_registry {
     my ($self, $attrs) = @_;
 
-    my $pkg_stack = $self->schema->resultset('PackageStack')->create( $attrs );
+    my $registry = $self->schema->resultset('Registry')->create( $attrs );
 
-    return $pkg_stack;
+    return $registry;
 
 }
 

@@ -103,24 +103,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 packages_stack
+=head2 registries
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::PackageStack>
+Related object: L<Pinto::Schema::Result::Registry>
 
 =cut
 
 __PACKAGE__->has_many(
-  "packages_stack",
-  "Pinto::Schema::Result::PackageStack",
+  "registries",
+  "Pinto::Schema::Result::Registry",
   { "foreign.package" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:42:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kK5/0aYT1LwrE7J/sAgudw
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:51:37
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Q7XO23Z1jqeGK81NcPTHnA
 
 #------------------------------------------------------------------------------
 
@@ -150,7 +150,7 @@ __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
-__PACKAGE__->many_to_many( stacks => 'packages_stack', 'stack' );
+__PACKAGE__->many_to_many( stacks => 'registry', 'stack' );
 
 
 #------------------------------------------------------------------------------

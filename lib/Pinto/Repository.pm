@@ -166,8 +166,8 @@ sub get_package {
     if ($stk_name) {
         my $attrs = { prefetch => [ qw(package stack) ] };
         my $where = { 'package.name' => $pkg_name, 'stack.name' => $stk_name };
-        my $pkg_stk = $self->db->select_package_stacks($where, $attrs)->single;
-        return $pkg_stk ? $pkg_stk->package : ();
+        my $registry = $self->db->select_registries($where, $attrs)->single;
+        return $registry ? $registry->package : ();
     }
     else {
         my $where  = { name => $pkg_name };
@@ -468,10 +468,10 @@ sub copy_stack {
 
     $self->info("Copying stack $from_stk_name into stack $to_stk_name");
 
-    for my $packages_stack ( $from_stack->packages_stack ) {
-        my $pkg = $packages_stack->package;
+    for my $registry ( $from_stack->registries ) {
+        my $pkg = $registry->package;
         $self->debug("Copying package $pkg into stack $to_stk_name");
-        $packages_stack->copy( { stack => $to_stack->id } );
+        $registry->copy( { stack => $to_stack->id } );
     }
 
     return $to_stack;
@@ -501,12 +501,12 @@ sub merge_stack {
 
     my $conflicts;
     my $where = { stack => $from_stk->id };
-    my $pkg_stk_rs = $self->repos->db->select_package_stacks( $where );
+    my $registry_rs = $self->repos->db->select_registries( $where );
 
 
-    while ( my $from_pkg_stk = $pkg_stk_rs->next ) {
-        $self->info("Merging package $from_pkg_stk into stack $to_stk");
-        $conflicts += $self->_merge_pkg_stk( $from_pkg_stk, $to_stk, $dryrun );
+    while ( my $from_registry = $registry_rs->next ) {
+        $self->info("Merging package $from_registry into stack $to_stk");
+        $conflicts += $self->_merge_registry($from_registry, $to_stk, $dryrun);
     }
 
 
@@ -524,23 +524,23 @@ sub merge_stack {
 
 #------------------------------------------------------------------------------
 
-sub _merge_pkg_stk {
-    my ($self, $from_pkg_stk, $to_stk, $dryrun) = @_;
+sub _merge_registry {
+    my ($self, $from_registry, $to_stk, $dryrun) = @_;
 
-    my $from_pkg   = $from_pkg_stk->package;
+    my $from_pkg   = $from_registry->package;
     my $attrs      = { prefetch => 'package' };
     my $where      = { 'package.name' => $from_pkg->name,
                        'stack'        => $to_stk->id };
 
-    my $to_pkg_stk = $self->db->select_package_stacks($where, $attrs)->single;
+    my $to_registry = $self->db->select_registries($where, $attrs)->single;
 
     # CASE 1:  The package does not exist in the target stack,
     # so we can go ahead and just add it there.
 
-    if (not defined $to_pkg_stk) {
+    if (not defined $to_registry) {
          $self->debug("Adding package $from_pkg to stack $to_stk");
          return 0 if $dryrun;
-         $from_pkg_stk->copy( {stack => $to_stk} );
+         $from_registry->copy( {stack => $to_stk} );
          return 0;
      }
 
@@ -549,12 +549,12 @@ sub _merge_pkg_stk {
     # if the source is pinned, then we should also copy the
     # pin to the target.
 
-    if ($from_pkg_stk == $to_pkg_stk) {
-        $self->debug("$from_pkg_stk and $to_pkg_stk are the same");
-        if ($from_pkg_stk->is_pinned and not $to_pkg_stk->is_pinned) {
-            $self->debug("Adding pin to $to_pkg_stk");
+    if ($from_registry == $to_registry) {
+        $self->debug("$from_registry and $to_registry are the same");
+        if ($from_registry->is_pinned and not $to_registry->is_pinned) {
+            $self->debug("Adding pin to $to_registry");
             return 0 if $dryrun;
-            $to_pkg_stk->update({pin => 1});
+            $to_registry->update({pin => 1});
             return 0;
         }
         return 0;
@@ -566,12 +566,12 @@ sub _merge_pkg_stk {
     # pinned then there is nothing to do because the package in
     # the target stack is already newer.
 
-    if ($to_pkg_stk > $from_pkg_stk) {
-        if ( $from_pkg_stk->is_pinned ) {
-            $self->warning("$from_pkg_stk is pinned to a version older than $to_pkg_stk");
+    if ($to_registry > $from_registry) {
+        if ( $from_registry->is_pinned ) {
+            $self->warning("$from_registry is pinned to a version older than $to_registry");
             return 1;
         }
-        $self->debug("$to_pkg_stk is already newer than $from_pkg_stk");
+        $self->debug("$to_registry is already newer than $from_registry");
         return 0;
     }
 
@@ -582,15 +582,15 @@ sub _merge_pkg_stk {
     # pinned, then upgrade the package in the target stack with
     # the newer package in the source stack.
 
-    if ($to_pkg_stk < $from_pkg_stk) {
-        if ( $to_pkg_stk->is_pinned ) {
-            $self->warning("$to_pkg_stk is pinned to a version older than $from_pkg_stk");
+    if ($to_registry < $from_registry) {
+        if ( $to_registry->is_pinned ) {
+            $self->warning("$to_registry is pinned to a version older than $from_registry");
             return 1;
         }
-        my $from_pkg = $from_pkg_stk->package();
-        $self->info("Upgrading $to_pkg_stk to $from_pkg");
+        my $from_pkg = $from_registry->package();
+        $self->info("Upgrading $to_registry to $from_pkg");
         return 0 if $dryrun;
-        $to_pkg_stk->update( {package => $from_pkg} );
+        $to_registry->update( {package => $from_pkg} );
         return 0;
     }
 
@@ -598,7 +598,7 @@ sub _merge_pkg_stk {
     # So if we get here then either our logic is flawed or something
     # weird has happened in the database.
 
-    $self->fatal("Unable to merge $from_pkg_stk into $to_pkg_stk");
+    $self->fatal("Unable to merge $from_registry into $to_registry");
 }
 
 #-------------------------------------------------------------------------------

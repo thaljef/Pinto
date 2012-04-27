@@ -85,44 +85,44 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
-=head2 packages_stack
+=head2 registries
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::PackageStack>
+Related object: L<Pinto::Schema::Result::Registry>
 
 =cut
 
 __PACKAGE__->has_many(
-  "packages_stack",
-  "Pinto::Schema::Result::PackageStack",
+  "registries",
+  "Pinto::Schema::Result::Registry",
   { "foreign.stack" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:42:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vefMxZRbxS6/CT42RAkQ2g
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:51:37
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vp0CJfTdWm5nqjhOx7VUyg
 
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 # ABSTRACT: Represents a named set of Packages
 
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 # VERSION
 
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 use String::Format;
 
 use overload ( '""'     => 'to_string' );
 
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
-__PACKAGE__->many_to_many( packages => 'package_stack', 'package' );
+__PACKAGE__->many_to_many( packages => 'regsitry', 'package' );
 
 #------------------------------------------------------------------------------
 

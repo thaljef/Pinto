@@ -70,6 +70,22 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<distribution_name_unique>
+
+=over 4
+
+=item * L</distribution>
+
+=item * L</name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("distribution_name_unique", ["distribution", "name"]);
+
 =head1 RELATIONS
 
 =head2 distribution
@@ -88,8 +104,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-21 21:53:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:q9BQdlXApf0PBxCycyQBzw
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 01:47:33
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Qe2Ff+UhN7VR/+KB6nwIOg
 
 #------------------------------------------------------------------------------
 

@@ -60,13 +60,13 @@ sub execute {
     $self->repos->get_stack( name => $where->{'stack.name'} )
         or $self->fatal("No such stack named $where->{'stack.name'}");
 
-    my $attrs = { order_by => [ qw(package.name package.version package.distribution.path) ],
+    my $attrs = { order_by => [ qw(me.name me.version me.path) ],
                   prefetch => [ 'stack', { 'package' => 'distribution' } ] };
 
-    my $rs = $self->repos->db->select_package_stacks($where, $attrs);
+    my $rs = $self->repos->db->select_registries($where, $attrs);
 
-    while( my $package_stack = $rs->next ) {
-        print { $self->out } $package_stack->to_string($self->format);
+    while( my $registry = $rs->next ) {
+        print { $self->out } $registry->to_string($self->format);
     }
 
     return $self->result;
