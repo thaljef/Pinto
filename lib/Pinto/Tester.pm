@@ -17,7 +17,7 @@ use Pinto;
 use Pinto::Util;
 use Pinto::Creator;
 use Pinto::Tester::Util qw(make_dist_struct make_dist_archive);
-use Pinto::Types qw(Dir);
+use Pinto::Types qw(Uri Dir);
 
 #------------------------------------------------------------------------------
 
@@ -57,6 +57,15 @@ has root => (
    is       => 'ro',
    isa      => Dir,
    default  => sub { dir( tempdir(CLEANUP => 1) ) },
+   lazy     => 1,
+);
+
+
+has root_url => (
+   is       => 'ro',
+   isa      => Uri,
+   default  => sub { URI->new('file://' . $_[0]->root->resolve->absolute) },
+   lazy     => 1,
 );
 
 
@@ -126,11 +135,11 @@ sub path_not_exists_ok {
 #------------------------------------------------------------------------------
 
 sub run_ok {
-    my ($self, $action_name, $args) = @_;
+    my ($self, $action_name, $args, $test_name) = @_;
 
     my $result = $self->pinto->run($action_name, %{ $args });
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    $self->result_ok($result);
+    $self->result_ok($result, $test_name);
 
     return $result;
 }
@@ -138,11 +147,11 @@ sub run_ok {
 #------------------------------------------------------------------------------
 
 sub run_throws_ok {
-    my ($self, $action_name, $args, $error_regex, $name) = @_;
+    my ($self, $action_name, $args, $error_regex, $test_name) = @_;
 
     my $result;
     my $ok = throws_ok { $result = $self->pinto->run($action_name, %{$args}) }
-      $error_regex, $name;
+        $error_regex, $test_name;
 
     if (not $ok) {
         my @msgs = @{ $self->pinto->logger->log_handler->msgs };
@@ -162,22 +171,25 @@ sub package_ok {
 
     my $attrs = {prefetch => [ qw(package stack) ]};
     my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
-    my $pkg = $self->pinto->repos->db->schema->resultset('PackageStack')->find($where, $attrs);
+    my $reg = $self->pinto->repos->db->select_registries->find($where, $attrs);
 
-    return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $pkg;
+    return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $reg;
 
     $self->tb->ok(1, "$pkg_spec is loaded");
-    $self->tb->is_eq($pkg->package->version(), $pkg_ver, "$pkg_name has correct version");
+    $self->tb->is_eq($reg->version, $pkg_ver, "$pkg_name has correct version");
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    $self->tb->is_eq($pkg->package->distribution->path(), $dist_path, "$pkg_name has correct dist path");
+    $self->tb->is_eq($reg->path, $dist_path, "$pkg_name has correct dist path");
 
-    my $archive = $pkg->package->distribution->archive( $self->root() );
+    my $archive = $reg->package->distribution->archive( $self->root() );
     $self->tb->ok(-e $archive, "Archive $archive exists");
 
-    $self->tb->ok($pkg->pin, "$pkg_spec is pinned") if $is_pinned;
-    $self->tb->ok(!$pkg->pin, "$pkg_spec is not pinned") if defined $is_pinned and not $is_pinned;
+    $self->tb->ok($reg->is_pinned, "$pkg_spec is pinned")
+        if $is_pinned;
+
+    $self->tb->ok(!$reg->is_pinned, "$pkg_spec is not pinned")
+        if defined $is_pinned and not $is_pinned;
 
     $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
 
@@ -188,10 +200,10 @@ sub package_ok {
 #------------------------------------------------------------------------------
 
 sub result_ok {
-    my ($self, $result) = @_;
+    my ($self, $result, $test_name) = @_;
 
-    my $ok = $self->tb->ok( $result->was_successful,
-                            'Result indicates action was succesful' );
+    $test_name ||= 'Result indicates action was succesful';
+    my $ok = $self->tb->ok($result->was_successful, $test_name);
 
     if (not $ok) {
         my @msgs = @{ $self->pinto->logger->log_handler->msgs };
@@ -206,10 +218,10 @@ sub result_ok {
 #------------------------------------------------------------------------------
 
 sub result_not_ok {
-    my ($self, $result) = @_;
+    my ($self, $result, $test_name) = @_;
 
-    $self->tb->ok( !$result->was_successful,
-                   'Result indicates action was not succesful' );
+    $test_name ||= 'Result indicates action was not succesful';
+    $self->tb->ok(!$result->was_successful, $test_name);
 
     return;
 }
@@ -217,9 +229,10 @@ sub result_not_ok {
 #------------------------------------------------------------------------------
 
 sub result_changed_ok {
-    my ($self, $result) = @_;
+    my ($self, $result, $test_name) = @_;
 
-    my $ok = $self->tb->ok( $result->made_changes, 'Result indicates changes were made' );
+    $test_name ||= 'Result indicates changes were made';
+    my $ok = $self->tb->ok( $result->made_changes, $test_name );
 
     if (not $ok) {
         my @msgs = @{ $self->pinto->logger->log_handler->msgs };
@@ -287,16 +300,17 @@ sub log_unlike {
 sub populate {
     my ($self, @specs) = @_;
 
-    $self->pinto->new_batch();
-
     for my $spec (@specs) {
         my $struct  = make_dist_struct($spec);
         my $archive = make_dist_archive($struct);
-        my %action_args = (author => $struct->{cpan_author}, norecurse => 1, archive => $archive);
-        $self->pinto->add_action( 'Add', %action_args );
-    }
 
-    $self->result_ok( $self->pinto->run_actions() );
+        my $args = { norecurse => 1,
+                     archives  => $archive,
+                     author    => $struct->{cpan_author} };
+
+        $self->run_ok('Add', $args, "Populating repository with $spec");
+        # TODO: Abort the rest of the test if population fails
+    }
 
     return $self;
 }
