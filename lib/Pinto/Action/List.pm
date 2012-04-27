@@ -25,7 +25,6 @@ has where => (
     is       => 'ro',
     isa      => HashRef,
     builder  => '_build_where',
-    init_arg => undef,
     lazy     => 1,
 );
 
