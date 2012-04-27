@@ -69,7 +69,7 @@ we patiently wait until we timeout, which is about 60 seconds.
 sub lock {                                             ## no critic (Homonym)
     my ($self) = @_;
 
-    my $root_dir = $self->config->root_dir();
+    my $root_dir = $self->config->root_dir;
 
     # If by chance, the directory we are trying to lock does not exist,
     # then LockFile::Simple will wait (a while) until it does.  To

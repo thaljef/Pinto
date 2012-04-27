@@ -66,8 +66,9 @@ sub run {
                                       %args );
 
 
+    $self->repos->lock;
     my $result = try   { $action->execute }
-                 catch { $self->fatal($_) };
+                 catch { $self->repos->unlock; $self->fatal($_) };
 
 
     if ($result->made_changes) {
@@ -76,6 +77,8 @@ sub run {
     else {
         $self->info('No changes were made');
     }
+
+    $self->repos->unlock;
 
     return $result;
 }

@@ -155,9 +155,7 @@ sub run_throws_ok {
 
     if (not $ok) {
         my @msgs = @{ $self->pinto->logger->log_handler->msgs };
-        $self->tb->diag('Output was...');
-        $self->tb->diag($_->{message}) for @msgs;
-        $self->tb->diag('No output was seen') if not @msgs;
+ 
     }
 }
 
@@ -217,15 +215,9 @@ sub result_ok {
 
     $test_name ||= 'Result indicates action was succesful';
     my $ok = $self->tb->ok($result->was_successful, $test_name);
+    $self->diag_log_contents if not $ok;
 
-    if (not $ok) {
-        my @msgs = @{ $self->pinto->logger->log_handler->msgs };
-        $self->tb->diag('Output was...');
-        $self->tb->diag($_->{message}) for @msgs;
-        $self->tb->diag('No output was seen') if not @msgs;
-    }
-
-    return;
+    return $ok;
 }
 
 #------------------------------------------------------------------------------
@@ -234,7 +226,8 @@ sub result_not_ok {
     my ($self, $result, $test_name) = @_;
 
     $test_name ||= 'Result indicates action was not succesful';
-    $self->tb->ok(!$result->was_successful, $test_name);
+    my $ok = $self->tb->ok(!$result->was_successful, $test_name);
+    $self->diag_log_contents if not $ok;
 
     return;
 }
@@ -246,25 +239,21 @@ sub result_changed_ok {
 
     $test_name ||= 'Result indicates changes were made';
     my $ok = $self->tb->ok( $result->made_changes, $test_name );
+    $self->diag_log_contents if not $ok;
 
-    if (not $ok) {
-        my @msgs = @{ $self->pinto->logger->log_handler->msgs };
-        $self->tb->diag('Output was...');
-        $self->tb->diag($_->{message}) for @msgs;
-        $self->tb->diag('No output was seen') if not @msgs;
-    }
-
-    return;
+    return $ok;
 }
 
 #------------------------------------------------------------------------------
 
 sub result_not_changed_ok {
-    my ($self, $result) = @_;
+    my ($self, $result, $test_name) = @_;
 
-    $self->tb->ok( !$result->made_changes, 'Result indicates changes were not made' );
+    $test_name ||= 'Result indicates changes were not made';
+    my $ok = $self->tb->ok( !$result->made_changes, $test_name );
+    $self->diag_log_contents if not $ok;
 
-    return;
+    return $ok;
 }
 
 #------------------------------------------------------------------------------
@@ -282,6 +271,16 @@ sub repository_empty_ok {
     $self->tb->ok(! -e $dir, 'Repository has no archives');
 
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub diag_log_contents {
+    my ($self) = @_;
+    my @msgs = $self->pinto->logger->log_handler->msgs;
+    $self->tb->diag('Log messages are...');
+    $self->tb->diag($_->{message}) for @msgs;
+    $self->tb->diag('No log messages seen') if not @msgs;
 }
 
 #------------------------------------------------------------------------------
