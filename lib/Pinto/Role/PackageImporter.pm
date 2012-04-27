@@ -71,6 +71,7 @@ sub _pull_by_package_spec {
         return (undef, 0);
     }
 
+    $self->notice("Pulling distribution $dist_url");
     my $dist = $self->repos->pull(url => $dist_url);
 
     $self->repos->register( distribution  => $dist,
@@ -105,6 +106,7 @@ sub _pull_by_distribution_spec {
         return (undef , 0);
     }
 
+    $self->notice("Pulling distribution $dist_url");
     my $dist = $self->repos->pull(url => $dist_url);
 
     $self->repos->register( distribution  => $dist,
