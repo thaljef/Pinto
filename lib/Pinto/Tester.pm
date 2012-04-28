@@ -171,9 +171,10 @@ sub package_ok {
     my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
     my $reg = $self->pinto->repos->db->select_registries->find($where, $attrs);
 
-    return $self->tb->ok(0, "$pkg_spec is not loaded at all") if not $reg;
+    return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
+        if not $reg;
 
-    $self->tb->ok(1, "$pkg_spec is loaded");
+    $self->tb->ok(1, "$pkg_spec is registered");
     $self->tb->is_eq($reg->version, $pkg_ver, "$pkg_name has correct version");
 
     my $author_dir = Pinto::Util::author_dir($author);
@@ -202,11 +203,13 @@ sub package_not_ok {
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
         = parse_pkg_spec($pkg_spec);
 
-    my $attrs = {prefetch => [ qw(package stack) ]};
-    my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
-    my $reg = $self->pinto->repos->db->select_registries->find($where, $attrs);
+    my $author_dir = Pinto::Util::author_dir($author);
+    my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
 
-    return $self->tb->ok(!$reg, "$pkg_spec is not loaded");
+    my $where = {name => $pkg_name, version => $pkg_ver, path => $dist_path};
+    my $reg = $self->pinto->repos->db->select_registries->find($where);
+
+    $self->tb->ok(!$reg, "$pkg_spec is not registered");
 }
 #------------------------------------------------------------------------------
 
