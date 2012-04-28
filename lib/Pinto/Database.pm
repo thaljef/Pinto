@@ -105,67 +105,92 @@ sub delete_distribution {
 #-------------------------------------------------------------------------------
 
 sub register {
-    my ($self, $pkg, $stack) = @_;
+    my ($self, $dist, $stack) = @_;
 
-    if (my $pkg_stack = $pkg->registries_rs->find( {stack => $stack} ) ) {
+    my $errors = 0;
+    my $did_register = 0;
+
+    for my $pkg ($dist->packages) {
+
+      if ($pkg->registries_rs->find( {stack => $stack->id} ) ) {
         $self->debug("Package $pkg is already on stack $stack");
         return 0;
-    }
+      }
 
-    my $attrs     = { join => [ qw(package stack) ] };
-    my $where     = { 'package.name' => $pkg->name, 'stack' => $stack->id };
-    my $incumbent = $self->select_registries($where, $attrs)->single;
+      my $attrs     = { join => [ qw(package stack) ] };
+      my $where     = { 'package.name' => $pkg->name, 'stack' => $stack->id };
+      my $incumbent = $self->select_registries($where, $attrs)->single;
 
-    if (not $incumbent) {
+      if (not $incumbent) {
         $self->debug("Registering $pkg on stack $stack");
         $self->create_registry( {package => $pkg, stack => $stack} );
-        return 1;
-    }
+        $did_register++;
+        next;
+      }
 
-    my $incumbent_pkg = $incumbent->package;
+      my $incumbent_pkg = $incumbent->package;
 
-    if ( $incumbent_pkg == $pkg ) {
+      if ( $incumbent_pkg == $pkg ) {
         $self->warning("Package $pkg is already on stack $stack");
-        return 0;
-    }
+        next;
+      }
 
-    if ( $incumbent_pkg < $pkg and $incumbent->is_pinned() ) {
-        my $pkg_name = $pkg->name();
+      if ( $incumbent_pkg < $pkg and $incumbent->is_pinned ) {
+        my $pkg_name = $pkg->name;
         $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
-        return 0;
+        $errors++;
+        next;
+      }
+
+
+      my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
+                                                         : ('notice',  'Upgrading');
+
+      $incumbent->delete;
+      $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
+      $self->create_registry( {package => $pkg, stack => $stack} );
+      $did_register++;
     }
 
+    $self->fatal("Unable to register distribution $dist on stack $stack")
+      if $errors;
 
-    my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
-                                                       : ('notice',  'Upgrading');
-
-    $incumbent->delete();
-    $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
-    $self->create_pkg_stack( {package => $pkg, stack => $stack} );
-
-    # TODO: Maybe return -1 if downgraded, +1 if upgraded.  Or maybe return
-    # the new pkg_stk and the incumbent so caller can inspect them.
-
-    return 1;
+    return $did_register;
 }
 
 #-------------------------------------------------------------------------------
 
 sub pin {
-    my ($self, $pkg, $stack) = @_;
+    my ($self, $dist, $stack) = @_;
 
-    my $where = {stack => $stack->id};
-    my $registry = $pkg->search_related('registries', $where)->single;
+    my $where  = {stack => $stack->id};
+    my $errors  = 0;
+    my $did_pin = 0;
 
-    $self->fatal("Package $pkg is not on stack $stack")
-        if not $registry;
+    for my $pkg ($dist->packages) {
+        my $registry = $pkg->search_related('registries', $where)->single;
 
-    $self->warning("Package $pkg is already pinned on stack $stack")
-        and return 0 if $registry->is_pinned;
+        if (not $registry) {
+            $self->error("Package $pkg is not on stack $stack");
+            $errors++;
+            next;
+        }
 
-    $registry->update( {is_pinned => 1} );
 
-    return 1;
+        if ($registry->is_pinned) {
+            $self->warning("Package $pkg is already pinned on stack $stack");
+            next;
+        }
+
+        $registry->update( {is_pinned => 1} );
+        $did_pin++;
+    }
+
+    $self->fatal("Unable to pin distribution $dist to stack $stack")
+      if $errors;
+
+    return $did_pin;
+
 }
 
 
