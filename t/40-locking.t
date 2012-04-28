@@ -37,8 +37,8 @@ else {
     # child
     print "Starting child: $$\n";
     warn "Will be sleeping for 70 seconds, don't be alarmed...\n";
-    my $r = $t->run_ok('Nop', {sleep => 70}, 'Child locks the repository');
-    exit 0;
+    my $result = $t->pinto->run('Nop', sleep => 70);
+    exit $result->exit_status;
 }
 
 #------------------------------------------------------------------------------
