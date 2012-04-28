@@ -124,9 +124,12 @@ sub BUILD {
 
 =method get_stack( name => $stack_name )
 
+=method get_stack( name => $stack_name, croak => 1 )
+
 Returns the L<Pinto::Schema::Result::Stack> object with the given
 C<$stack_name>.  If there is no stack with such a name in the
-repository, returns C<undef>.
+repository, returns C<undef>.  If the C<croak> option is true,
+the an exception will be thrown if there is no such stack.
 
 =cut
 
@@ -137,6 +140,10 @@ sub get_stack {
 
     my $where = { name => $stk_name };
     my $stack = $self->db->select_stacks( $where )->single;
+
+    if ($args{croak} and not $stack){
+        $self->fatal("Stack $stk_name does not exist");
+    }
 
     return $stack;
 }
@@ -315,9 +322,7 @@ sub register {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
-
-    my $stack = $self->get_stack(name => $args{stack})
-      or $self->fatal("Stack $args{stack} does not exist");
+    my $stack = $self->get_stack(name => $args{stack}, croak => 1);
 
     $self->info("Registering distribution $dist on stack $stack");
 
@@ -338,8 +343,7 @@ sub unregister {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
-    my $stack = $self->get_stack(name => $args{stack})
-      or $self->fatal("Stack $args{stack} does not exist");
+    my $stack = $self->get_stack(name => $args{stack}, croak => 1);
 
     $self->info("Unregistering distribution $dist from stack $stack");
 
@@ -366,8 +370,7 @@ sub pin {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
-    my $stack = $self->get_stack(name => $args{stack})
-        or $self->fatal("Stack $args{stack} does not exist");
+    my $stack = $self->get_stack(name => $args{stack}, croak => 1);
 
     return $self->db->pin($dist, $stack);
 }
@@ -386,8 +389,7 @@ sub unpin {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
-    my $stack = $self->get_stack(name => $args{stack})
-        or $self->fatal("Stack $args{stack} does not exist");
+    my $stack = $self->get_stack(name => $args{stack}, croak => 1);
 
     return $self->db->unpin($dist, $stack);
 }
@@ -421,7 +423,7 @@ sub remove_stack {
     $self->fatal( 'You cannot remove the default stack' )
         if $stk_name eq 'default';
 
-    my $stack = $self->get_stack( name => $stk_name );
+    my $stack = $self->get_stack(name => $stk_name, croak => 1);
 
     $stack->delete;
 
@@ -449,7 +451,7 @@ sub copy_stack {
     my $changes = { name => $to_stk_name };
     $changes->{description} = $description if $description;
 
-    my $from_stack = $self->get_stack(name => $from_stk_name);
+    my $from_stack = $self->get_stack(name => $from_stk_name, croak => 1);
     my $to_stack   = $from_stack->copy( $changes );
 
     $self->info("Copying stack $from_stk_name into stack $to_stk_name");
@@ -479,11 +481,8 @@ sub merge_stack {
     my $dryrun        = $args{dryrun};
 
 
-    my $from_stk = $self->repos->get_stack(name => $from_stk_name)
-        or $self->fatal("Stack $from_stk_name does not exist");
-
-    my $to_stk = $self->repos->get_stack(name => $to_stk_name)
-        or $self->fatal("Stack $to_stk_name does not exist");
+    my $from_stk = $self->repos->get_stack(name => $from_stk_name, croak => 1);
+    my $to_stk   = $self->repos->get_stack(name => $to_stk_name, croak => 1);
 
     my $conflicts;
     my $where = { stack => $from_stk->id };
