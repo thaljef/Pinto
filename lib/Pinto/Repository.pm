@@ -481,12 +481,12 @@ sub merge_stack {
     my $dryrun        = $args{dryrun};
 
 
-    my $from_stk = $self->repos->get_stack(name => $from_stk_name, croak => 1);
-    my $to_stk   = $self->repos->get_stack(name => $to_stk_name, croak => 1);
+    my $from_stk = $self->get_stack(name => $from_stk_name, croak => 1);
+    my $to_stk   = $self->get_stack(name => $to_stk_name, croak => 1);
 
     my $conflicts;
     my $where = { stack => $from_stk->id };
-    my $registry_rs = $self->repos->db->select_registries( $where );
+    my $registry_rs = $self->db->select_registries( $where );
 
 
     while ( my $from_registry = $registry_rs->next ) {

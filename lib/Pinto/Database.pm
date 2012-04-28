@@ -155,6 +155,8 @@ sub register {
     $self->fatal("Unable to register distribution $dist on stack $stack")
       if $errors;
 
+    $stack->touch if $did_register; # Update mtime
+
     return $did_register;
 }
 
@@ -189,6 +191,8 @@ sub pin {
     $self->fatal("Unable to pin distribution $dist to stack $stack")
       if $errors;
 
+    $stack->touch if $did_pin; # Update mtime
+
     return $did_pin;
 
 }
@@ -218,6 +222,8 @@ sub unpin {
         $registry->update( {is_pinned => 0} );
         $did_unpin++;
     }
+
+    $stack->touch if $did_unpin; # Update mtime
 
     return $did_unpin;
 }
