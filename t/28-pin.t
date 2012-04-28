@@ -5,61 +5,70 @@ use warnings;
 
 use Test::More;
 
-use Path::Class;
-use FindBin qw($Bin);
-
 use Pinto::Tester;
+use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-my $fakes     = dir( $Bin, qw(data fakepan repos a) );
-my $auth_dir  = $fakes->subdir( qw(authors id L LO LOCAL) );
-my $auth      = 'AUTHOR';
+my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
-# Setup...
 
-my $t = Pinto::Tester->new();
-my $pinto = $t->pinto();
+# Add a dist and pin it...
+my $foo_and_bar = make_dist_archive('FooAndBar-1=Foo-1,Bar-1');
+$t->run_ok('Add', {author => 'ME', archives => $foo_and_bar});
+$t->run_ok('Pin', {targets => 'Foo'});
+
+$t->package_ok( 'ME/FooAndBar-1/Foo-1/default/+' );
+$t->package_ok( 'ME/FooAndBar-1/Bar-1/default/+' );
+
+# Now try and add a newer dist with an overlapping package...
+my $bar_and_baz = make_dist_archive('BarAndBaz-2=Bar-2,Baz-2');
+$t->run_throws_ok('Add', {author => 'ME', archives => $bar_and_baz},
+                 qr{Unable to register}, 'Cannot upgrade pinned package');
+
+$t->log_like(qr{Bar is pinned});
+
+# Now unpin the FooAndBar dist...
+$t->run_ok('Unpin',  {targets => 'Foo'});
+$t->package_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
+$t->package_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
+
+# Try adding the newer BarAndBaz dist again...
+$t->run_ok('Add', {author => 'ME', archives => $bar_and_baz});
+$t->package_ok( 'ME/BarAndBaz-2/Bar-2/default/-' );
+$t->package_ok( 'ME/BarAndBaz-2/Baz-2/default/-' );
+
+# The older Bar package should now be gone...
+$t->package_not_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
+
+# But Foo should still be there...
+$t->package_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
+
+# Now if I try to pin Foo again, it fails...
+$t->run_throws_ok('Pin', {targets => 'Foo'},
+                 qr{Unable to pin distribution});
+
+# Because it's sibling Bar-1 is not on the stack...
+$t->log_like(qr{ME/FooAndBar-1/Bar-1 is not on stack default});
+
+# So if I pull all of FooAndBar back onto the stack...
+$t->run_ok('Pull', {targets => 'ME/FooAndBar-1.tar.gz'});
+$t->log_like(qr{Downgrading package ME/BarAndBaz-2/Bar-2 to ME/FooAndBar-1/Bar-1});
+
+# The old Foo-1 and Bar-1 should now be there...
+$t->package_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
+$t->package_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
+
+# And Baz-1 should still be there from before...
+$t->package_ok( 'ME/BarAndBaz-2/Baz-2/default/-' );
+
+# But Bar-2 should now be gone
+$t->package_not_ok( 'ME/BarAndBaz-2/Bar-2/default/-' );
+
+# Whew!
 
 #------------------------------------------------------------------------------
-# Add dist and pin package Foo
 
-my $archive = $auth_dir->file('FooOnly-0.01.tar.gz');
+done_testing;
 
-$pinto->new_batch();
-$pinto->add_action('Stack::Create', stack => 'dev');
-$pinto->add_action('Add',  stack => 'dev', author => $auth, archive => $archive);
-$pinto->add_action('Pin',  stack => 'dev', package => 'Foo');
-
-$t->result_ok( $pinto->run_actions );
-$t->package_ok( "$auth/FooOnly-0.01/Foo-0.01/dev/+" );
-
-#-----------------------------------------------------------------------------
-# Now add a dist with a newer Foo, but pinned Foo should still be latest
-
-my $newer_archive = $auth_dir->file('FooAndBar-0.02.tar.gz');
-
-$pinto->add_action('Add', author => $auth, archive => $newer_archive, stack => 'dev');
-
-$t->result_ok( $pinto->run_actions );
-$t->package_ok( "$auth/FooOnly-0.01.tar.gz/Foo-0.01/dev" );
-
-#-----------------------------------------------------------------------------
-# Unpin Foo and add newer Foo again. The higher Foo should now be latest
-
-
-$pinto->new_batch();
-$pinto->add_action('Unpin', stack => 'dev', package => 'Foo');
-$pinto->add_action('Remove',                author => $auth, path => 'FooAndBar-0.02.tar.gz');
-$pinto->add_action('Add',   stack => 'dev', author => $auth, archive => $newer_archive);
-
-$t->result_ok( $pinto->run_actions );
-$t->package_ok( "$auth/FooAndBar-0.02.tar.gz/Foo-0.02/dev" );
-
-#-----------------------------------------------------------------------------
-# TODO: Test interraction of pinning with mirroring and importing.
-# But it it should be basically the same as you see here.
-#-----------------------------------------------------------------------------
-
-done_testing();
