@@ -7,7 +7,6 @@ use Test::More;
 use Test::Exception;
 
 use Path::Class;
-use File::HomeDir;
 use File::Temp;
 use URI;
 
@@ -40,10 +39,6 @@ use Pinto::Config;
         my $msg = "Got custom value for '$method'";
         is($cfg->$method(), $expect, $msg);
     }
-
-    $cfg = Pinto::Config->new(root => '~/nowhere');
-    my $home = dir( File::HomeDir->my_home() );
-    is($cfg->root(), $home->file('nowhere'), 'Expanded ~/ to home directory');
 
     my $expect = [ map {URI->new($_)} qw(here there) ];
     $cfg = Pinto::Config->new(root => 'anywhere', sources => 'here there');
