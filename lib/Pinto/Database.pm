@@ -74,6 +74,17 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
+sub select_registry {
+  my ($self, $where, $attrs) = @_;
+
+  $attrs ||= {};
+  $attrs->{key} = 'stack_name_unique';
+
+  return $self->schema->resultset('Registry')->find($where, $attrs);
+}
+
+#-------------------------------------------------------------------------------
+
 sub select_registries {
     my ($self, $where, $attrs) = @_;
 
@@ -118,13 +129,13 @@ sub register {
         return 0;
       }
 
-      my $attrs     = { join => [ qw(package stack) ] };
-      my $where     = { 'package.name' => $pkg->name, 'stack' => $stack->id };
-      my $incumbent = $self->select_registries($where, $attrs)->single;
+      my $attrs     = { prefetch => 'package' };
+      my $where     = { name => $pkg->name, stack => $stack->id };
+      my $incumbent = $self->select_registry($where, $attrs);
 
       if (not $incumbent) {
         $self->debug("Registering $pkg on stack $stack");
-        $self->create_registry( {package => $pkg, stack => $stack} );
+        $self->create_registry( {package => $pkg, stack => $stack->id} );
         $did_register++;
         next;
       }
