@@ -166,30 +166,39 @@ sub package_ok {
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
         = parse_pkg_spec($pkg_spec);
 
-    my $attrs = {prefetch => [ qw(package stack) ]};
-    my $where = {'package.name' => $pkg_name, 'stack.name' => $stack_name};
-    my $reg = $self->pinto->repos->db->select_registries->find($where, $attrs);
+    my $author_dir = Pinto::Util::author_dir($author);
+    my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
+    my $stack     = $self->pinto->repos->get_stack(name => $stack_name, croak => 1);
+
+    my $where = { stack => $stack->id, name => $pkg_name };
+    my $attrs = { prefetch => {package => 'distribution' }};
+    my $reg = $self->pinto->repos->db->select_registry($where, $attrs);
 
     return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
         if not $reg;
 
-    $self->tb->ok(1, "$pkg_spec is registered");
-    $self->tb->is_eq($reg->version, $pkg_ver, "$pkg_name has correct version");
+    # Test registry object itself...
+    $self->tb->is_eq($reg->name, $pkg_name,   'Registry has correct package name');
+    $self->tb->is_eq($reg->version, $pkg_ver, 'Registry has correct package version');
+    $self->tb->is_eq($reg->path, $dist_path,  'Registry has correct dist path');
 
-    my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    $self->tb->is_eq($reg->path, $dist_path, "$pkg_name has correct dist path");
+    # Test package object...
+    my $pkg = $reg->package;
+    $self->tb->is_eq($pkg->name,    $pkg_name, "Package has correct name");
+    $self->tb->is_eq($pkg->version, $pkg_ver,  "Package has correct version");
 
-    my $archive = $reg->package->distribution->archive( $self->root() );
-    $self->tb->ok(-e $archive, "Archive $archive exists");
+    # Test distribution object...
+    my $dist = $pkg->distribution;
+    $self->tb->is_eq($dist->path,  $dist_path, "Distribution has correct dist path");
+    $self->path_exists_ok( [$dist->archive] );
 
-    $self->tb->ok($reg->is_pinned, "$pkg_spec is pinned")
-        if $is_pinned;
+    # Test pins...
+    $self->tb->ok($reg->is_pinned,  "$reg is pinned") if $is_pinned;
+    $self->tb->ok(!$reg->is_pinned, "$reg is not pinned") if not $is_pinned;
 
-    $self->tb->ok(!$reg->is_pinned, "$pkg_spec is not pinned")
-        if defined $is_pinned and not $is_pinned;
-
+    # Test checksums...
     $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
+    # TODO: test actual checksum values?
 
     return;
 }
@@ -204,11 +213,13 @@ sub package_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
+    my $stack     = $self->pinto->repos->get_stack(name => $stack_name, croak => 1);
 
-    my $where = {name => $pkg_name, version => $pkg_ver, path => $dist_path};
-    my $reg = $self->pinto->repos->db->select_registries->find($where);
+    my $where = {stack => $stack->id, name => $pkg_name, path => $dist_path};
+    my $reg = $self->pinto->repos->db->select_registry($where);
 
-    $self->tb->ok(!$reg, "$pkg_spec is not registered");
+    return $self->tb->ok(1, "$pkg_spec is not registered")
+        if not $reg;
 }
 #------------------------------------------------------------------------------
 
