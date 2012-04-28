@@ -65,20 +65,30 @@ sub run {
                                       repos  => $self->repos,
                                       %args );
 
+    # Do it!
+    return $self->_run($action);
+}
 
-    $self->repos->lock;
-    my $result = try   { $action->execute }
-                 catch { $self->repos->unlock; $self->fatal($_) };
+#------------------------------------------------------------------------------
 
+sub _run {
+    my ($self, $action) = @_;
 
-    if ($result->made_changes) {
-        $self->repos->write_index;
+    my $result;
+
+    try {
+        $self->repos->lock;
+        my $guard = $self->repos->db->schema->txn_scope_guard;
+        $result = $action->execute;
+        $self->repos->write_index if $result->made_changes;
+        $self->info('No changes were made') if not $result->made_changes;
+        $self->repos->unlock;
+        $guard->commit;
     }
-    else {
-        $self->info('No changes were made');
-    }
-
-    $self->repos->unlock;
+    catch {
+        $self->repos->unlock;
+        $self->fatal($_);
+    };
 
     return $result;
 }
