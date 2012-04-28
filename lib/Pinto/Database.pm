@@ -197,20 +197,29 @@ sub pin {
 #-------------------------------------------------------------------------------
 
 sub unpin {
-    my ($self, $pkg, $stack) = @_;
+    my ($self, $dist, $stack) = @_;
 
     my $where = {stack => $stack->id};
-    my $registry = $pkg->search_related('registries', $where)->single;
+    my $did_unpin = 0;
 
-    #$self->warning("Package $pkg is not on stack $stack")
-    return 0 if not $registry;
+    for my $pkg ($dist->packages) {
+        my $registry = $pkg->search_related('registries', $where)->single;
 
-    $self->warning("Package $pkg is not pinned on stack $stack")
-        and return 0 unless $registry->is_pinned;
+        if (not $registry) {
+            $self->warning("Package $pkg is not on stack $stack");
+            next;
+        }
 
-    $registry->update( {is_pinned => 0} );
+        if (not $registry->is_pinned) {
+            $self->warning("Package $pkg is not pinned on stack $stack");
+            next;
+        }
 
-    return 1;
+        $registry->update( {is_pinned => 0} );
+        $did_unpin++;
+    }
+
+    return $did_unpin;
 }
 
 #-------------------------------------------------------------------------------

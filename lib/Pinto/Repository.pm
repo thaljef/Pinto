@@ -315,15 +315,13 @@ sub register {
     my ($self, %args) = @_;
 
     my $dist  = $args{distribution};
+
     my $stack = $self->get_stack(name => $args{stack})
       or $self->fatal("Stack $args{stack} does not exist");
 
     $self->info("Registering distribution $dist on stack $stack");
 
-    my $did_register = 0;
-    $did_register += $self->db->register($_, $stack) for $dist->packages;
-
-    return $did_register;
+    return $self->db->register($dist, $stack);
 }
 
 #-------------------------------------------------------------------------------
@@ -371,16 +369,7 @@ sub pin {
     my $stack = $self->get_stack(name => $args{stack})
         or $self->fatal("Stack $args{stack} does not exist");
 
-    # TODO: Should we first register all the packages on the stack?
-    # They might not be the stack contains another dist with
-    # overlapping packages.  But this could change the stack
-    # composition in ways that the user does not expect.
-
-    my $did_pin = 0;
-    $did_pin += $self->db->pin($_, $stack) for $dist->packages;
-
-    return $did_pin;
-
+    return $self->db->pin($dist, $stack);
 }
 
 #-------------------------------------------------------------------------------
@@ -400,10 +389,7 @@ sub unpin {
     my $stack = $self->get_stack(name => $args{stack})
         or $self->fatal("Stack $args{stack} does not exist");
 
-    my $did_unpin = 0;
-    $did_unpin += $self->db->unpin($_, $stack) for $dist->packages;
-
-    return $did_unpin;
+    return $self->db->unpin($dist, $stack);
 }
 
 #-------------------------------------------------------------------------------
