@@ -73,6 +73,7 @@ has cache => (
     isa        => 'Pinto::IndexCache',
     lazy       => 1,
     handles    => [ qw(locate) ],
+    clearer    => 'clear_cache',
     default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
                                                 logger => $_[0]->logger ) },
 );
