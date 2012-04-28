@@ -57,10 +57,10 @@ sub execute {
 
     my $where = $self->where;
 
-    $self->repos->get_stack( name => $where->{'stack.name'}, croak => 1 )
+    $self->repos->get_stack( name => $where->{'stack.name'}, croak => 1 );
 
     my $attrs = { order_by => [ qw(me.name me.version me.path) ],
-                  prefetch => [ 'stack', { 'package' => 'distribution' } ] };
+                  prefetch => [ 'stack', {'package' => 'distribution'} ] };
 
     my $rs = $self->repos->db->select_registries($where, $attrs);
 
@@ -73,7 +73,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 
