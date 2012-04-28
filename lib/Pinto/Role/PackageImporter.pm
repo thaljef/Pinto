@@ -1,10 +1,11 @@
-package Pinto::Role::PackageImporter;
-
 # ABSTRACT: Something that imports packages from another repository
+
+package Pinto::Role::PackageImporter;
 
 use Moose::Role;
 
 use Pinto::Util;
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -35,7 +36,7 @@ sub find_or_pull {
     }
     else {
         my $type = ref $target;
-        $self->fatal("Don't know how to pull a $type");
+        throw "Don't know how to pull a $type";
     }
 
 }
@@ -61,7 +62,7 @@ sub _pull_by_package_spec {
                                          version => $pspec->version,
                                          latest  => 1 );
 
-    $self->fatal("Cannot find prerequisite $pspec anywhere")
+    throw "Cannot find prerequisite $pspec anywhere"
       if not $dist_url;
 
     $self->debug("Found package $pspec or newer in $dist_url");
@@ -97,7 +98,7 @@ sub _pull_by_distribution_spec {
     }
 
     my $dist_url = $self->repos->locate(distribution => $dspec->path)
-      or $self->fatal("Cannot find prerequisite $dspec anywhere");
+      or throw "Cannot find prerequisite $dspec anywhere";
 
     $self->debug("Found package $dspec at $dist_url");
 

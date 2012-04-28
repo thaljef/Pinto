@@ -8,6 +8,8 @@ use File::Temp;
 use Path::Class;
 use LWP::UserAgent;
 
+use Pinto::Exception qw(throw);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -98,7 +100,7 @@ sub _fetch {
     $self->debug("Fetching $url");
 
     my $result = eval { $self->ua->mirror($url, $to) }
-        or $self->fatal( $@ );
+        or throw $@;
 
     if ($result->is_success()) {
         return 1;
@@ -107,8 +109,7 @@ sub _fetch {
         return 0;
     }
     else {
-        my $msg = "Failed to fetch $url: " . $result->status_line();
-        $self->fatal($msg);
+        throw "Failed to fetch $url: " . $result->status_line;
     }
 
     # Should never get here

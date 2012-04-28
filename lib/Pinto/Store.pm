@@ -1,11 +1,13 @@
-package Pinto::Store;
-
 # ABSTRACT: Base class for storage of a Pinto repository
+
+package Pinto::Store;
 
 use Moose;
 
 use Try::Tiny;
 use CPAN::Checksums;
+
+use Pinto::Exception;
 
 use namespace::autoclean;
 
@@ -90,8 +92,7 @@ sub tag {
 sub add_archive {
     my ($self, $archive_file) = @_;
 
-    $self->fatal("$archive_file is not a file")
-        if not -f $archive_file;
+    throw "$archive_file is not a file" if not -f $archive_file;
 
     $self->add_path( path => $archive_file );
     $self->update_checksums( directory => $archive_file->parent() );
@@ -119,8 +120,8 @@ sub add_path {
     my ($self, %args) = @_;
 
     my $path = $args{path};
-    $self->fatal("Must specify a path") if not $path;
-    $self->fatal("Path $path does not exist") if not -e $path;
+    throw "Must specify a path" if not $path;
+    throw "Path $path does not exist" if not -e $path;
 
     inner;
 
@@ -133,11 +134,11 @@ sub remove_path {
     my ($self, %args) = @_;
 
     my $path = $args{path};
-    $self->fatal("Must specify a path") if not $path;
+    throw "Must specify a path" if not $path;
 
     return if not -e $path;
 
-    inner();
+    inner;
 
     return $self;
 }
@@ -163,7 +164,7 @@ sub update_checksums {
     $self->debug("Generating $cs_file");
 
     try   { CPAN::Checksums::updatedir($dir) }
-    catch { $self->fatal("CHECKSUM generation failed for $dir: $_") };
+    catch { throw "CHECKSUM generation failed for $dir: $_" };
 
     $self->add_path(path => $cs_file);
 

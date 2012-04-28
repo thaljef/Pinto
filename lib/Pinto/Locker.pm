@@ -8,6 +8,7 @@ use Path::Class;
 use LockFile::Simple;
 
 use Pinto::Types qw(File);
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -45,7 +46,7 @@ sub _build__lockmgr {
     my ($self) = @_;
 
     my $wfunc = sub { $self->debug(@_) };
-    my $efunc = sub { $self->fatal(@_) };
+    my $efunc = sub { throw(@_) };
 
     return LockFile::Simple->make( -autoclean => 1,
                                    -efunc     => $efunc,
@@ -74,10 +75,10 @@ sub lock {                                             ## no critic (Homonym)
     # If by chance, the directory we are trying to lock does not exist,
     # then LockFile::Simple will wait (a while) until it does.  To
     # avoid this extra delay, just make sure the directory exists now.
-    $self->fatal("Repository $root_dir does not exist") if not -e $root_dir;
+    throw "Repository $root_dir does not exist" if not -e $root_dir;
 
-    my $lock = $self->_lockmgr->lock( $root_dir->file('')->stringify() )
-        or $self->fatal('Unable to lock the repository -- please try later');
+    my $lock = $self->_lockmgr->lock( $root_dir->file('')->stringify )
+        or throw 'Unable to lock the repository -- please try later';
 
     $self->debug("Process $$ got the lock on $root_dir");
     $self->_lock($lock);
@@ -97,11 +98,11 @@ get to work.
 sub unlock {
     my ($self) = @_;
 
-    return $self if not $self->is_locked();
+    return $self if not $self->is_locked;
 
-    $self->_lock->release() or $self->fatal('Unable to unlock repository');
+    $self->_lock->release or throw 'Unable to unlock repository';
 
-    my $root_dir = $self->config->root_dir();
+    my $root_dir = $self->config->root_dir;
     $self->debug("Process $$ released the lock on $root_dir");
 
     return $self;
@@ -109,7 +110,7 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #-----------------------------------------------------------------------------
 1;

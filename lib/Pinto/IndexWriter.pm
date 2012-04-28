@@ -1,10 +1,15 @@
-package Pinto::IndexWriter;
-
 # ABSTRACT: Write records to an 02packages.details.txt file
+
+
+package Pinto::IndexWriter;
 
 use Moose;
 
 use PerlIO::gzip;
+
+use Pinto::Exception qw(throw);
+
+use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -38,7 +43,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my @records = $self->_get_index_records($stack);
     my $count = @records;
 
-    open my $fh, '>:gzip', $file or $self->fatal("Cannot open $file: $!");
+    open my $fh, '>:gzip', $file or throw "Cannot open $file: $!";
     $self->_write_header($fh, $file, $count);
     $self->_write_records($fh, @records);
     close $fh;
@@ -51,7 +56,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
 sub _write_header {
     my ($self, $fh, $filename, $line_count) = @_;
 
-    my $base    = $filename->basename();
+    my $base    = $filename->basename;
     my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
     my $version = $Pinto::IndexWriter::VERSION || 'UNKNOWN VERSION';
 
@@ -114,7 +119,7 @@ sub _get_index_records {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 

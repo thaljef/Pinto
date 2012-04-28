@@ -8,8 +8,10 @@ use MooseX::Types::Moose qw(Str);
 use DateTime;
 use Log::Dispatch;
 use Log::Dispatch::File;
+use Scalar::Util;
 
 use Pinto::Types qw(Dir File);
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -92,7 +94,7 @@ sub add_output {
     my ($self, $output) = @_;
 
     my $base_class = 'Log::Dispatch::Output';
-    $output->isa($base_class) or $self->fatal("Argument is not a $base_class");
+    $output->isa($base_class) or throw "Argument is not a $base_class";
 
     $self->log_handler->add($output);
 
@@ -100,14 +102,21 @@ sub add_output {
 }
 
 #-----------------------------------------------------------------------------
-# TODO: We usually end up getting both the log message and the same
-# "croak" message on the screen.  I would prefer to only get one of
-# them.  And I would also like to get a full strack trace on the screen
-# (and possibly in the log file) when running in debug mode.
 
 sub fatal {
     my ($self, $message) = @_;
-    chomp $message; # ???
+
+    # The $message could be a Pinto::Exception object, or it might just be
+    # a string.  If it is an object and the logger is set at the debug level
+    # then log the entire stack trace.  But if not, then just log the main
+    # message (or the $message itself, if it is not a Pinto::Exception)
+
+    if (Scalar::Util::blessed($message) and $message->isa('Pinto::Exception')) {
+        my $is_debug_log = $self->log_handler->is_debug;
+        $message = $is_debug_log ? $message->as_string : $message->message;
+    }
+
+    chomp $message;
     $self->log_handler->log_and_croak(level => 'critical', message => $message);
 }
 

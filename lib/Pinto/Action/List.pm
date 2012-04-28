@@ -57,8 +57,7 @@ sub execute {
 
     my $where = $self->where;
 
-    $self->repos->get_stack( name => $where->{'stack.name'} )
-        or $self->fatal("No such stack named $where->{'stack.name'}");
+    $self->repos->get_stack( name => $where->{'stack.name'}, croak => 1 )
 
     my $attrs = { order_by => [ qw(me.name me.version me.path) ],
                   prefetch => [ 'stack', { 'package' => 'distribution' } ] };

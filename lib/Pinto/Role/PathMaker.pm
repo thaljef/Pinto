@@ -7,6 +7,8 @@ use Moose::Role;
 use Path::Class;
 use Try::Tiny;
 
+use Pinto::Exception qw(throw);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -33,15 +35,15 @@ sub mkpath {
 
     $path = dir($path) if not eval {$path->isa('Path::Class')};
 
-    $self->fatal("$path is not a Path::Class::Dir") if not $path->is_dir;
-    $self->fatal("$path is an existing file") if -f $path;
+    throw "$path is not a Path::Class::Dir" if not $path->is_dir;
+    throw "$path is an existing file" if -f $path;
 
     return 0 if -e $path;
 
     $self->debug("Making directory $path");
 
     try   { $path->mkpath }
-    catch { $self->fatal("Failed to make directory $path: $_") };
+    catch { throw "Failed to make directory $path: $_" };
 
     return 1;
 }

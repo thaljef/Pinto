@@ -5,6 +5,8 @@ package Pinto::Action::Add;
 use Moose;
 use MooseX::Types::Moose qw(Bool);
 
+use Pinto::Exception qw(throw);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -31,8 +33,8 @@ sub BUILD {
     my @unreadable = grep { -e $_ and not -r $_ } $self->archives;
     $self->error("Archive $_ is not readable") for @unreadable;
 
-    $self->fatal("Some archives are missing or unreadable")
-      if @missing or @unreadable;
+    throw "Some archives are missing or unreadable"
+        if @missing or @unreadable;
 
     return $self;
 }

@@ -9,6 +9,7 @@ use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
+use Pinto::Exception qw(throw);
 use Pinto::Types qw(Dir);
 
 use namespace::autoclean;
@@ -115,7 +116,7 @@ sub BUILD {
              && -e $self->config->authors_dir ) {
 
         my $root_dir = $self->config->root_dir();
-        $self->fatal("Directory $root_dir does not look like a Pinto repository");
+        throw "Directory $root_dir does not look like a Pinto repository";
     }
 
     return $self;
@@ -142,9 +143,8 @@ sub get_stack {
     my $where = { name => $stk_name };
     my $stack = $self->db->select_stacks( $where )->single;
 
-    if ($args{croak} and not $stack){
-        $self->fatal("Stack $stk_name does not exist");
-    }
+    throw "Stack $stk_name does not exist"
+        if $args{croak} and not $stack;
 
     return $stack;
 }
@@ -234,15 +234,15 @@ sub add {
     my $source  = $args{source} || 'LOCAL';
     my $index   = $args{index}  || 1;  # Is this needed?
 
-    $self->fatal("Archive $archive does not exist")  if not -e $archive;
-    $self->fatal("Archive $archive is not readable") if not -r $archive;
+    throw "Archive $archive does not exist"  if not -e $archive;
+    throw "Archive $archive is not readable" if not -r $archive;
 
     my $basename   = $archive->basename();
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
 
     $self->get_distribution(path => $dist_path)
-        and $self->fatal("Distribution $dist_path already exists");
+        and throw "Distribution $dist_path already exists";
 
     # Assemble the basic structure...
     my $dist_struct = { path     => $dist_path,
@@ -297,8 +297,8 @@ sub pull {
     my $url = $args{url};
     my ($source, $path, $author) = Pinto::Util::parse_dist_url( $url );
 
-    my $existing = $self->get_distribution( path => $path );
-    $self->fatal("Distribution $path already exists") if $existing;
+    throw "Distribution $path already exists"
+        if $self->get_distribution( path => $path );
 
     my $archive = $self->fetch_temporary(url => $url);
 
@@ -421,8 +421,8 @@ sub remove_stack {
 
     my $stk_name = $args{name};
 
-    $self->fatal( 'You cannot remove the default stack' )
-        if $stk_name eq 'default';
+    throw 'You cannot remove the default stack'
+      if $stk_name eq 'default';
 
     my $stack = $self->get_stack(name => $stk_name, croak => 1);
 
@@ -496,7 +496,7 @@ sub merge_stack {
     }
 
 
-    $self->fatal("There were $conflicts conflicts.  Merge aborted")
+    throw "There were $conflicts conflicts.  Merge aborted"
         if $conflicts and not $dryrun;
 
     $self->info('Dry run merge -- no changes were made')
@@ -584,7 +584,7 @@ sub _merge_registry {
     # So if we get here then either our logic is flawed or something
     # weird has happened in the database.
 
-    $self->fatal("Unable to merge $from_registry into $to_registry");
+    throw "Unable to merge $from_registry into $to_registry";
 }
 
 #-------------------------------------------------------------------------------

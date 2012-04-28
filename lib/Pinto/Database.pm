@@ -9,6 +9,7 @@ use Path::Class;
 
 use Pinto::Schema;
 use Pinto::IndexWriter;
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -43,7 +44,7 @@ sub _build_schema {
 
     my $connection;
     try   { $connection = Pinto::Schema->connect($dsn) }
-    catch { $self->fatal("Database error: $_") };
+    catch { throw "Database connection error: $_" };
 
     return $connection;
 }
@@ -152,7 +153,7 @@ sub register {
       $did_register++;
     }
 
-    $self->fatal("Unable to register distribution $dist on stack $stack")
+    throw "Unable to register distribution $dist on stack $stack"
       if $errors;
 
     $stack->touch if $did_register; # Update mtime
@@ -188,7 +189,7 @@ sub pin {
         $did_pin++;
     }
 
-    $self->fatal("Unable to pin distribution $dist to stack $stack")
+    throw "Unable to pin distribution $dist to stack $stack"
       if $errors;
 
     $stack->touch if $did_pin; # Update mtime

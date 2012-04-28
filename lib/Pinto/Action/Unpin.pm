@@ -4,7 +4,7 @@ package Pinto::Action::Unpin;
 
 use Moose;
 
-use Pinto::Types qw(StackName);
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -42,19 +42,19 @@ sub _execute {
 
         my $pkg_name = $target->name;
         my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stk_name)
-            or $self->fatal("Package $pkg_name is not on stack $stk_name");
+            or throw "Package $pkg_name is not on stack $stk_name";
 
         $dist = $pkg->distribution;
     }
     elsif ($target->isa('Pinto::DistributionSpec')) {
 
         $dist = $self->repos->get_distribution(path => $target->path)
-            or $self->fatal("Distribution $target does not exist");
+            or throw "Distribution $target does not exist";
     }
     else {
 
         my $type = ref $target;
-        $self->fatal("Don't know how to pin target of type $type");
+        throw "Don't know how to pin target of type $type";
     }
 
 
