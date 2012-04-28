@@ -1,6 +1,6 @@
 # NAME
 
-Pinto - Curate your own CPAN-like repository
+Pinto - Curate a repository of Perl modules
 
 # VERSION
 
