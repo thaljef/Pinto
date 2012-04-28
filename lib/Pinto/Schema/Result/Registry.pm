@@ -172,6 +172,26 @@ sub new {
 
 #-------------------------------------------------------------------------------
 
+sub update {
+    my ($self, @args) = @_;
+
+    my $r = $self->next::method(@args);
+
+    # HACK: This forces the name, version, and path fields to always come
+    # from the related package/distribution objects.  So you cannot explictly
+    # set these yourself.  There is probably a better way to do this.
+
+    my $changes = {};
+    $changes->{name}    = $self->package->name;
+    $changes->{version} = $self->package->version;
+    $changes->{path}    = $self->package->distribution->path;
+
+    return $self->next::method($changes);
+}
+
+
+#-------------------------------------------------------------------------------
+
 sub compare {
     my ($reg_a, $reg_b) = @_;
 
