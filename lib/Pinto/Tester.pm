@@ -153,10 +153,9 @@ sub run_throws_ok {
     my $ok = throws_ok { $result = $self->pinto->run($action_name, %{$args}) }
         $error_regex, $test_name;
 
-    if (not $ok) {
-        my @msgs = @{ $self->pinto->logger->log_handler->msgs };
- 
-    }
+    $self->diag_log_contents if not $ok;
+
+    return $ok;
 }
 
 #------------------------------------------------------------------------------
@@ -326,6 +325,16 @@ sub populate {
         $self->run_ok('Add', $args, "Populating repository with $spec");
         # TODO: Abort the rest of the test if population fails
     }
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub clear_cache {
+    my ($self) = @_;
+
+    $self->pinto->repos->clear_cache;
 
     return $self;
 }
