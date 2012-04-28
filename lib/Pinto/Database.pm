@@ -126,7 +126,7 @@ sub register {
 
       if ($pkg->registries_rs->find( {stack => $stack->id} ) ) {
         $self->debug("Package $pkg is already on stack $stack");
-        return 0;
+        next;
       }
 
       my $attrs     = { prefetch => 'package' };
