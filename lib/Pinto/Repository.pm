@@ -139,6 +139,7 @@ sub get_stack {
     my ($self, %args) = @_;
 
     my $stk_name = $args{name};
+    return $stk_name if ref $stk_name;  # Is object (or struct) so just return
 
     my $where = { name => $stk_name };
     my $stack = $self->db->select_stacks( $where )->single;
@@ -169,12 +170,14 @@ sub get_package {
     my ($self, %args) = @_;
 
     my $pkg_name = $args{name};
+    my $pkg_vers = $args{version}; # ??
     my $stk_name = $args{stack};
 
     if ($stk_name) {
-        my $attrs = { prefetch => [ qw(package stack) ] };
-        my $where = { 'package.name' => $pkg_name, 'stack.name' => $stk_name };
-        my $registry = $self->db->select_registries($where, $attrs)->single;
+        my $stack = $self->get_stack(name => $stk_name);
+        my $attrs = { prefetch => 'package' };
+        my $where = { name => $pkg_name, stack => $stack->id };
+        my $registry = $self->db->select_registry($where, $attrs);
         return $registry ? $registry->package : ();
     }
     else {
@@ -450,7 +453,7 @@ sub copy_stack {
     $self->info("Creating new stack $to_stk_name");
 
     my $changes = { name => $to_stk_name };
-    $changes->{description} = $description if $description;
+    $changes->{description} = $description || "copy of stack $from_stk_name";
 
     my $from_stack = $self->get_stack(name => $from_stk_name, croak => 1);
     my $to_stack   = $from_stack->copy( $changes );
