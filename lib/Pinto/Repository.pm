@@ -407,6 +407,9 @@ sub unpin {
 sub create_stack {
     my ($self, %args) = @_;
 
+    throw "Stack $args{name} already exists"
+        if $self->get_stack(name => $args{name});
+
     my $stack = $self->db->create_stack( \%args );
 
     return $stack;
@@ -449,6 +452,9 @@ sub copy_stack {
     my $from_stk_name = $args{from};
     my $to_stk_name   = $args{to};
     my $description   = $args{description};
+
+    throw "Stack $to_stk_name already exists"
+        if $self->get_stack(name => $to_stk_name);
 
     $self->info("Creating new stack $to_stk_name");
 
