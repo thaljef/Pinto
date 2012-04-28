@@ -51,7 +51,7 @@ sub _pull_by_package_spec {
     my $latest = $self->repos->get_package(name => $pkg_name);
 
     if ($latest && $latest->version >= $pkg_ver) {
-        my $dist = $latest->distribution();
+        my $dist = $latest->distribution;
         $self->debug("Already have package $pspec or newer as $latest");
         $self->repos->register(distribution => $dist, stack => $self->stack);
         return ($dist, 0);
