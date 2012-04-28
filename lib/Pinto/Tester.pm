@@ -334,7 +334,7 @@ sub populate {
                      author    => $struct->{cpan_author} };
 
         my $r = $self->run_ok('Add', $args, "Populating repository with $spec");
-        croak 'Population failed so the rest of this test is aborted' unless $r->is_success;
+        croak 'Population failed so the rest of this test is aborted' unless $r->was_success;
     }
 
     return $self;
