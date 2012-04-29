@@ -144,15 +144,11 @@ __PACKAGE__->many_to_many( packages => 'regsitry', 'package' );
 sub new {
     my ($class, $attrs) = @_;
 
-    # Default mtime to now
+    # Default mtime/description
     $attrs->{mtime} ||= time;
+    $attrs->{description} ||= 'no description given';
 
-    # Extract properties that are stored separately
-    my $props = delete $attrs->{properties} || {};
-    my $self = $class->next::method($attrs);
-    $self->set_properties($props);
-
-    return $self;
+    return $class->next::method($attrs);
 }
 
 
@@ -161,9 +157,17 @@ sub new {
 sub copy {
     my ($self, $changes) = @_;
 
-    my $props = delete $changes->{properties} || {};
-    my $copy = $self->next::method($changes || {});
-    $copy->set_properties($props);
+    $changes ||= {};
+
+    # Extract properties that are stored separately
+    my $old_props = $self->get_properties;
+    my $new_props = delete $changes->{properties};
+    my $merged_props = { %{$old_props}, %{$new_props} };
+
+    my $guard = $self->result_source->schema->txn_scope_guard;
+    my $copy = $self->next::method($changes);
+    $copy->set_properties($merged_props);
+    $guard->commit;
 
     return $copy;
 }
@@ -179,12 +183,20 @@ sub touch {
 #-------------------------------------------------------------------------------
 
 sub get_property {
-    my ($self, $prop_name) = @_;
+    my ($self, @prop_names) = @_;
 
-    my $where = {name => $prop_name};
-    my $attrs = {key => 'stack_name_unique'};
-    my $prop = $self->find_related('stack_properties', $where, $attrs);
-    return $prop ? $prop->value : ();
+    my %props = %{ $self->get_properties };
+    return @props{@prop_names};
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_properties {
+    my ($self) = @_;
+
+    my @props = $self->search_related('stack_properties')->all;
+
+    return { map { $_->name => $_->value } @props };
 }
 
 #-------------------------------------------------------------------------------
@@ -192,10 +204,7 @@ sub get_property {
 sub set_property {
     my ($self, $prop_name, $value) = @_;
 
-    my $attrs  = {key => 'stack_name_unique'};
-    my $values = {name => $prop_name, value => $value};
-    $self->update_or_create_related('stack_properties', $values, $attrs);
-    return $self;
+    return $self->set_properties( {$prop_name => $value} );
 }
 
 
@@ -216,12 +225,27 @@ sub set_properties {
 #-------------------------------------------------------------------------------
 
 sub delete_property {
-    my ($self, $prop_name) = @_;
+    my ($self, @prop_names) = @_;
 
-    my $where = {name => $prop_name};
     my $attrs = {key => 'stack_name_unique'};
-    my $prop = $self->find_related('stack_properties', $where, $attrs);
-    $prop->delete if $prop;
+
+    for my $prop_name (@prop_names) {
+          my $where = {name => $prop_name};
+          my $prop = $self->find_related('stack_properties', $where, $attrs);
+          $prop->delete if $prop;
+    }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_properties {
+    my ($self) = @_;
+
+    my $props_rs = $self->search_related_rs('stack_properties');
+    $props_rs->delete;
+
     return $self;
 }
 
