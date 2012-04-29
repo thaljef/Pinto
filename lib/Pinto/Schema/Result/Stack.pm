@@ -161,7 +161,7 @@ sub copy {
 
     # Extract properties that are stored separately
     my $old_props = $self->get_properties;
-    my $new_props = delete $changes->{properties};
+    my $new_props = delete $changes->{properties} || {};
     my $merged_props = { %{$old_props}, %{$new_props} };
 
     my $guard = $self->result_source->schema->txn_scope_guard;
