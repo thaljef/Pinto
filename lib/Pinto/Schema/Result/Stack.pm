@@ -34,14 +34,14 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
-=head2 mtime
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 description
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 mtime
+
+  data_type: 'integer'
   is_nullable: 0
 
 =cut
@@ -51,10 +51,10 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
-  "mtime",
-  { data_type => "integer", is_nullable => 0 },
   "description",
   { data_type => "text", is_nullable => 0 },
+  "mtime",
+  { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -100,9 +100,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head2 stack_properties
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:51:37
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vp0CJfTdWm5nqjhOx7VUyg
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::StackProperty>
+
+=cut
+
+__PACKAGE__->has_many(
+  "stack_properties",
+  "Pinto::Schema::Result::StackProperty",
+  { "foreign.stack" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-28 20:30:19
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LwqV+XFkF5SAJwlUGdt34Q
 
 #-------------------------------------------------------------------------------
 
@@ -129,17 +144,85 @@ __PACKAGE__->many_to_many( packages => 'regsitry', 'package' );
 sub new {
     my ($class, $attrs) = @_;
 
+    # Default mtime to now
     $attrs->{mtime} ||= time;
 
-    return $class->SUPER::new($attrs);
+    # Extract properties that are stored separately
+    my $props = delete $attrs->{properties} || {};
+    my $self = $class->next::method($attrs);
+    $self->set_properties($props);
+
+    return $self;
+}
+
+
+#------------------------------------------------------------------------------
+
+sub copy {
+    my ($self, $changes) = @_;
+
+    my $props = delete $changes->{properties} || {};
+    my $copy = $self->next::method($changes || {});
+    $copy->set_properties($props);
+
+    return $copy;
+}
+
+#------------------------------------------------------------------------------
+
+sub touch {
+    my ($self, $time) = @_;
+    $self->update( {mtime => $time || time} );
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
 
-sub touch {
-    my ($self, $time) = @_;
-    $time ||= time;
-    $self->update( {mtime => $time} );
+sub get_property {
+    my ($self, $prop_name) = @_;
+
+    my $where = {name => $prop_name};
+    my $attrs = {key => 'stack_name_unique'};
+    my $prop = $self->find_related('stack_properties', $where, $attrs);
+    return $prop ? $prop->value : ();
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_property {
+    my ($self, $prop_name, $value) = @_;
+
+    my $attrs  = {key => 'stack_name_unique'};
+    my $values = {name => $prop_name, value => $value};
+    $self->update_or_create_related('stack_properties', $values, $attrs);
+    return $self;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub set_properties {
+    my ($self, $props) = @_;
+
+    my $attrs  = {key => 'stack_name_unique'};
+    while (my ($name, $value) = each %{$props}) {
+        my $values = {name => $name, value => $value};
+        $self->update_or_create_related('stack_properties', $values, $attrs);
+    }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_property {
+    my ($self, $prop_name) = @_;
+
+    my $where = {name => $prop_name};
+    my $attrs = {key => 'stack_name_unique'};
+    my $prop = $self->find_related('stack_properties', $where, $attrs);
+    $prop->delete if $prop;
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -158,7 +241,7 @@ sub to_string {
     return String::Format::stringf($format, %fspec);
 }
 
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 sub default_format {
     my ($self) = @_;
@@ -166,7 +249,7 @@ sub default_format {
     return '%k';
 }
 
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 1;
 
 __END__

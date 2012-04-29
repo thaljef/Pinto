@@ -400,15 +400,17 @@ sub unpin {
 
 #-------------------------------------------------------------------------------
 
-=method create_stack(name => $stk_name, description => $why)
+=method create_stack(name => $stk_name, description => $why, prop => $value ... )
 
 =cut
 
 sub create_stack {
     my ($self, %args) = @_;
 
-    throw "Stack $args{name} already exists"
-        if $self->get_stack(name => $args{name});
+    my $name = $args{name};
+
+    throw "Stack $name already exists"
+        if $self->get_stack(name => $name);
 
     my $stack = $self->db->create_stack( \%args );
 
@@ -451,15 +453,15 @@ sub copy_stack {
 
     my $from_stk_name = $args{from};
     my $to_stk_name   = $args{to};
-    my $description   = $args{description};
+    my $description   = $args{description} || "copy of stack $from_stk_name";
 
     throw "Stack $to_stk_name already exists"
         if $self->get_stack(name => $to_stk_name);
 
     $self->info("Creating new stack $to_stk_name");
 
-    my $changes = { name => $to_stk_name };
-    $changes->{description} = $description || "copy of stack $from_stk_name";
+    my $changes = { name        => $to_stk_name,
+                    description => $description };
 
     my $from_stack = $self->get_stack(name => $from_stk_name, croak => 1);
     my $to_stack   = $from_stack->copy( $changes );

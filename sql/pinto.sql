@@ -17,18 +17,21 @@ CREATE TABLE package (
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
 
-/* TODO: Consider keeping track of if (and possibly when)
-   a stack has been merged.  Then only allow a merged
-   stack to be deleted.  Similarly, consider marking
-   a stack as "deleted" rather than actually deleting it,
-   so that you can potentially restore it by rolling it
-   back. */
 
 CREATE TABLE stack (
        id          INTEGER PRIMARY KEY NOT NULL,
        name        TEXT                NOT NULL,
-       mtime       INTEGER             NOT NULL,
-       description TEXT                NOT NULL 
+       description TEXT                NOT NULL,       
+       mtime       INTEGER             NOT NULL
+);
+
+
+CREATE TABLE stack_property (
+       id          INTEGER PRIMARY KEY NOT NULL,
+       stack       INTEGER             NOT NULL,
+       name        TEXT                NOT NULL,
+       value       TEXT                NOT NULL,
+       FOREIGN KEY(stack)   REFERENCES stack(id)
 );
 
 
@@ -62,5 +65,6 @@ CREATE UNIQUE INDEX b ON package(name, distribution);
 CREATE UNIQUE INDEX c ON stack(name);
 CREATE UNIQUE INDEX d ON registry(stack, name);
 CREATE UNIQUE INDEX e ON prerequisite(distribution, name);
-CREATE        INDEX f ON registry(stack);
-CREATE        INDEX g ON package(name);
+CREATE UNIQUE INDEX f ON stack_property(stack, name);
+CREATE        INDEX g ON registry(stack);
+CREATE        INDEX h ON package(name);

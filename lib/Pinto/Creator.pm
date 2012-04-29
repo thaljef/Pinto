@@ -134,18 +134,16 @@ END_MODLIST
 sub _create_db {
     my ($self) = @_;
 
-    my $db = Pinto::Database->new( config => $self->config(),
-                                   logger => $self->logger() );
-    $db->deploy();
+    my $db = Pinto::Database->new( config => $self->config,
+                                   logger => $self->logger );
+    $db->deploy;
 
     my $default_stack = { name        => 'default',
-                          mtime       => time,
-                          description => 'the default stack',
-    };
+                          description => 'the default stack' };
 
     $db->schema->resultset('Stack')->create($default_stack);
 
-    $db->write_index();
+    $db->write_index;
 
     return;
 }
