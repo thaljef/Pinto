@@ -185,6 +185,15 @@ sub vname {
 
 #------------------------------------------------------------------------------
 
+sub as_spec {
+    my ($self) = @_;
+
+    return Pinto::PackageSpec->new( name    => $self->name,
+                                    version => $self->version );
+}
+
+#------------------------------------------------------------------------------
+
 sub to_string {
     my ($self, $format) = @_;
 

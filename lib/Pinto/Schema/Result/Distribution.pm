@@ -145,6 +145,7 @@ use CPAN::DistnameInfo;
 use String::Format;
 
 use Pinto::Util;
+use Pinto::DistributionSpec;
 
 use overload ( '""' => 'to_string' );
 
@@ -273,6 +274,14 @@ sub prerequisite_specs {
     my ($self) = @_;
 
     return map { $_->as_spec } $self->prerequisites;
+}
+
+#------------------------------------------------------------------------------
+
+sub as_spec {
+    my ($self) = @_;
+
+    return Pinto::DistributionSpec->new(path => $self->path);
 }
 
 #------------------------------------------------------------------------------
