@@ -2,15 +2,42 @@
 
 =over 4
 
-=item Decide how to handle locking
 
-=item Sort out Static/Mutator actions
+
+=item Every Action needs username
+
+=item Way to verify prereqs on a stack
+
+=item Command to list dependencies and dependants
+
+=item Re-examine column names in schema
+
+=item Use DBIx::Class properly (find vs single)
+
+=item Command to unregister a pkg/dist ??
+
+=item Command to edit stack props
+
+=item Option to enforce strict stacks (no overlapping dists)
+
+=item Tests for stacks
+
+=item Re-examine interface classes
+
+#--------------------------
+
+
+=item Decide how to handle locking
 
 =item Add hooks before/after adding and pulling
 
 =item Ensure there is an open revision before each Repos operation
 
+=item Give revisions properties
+
 =item Compute checksum for stack after each revision
+
+=item Allow revisions to be tagged
 
 =item Mark stacks as merged after merge
 
