@@ -253,16 +253,6 @@ sub create_registry {
 
 #-------------------------------------------------------------------------------
 
-sub create_pin {
-    my ($self, $attrs) = @_;
-
-    my $pin = $self->schema->resultset('Pin')->create( $attrs );
-
-    return $pin;
-}
-
-#-------------------------------------------------------------------------------
-
 sub select_stacks {
     my ($self, $where, $attrs) = @_;
 
@@ -270,6 +260,19 @@ sub select_stacks {
     $attrs ||= {};
 
     my $stack = $self->schema->resultset('Stack')->search( $where, $attrs );
+
+    return $stack;
+}
+
+#-------------------------------------------------------------------------------
+
+sub select_stack {
+    my ($self, $where, $attrs) = @_;
+
+    $attrs ||= {};
+    $attrs->{key} = 'name_unique';
+
+    my $stack = $self->schema->resultset('Stack')->find( $where, $attrs );
 
     return $stack;
 }
