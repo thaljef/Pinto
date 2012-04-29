@@ -142,7 +142,7 @@ sub get_stack {
     return $stk_name if ref $stk_name;  # Is object (or struct) so just return
 
     my $where = { name => $stk_name };
-    my $stack = $self->db->select_stacks( $where )->single;
+    my $stack = $self->db->select_stack( $where );
 
     throw "Stack $stk_name does not exist"
         if $args{croak} and not $stack;
@@ -328,7 +328,7 @@ sub register {
     my $dist  = $args{distribution};
     my $stack = $self->get_stack(name => $args{stack}, croak => 1);
 
-    $self->info("Registering distribution $dist on stack $stack");
+    $self->notice("Registering distribution $dist on stack $stack");
 
     return $self->db->register($dist, $stack);
 }
@@ -524,12 +524,10 @@ sub merge_stack {
 sub _merge_registry {
     my ($self, $from_registry, $to_stk, $dryrun) = @_;
 
-    my $from_pkg   = $from_registry->package;
-    my $attrs      = { prefetch => 'package' };
-    my $where      = { 'package.name' => $from_pkg->name,
-                       'stack'        => $to_stk->id };
-
-    my $to_registry = $self->db->select_registries($where, $attrs)->single;
+    my $from_pkg    = $from_registry->package;
+    my $attrs       = {prefetch => 'package'};
+    my $where       = {name  => $from_pkg->name, stack => $to_stk->id};
+    my $to_registry = $self->db->select_registry($where, $attrs);
 
     # CASE 1:  The package does not exist in the target stack,
     # so we can go ahead and just add it there.
