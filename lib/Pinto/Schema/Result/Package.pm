@@ -161,7 +161,18 @@ sub new {
     $attrs->{version} = 0
         if not defined $attrs->{version};
 
-    return $class->SUPER::new($attrs);
+    return $class->next::method($attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub registry {
+    my ($self, %args) = @_;
+
+    my $where = {name => $args{stack}};
+    my $stack = $self->result_source->schema->resultset('Stack')->find($where);
+
+    return $self->find_related('registries', {stack => $stack});
 }
 
 #------------------------------------------------------------------------------

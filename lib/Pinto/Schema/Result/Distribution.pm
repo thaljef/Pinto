@@ -238,6 +238,29 @@ sub is_local {
 
 #------------------------------------------------------------------------------
 
+sub package {
+    my ($self, %args) = @_;
+
+    my $where = {name => $args{name}};
+    my $pkg = $self->find_related('packages', $where) or return;
+
+    if (my $stk_name = $args{stack}){
+        return $pkg->registry(stack => $stk_name) ? $pkg : ();
+    }
+
+    return $pkg;
+}
+
+#------------------------------------------------------------------------------
+
+sub registered_packages {
+    my ($self, %args) = @_;
+
+    # TODO...
+}
+
+#------------------------------------------------------------------------------
+
 sub package_count {
     my ($self) = @_;
 
