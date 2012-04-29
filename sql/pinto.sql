@@ -1,3 +1,5 @@
+/* TODO: store dists as author and filename */
+
 CREATE TABLE distribution (
        id      INTEGER PRIMARY KEY NOT NULL,
        path    TEXT                NOT NULL,
@@ -34,6 +36,8 @@ CREATE TABLE stack_property (
        FOREIGN KEY(stack)   REFERENCES stack(id)
 );
 
+/* TODO: rename name => package_name */
+/* TODO: rename path => distribution_path */
 
 create TABLE registry (
        id           INTEGER PRIMARY KEY NOT NULL,
@@ -48,6 +52,8 @@ create TABLE registry (
        FOREIGN KEY(package) REFERENCES package(id)
 );
 
+/* TODO: rename name => package_name */
+/* TODO: rename path => distribution_path */
 
 CREATE TABLE prerequisite (
        id           INTEGER PRIMARY KEY NOT NULL,
