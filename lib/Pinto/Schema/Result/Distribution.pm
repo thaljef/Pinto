@@ -13,7 +13,10 @@ Pinto::Schema::Result::Distribution
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use Moose;
+use MooseX::NonMoose;
+use MooseX::MarkAsMethods autoclean => 1;
+extends 'DBIx::Class::Core';
 
 =head1 TABLE: C<distribution>
 
@@ -129,9 +132,22 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head1 L<Moose> ROLES APPLIED
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 01:47:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wYCx0a8G13xJUagO7r+o0Q
+=over 4
+
+=item * L<Pinto::Role::Schema::Result>
+
+=back
+
+=cut
+
+
+with 'Pinto::Role::Schema::Result';
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eV+MI4xhoIRRgFF3WOvxKw
 
 #-------------------------------------------------------------------------------
 
@@ -161,7 +177,7 @@ sub new {
     $attrs->{source} = 'LOCAL'
         if not defined $attrs->{source};
 
-    return $class->SUPER::new($attrs);
+    return $class->next::method($attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -337,3 +353,8 @@ sub _distname_info {
 1;
 
 __END__
+
+
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->meta->make_immutable;
+1;

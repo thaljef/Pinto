@@ -13,7 +13,10 @@ Pinto::Schema::Result::Prerequisite
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use Moose;
+use MooseX::NonMoose;
+use MooseX::MarkAsMethods autoclean => 1;
+extends 'DBIx::Class::Core';
 
 =head1 TABLE: C<prerequisite>
 
@@ -103,9 +106,22 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head1 L<Moose> ROLES APPLIED
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 01:47:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Qe2Ff+UhN7VR/+KB6nwIOg
+=over 4
+
+=item * L<Pinto::Role::Schema::Result>
+
+=back
+
+=cut
+
+
+with 'Pinto::Role::Schema::Result';
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ykk/oZxD+piWRcQQ0uKdNg
 
 #------------------------------------------------------------------------------
 
@@ -128,3 +144,8 @@ sub as_spec {
 1;
 
 __END__
+
+
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->meta->make_immutable;
+1;

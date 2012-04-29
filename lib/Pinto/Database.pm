@@ -42,11 +42,14 @@ sub _build_schema {
     my $db_file = $self->config->db_file();
     my $dsn = "dbi:SQLite:$db_file";
 
-    my $connection;
-    try   { $connection = Pinto::Schema->connect($dsn) }
+    my $schema;
+    try   { $schema = Pinto::Schema->connect($dsn) }
     catch { throw "Database connection error: $_" };
 
-    return $connection;
+    # Install our logger into the schema, so all Result objects can access it
+    $schema->logger($self->logger);
+
+    return $schema;
 }
 
 #-------------------------------------------------------------------------------

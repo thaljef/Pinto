@@ -13,7 +13,10 @@ Pinto::Schema::Result::Stack
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use Moose;
+use MooseX::NonMoose;
+use MooseX::MarkAsMethods autoclean => 1;
+extends 'DBIx::Class::Core';
 
 =head1 TABLE: C<stack>
 
@@ -115,9 +118,22 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head1 L<Moose> ROLES APPLIED
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-28 20:30:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LwqV+XFkF5SAJwlUGdt34Q
+=over 4
+
+=item * L<Pinto::Role::Schema::Result>
+
+=back
+
+=cut
+
+
+with 'Pinto::Role::Schema::Result';
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:tBjUBGsT6o2hBzLiDlqDhg
 
 #-------------------------------------------------------------------------------
 
@@ -278,3 +294,8 @@ sub default_format {
 
 __END__
 
+
+
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->meta->make_immutable;
+1;

@@ -13,7 +13,10 @@ Pinto::Schema::Result::Package
 use strict;
 use warnings;
 
-use base 'DBIx::Class::Core';
+use Moose;
+use MooseX::NonMoose;
+use MooseX::MarkAsMethods autoclean => 1;
+extends 'DBIx::Class::Core';
 
 =head1 TABLE: C<package>
 
@@ -118,9 +121,22 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head1 L<Moose> ROLES APPLIED
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-27 00:51:37
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Q7XO23Z1jqeGK81NcPTHnA
+=over 4
+
+=item * L<Pinto::Role::Schema::Result>
+
+=back
+
+=cut
+
+
+with 'Pinto::Role::Schema::Result';
+
+
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Wj6FplrC8R21kWyz6jaCdw
 
 #------------------------------------------------------------------------------
 
@@ -161,7 +177,9 @@ sub new {
     $attrs->{version} = 0
         if not defined $attrs->{version};
 
-    return $class->next::method($attrs);
+    my $self = $class->next::method($attrs);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -256,3 +274,8 @@ sub compare {
 1;
 
 __END__
+
+
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->meta->make_immutable;
+1;
