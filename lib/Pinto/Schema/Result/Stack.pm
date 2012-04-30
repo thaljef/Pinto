@@ -310,11 +310,10 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-          'k' => sub { $self->name                               },
-          'v' => sub { $self->last_modified_by                   },
-          'u' => sub { $self->last_modified_on                   },
-          'U' => sub { scalar localtime $self->last_modified_on  },
-          'e' => sub { $self->get_property('pinto:description')  },
+          'k' => sub { $self->name                                          },
+          'j' => sub { $self->last_modified_by                              },
+          'U' => sub { Pinto::Util::ls_time_format($self->last_modified_on) },
+          'e' => sub { $self->get_property('pinto:description')             },
     );
 
     $format ||= $self->default_format();
