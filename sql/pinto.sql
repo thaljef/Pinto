@@ -66,7 +66,7 @@ CREATE UNIQUE INDEX a ON distribution(path);
 CREATE UNIQUE INDEX b ON package(name, distribution);
 CREATE UNIQUE INDEX c ON stack(name);
 CREATE UNIQUE INDEX d ON registration(stack, package_name);
-CREATE UNIQUE INDEX e ON registration(package_name, distribution_path);
+CREATE UNIQUE INDEX e ON registration(stack, package_name, distribution_path);
 CREATE UNIQUE INDEX f ON prerequisite(distribution, package_name);
 CREATE UNIQUE INDEX g ON stack_property(stack, name);
 CREATE        INDEX h ON registration(stack);
