@@ -27,6 +27,7 @@ sub execute {
     my $copy = $stack->copy_deeply({name => $self->to_stack});
     my $description = $self->description || "copy of stack $stack";
     $copy->set_property('pinto:description' => $description);
+    $copy->touch($stack->last_modified_on);
 
     return $self->result->changed;
 }

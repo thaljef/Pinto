@@ -147,6 +147,8 @@ with 'Pinto::Role::Schema::Result';
 
 use String::Format;
 
+use Pinto::Exception qw(throw);
+
 use overload ( '""'     => 'to_string' );
 
 #-------------------------------------------------------------------------------
@@ -177,6 +179,19 @@ sub registry {
     my $attrs = {key => 'stack_name_unique', prefetch => 'package'};
 
     return $self->find_related('registries', {name => $pkg_name}, $attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub copy {
+  my ($self, $changes) = @_;
+
+  $changes ||= {};
+  my $to_stack_name = $changes->{name};
+  throw "Stack $to_stack_name already exists"
+    if $self->result_source->resultset->find({name => $to_stack_name});
+
+  return $self->next::method($changes);
 }
 
 #------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ sub execute {
 
     my $where = $self->where;
 
-    $self->repos->get_stack( name => $where->{'stack.name'}, croak => 1 );
+    $self->repos->get_stack( name => $where->{'stack.name'} );
 
     my $attrs = { order_by => [ qw(me.name me.version me.path) ],
                   prefetch => [ 'stack', {'package' => 'distribution'} ] };

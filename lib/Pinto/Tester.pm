@@ -168,7 +168,7 @@ sub package_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack     = $self->pinto->repos->get_stack(name => $stack_name, croak => 1);
+    my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
 
     my $where = { stack => $stack->id, name => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
@@ -213,7 +213,7 @@ sub package_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack     = $self->pinto->repos->get_stack(name => $stack_name, croak => 1);
+    my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
 
     my $where = {stack => $stack->id, name => $pkg_name, path => $dist_path};
     my $reg = $self->pinto->repos->db->select_registry($where);

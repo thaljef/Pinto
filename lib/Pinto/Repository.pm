@@ -126,12 +126,12 @@ sub BUILD {
 
 =method get_stack( name => $stack_name )
 
-=method get_stack( name => $stack_name, croak => 1 )
+=method get_stack( name => $stack_name, nocroak => 1 )
 
 Returns the L<Pinto::Schema::Result::Stack> object with the given
 C<$stack_name>.  If there is no stack with such a name in the
-repository, returns C<undef>.  If the C<croak> option is true,
-the an exception will be thrown if there is no such stack.
+repository, throws an exception.  If the C<nocroak> option is true,
+than an exception will not be thrown and undef will be returned.
 
 =cut
 
@@ -145,7 +145,7 @@ sub get_stack {
     my $stack = $self->db->select_stack( $where );
 
     throw "Stack $stk_name does not exist"
-        if $args{croak} and not $stack;
+        unless $stack or $args{nocroak};
 
     return $stack;
 }
@@ -324,7 +324,7 @@ sub create_stack {
     my $props = $args{properties};
 
     throw "Stack $name already exists"
-        if $self->get_stack(name => $name);
+        if $self->get_stack(name => $name, nocroak => 1);
 
     my $stack = $self->db->create_stack( {name => $name} );
     $stack->set_properties($props) if $props;
@@ -347,7 +347,7 @@ sub remove_stack {
     throw 'You cannot remove the default stack'
       if $stk_name eq 'default';
 
-    my $stack = $self->get_stack(name => $stk_name, croak => 1);
+    my $stack = $self->get_stack(name => $stk_name);
 
     $stack->delete;
 
@@ -371,8 +371,8 @@ sub merge_stack {
     my $dryrun        = $args{dryrun};
 
 
-    my $from_stk = $self->get_stack(name => $from_stk_name, croak => 1);
-    my $to_stk   = $self->get_stack(name => $to_stk_name, croak => 1);
+    my $from_stk = $self->get_stack(name => $from_stk_name);
+    my $to_stk   = $self->get_stack(name => $to_stk_name);
 
     my $conflicts;
     my $where = { stack => $from_stk->id };

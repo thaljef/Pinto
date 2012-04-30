@@ -63,5 +63,22 @@ my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
 
+{
+  # Copy from a stack that doesn't exist
+  $t->run_throws_ok('Stack::Copy', {from_stack => 'nowhere',
+                                    to_stack   => 'somewhere'},
+                                    qr/Stack nowhere does not exist/);
+
+
+  # Copy to a stack that already exists
+  $t->run_throws_ok('Stack::Copy', {from_stack => 'default',
+                                    to_stack   => 'dev'},
+                                    qr/Stack dev already exists/);
+
+}
+
+
+#------------------------------------------------------------------------------
+
 done_testing;
 
