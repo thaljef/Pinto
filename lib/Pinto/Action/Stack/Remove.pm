@@ -24,7 +24,8 @@ with qw( Pinto::Role::Interface::Action::Stack::Remove );
 sub execute {
     my ($self) = @_;
 
-    $self->repos->remove_stack( name => $self->stack );
+    my $stack = $self->repos->get_stack(name => $self->stack);
+    $stack->delete;
 
     return $self->result->changed;
 }

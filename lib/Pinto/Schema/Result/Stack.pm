@@ -172,6 +172,13 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
+before delete => sub {
+  my ($self, @args) = @_;
+  throw 'You cannot remote the default stack' if $self->name eq 'default';
+};
+
+#------------------------------------------------------------------------------
+
 sub registration {
     my ($self, %args) = @_;
 

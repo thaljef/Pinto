@@ -335,28 +335,6 @@ sub create_stack {
 
 #-------------------------------------------------------------------------------
 
-=method remove_stack(name => $stk_name)
-
-=cut
-
-sub remove_stack {
-    my ($self, %args) = @_;
-
-    my $stk_name = $args{name};
-
-    throw 'You cannot remove the default stack'
-      if $stk_name eq 'default';
-
-    my $stack = $self->get_stack(name => $stk_name);
-
-    $stack->delete;
-
-    return;
-
-}
-
-#-------------------------------------------------------------------------------
-
 =method merge_stack(from => $stk_name_a, to => $stk_name_b)
 
 =method merge_stack(from => $stk_name_a, to => $stk_name_b, dryrun => 1)
