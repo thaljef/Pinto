@@ -80,7 +80,7 @@ sub select_registration {
   my ($self, $where, $attrs) = @_;
 
   $attrs ||= {};
-  $attrs->{key} = 'stack_name_unique';
+  $attrs->{key} = 'stack_package_name_unique';
 
   return $self->schema->resultset('Registration')->find($where, $attrs);
 }

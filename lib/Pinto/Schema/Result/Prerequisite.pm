@@ -38,12 +38,12 @@ __PACKAGE__->table("prerequisite");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 name
+=head2 package_name
 
   data_type: 'text'
   is_nullable: 0
 
-=head2 version
+=head2 package_version
 
   data_type: 'text'
   is_nullable: 0
@@ -55,9 +55,9 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "name",
+  "package_name",
   { data_type => "text", is_nullable => 0 },
-  "version",
+  "package_version",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -75,19 +75,22 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<distribution_name_unique>
+=head2 C<distribution_package_name_unique>
 
 =over 4
 
 =item * L</distribution>
 
-=item * L</name>
+=item * L</package_name>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("distribution_name_unique", ["distribution", "name"]);
+__PACKAGE__->add_unique_constraint(
+  "distribution_package_name_unique",
+  ["distribution", "package_name"],
+);
 
 =head1 RELATIONS
 
@@ -120,8 +123,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ykk/oZxD+piWRcQQ0uKdNg
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 14:24:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0deC0FNUyI51MUzBgm7Q9Q
 
 #------------------------------------------------------------------------------
 
@@ -132,12 +135,26 @@ use Pinto::PackageSpec;
 # VERSION
 
 #------------------------------------------------------------------------------
+# NOTE: We often convert a Prerequsite to/from a PackageSpec object. They don't
+# use quite the same names for their attributes, so we shuffle them around here.
+
+sub FOREIGNBUILDARGS {
+    my ($class, $args) = @_;
+
+    $args ||= {};
+    $args->{package_name}      = delete $args->{name};
+    $args->{package_version}   = delete $args->{version};
+
+    return $args;
+}
+
+#------------------------------------------------------------------------------
 
 sub as_spec {
     my ($self) = @_;
 
-    return Pinto::PackageSpec->new( name    => $self->name,
-                                    version => $self->version );
+    return Pinto::PackageSpec->new( name    => $self->package_name,
+                                    version => $self->package_version );
 }
 
 #------------------------------------------------------------------------------

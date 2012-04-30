@@ -59,7 +59,7 @@ sub execute {
 
     $self->repos->get_stack( name => $where->{'stack.name'} );
 
-    my $attrs = { order_by => [ qw(me.name me.version me.path) ],
+    my $attrs = { order_by => [ qw(me.package_name me.package_version me.distribution_path) ],
                   prefetch => [ 'stack', {'package' => 'distribution'} ] };
 
     my $rs = $self->repos->db->select_registrations($where, $attrs);

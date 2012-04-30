@@ -170,7 +170,7 @@ sub registration_ok {
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
     my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
 
-    my $where = { stack => $stack->id, name => $pkg_name };
+    my $where = { stack => $stack->id, package_name => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
     my $reg = $self->pinto->repos->db->select_registration($where, $attrs);
 
@@ -178,9 +178,9 @@ sub registration_ok {
         if not $reg;
 
     # Test registration object itself...
-    $self->tb->is_eq($reg->name, $pkg_name,   'Registration has correct package name');
-    $self->tb->is_eq($reg->version, $pkg_ver, 'Registration has correct package version');
-    $self->tb->is_eq($reg->path, $dist_path,  'Registration has correct dist path');
+    $self->tb->is_eq($reg->package_name,      $pkg_name,  'Registration has correct package name');
+    $self->tb->is_eq($reg->package_version,   $pkg_ver,   'Registration has correct package version');
+    $self->tb->is_eq($reg->distribution_path, $dist_path, 'Registration has correct dist path');
 
     # Test package object...
     my $pkg = $reg->package;
@@ -215,7 +215,7 @@ sub registration_not_ok {
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
     my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
 
-    my $where = {stack => $stack->id, name => $pkg_name, path => $dist_path};
+    my $where = {stack => $stack->id, package_name => $pkg_name, distribution_path => $dist_path};
     my $reg = $self->pinto->repos->db->select_registration($where);
 
     return $self->tb->ok(1, "Registration $reg_spec does not exist")

@@ -45,9 +45,9 @@ sub total_distributions {
 sub stack_distributions {
     my ($self) = @_;
 
-    my $where = { 'stack.name' => $self->stack() };
-    my $attrs = { select   => 'distribution.path',
-                  join     => [ 'stack', { 'package' => 'distribution' } ],
+    my $where = { 'stack.name' => $self->stack };
+    my $attrs = { select   => 'distribution_path',
+                  join     => 'stack',
                   distinct => 1 };
 
     return $self->db->select_registrations( $where, $attrs )->count;
@@ -58,7 +58,7 @@ sub stack_distributions {
 sub total_packages {
     my ($self) = @_;
 
-    return $self->db->select_packages->count();
+    return $self->db->select_packages->count;
 }
 
 #------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ sub total_packages {
 sub stack_packages {
     my ($self) = @_;
 
-    my $where = { 'stack.name' => $self->stack() };
+    my $where = { 'stack.name' => $self->stack };
     my $attrs = { join => 'stack' };
 
     return $self->db->select_registrations( $where, $attrs )->count;

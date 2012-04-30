@@ -49,17 +49,17 @@ __PACKAGE__->table("registration");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 name
+=head2 package_name
 
   data_type: 'text'
   is_nullable: 0
 
-=head2 version
+=head2 package_version
 
   data_type: 'text'
   is_nullable: 0
 
-=head2 path
+=head2 distribution_path
 
   data_type: 'text'
   is_nullable: 0
@@ -75,11 +75,11 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
   { data_type => "integer", is_nullable => 0 },
-  "name",
+  "package_name",
   { data_type => "text", is_nullable => 0 },
-  "version",
+  "package_version",
   { data_type => "text", is_nullable => 0 },
-  "path",
+  "distribution_path",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -97,19 +97,19 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<stack_name_unique>
+=head2 C<stack_package_name_unique>
 
 =over 4
 
 =item * L</stack>
 
-=item * L</name>
+=item * L</package_name>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("stack_name_unique", ["stack", "name"]);
+__PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "package_name"]);
 
 =head1 RELATIONS
 
@@ -157,8 +157,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 13:28:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QAkVVhTLSBxe92GN6johlg
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 14:24:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2Pi0bTVj0d7Ihgv5XRAyPQ
 
 #------------------------------------------------------------------------------
 
@@ -190,9 +190,9 @@ sub insert {
     my ($self, @args) = @_;
 
     # Denormalize a bit..
-    $self->name($self->package->name);
-    $self->version($self->package->version->stringify);
-    $self->path($self->package->distribution->path);
+    $self->package_name($self->package->name);
+    $self->package_version($self->package->version->stringify);
+    $self->distribution_path($self->package->distribution->path);
 
     $self->stack->touch;
 
@@ -211,9 +211,9 @@ sub update {
     # set these yourself.  There is probably a better way to do this.
 
     my $changes = {};
-    $changes->{name}    = $self->package->name;
-    $changes->{version} = $self->package->version;
-    $changes->{path}    = $self->package->distribution->path;
+    $changes->{package_name}      = $self->package->name;
+    $changes->{package_version}   = $self->package->version;
+    $changes->{distribution_path} = $self->package->distribution->path;
 
     $self->stack->touch;
 

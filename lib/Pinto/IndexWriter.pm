@@ -106,7 +106,7 @@ sub _get_index_records {
     # as using an iterator to read each record lazily.
 
     my $where  = { 'stack.name' => $stack };
-    my $select = [ qw(name version path) ];
+    my $select = [ qw(package_name package_version distribution_path) ];
     my $attrs  = { select => $select, join => 'stack' };
 
     my $records = $self->db->select_registrations( $where, $attrs );

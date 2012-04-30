@@ -175,10 +175,10 @@ sub FOREIGNBUILDARGS {
 sub registration {
     my ($self, %args) = @_;
 
-    my $pkg_name = $args{package};
-    my $attrs = {key => 'stack_name_unique', prefetch => 'package'};
+    my $pkg_name = ref $args{package} ? $args{package}->name : $args{package};
+    my $attrs = {key => 'stack_package_name_unique', prefetch => 'package'};
 
-    return $self->find_related('registrations', {name => $pkg_name}, $attrs);
+    return $self->find_related('registrations', {package_name => $pkg_name}, $attrs);
 }
 
 #------------------------------------------------------------------------------

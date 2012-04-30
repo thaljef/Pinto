@@ -176,7 +176,7 @@ sub get_package {
     if ($stk_name) {
         my $stack = $self->get_stack(name => $stk_name);
         my $attrs = { prefetch => 'package' };
-        my $where = { name => $pkg_name, stack => $stack->id };
+        my $where = { package_name => $pkg_name, stack => $stack->id };
         my $registration = $self->db->select_registration($where, $attrs);
         return $registration ? $registration->package : ();
     }
@@ -404,7 +404,7 @@ sub _merge_registration {
 
     my $from_pkg    = $from_registration->package;
     my $attrs       = {prefetch => 'package'};
-    my $where       = {name  => $from_pkg->name, stack => $to_stk->id};
+    my $where       = {package_name  => $from_pkg->name, stack => $to_stk->id};
     my $to_registration = $self->db->select_registration($where, $attrs);
 
     # CASE 1:  The package does not exist in the target stack,
