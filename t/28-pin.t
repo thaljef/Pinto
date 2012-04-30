@@ -50,7 +50,7 @@ $t->run_throws_ok('Pin', {targets => 'Foo'},
                  qr{Unable to pin distribution});
 
 # Because it's sibling Bar-1 is not on the stack...
-$t->log_like(qr{ME/FooAndBar-1/Bar-1 is not on stack default});
+$t->log_like(qr{ME/FooAndBar-1/Bar-1 is not registered on stack default});
 
 # So if I pull all of FooAndBar back onto the stack...
 $t->run_ok('Pull', {targets => 'ME/FooAndBar-1.tar.gz'});

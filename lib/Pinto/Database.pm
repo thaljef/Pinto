@@ -46,7 +46,7 @@ sub _build_schema {
     try   { $schema = Pinto::Schema->connect($dsn) }
     catch { throw "Database connection error: $_" };
 
-    # Install our logger into the schema, so all Result objects can access it
+    # Install our logger into the schema
     $schema->logger($self->logger);
 
     return $schema;
@@ -119,143 +119,6 @@ sub delete_distribution {
 
 #-------------------------------------------------------------------------------
 
-sub register {
-    my ($self, $dist, $stack) = @_;
-
-    my $errors = 0;
-    my $did_register = 0;
-
-    for my $pkg ($dist->packages) {
-
-      if ($pkg->registries_rs->find( {stack => $stack->id} ) ) {
-        $self->debug("Package $pkg is already on stack $stack");
-        next;
-      }
-
-      my $attrs     = { prefetch => 'package' };
-      my $where     = { name => $pkg->name, stack => $stack->id };
-      my $incumbent = $self->select_registry($where, $attrs);
-
-      if (not $incumbent) {
-        $self->debug("Registering $pkg on stack $stack");
-        $self->create_registry( {package => $pkg, stack => $stack->id} );
-        $did_register++;
-        next;
-      }
-
-      my $incumbent_pkg = $incumbent->package;
-
-      if ( $incumbent_pkg == $pkg ) {
-        $self->warning("Package $pkg is already on stack $stack");
-        next;
-      }
-
-      if ( $incumbent_pkg < $pkg and $incumbent->is_pinned ) {
-        my $pkg_name = $pkg->name;
-        $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
-        $errors++;
-        next;
-      }
-
-
-      my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
-                                                         : ('notice',  'Upgrading');
-
-      $incumbent->delete;
-      $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
-      $self->create_registry( {package => $pkg, stack => $stack} );
-      $did_register++;
-    }
-
-    throw "Unable to register distribution $dist on stack $stack"
-      if $errors;
-
-    $stack->touch if $did_register; # Update mtime
-
-    return $did_register;
-}
-
-#-------------------------------------------------------------------------------
-
-sub pin {
-    my ($self, $dist, $stack) = @_;
-
-    my $where  = {stack => $stack->id};
-    my $errors  = 0;
-    my $did_pin = 0;
-
-    for my $pkg ($dist->packages) {
-        my $registry = $pkg->search_related('registries', $where)->single;
-
-        if (not $registry) {
-            $self->error("Package $pkg is not on stack $stack");
-            $errors++;
-            next;
-        }
-
-
-        if ($registry->is_pinned) {
-            $self->warning("Package $pkg is already pinned on stack $stack");
-            next;
-        }
-
-        $registry->update( {is_pinned => 1} );
-        $did_pin++;
-    }
-
-    throw "Unable to pin distribution $dist to stack $stack"
-      if $errors;
-
-    $stack->touch if $did_pin; # Update mtime
-
-    return $did_pin;
-
-}
-
-
-#-------------------------------------------------------------------------------
-
-sub unpin {
-    my ($self, $dist, $stack) = @_;
-
-    my $where = {stack => $stack->id};
-    my $did_unpin = 0;
-
-    for my $pkg ($dist->packages) {
-        my $registry = $pkg->search_related('registries', $where)->single;
-
-        if (not $registry) {
-            $self->warning("Package $pkg is not on stack $stack");
-            next;
-        }
-
-        if (not $registry->is_pinned) {
-            $self->warning("Package $pkg is not pinned on stack $stack");
-            next;
-        }
-
-        $registry->update( {is_pinned => 0} );
-        $did_unpin++;
-    }
-
-    $stack->touch if $did_unpin; # Update mtime
-
-    return $did_unpin;
-}
-
-#-------------------------------------------------------------------------------
-
-sub create_registry {
-    my ($self, $attrs) = @_;
-
-    my $registry = $self->schema->resultset('Registry')->create( $attrs );
-
-    return $registry;
-
-}
-
-#-------------------------------------------------------------------------------
-
 sub select_stacks {
     my ($self, $where, $attrs) = @_;
 
@@ -311,7 +174,7 @@ sub deploy {
 
     $self->mkpath( $self->config->db_dir() );
     $self->debug( 'Creating database at ' . $self->config->db_file() );
-    $self->schema->deploy();
+    $self->schema->deploy;
 
     return $self;
 }

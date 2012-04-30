@@ -149,8 +149,8 @@ sub run_ok {
 sub run_throws_ok {
     my ($self, $action_name, $args, $error_regex, $test_name) = @_;
 
-    my $result;
-    my $ok = throws_ok { $result = $self->pinto->run($action_name, %{$args}) }
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    my $ok = throws_ok { $self->pinto->run($action_name, %{$args}) }
         $error_regex, $test_name;
 
     $self->diag_log_contents if not $ok;

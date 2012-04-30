@@ -170,6 +170,17 @@ sub new {
 
 #------------------------------------------------------------------------------
 
+sub registry {
+    my ($self, %args) = @_;
+
+    my $pkg_name = $args{package};
+    my $attrs = {key => 'stack_name_unique'};
+
+    return $self->find_related('registries', {name => $pkg_name}, $attrs);
+}
+
+#------------------------------------------------------------------------------
+
 sub copy {
     my ($self, $changes) = @_;
 

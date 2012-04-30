@@ -61,13 +61,10 @@ sub _execute {
     my $dist  = $self->repos->add( archive   => $archive,
                                    author    => $self->author );
 
-    $self->repos->register( distribution  => $dist,
-                            stack         => $stack );
+    $dist->register( stack => $stack );
+    $dist->pin( stack => $stack ) if $self->pin;
 
-    $self->repos->pin( distribution   => $dist,
-                       stack          => $stack ) if $self->pin;
-
-    $self->pull_prerequisites( $dist ) unless $self->norecurse;
+    $self->pull_prerequisites( $dist, $stack ) unless $self->norecurse;
 
     return;
 }

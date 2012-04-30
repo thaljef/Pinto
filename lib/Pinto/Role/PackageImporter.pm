@@ -26,13 +26,13 @@ requires qw( repos );
 #------------------------------------------------------------------------------
 
 sub find_or_pull {
-    my ($self, $target) = @_;
+    my ($self, $target, $stack) = @_;
 
     if ( $target->isa('Pinto::PackageSpec') ){
-        return $self->_pull_by_package_spec($target);
+        return $self->_pull_by_package_spec($target, $stack);
     }
     elsif ($target->isa('Pinto::DistributionSpec') ){
-        return $self->_pull_by_distribution_spec($target);
+        return $self->_pull_by_distribution_spec($target, $stack);
     }
     else {
         my $type = ref $target;
@@ -44,7 +44,7 @@ sub find_or_pull {
 #------------------------------------------------------------------------------
 
 sub _pull_by_package_spec {
-    my ($self, $pspec) = @_;
+    my ($self, $pspec, $stack) = @_;
 
     $self->info("Looking for package $pspec");
 
@@ -54,8 +54,7 @@ sub _pull_by_package_spec {
     if ($latest && $latest->version >= $pkg_ver) {
         my $dist = $latest->distribution;
         $self->debug("Already have package $pspec or newer as $latest");
-        $self->repos->register(distribution => $dist, stack => $self->stack)
-          unless $dist->package(name => $pkg_name)->registry(stack => $self->stack);
+        $dist->register(stack => $stack);
         return ($dist, 0);
     }
 
@@ -76,8 +75,7 @@ sub _pull_by_package_spec {
     $self->notice("Pulling distribution $dist_url");
     my $dist = $self->repos->pull(url => $dist_url);
 
-    $self->repos->register( distribution  => $dist,
-                            stack         => $self->stack );
+    $dist->register( stack => $stack );
 
     return ($dist, 1);
 }
@@ -85,7 +83,7 @@ sub _pull_by_package_spec {
 #------------------------------------------------------------------------------
 
 sub _pull_by_distribution_spec {
-    my ($self, $dspec) = @_;
+    my ($self, $dspec, $stack) = @_;
 
     $self->info("Looking for distribution $dspec");
 
@@ -94,7 +92,7 @@ sub _pull_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
-        $self->repos->register(distribution => $got_dist, stack => $self->stack);
+        $got_dist->register(stack => $stack);
         return ($got_dist, 0);
     }
 
@@ -111,8 +109,7 @@ sub _pull_by_distribution_spec {
     $self->notice("Pulling distribution $dist_url");
     my $dist = $self->repos->pull(url => $dist_url);
 
-    $self->repos->register( distribution  => $dist,
-                            stack         => $self->stack );
+    $dist->register( stack => $stack );
 
     return ($dist, 1);
 }
@@ -120,7 +117,7 @@ sub _pull_by_distribution_spec {
 #------------------------------------------------------------------------------
 
 sub pull_prerequisites {
-    my ($self, $dist) = @_;
+    my ($self, $dist, $stack) = @_;
 
     my @prereq_queue = $dist->prerequisite_specs;
     my %visited = ($dist->path => 1);
@@ -130,7 +127,7 @@ sub pull_prerequisites {
   PREREQ:
     while (my $prereq = shift @prereq_queue) {
 
-        my ($required_dist, $did_pull) = $self->find_or_pull( $prereq );
+        my ($required_dist, $did_pull) = $self->find_or_pull($prereq, $stack);
         next PREREQ if not ($required_dist and $did_pull);
         push @pulled, $required_dist if $did_pull;
 

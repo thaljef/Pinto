@@ -25,7 +25,9 @@ with qw( Pinto::Role::Interface::Action::Pin );
 sub execute {
     my ($self) = @_;
 
-    $self->_execute($_) for $self->targets;
+    my $stack = $self->repos->get_stack(name => $self->stack);
+
+    $self->_execute($_, $stack) for $self->targets;
 
     return $self->result->changed;
 }
@@ -33,16 +35,14 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $target) = @_;
+    my ($self, $target, $stack) = @_;
 
     my $dist;
-    my $stk_name = $self->stack;
-
     if ($target->isa('Pinto::PackageSpec')) {
 
         my $pkg_name = $target->name;
-        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stk_name)
-            or throw "Package $pkg_name is not on stack $stk_name";
+        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stack)
+            or throw "Package $pkg_name is not on stack $stack";
 
         $dist = $pkg->distribution;
     }
@@ -58,8 +58,8 @@ sub _execute {
     }
 
 
-    $self->notice("Pinning $dist on stack $stk_name");
-    $self->repos->pin(distribution => $dist, stack => $stk_name);
+    $self->notice("Pinning $dist on stack $stack");
+    $dist->pin(stack => $stack);
 
     return;
 }

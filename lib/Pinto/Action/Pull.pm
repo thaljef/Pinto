@@ -24,7 +24,9 @@ with qw( Pinto::Role::Interface::Action::Pull
 sub execute {
     my ($self) = @_;
 
-    $self->_execute($_) for $self->targets;
+    my $stack = $self->repos->get_stack(name => $self->stack);
+
+    $self->_execute($_, $stack) for $self->targets;
 
     return $self->result;
 }
@@ -32,13 +34,13 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $target) = @_;
+    my ($self, $target, $stack) = @_;
 
-    my ($dist, $did_pull) = $self->find_or_pull( $target );
+    my ($dist, $did_pull) = $self->find_or_pull( $target, $stack );
     return if not $dist;
 
     unless ( $self->norecurse ) {
-        my @prereq_dists = $self->pull_prerequisites( $dist );
+        my @prereq_dists = $self->pull_prerequisites( $dist, $stack );
         $did_pull += @prereq_dists;
     }
 
@@ -49,7 +51,7 @@ sub _execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 

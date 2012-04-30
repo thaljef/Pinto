@@ -184,6 +184,17 @@ sub new {
 
 #------------------------------------------------------------------------------
 
+sub register {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+    $self->create_related('registries', {stack => $stack->id});
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub registry {
     my ($self, %args) = @_;
 

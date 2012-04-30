@@ -161,6 +161,7 @@ use CPAN::DistnameInfo;
 use String::Format;
 
 use Pinto::Util;
+use Pinto::Exception qw(throw);
 use Pinto::DistributionSpec;
 
 use overload ( '""' => 'to_string' );
@@ -178,6 +179,130 @@ sub new {
         if not defined $attrs->{source};
 
     return $class->next::method($attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub register {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+    my $did_register = 0;
+    my $errors       = 0;
+
+    for my $pkg ($self->packages) {
+
+      if ($pkg->registries_rs->find( {stack => $stack->id} ) ) {
+          $self->debug("Package $pkg is already on stack $stack");
+          next;
+      }
+
+      my $incumbent = $stack->registry(package => $pkg->name);
+
+      if (not $incumbent) {
+          $self->debug("Registering $pkg on stack $stack");
+          $pkg->register(stack => $stack);
+          $did_register++;
+          next;
+      }
+
+      my $incumbent_pkg = $incumbent->package;
+
+      if ( $incumbent_pkg == $pkg ) {
+        $self->warning("Package $pkg is already on stack $stack");
+        next;
+      }
+
+      if ( $incumbent_pkg < $pkg and $incumbent->is_pinned ) {
+        my $pkg_name = $pkg->name;
+        $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
+        $errors++;
+        next;
+      }
+
+
+      my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
+                                                         : ('notice',  'Upgrading');
+
+      $incumbent->delete;
+      $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
+      $pkg->register(stack => $stack);
+      $did_register++;
+    }
+
+    throw "Unable to register distribution $self on stack $stack"
+      if $errors;
+
+    $stack->touch if $did_register; # Update mtime
+
+    return $did_register;
+}
+
+#------------------------------------------------------------------------------
+
+sub pin {
+    my ($self, %args) = @_;
+
+    my $stack   = $args{stack};
+    my $errors  = 0;
+    my $did_pin = 0;
+
+    for my $pkg ($self->packages) {
+        my $registry = $pkg->registry(stack => $stack);
+
+        if (not $registry) {
+            $self->error("Package $pkg is not registered on stack $stack");
+            $errors++;
+            next;
+        }
+
+
+        if ($registry->is_pinned) {
+            $self->warning("Package $pkg is already pinned on stack $stack");
+            next;
+        }
+
+        $registry->pin;
+        $did_pin++;
+    }
+
+    throw "Unable to pin distribution $self to stack $stack"
+      if $errors;
+
+    $stack->touch if $did_pin; # Update mtime
+
+    return $did_pin;
+
+}
+
+#------------------------------------------------------------------------------
+
+sub unpin {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+    my $did_unpin = 0;
+
+    for my $pkg ($dist->packages) {
+        my $registry = $pkg->registry(stack => $stack);
+
+        if (not $registry) {
+            $self->warning("Package $pkg is not registered on stack $stack");
+            next;
+        }
+
+        if (not $registry->is_pinned) {
+            $self->warning("Package $pkg is not pinned on stack $stack");
+            next;
+        }
+
+        $registry->unpin;
+        $did_unpin++;
+    }
+
+    $stack->touch if $did_unpin; # Update mtime
+
+    return $did_unpin;
 }
 
 #------------------------------------------------------------------------------

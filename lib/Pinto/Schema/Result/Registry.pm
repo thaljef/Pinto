@@ -178,12 +178,22 @@ use overload ( '""'     => 'to_string',
 sub new {
     my ($class, $attrs) = @_;
 
-    $attrs->{name}      ||= $attrs->{package}->name;
-    $attrs->{version}   ||= $attrs->{package}->version;
-    $attrs->{path}      ||= $attrs->{package}->distribution->path;
     $attrs->{is_pinned} ||= 0;
 
-    return $class->SUPER::new($attrs);
+    return $class->next::method($attrs);
+}
+
+#-------------------------------------------------------------------------------
+
+sub insert {
+    my ($self, @args) = @_;
+
+    # Denormalize a bit..
+    $self->name($self->package->name);
+    $self->version($self->package->version);
+    $self->path($self->package->distribution->path);
+
+    return $self->next::method(@args);
 }
 
 #-------------------------------------------------------------------------------
@@ -205,6 +215,20 @@ sub update {
     return $self->next::method($changes);
 }
 
+
+#-------------------------------------------------------------------------------
+
+sub pin {
+    my ($self) = @_;
+    return $self->update({is_pinned => 1});
+}
+
+#-------------------------------------------------------------------------------
+
+sub unpin {
+    my ($self) = @_;
+    return $self->update({is_pinned => 0});
+}
 
 #-------------------------------------------------------------------------------
 
