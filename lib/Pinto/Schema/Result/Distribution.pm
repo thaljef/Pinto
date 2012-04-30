@@ -307,27 +307,26 @@ sub unpin {
 
 #------------------------------------------------------------------------------
 
-sub name {
-    my ($self) = @_;
-
-    return $self->_distname_info->dist();
-}
-
-#------------------------------------------------------------------------------
-
-sub vname {
-    my ($self) = @_;
-
-    return $self->_distname_info->distvname();
-}
+has distname_info => (
+    isa      => 'CPAN::DistnameInfo',
+    init_arg => undef,
+    handles  => { name     => 'dist',
+                  vname    => 'distvname',
+                  version  => 'version',
+                  maturity => 'maturity' },
+    default  => sub { CPAN::DistnameInfo->new( $_[0]->path ) },
+    lazy     => 1,
+);
 
 #------------------------------------------------------------------------------
 
-sub version {
-    my ($self) = @_;
-
-    return $self->_distname_info->version();
-}
+has is_devel => (
+    is       => 'ro',
+    isa      => 'Bool',
+    init_arg => undef,
+    default  => sub {$_[0]->maturity() eq 'developer'},
+    lazy     => 1,
+);
 
 #------------------------------------------------------------------------------
 
@@ -354,20 +353,12 @@ sub author {
 sub url {
     my ($self, $base) = @_;
 
-    # TODO: can we come up with a sensible URL for local dists?
-    return 'UNKNOWN' if $self->is_local();
+    # TODO: Is there a sensible URL for local dists?
+    return 'UNKNOWN' if $self->is_local;
 
-    $base ||= $self->source();
+    $base ||= $self->source;
 
-    return URI->new( "$base/authors/id/" . $self->path() )->canonical();
-}
-
-#------------------------------------------------------------------------------
-
-sub is_devel {
-    my ($self) = @_;
-
-    return $self->_distname_info->maturity() eq 'developer';
+    return URI->new( "$base/authors/id/" . $self->path )->canonical;
 }
 
 #------------------------------------------------------------------------------
@@ -375,7 +366,7 @@ sub is_devel {
 sub is_local {
     my ($self) = @_;
 
-    return $self->source() eq 'LOCAL';
+    return $self->source eq 'LOCAL';
 }
 
 #------------------------------------------------------------------------------
@@ -383,7 +374,9 @@ sub is_local {
 sub package {
     my ($self, %args) = @_;
 
-    my $where = {name => $args{name}};
+    my $pkg_name = $args{name};
+
+    my $where = {name => $name};
     my $pkg = $self->find_related('packages', $where) or return;
 
     if (my $stk_name = $args{stack}){
@@ -430,7 +423,7 @@ sub as_spec {
 sub to_string {
     my ($self) = @_;
 
-    return $self->path();
+    return $self->path;
 }
 
 #------------------------------------------------------------------------------
@@ -462,15 +455,6 @@ sub default_format {
     my ($self) = @_;
 
     return '%p',
-}
-
-#------------------------------------------------------------------------------
-
-sub _distname_info {
-    my ($self) = @_;
-
-    return $self->{__distname_info__} ||= CPAN::DistnameInfo->new( $self->path() );
-
 }
 
 #------------------------------------------------------------------------------
