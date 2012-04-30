@@ -40,7 +40,7 @@ $t->registration_ok( 'ME/BarAndBaz-2/Bar-2/default/-' );
 $t->registration_ok( 'ME/BarAndBaz-2/Baz-2/default/-' );
 
 # The older Bar package should now be gone...
-$t->package_not_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
+$t->registration_not_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
 
 # But Foo should still be there...
 $t->registration_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
@@ -64,7 +64,7 @@ $t->registration_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
 $t->registration_ok( 'ME/BarAndBaz-2/Baz-2/default/-' );
 
 # But Bar-2 should now be gone
-$t->package_not_ok( 'ME/BarAndBaz-2/Bar-2/default/-' );
+$t->registration_not_ok( 'ME/BarAndBaz-2/Bar-2/default/-' );
 
 # Whew!
 

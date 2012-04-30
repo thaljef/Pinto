@@ -32,8 +32,8 @@ my $t = Pinto::Tester->new;
   $t->registration_ok( 'ME/FooAndBar-1/Bar-1/dev/-' );
 
   # Should not be on the default stack...
-  $t->package_not_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
-  $t->package_not_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
+  $t->registration_not_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
+  $t->registration_not_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
 
   # Check that mtime was updated...
   $stack->discard_changes; # Causes it to reload from DB
