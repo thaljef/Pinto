@@ -376,7 +376,7 @@ sub package {
 
     my $pkg_name = $args{name};
 
-    my $where = {name => $name};
+    my $where = {name => $pkg_name};
     my $pkg = $self->find_related('packages', $where) or return;
 
     if (my $stk_name = $args{stack}){
