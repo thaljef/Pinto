@@ -23,8 +23,8 @@ with qw( Pinto::Role::Interface::Action::Stack::Create );
 sub execute {
     my ($self) = @_;
 
-    $self->repos->create_stack( name        => $self->stack,
-                                description => $self->description );
+    my $stack = $self->repos->create_stack(name => $self->stack);
+    $stack->set_property('pinto:description' => $self->description) if $self->description;
 
     return $self->result->changed;
 }

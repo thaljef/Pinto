@@ -313,19 +313,21 @@ sub pull {
 
 #-------------------------------------------------------------------------------
 
-=method create_stack(name => $stk_name, description => $why, prop => $value ... )
+=method create_stack(name => $stk_name, properties => { $key => $value, ... } )
 
 =cut
 
 sub create_stack {
     my ($self, %args) = @_;
 
-    my $name = $args{name};
+    my $name  = $args{name};
+    my $props = $args{properties};
 
     throw "Stack $name already exists"
         if $self->get_stack(name => $name);
 
-    my $stack = $self->db->create_stack( \%args );
+    my $stack = $self->db->create_stack( {name => $name} );
+    $stack->set_properties($props) if $props;
 
     return $stack;
 

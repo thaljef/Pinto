@@ -17,35 +17,41 @@ my $t = Pinto::Tester->new;
 {
   # Create a stack...
   my $stack = $t->pinto->repos->db->create_stack({name => 'test'});
-  is_deeply $stack->get_properties, {}, 'New stack has no props';
 
-  # Set a property
+  # Set a property...
   $stack->set_property(A => 1);
-  is $stack->get_property('A'), 1, 'set/get one property';
+  is $stack->get_property('A'), 1,
+    'set/get one property';
 
+  # Set several properties...
   $stack->set_properties({B => 2, C => 3});
-  is_deeply $stack->get_properties, {A => 1, B => 2, C => 3}, 'set/get many props';
+  is_deeply $stack->get_properties, { A => 1, B => 2, C => 3 },
+    'get/set many props';
 
+  # Copy stack...
+  my $new_stack = $stack->copy_deeply({name => 'qa'});
+  is_deeply $new_stack->get_properties, $stack->get_properties,
+    'Copied stack has same properties';
 
-  # Copy the stack, and add/modify props...
-  my $new_props = {A => 10, B => 20, D => 4};
-  my $new_stack = $stack->copy({name => 'qa', properties => $new_props});
+  # Delete a property...
+  $new_stack->delete_property('A');
+  ok ! exists $new_stack->get_properties->{'A'},
+    'Deleted a prop';
 
-  is_deeply $new_stack->get_properties, {A => 10, B => 20, C => 3, D => 4},
-    'Copied stack and modified its properites';
+  # Prop changes update mtime and muser....
+  my $mtime = $new_stack->last_modified_on;
 
-  # Delete a prop from new stack...
-  $new_stack->delete_property(qw(A B));
-  is_deeply $new_stack->get_properties, {C => 3, D => 4}, 'Deleted two props';
+  {
+    local $ENV{USER} = 'NOBODY';
+    sleep 2; # ensure time change
+    $new_stack->set_property('D' => 4);
+  }
 
-  # Delete all props from new stack...
-  $new_stack->delete_properties;
-  is_deeply $new_stack->get_properties, {}, 'Deleted all props';
+  cmp_ok $new_stack->last_modified_on, '>', $mtime,
+    'mtime has increased';
 
-  # Mare sure old stack is unaffected...
-  is_deeply $stack->get_properties, {A => 1, B => 2, C => 3}, 'set/get many props';
-
-
+  is $new_stack->last_modified_by, 'NOBODY',
+    'muser has changed';
 }
 
 #------------------------------------------------------------------------------

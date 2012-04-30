@@ -20,8 +20,8 @@ my $t = Pinto::Tester->new;
   $t->run_ok('Stack::Create', {stack => $stk_name, description => $stk_desc});
   my $stack = $t->pinto->repos->get_stack(name => $stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
-  is $stack->description, $stk_desc, 'Got correct stack description';
-  my $old_mtime = $stack->mtime;
+  is $stack->get_property('pinto:description'), $stk_desc, 'Got correct stack description';
+  my $old_mtime = $stack->last_modified_on;
 
   sleep 2; # So the mtime changes.
 
@@ -37,7 +37,7 @@ my $t = Pinto::Tester->new;
 
   # Check that mtime was updated...
   $stack->discard_changes; # Causes it to reload from DB
-  cmp_ok $stack->mtime, '>', $old_mtime, 'Updated stack mtime';
+  cmp_ok $stack->last_modified_on, '>', $old_mtime, 'Updated stack mtime';
 }
 
 #------------------------------------------------------------------------------
@@ -47,40 +47,13 @@ my $t = Pinto::Tester->new;
   my $dev_stk_name = 'dev';
   my ($qa_stk_name, $qa_stk_desc) = ('qa', 'the qa stack');
   $t->run_ok('Stack::Copy', {from_stack  => $dev_stk_name,
-                             to_stack    => $qa_stk_name,
-                             description => $qa_stk_desc});
+                             to_stack    => $qa_stk_name,});
 
   my $dev_stack = $t->pinto->repos->get_stack(name => $dev_stk_name);
   my $qa_stack = $t->pinto->repos->get_stack(name => $qa_stk_name);
 
   is $qa_stack->name, $qa_stk_name, 'Got correct stack name';
-  is $qa_stack->description, $qa_stk_desc, 'Got correct stack description';
-  is $qa_stack->mtime, $dev_stack->mtime, 'Copied stack has same mtime as origianl';
-}
-
-#------------------------------------------------------------------------------
-
-{
-  # Copy qa -> prod...
-  my ($qa_stk_name, $prod_stk_name) = qw(qa prod);
-  $t->run_ok('Stack::Copy', {from_stack  => $qa_stk_name,
-                             to_stack    => $prod_stk_name});
-
-  my $prod_stack = $t->pinto->repos->get_stack(name => $prod_stk_name);
-
-  my $prod_stk_desc = "copy of stack $qa_stk_name";
-  is $prod_stack->description, $prod_stk_desc, 'Got default copied stack description';
-}
-
-
-#------------------------------------------------------------------------------
-
-{
-  # Create a stack without description.
-  my $vague_stk_name = 'vague';
-  $t->run_ok('Stack::Create', {stack => $vague_stk_name});
-  my $vague_stack = $t->pinto->repos->get_stack(name => $vague_stk_name);
-  is $vague_stack->description, 'no description was given', 'Got default stack description';
+  is $qa_stack->last_modified_on, $dev_stack->last_modified_on, 'Copied stack has same mtime as original';
 }
 
 #------------------------------------------------------------------------------

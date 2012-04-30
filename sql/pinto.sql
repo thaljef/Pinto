@@ -21,10 +21,10 @@ CREATE TABLE package (
 
 
 CREATE TABLE stack (
-       id          INTEGER PRIMARY KEY NOT NULL,
-       name        TEXT                NOT NULL,
-       description TEXT                NOT NULL,       
-       mtime       INTEGER             NOT NULL
+       id                 INTEGER PRIMARY KEY NOT NULL,
+       name               TEXT                NOT NULL,
+       last_modified_on   INTEGER             NOT NULL,
+       last_modified_by   TEXT                NOT NULL
 );
 
 

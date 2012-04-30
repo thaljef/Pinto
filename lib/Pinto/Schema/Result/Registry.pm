@@ -193,6 +193,8 @@ sub insert {
     $self->version($self->package->version);
     $self->path($self->package->distribution->path);
 
+    $self->stack->touch;
+
     return $self->next::method(@args);
 }
 
@@ -212,9 +214,20 @@ sub update {
     $changes->{version} = $self->package->version;
     $changes->{path}    = $self->package->distribution->path;
 
+    $self->stack->touch;
+
     return $self->next::method($changes);
 }
 
+#-------------------------------------------------------------------------------
+
+sub delete {
+    my ($self, @args) = @_;
+
+    $self->stack->touch;
+
+    return $self->next::method(@args);
+}
 
 #-------------------------------------------------------------------------------
 

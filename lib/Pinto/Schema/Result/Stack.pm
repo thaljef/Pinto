@@ -37,14 +37,14 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
-=head2 description
-
-  data_type: 'text'
-  is_nullable: 0
-
-=head2 mtime
+=head2 last_modified_on
 
   data_type: 'integer'
+  is_nullable: 0
+
+=head2 last_modified_by
+
+  data_type: 'text'
   is_nullable: 0
 
 =cut
@@ -54,10 +54,10 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
-  "description",
-  { data_type => "text", is_nullable => 0 },
-  "mtime",
+  "last_modified_on",
   { data_type => "integer", is_nullable => 0 },
+  "last_modified_by",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -132,8 +132,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:tBjUBGsT6o2hBzLiDlqDhg
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 11:31:39
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:C0Z/gsmnQXQ3FdE8EzTdlA
 
 #-------------------------------------------------------------------------------
 
@@ -157,14 +157,14 @@ __PACKAGE__->many_to_many( packages => 'regsitry', 'package' );
 
 #------------------------------------------------------------------------------
 
-sub new {
-    my ($class, $attrs) = @_;
+sub FOREIGNBUILDARGS {
+  my ($class, $args) = @_;
 
-    # Default mtime/description
-    $attrs->{mtime} ||= time;
-    $attrs->{description} ||= 'no description given';
+  $args ||= {};
+  $args->{last_modified_on} ||= time;
+  $args->{last_modified_by} ||= $ENV{USER};
 
-    return $class->next::method($attrs);
+  return $args;
 }
 
 
@@ -174,54 +174,64 @@ sub registry {
     my ($self, %args) = @_;
 
     my $pkg_name = $args{package};
-    my $attrs = {key => 'stack_name_unique'};
+    my $attrs = {key => 'stack_name_unique', prefetch => 'package'};
 
     return $self->find_related('registries', {name => $pkg_name}, $attrs);
 }
 
 #------------------------------------------------------------------------------
 
-sub copy {
-    my ($self, $changes) = @_;
+sub copy_deeply {
+    my ($self, @args) = @_;
 
-    $changes ||= {};
-    $changes->{description} ||= "copy of stack $self";
-
-    # Extract properties that are stored separately
-    my $old_props = $self->get_properties;
-    my $new_props = delete $changes->{properties} || {};
-    my $merged_props = { %{$old_props}, %{$new_props} };
-
-    my $guard = $self->result_source->schema->txn_scope_guard;
-    my $copy = $self->next::method($changes);
-    $copy->set_properties($merged_props);
-    $guard->commit;
+    my $copy = $self->copy(@args);
+    $self->copy_properties(to => $copy);
+    $self->copy_members(to => $copy);
+    $copy->touch($self->last_modified_on);
 
     return $copy;
 }
 
 #------------------------------------------------------------------------------
 
-sub copy_members {
-    my ($self, $other) = @_;
+sub copy_properties {
+    my ($self, %args) = @_;
 
-    $self->info("Copying stack $self into stack $other");
+    my $to_stack = $args{to};
+    my $props = $self->get_properties;
+    $to_stack->set_properties($props);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub copy_members {
+    my ($self, %args) = @_;
+
+    my $to_stack = $args{to};
+    $self->info("Copying stack $self into stack $to_stack");
 
     for my $registry ( $self->registries ) {
         my $pkg = $registry->package;
-        $self->debug("Copying package $pkg into stack $other");
-        $registry->copy( { stack => $other } );
+        $self->debug("Copying package $pkg into stack $to_stack");
+        $registry->copy( { stack => $to_stack } );
     }
 
     return $self;
 }
 
-
 #------------------------------------------------------------------------------
 
 sub touch {
-    my ($self, $time) = @_;
-    $self->update( {mtime => $time || time} );
+    my ($self, $time, $user) = @_;
+
+    my %changes;
+    $changes{last_modified_on} = $time || time;
+    $changes{last_modified_by} = $user || $ENV{USER};
+
+    $self->update( \%changes );
+
     return $self;
 }
 
@@ -252,7 +262,6 @@ sub set_property {
     return $self->set_properties( {$prop_name => $value} );
 }
 
-
 #-------------------------------------------------------------------------------
 
 sub set_properties {
@@ -264,6 +273,7 @@ sub set_properties {
         $self->update_or_create_related('stack_properties', $values, $attrs);
     }
 
+    $self->touch;
     return $self;
 }
 
@@ -300,10 +310,11 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-          'k' => sub { $self->name()                                          },
-          'e' => sub { $self->description()                                   },
-          'u' => sub { $self->mtime()                                         },
-          'U' => sub { scalar localtime $self->mtime()                        },
+          'k' => sub { $self->name                               },
+          'v' => sub { $self->last_modified_by                   },
+          'u' => sub { $self->last_modified_on                   },
+          'U' => sub { scalar localtime $self->last_modified_on  },
+          'e' => sub { $self->get_property('pinto:description')  },
     );
 
     $format ||= $self->default_format();
