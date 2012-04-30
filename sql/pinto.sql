@@ -32,7 +32,7 @@ CREATE TABLE stack_property (
        id          INTEGER PRIMARY KEY NOT NULL,
        stack       INTEGER             NOT NULL,
        name        TEXT                NOT NULL,
-       value       TEXT                NOT NULL,
+       value       TEXT                DEFAULT '',
        FOREIGN KEY(stack)   REFERENCES stack(id)
 );
 

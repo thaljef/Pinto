@@ -46,7 +46,8 @@ __PACKAGE__->table("stack_property");
 =head2 value
 
   data_type: 'text'
-  is_nullable: 0
+  default_value: (empty string)
+  is_nullable: 1
 
 =cut
 
@@ -58,7 +59,7 @@ __PACKAGE__->add_columns(
   "name",
   { data_type => "text", is_nullable => 0 },
   "value",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "text", default_value => "", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -120,8 +121,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:75knY39E4rzshrwshyyaXg
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 12:42:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Z05ZOuRC81L0D/lHByjugw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
