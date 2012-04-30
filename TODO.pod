@@ -4,30 +4,33 @@
 
 
 
-=item Every Action needs username
+=item Command to list dependencies and dependants
 
 =item Way to verify prereqs on a stack
 
-=item Command to list dependencies and dependants
-
-=item Re-examine column names in schema
-
-=item Use DBIx::Class properly (find vs single)
-
 =item Command to unregister a pkg/dist ??
-
-=item Command to edit stack props
 
 =item Option to enforce strict stacks (no overlapping dists)
 
-=item Tests for stacks
-
 =item Re-examine interface classes
+
+=item Write test cases for Stack operations
+
+=item Create a type for StackPropertyName
+
+=item Prohibit deleting default stack
 
 #--------------------------
 
+=item Re-examine log levels for messages
 
-=item Decide how to handle locking
+=item Divide actions into Actions and Reports
+
+=item Create Request (or Event) superclass for Action and Report
+
+=item Verify checksums during 'verify'
+
+=item Enable shared (for Reports) and exclusive locking (for Actions)
 
 =item Add hooks before/after adding and pulling
 
@@ -45,7 +48,9 @@
 
 =item Warn if an unmerged stack is being deleted
 
-=item Action to remove package from stack ??
+=item Way to view all packages (not just in a stack)
+
+=item Way to pin/unpin all packages in a stack
 
 =item Make the Store transactional
 
@@ -55,16 +60,9 @@
 
 =item Examine the delta between two stacks
 
-=item Use Module::Faker to generate test dists on the fly
-
 =item Rewrite tests with Test::Class
 
-=item Write test cases for Stack operations
-
 =item Extract new Roles into Pinto-Common
-
-=item Re-examine log levels for messages
-
 
 =back
 
