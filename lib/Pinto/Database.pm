@@ -53,7 +53,6 @@ sub _build_schema {
 }
 
 #-------------------------------------------------------------------------------
-# Convenience methods
 
 sub select_distributions {
     my ($self, $where, $attrs) = @_;
@@ -105,16 +104,6 @@ sub create_distribution {
     $self->debug("Inserting distribution $struct->{path} into database");
 
     return $self->schema->resultset('Distribution')->create($struct);
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_distribution {
-    my ($self, $dist) = @_;
-
-    $self->debug("Deleting distribution $dist from database");
-
-    return $dist->delete();
 }
 
 #-------------------------------------------------------------------------------

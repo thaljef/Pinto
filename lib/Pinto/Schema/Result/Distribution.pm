@@ -283,7 +283,7 @@ sub unpin {
     my $stack = $args{stack};
     my $did_unpin = 0;
 
-    for my $pkg ($dist->packages) {
+    for my $pkg ($self->packages) {
         my $registry = $pkg->registry(stack => $stack);
 
         if (not $registry) {

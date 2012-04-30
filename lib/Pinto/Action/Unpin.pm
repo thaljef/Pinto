@@ -25,7 +25,9 @@ with qw( Pinto::Role::Interface::Action::Unpin );
 sub execute {
     my ($self) = @_;
 
-    $self->_execute($_) for $self->targets;
+    my $stack = $self->repos->get_stack(name => $self->stack, croak => 1);
+
+    $self->_execute($_, $stack) for $self->targets;
 
     return $self->result->changed;
 }
@@ -33,16 +35,14 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $target) = @_;
+    my ($self, $target, $stack) = @_;
 
     my $dist;
-    my $stk_name = $self->stack;
-
     if ($target->isa('Pinto::PackageSpec')) {
 
         my $pkg_name = $target->name;
-        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stk_name)
-            or throw "Package $pkg_name is not on stack $stk_name";
+        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stack)
+            or throw "Package $pkg_name is not registered on stack $stack";
 
         $dist = $pkg->distribution;
     }
@@ -58,8 +58,8 @@ sub _execute {
     }
 
 
-    $self->notice("Unpinning $dist from stack $stk_name");
-    $self->repos->unpin(distribution => $dist, stack => $stk_name);
+    $self->notice("Unpinning $dist from stack $stack");
+    $dist->unpin(stack => $stack);
 
     return;
 }

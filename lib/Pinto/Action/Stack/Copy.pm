@@ -23,16 +23,19 @@ with qw( Pinto::Role::Interface::Action::Stack::Copy );
 sub execute {
     my ($self) = @_;
 
-    $self->repos->copy_stack( from        => $self->from_stack,
-                              to          => $self->to_stack,
-                              description => $self->description );
+    my $stack   = $self->repos->get_stack(name => $self->from_stack, croak => 1);
+    my $changes = {name => $self->to_stack, description => $self->description};
+    my $clone   = $stack->copy($changes);
+
+    $stack->copy_members($clone);
+    $clone->touch($stack->mtime);
 
     return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 

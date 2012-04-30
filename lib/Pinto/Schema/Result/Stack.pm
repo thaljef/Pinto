@@ -185,6 +185,7 @@ sub copy {
     my ($self, $changes) = @_;
 
     $changes ||= {};
+    $changes->{description} ||= "copy of stack $self";
 
     # Extract properties that are stored separately
     my $old_props = $self->get_properties;
@@ -198,6 +199,23 @@ sub copy {
 
     return $copy;
 }
+
+#------------------------------------------------------------------------------
+
+sub copy_members {
+    my ($self, $other) = @_;
+
+    $self->info("Copying stack $self into stack $other");
+
+    for my $registry ( $self->registries ) {
+        my $pkg = $registry->package;
+        $self->debug("Copying package $pkg into stack $other");
+        $registry->copy( { stack => $other } );
+    }
+
+    return $self;
+}
+
 
 #------------------------------------------------------------------------------
 

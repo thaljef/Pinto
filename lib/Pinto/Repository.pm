@@ -355,43 +355,6 @@ sub remove_stack {
 
 #-------------------------------------------------------------------------------
 
-=method copy_stack(from => $stack_a, to => $stk_name_b)
-
-=method copy_stack(from => $stack_a, to => $stk_name_b, description => $why)
-
-=cut
-
-sub copy_stack {
-    my ($self, %args) = @_;
-
-    my $from_stk_name = $args{from};
-    my $to_stk_name   = $args{to};
-    my $description   = $args{description} || "copy of stack $from_stk_name";
-
-    throw "Stack $to_stk_name already exists"
-        if $self->get_stack(name => $to_stk_name);
-
-    $self->info("Creating new stack $to_stk_name");
-
-    my $changes = { name        => $to_stk_name,
-                    description => $description };
-
-    my $from_stack = $self->get_stack(name => $from_stk_name, croak => 1);
-    my $to_stack   = $from_stack->copy( $changes );
-
-    $self->info("Copying stack $from_stk_name into stack $to_stk_name");
-
-    for my $registry ( $from_stack->registries ) {
-        my $pkg = $registry->package;
-        $self->debug("Copying package $pkg into stack $to_stk_name");
-        $registry->copy( { stack => $to_stack->id } );
-    }
-
-    return $to_stack;
-}
-
-#-------------------------------------------------------------------------------
-
 =method merge_stack(from => $stk_name_a, to => $stk_name_b)
 
 =method merge_stack(from => $stk_name_a, to => $stk_name_b, dryrun => 1)

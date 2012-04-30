@@ -25,7 +25,7 @@ with qw( Pinto::Role::Interface::Action::Pin );
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repos->get_stack(name => $self->stack, croak => 1);
 
     $self->_execute($_, $stack) for $self->targets;
 
