@@ -1,12 +1,12 @@
 use utf8;
-package Pinto::Schema::Result::Registry;
+package Pinto::Schema::Result::Registration;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Pinto::Schema::Result::Registry
+Pinto::Schema::Result::Registration
 
 =cut
 
@@ -18,11 +18,11 @@ use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
 extends 'DBIx::Class::Core';
 
-=head1 TABLE: C<registry>
+=head1 TABLE: C<registration>
 
 =cut
 
-__PACKAGE__->table("registry");
+__PACKAGE__->table("registration");
 
 =head1 ACCESSORS
 
@@ -157,8 +157,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:M9VxJZVCthBKNJWMJMIrGA
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 13:28:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QAkVVhTLSBxe92GN6johlg
 
 #------------------------------------------------------------------------------
 
@@ -175,12 +175,13 @@ use overload ( '""'     => 'to_string',
 
 #-------------------------------------------------------------------------------
 
-sub new {
-    my ($class, $attrs) = @_;
+sub FOREIGNBUILDARGS {
+    my ($class, $args) = @_;
 
-    $attrs->{is_pinned} ||= 0;
+    $args ||= {};
+    $args->{is_pinned} ||= 0;
 
-    return $class->next::method($attrs);
+    return $args;
 }
 
 #-------------------------------------------------------------------------------
@@ -190,7 +191,7 @@ sub insert {
 
     # Denormalize a bit..
     $self->name($self->package->name);
-    $self->version($self->package->version);
+    $self->version($self->package->version->stringify);
     $self->path($self->package->distribution->path);
 
     $self->stack->touch;
@@ -304,12 +305,9 @@ sub default_format {
 
 #------------------------------------------------------------------------------
 
+__PACKAGE__->meta->make_immutable;
+
+#------------------------------------------------------------------------------
 1;
 
 __END__
-
-
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
-__PACKAGE__->meta->make_immutable;
-1;

@@ -39,7 +39,7 @@ CREATE TABLE stack_property (
 /* TODO: rename name => package_name */
 /* TODO: rename path => distribution_path */
 
-create TABLE registry (
+create TABLE registration (
        id           INTEGER PRIMARY KEY NOT NULL,
        stack        INTEGER             NOT NULL,
        package      INTEGER             NOT NULL,
@@ -69,8 +69,8 @@ CREATE TABLE prerequisite (
 CREATE UNIQUE INDEX a ON distribution(path);
 CREATE UNIQUE INDEX b ON package(name, distribution);
 CREATE UNIQUE INDEX c ON stack(name);
-CREATE UNIQUE INDEX d ON registry(stack, name);
+CREATE UNIQUE INDEX d ON registration(stack, name);
 CREATE UNIQUE INDEX e ON prerequisite(distribution, name);
 CREATE UNIQUE INDEX f ON stack_property(stack, name);
-CREATE        INDEX g ON registry(stack);
+CREATE        INDEX g ON registration(stack);
 CREATE        INDEX h ON package(name);

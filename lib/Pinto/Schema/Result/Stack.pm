@@ -88,17 +88,17 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
-=head2 registries
+=head2 registrations
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::Registry>
+Related object: L<Pinto::Schema::Result::Registration>
 
 =cut
 
 __PACKAGE__->has_many(
-  "registries",
-  "Pinto::Schema::Result::Registry",
+  "registrations",
+  "Pinto::Schema::Result::Registration",
   { "foreign.stack" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
@@ -132,8 +132,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 11:31:39
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:C0Z/gsmnQXQ3FdE8EzTdlA
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 13:28:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MQGkcmLWNWlHaSLsjeps5w
 
 #-------------------------------------------------------------------------------
 
@@ -172,13 +172,13 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-sub registry {
+sub registration {
     my ($self, %args) = @_;
 
     my $pkg_name = $args{package};
     my $attrs = {key => 'stack_name_unique', prefetch => 'package'};
 
-    return $self->find_related('registries', {name => $pkg_name}, $attrs);
+    return $self->find_related('registrations', {name => $pkg_name}, $attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -227,10 +227,10 @@ sub copy_members {
     my $to_stack = $args{to};
     $self->info("Copying stack $self into stack $to_stack");
 
-    for my $registry ( $self->registries ) {
-        my $pkg = $registry->package;
+    for my $registration ( $self->registrations ) {
+        my $pkg = $registration->package;
         $self->debug("Copying package $pkg into stack $to_stack");
-        $registry->copy( { stack => $to_stack } );
+        $registration->copy( { stack => $to_stack } );
     }
 
     return $self;
@@ -344,12 +344,10 @@ sub default_format {
 }
 
 #-------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable;
+
+#-------------------------------------------------------------------------------
 1;
 
 __END__
-
-
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
-__PACKAGE__->meta->make_immutable;
-1;

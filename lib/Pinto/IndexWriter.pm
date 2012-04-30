@@ -1,6 +1,5 @@
 # ABSTRACT: Write records to an 02packages.details.txt file
 
-
 package Pinto::IndexWriter;
 
 use Moose;
@@ -110,7 +109,7 @@ sub _get_index_records {
     my $select = [ qw(name version path) ];
     my $attrs  = { select => $select, join => 'stack' };
 
-    my $records = $self->db->select_registries( $where, $attrs );
+    my $records = $self->db->select_registrations( $where, $attrs );
     my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor->all;
 
     return @records;

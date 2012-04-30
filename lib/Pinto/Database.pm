@@ -76,24 +76,24 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
-sub select_registry {
+sub select_registration {
   my ($self, $where, $attrs) = @_;
 
   $attrs ||= {};
   $attrs->{key} = 'stack_name_unique';
 
-  return $self->schema->resultset('Registry')->find($where, $attrs);
+  return $self->schema->resultset('Registration')->find($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------
 
-sub select_registries {
+sub select_registrations {
     my ($self, $where, $attrs) = @_;
 
     $where ||= {};
     $attrs ||= { pefetch => [ qw( package stack pin ) ] };
 
-    return $self->schema->resultset('Registry')->search($where, $attrs);
+    return $self->schema->resultset('Registration')->search($where, $attrs);
 }
 
 #-------------------------------------------------------------------------------

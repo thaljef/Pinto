@@ -62,10 +62,10 @@ sub execute {
     my $attrs = { order_by => [ qw(me.name me.version me.path) ],
                   prefetch => [ 'stack', {'package' => 'distribution'} ] };
 
-    my $rs = $self->repos->db->select_registries($where, $attrs);
+    my $rs = $self->repos->db->select_registrations($where, $attrs);
 
-    while( my $registry = $rs->next ) {
-        print { $self->out } $registry->to_string($self->format);
+    while( my $registration = $rs->next ) {
+        print { $self->out } $registration->to_string($self->format);
     }
 
     return $self->result;

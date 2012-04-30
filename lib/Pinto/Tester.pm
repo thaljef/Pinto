@@ -16,7 +16,7 @@ use Test::Exception;
 use Pinto;
 use Pinto::Util;
 use Pinto::Creator;
-use Pinto::Tester::Util qw(make_dist_struct make_dist_archive);
+use Pinto::Tester::Util qw(make_dist_struct make_dist_archive parse_reg_spec);
 use Pinto::Types qw(Uri Dir);
 
 #------------------------------------------------------------------------------
@@ -161,10 +161,10 @@ sub run_throws_ok {
 #------------------------------------------------------------------------------
 
 sub package_ok {
-    my ($self, $pkg_spec) = @_;
+    my ($self, $reg_spec) = @_;
 
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
-        = parse_pkg_spec($pkg_spec);
+        = parse_reg_spec($reg_spec);
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
@@ -172,15 +172,15 @@ sub package_ok {
 
     my $where = { stack => $stack->id, name => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
-    my $reg = $self->pinto->repos->db->select_registry($where, $attrs);
+    my $reg = $self->pinto->repos->db->select_registration($where, $attrs);
 
     return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
         if not $reg;
 
-    # Test registry object itself...
-    $self->tb->is_eq($reg->name, $pkg_name,   'Registry has correct package name');
-    $self->tb->is_eq($reg->version, $pkg_ver, 'Registry has correct package version');
-    $self->tb->is_eq($reg->path, $dist_path,  'Registry has correct dist path');
+    # Test registration object itself...
+    $self->tb->is_eq($reg->name, $pkg_name,   'Registration has correct package name');
+    $self->tb->is_eq($reg->version, $pkg_ver, 'Registration has correct package version');
+    $self->tb->is_eq($reg->path, $dist_path,  'Registration has correct dist path');
 
     # Test package object...
     my $pkg = $reg->package;
@@ -193,8 +193,8 @@ sub package_ok {
     $self->path_exists_ok( [$dist->archive] );
 
     # Test pins...
-    $self->tb->ok($reg->is_pinned,  "$reg is pinned") if $is_pinned;
-    $self->tb->ok(!$reg->is_pinned, "$reg is not pinned") if not $is_pinned;
+    $self->tb->ok($reg->is_pinned,  "Registration $reg is pinned") if $is_pinned;
+    $self->tb->ok(!$reg->is_pinned, "Registration $reg is not pinned") if not $is_pinned;
 
     # Test checksums...
     $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
@@ -206,19 +206,19 @@ sub package_ok {
 #------------------------------------------------------------------------------
 
 sub package_not_ok {
-   my ($self, $pkg_spec) = @_;
+   my ($self, $reg_spec) = @_;
 
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
-        = parse_pkg_spec($pkg_spec);
+        = parse_reg_spec($reg_spec);
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
     my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
 
     my $where = {stack => $stack->id, name => $pkg_name, path => $dist_path};
-    my $reg = $self->pinto->repos->db->select_registry($where);
+    my $reg = $self->pinto->repos->db->select_registration($where);
 
-    return $self->tb->ok(1, "$pkg_spec is not registered")
+    return $self->tb->ok(1, "Registration $reg_spec does not exist")
         if not $reg;
 }
 #------------------------------------------------------------------------------
@@ -348,37 +348,6 @@ sub clear_cache {
     $self->pinto->repos->clear_cache;
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub parse_pkg_spec {
-    my ($spec) = @_;
-
-    # Remove all whitespace from spec
-    $spec =~ s{\s+}{}g;
-
-    # Spec looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack/+"
-    my ($author, $dist_archive, $pkg, $stack_name, $is_pinned) = split m{/}x, $spec;
-
-    # Spec must at least have these
-    confess "Could not parse pkg spec: $spec"
-       if not ($author and $dist_archive and $pkg);
-
-    # Append the usual suffix to the archive
-    $dist_archive .= '.tar.gz' unless $dist_archive =~ m{\.tar\.gz$}x;
-
-    # Normalize the is_pinned flag
-    $is_pinned = ($is_pinned eq '+' ? 1 : 0) if defined $is_pinned;
-
-    # Parse package name/version
-    my ($pkg_name, $pkg_version) = split m{-}x, $pkg;
-
-    # Set defaults
-    $stack_name  ||= 'default';
-    $pkg_version ||= 0;
-
-    return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);
 }
 
 #------------------------------------------------------------------------------

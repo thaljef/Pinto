@@ -106,17 +106,17 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 registries
+=head2 registrations
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::Registry>
+Related object: L<Pinto::Schema::Result::Registration>
 
 =cut
 
 __PACKAGE__->has_many(
-  "registries",
-  "Pinto::Schema::Result::Registry",
+  "registrations",
+  "Pinto::Schema::Result::Registration",
   { "foreign.package" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
@@ -135,8 +135,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-29 02:10:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Wj6FplrC8R21kWyz6jaCdw
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 13:28:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WmTnWaYne00RFrQwStuZbw
 
 #------------------------------------------------------------------------------
 
@@ -166,20 +166,18 @@ __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
-__PACKAGE__->many_to_many( stacks => 'registry', 'stack' );
+__PACKAGE__->many_to_many( stacks => 'registration', 'stack' );
 
 
 #------------------------------------------------------------------------------
 
-sub new {
-    my ($class, $attrs) = @_;
+sub FOREIGNBUILDARGS {
+    my ($class, $args) = @_;
 
-    $attrs->{version} = 0
-        if not defined $attrs->{version};
+    $args ||= {};
+    $args->{version} = 0 if not defined $args->{version};
 
-    my $self = $class->next::method($attrs);
-
-    return $self;
+    return $args;
 }
 
 #------------------------------------------------------------------------------
@@ -188,20 +186,20 @@ sub register {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
-    $self->create_related('registries', {stack => $stack->id});
+    $self->create_related('registrations', {stack => $stack->id});
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
-sub registry {
+sub registration {
     my ($self, %args) = @_;
 
     my $where = {name => $args{stack}};
     my $stack = $self->result_source->schema->resultset('Stack')->find($where);
 
-    return $self->find_related('registries', {stack => $stack});
+    return $self->find_related('registrations', {stack => $stack});
 }
 
 #------------------------------------------------------------------------------
@@ -282,11 +280,11 @@ sub compare {
 };
 
 #-------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable;
+
+#-------------------------------------------------------------------------------
 1;
 
 __END__
 
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
-__PACKAGE__->meta->make_immutable;
-1;

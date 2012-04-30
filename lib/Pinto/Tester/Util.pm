@@ -20,7 +20,13 @@ use base 'Exporter';
 
 #-------------------------------------------------------------------------------
 
-our @EXPORT_OK = qw(make_dist_obj make_pkg_obj make_dist_struct make_dist_archive);
+our @EXPORT_OK = qw( make_dist_obj
+                     make_pkg_obj
+                     make_dist_struct
+                     make_dist_archive
+                     parse_pkg_spec
+                     parse_dist_spec
+                     parse_reg_spec );
 
 #-------------------------------------------------------------------------------
 
@@ -94,18 +100,18 @@ sub parse_dist_spec {
 
     my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
 
-    $dist = parse_spec($dist);
+    $dist = parse_pkg_spec($dist);
     $dist->{cpan_author} = $author || 'LOCAL';
 
-    my @provides = map { parse_spec($_) } split /,/, $provides || '';
-    my @requires = map { parse_spec($_) } split /,/, $requires || '';
+    my @provides = map { parse_pkg_spec($_) } split /,/, $provides || '';
+    my @requires = map { parse_pkg_spec($_) } split /,/, $requires || '';
 
     return ($dist, \@provides, \@requires);
 }
 
 #------------------------------------------------------------------------------
 
-sub parse_spec {
+sub parse_pkg_spec {
     my ($spec) = @_;
 
     # Looks like: "Foo" or "Foo-1" or "Foo-Bar-2.3.4_1"
@@ -113,6 +119,37 @@ sub parse_spec {
         or confess "Could not parse spec: $spec";
 
     return {name => $1, version => $2 || 0};
+}
+
+#------------------------------------------------------------------------------
+
+sub parse_reg_spec {
+    my ($spec) = @_;
+
+    # Remove all whitespace from spec
+    $spec =~ s{\s+}{}g;
+
+    # Spec looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack/+"
+    my ($author, $dist_archive, $pkg, $stack_name, $is_pinned) = split m{/}x, $spec;
+
+    # Spec must at least have these
+    confess "Could not parse pkg spec: $spec"
+       if not ($author and $dist_archive and $pkg);
+
+    # Append the usual suffix to the archive
+    $dist_archive .= '.tar.gz' unless $dist_archive =~ m{\.tar\.gz$}x;
+
+    # Normalize the is_pinned flag
+    $is_pinned = ($is_pinned eq '+' ? 1 : 0) if defined $is_pinned;
+
+    # Parse package name/version
+    my ($pkg_name, $pkg_version) = split m{-}x, $pkg;
+
+    # Set defaults
+    $stack_name  ||= 'default';
+    $pkg_version ||= 0;
+
+    return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);
 }
 
 #------------------------------------------------------------------------------

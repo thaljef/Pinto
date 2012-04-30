@@ -172,13 +172,13 @@ use overload ( '""' => 'to_string' );
 
 #------------------------------------------------------------------------------
 
-sub new {
-    my ($class, $attrs) = @_;
+sub FOREIGNBUILDARGS {
+    my ($class, $args) = @_;
 
-    $attrs->{source} = 'LOCAL'
-        if not defined $attrs->{source};
+    $args ||= {};
+    $args->{source} ||= 'LOCAL';
 
-    return $class->next::method($attrs);
+    return $args;
 }
 
 #------------------------------------------------------------------------------
@@ -192,12 +192,12 @@ sub register {
 
     for my $pkg ($self->packages) {
 
-      if ($pkg->registries_rs->find( {stack => $stack->id} ) ) {
+      if ($pkg->registrations_rs->find( {stack => $stack->id} ) ) {
           $self->debug("Package $pkg is already on stack $stack");
           next;
       }
 
-      my $incumbent = $stack->registry(package => $pkg->name);
+      my $incumbent = $stack->registration(package => $pkg->name);
 
       if (not $incumbent) {
           $self->debug("Registering $pkg on stack $stack");
@@ -248,21 +248,21 @@ sub pin {
     my $did_pin = 0;
 
     for my $pkg ($self->packages) {
-        my $registry = $pkg->registry(stack => $stack);
+        my $registration = $pkg->registration(stack => $stack);
 
-        if (not $registry) {
+        if (not $registration) {
             $self->error("Package $pkg is not registered on stack $stack");
             $errors++;
             next;
         }
 
 
-        if ($registry->is_pinned) {
+        if ($registration->is_pinned) {
             $self->warning("Package $pkg is already pinned on stack $stack");
             next;
         }
 
-        $registry->pin;
+        $registration->pin;
         $did_pin++;
     }
 
@@ -284,19 +284,19 @@ sub unpin {
     my $did_unpin = 0;
 
     for my $pkg ($self->packages) {
-        my $registry = $pkg->registry(stack => $stack);
+        my $registration = $pkg->registration(stack => $stack);
 
-        if (not $registry) {
+        if (not $registration) {
             $self->warning("Package $pkg is not registered on stack $stack");
             next;
         }
 
-        if (not $registry->is_pinned) {
+        if (not $registration->is_pinned) {
             $self->warning("Package $pkg is not pinned on stack $stack");
             next;
         }
 
-        $registry->unpin;
+        $registration->unpin;
         $did_unpin++;
     }
 
@@ -387,7 +387,7 @@ sub package {
     my $pkg = $self->find_related('packages', $where) or return;
 
     if (my $stk_name = $args{stack}){
-        return $pkg->registry(stack => $stk_name) ? $pkg : ();
+        return $pkg->registration(stack => $stk_name) ? $pkg : ();
     }
 
     return $pkg;
@@ -475,11 +475,9 @@ sub _distname_info {
 
 #------------------------------------------------------------------------------
 
+__PACKAGE__->meta->make_immutable;
+
+#------------------------------------------------------------------------------
 1;
 
 __END__
-
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
-__PACKAGE__->meta->make_immutable;
-1;
