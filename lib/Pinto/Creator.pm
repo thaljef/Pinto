@@ -139,7 +139,7 @@ sub _create_db {
     $db->deploy;
 
     my $default_stack = $db->schema->resultset('Stack')->create({name => 'default'});
-    $default_stack->set_property('pinto:description' => 'the default stack');
+    $default_stack->set_property('description' => 'the default stack');
 
     $db->write_index;
 

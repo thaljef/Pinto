@@ -335,7 +335,7 @@ sub to_string {
           'k' => sub { $self->name                                          },
           'j' => sub { $self->last_modified_by                              },
           'U' => sub { Pinto::Util::ls_time_format($self->last_modified_on) },
-          'e' => sub { $self->get_property('pinto:description')             },
+          'e' => sub { $self->get_property('description')             },
     );
 
     $format ||= $self->default_format();

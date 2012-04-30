@@ -26,7 +26,7 @@ sub execute {
     my $stack = $self->repos->get_stack(name => $self->from_stack);
     my $copy = $stack->copy_deeply({name => $self->to_stack});
     my $description = $self->description || "copy of stack $stack";
-    $copy->set_property('pinto:description' => $description);
+    $copy->set_property('description' => $description);
     $copy->touch($stack->last_modified_on);
 
     return $self->result->changed;

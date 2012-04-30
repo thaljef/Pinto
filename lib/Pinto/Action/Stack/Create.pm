@@ -24,7 +24,7 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->create_stack(name => $self->stack);
-    $stack->set_property('pinto:description' => $self->description) if $self->description;
+    $stack->set_property('description' => $self->description) if $self->description;
 
     return $self->result->changed;
 }
