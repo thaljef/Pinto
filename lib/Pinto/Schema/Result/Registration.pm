@@ -97,6 +97,23 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
+=head2 C<package_name_distribution_path_unique>
+
+=over 4
+
+=item * L</package_name>
+
+=item * L</distribution_path>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "package_name_distribution_path_unique",
+  ["package_name", "distribution_path"],
+);
+
 =head2 C<stack_package_name_unique>
 
 =over 4
@@ -157,8 +174,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 14:24:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2Pi0bTVj0d7Ihgv5XRAyPQ
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 16:48:12
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7eXPvIYPcUxlWAsmu/Eaqw
 
 #------------------------------------------------------------------------------
 
