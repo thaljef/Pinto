@@ -22,6 +22,8 @@
 
 #--------------------------
 
+=item Prettier stack listing and stack prop listing
+
 =item Re-examine log levels for messages
 
 =item Divide actions into Actions and Reports
