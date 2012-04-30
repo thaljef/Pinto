@@ -23,8 +23,8 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
   my $t = Pinto::Tester->new;
   $t->run_ok('Add', {archives => $archive, author => $auth});
 
-  $t->package_ok("$auth/$dist/$pkg1/default");
-  $t->package_ok("$auth/$dist/$pkg2/default");
+  $t->registration_ok("$auth/$dist/$pkg1/default");
+  $t->registration_ok("$auth/$dist/$pkg2/default");
 }
 
 #-----------------------------------------------------------------------------
@@ -35,8 +35,8 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
   $t->run_ok('Stack::Create', {stack => 'dev'});
   $t->run_ok('Add', {archives => $archive, author => $auth, stack => 'dev'});
 
-  $t->package_ok( "$auth/$dist/$pkg1/dev" );
-  $t->package_ok( "$auth/$dist/$pkg2/dev" );
+  $t->registration_ok( "$auth/$dist/$pkg1/dev" );
+  $t->registration_ok( "$auth/$dist/$pkg2/dev" );
 }
 
 #-----------------------------------------------------------------------------

@@ -26,8 +26,8 @@ my $archive =  make_dist_archive('MyDist-1=MyPkg-1~PkgA-1,PkgB-1');
 $local->run_ok('Add', {archives => $archive, author => 'ME'});
 
 # So we should have pulled in PkgA and PkgB...
-$local->package_ok('JOHN/DistA-1/PkgA-1');
-$local->package_ok('FRED/DistB-1/PkgB-1');
+$local->registration_ok('JOHN/DistA-1/PkgA-1');
+$local->registration_ok('FRED/DistB-1/PkgB-1');
 
 # Now, suppose that PkgA and PkgB both are upgraded on CPAN
 $cpan->populate( qw( JOHN/DistA-2=PkgA-2~PkgB-2
@@ -42,15 +42,15 @@ $local->run_ok('Stack::Copy', {from_stack => 'default', to_stack => 'xxx'});
 $local->run_ok('Pull', {targets => 'PkgA-2', stack => 'xxx'});
 
 # We should now have the new versions of both PkgA and PkgB on stack xxx
-$local->package_ok('JOHN/DistA-2/PkgA-2/xxx');
-$local->package_ok('FRED/DistB-2/PkgB-2/xxx');
+$local->registration_ok('JOHN/DistA-2/PkgA-2/xxx');
+$local->registration_ok('FRED/DistB-2/PkgB-2/xxx');
 
 # But wait!  We learn that PkgB-2 breaks our app. We want to be sure
 # we don't upgrade that.  So pin it on the default (prod) stack
 $local->run_ok('Pin', {targets => 'PkgB'});
 
 # Make sure PkgB-1 is now pinned on default stack
-$local->package_ok('FRED/DistB-1/PkgB-1/default/+');
+$local->registration_ok('FRED/DistB-1/PkgB-1/default/+');
 
 # Ooo! Super cool DistC-1 is released to CPAN
 $cpan->populate('MARK/DistC-1=PkgC-2~PkgB-2');
@@ -67,14 +67,14 @@ $local->log_like(qr{Cannot add FRED/DistB-2/PkgB-2 to stack default because PkgB
 $local->run_ok('Unpin', {targets => 'PkgB'});
 
 # Make sure PkgB-1 is not pinned on default stack...
-$local->package_ok('FRED/DistB-1/PkgB-1/default/-');
+$local->registration_ok('FRED/DistB-1/PkgB-1/default/-');
 
 # Now we can bring over the work that was done on the xxx stack...
 $local->run_ok('Stack::Merge', {from_stack => 'xxx', to_stack => 'default'});
 
 # And now the default stack should have all the latest and greatest...
-$local->package_ok('JOHN/DistA-2/PkgA-2');
-$local->package_ok('FRED/DistB-2/PkgB-2');
+$local->registration_ok('JOHN/DistA-2/PkgA-2');
+$local->registration_ok('FRED/DistB-2/PkgB-2');
 
 #------------------------------------------------------------------------------
 

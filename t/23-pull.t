@@ -20,7 +20,7 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
   # Non-recursive pull
   my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
   $local->run_ok('Pull', {targets => 'Baz-1.2', norecurse => 1});
-  $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
+  $local->registration_ok('JOHN/Baz-1.2/Baz-1.2');
   $local->package_not_ok('PAUL/Nuts-2.3/Nuts-2.3');
 }
 
@@ -31,8 +31,8 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
   my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
   my $result = $local->run_ok('Pull', {targets => 'Baz-1.2'});
   $local->result_changed_ok($result);
-  $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
-  $local->package_ok('PAUL/Nuts-2.3/Nuts-2.3');
+  $local->registration_ok('JOHN/Baz-1.2/Baz-1.2');
+  $local->registration_ok('PAUL/Nuts-2.3/Nuts-2.3');
 
   # Re-pulling
   $result = $local->run_ok('Pull', {targets => 'Baz-1.2'});
@@ -47,8 +47,8 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
   my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
   my $result = $local->run_ok('Pull', {targets => 'JOHN/Baz-1.2.tar.gz'});
   $local->result_changed_ok($result);
-  $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
-  $local->package_ok('PAUL/Nuts-2.3/Nuts-2.3');
+  $local->registration_ok('JOHN/Baz-1.2/Baz-1.2');
+  $local->registration_ok('PAUL/Nuts-2.3/Nuts-2.3');
 
   # Re-pulling
   $result = $local->run_ok('Pull', {targets => 'JOHN/Baz-1.2.tar.gz'});

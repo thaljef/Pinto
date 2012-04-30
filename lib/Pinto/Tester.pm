@@ -160,7 +160,7 @@ sub run_throws_ok {
 
 #------------------------------------------------------------------------------
 
-sub package_ok {
+sub registration_ok {
     my ($self, $reg_spec) = @_;
 
     my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)

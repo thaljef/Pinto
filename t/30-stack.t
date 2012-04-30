@@ -28,8 +28,8 @@ my $t = Pinto::Tester->new;
   # Add to the stack...
   my $foo_and_bar_1 = make_dist_archive('FooAndBar-1=Foo-1,Bar-1');
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1});
-  $t->package_ok( 'ME/FooAndBar-1/Foo-1/dev/-' );
-  $t->package_ok( 'ME/FooAndBar-1/Bar-1/dev/-' );
+  $t->registration_ok( 'ME/FooAndBar-1/Foo-1/dev/-' );
+  $t->registration_ok( 'ME/FooAndBar-1/Bar-1/dev/-' );
 
   # Should not be on the default stack...
   $t->package_not_ok( 'ME/FooAndBar-1/Foo-1/default/-' );

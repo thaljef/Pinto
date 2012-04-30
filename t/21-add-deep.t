@@ -21,10 +21,10 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
   my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
   $local->run_ok('Add', {archives => $archive, author => 'ME'});
 
-  $local->package_ok('ME/Foo-Bar-0.01/Foo-0.01');
-  $local->package_ok('ME/Foo-Bar-0.01/Bar-0.01');
-  $local->package_ok('JOHN/Baz-1.2/Baz-1.2');
-  $local->package_ok('PAUL/Nuts-2.3/Nuts-2.3');
+  $local->registration_ok('ME/Foo-Bar-0.01/Foo-0.01');
+  $local->registration_ok('ME/Foo-Bar-0.01/Bar-0.01');
+  $local->registration_ok('JOHN/Baz-1.2/Baz-1.2');
+  $local->registration_ok('PAUL/Nuts-2.3/Nuts-2.3');
 }
 
 #------------------------------------------------------------------------------
