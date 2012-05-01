@@ -33,7 +33,7 @@ has where => (
 sub _build_where {
     my ($self) = @_;
 
-    my $where = { 'stack.name' => $self->stack };
+    my $where = {};
 
     if (my $pkg_name = $self->packages) {
         $where->{'package.name'} = { like => "%$pkg_name%" }
@@ -44,7 +44,7 @@ sub _build_where {
     }
 
     if (my $pinned = $self->pinned) {
-        $where->{pin} = { '!=' => undef };
+        $where->{is_pinned} = 1;
     }
 
     return $where;
@@ -56,8 +56,8 @@ sub execute {
     my ($self) = @_;
 
     my $where = $self->where;
-
-    $self->repos->get_stack( name => $where->{'stack.name'} );
+    my $stack = $self->repos->get_stack(name => $self->stack);
+    $where->{'stack.name'} = $stack->name;
 
     my $attrs = { order_by => [ qw(me.package_name me.package_version me.distribution_path) ],
                   prefetch => [ 'stack', {'package' => 'distribution'} ] };
