@@ -59,6 +59,8 @@ None.
 
 =head1 COMMAND OPTIONS
 
+=over 4
+
 =item --sleep=N
 
 Directs L<Pinto> to sleep for N seconds before releasing the lock and
