@@ -140,6 +140,44 @@ sub args_from_fh {
 
 #-------------------------------------------------------------------------------
 
+=func normalize_property_name( $prop_name )
+
+Normalizes the property name and returns it.  Throws an exception if
+the property name is invalid.  Currently, property names must be
+alphanumeric plus any of C<m/[._:-]/>.
+
+=cut
+
+sub normalize_property_name {
+    my ($prop_name) = @_;
+
+    $prop_name = lc  $prop_name;
+    throw "Invalid property name $prop_name" if $prop_name =~ m{[^a-z0-9._:-]};
+
+    return $prop_name;
+}
+
+#-------------------------------------------------------------------------------
+
+=func normalize_stack_name( $stack_name )
+
+Normalizes the stack name and returns it.  Throws an exception if the
+stack name is invalid.  Currently, stack names must be alphanumeric
+plus any of C<m/[._:-]/>.
+
+=cut
+
+sub normalize_stack_name {
+    my ($stack_name) = @_;
+
+    $stack_name = lc  $stack_name;
+    throw "Invalid stack name $stack_name" if $stack_name =~ m{[^a-z0-9._:-]};
+
+    return $stack_name;
+}
+
+#-------------------------------------------------------------------------------
+
 =func ls_time_format( $seconds_since_epoch )
 
 Formats a time value into a string that is similar to what you see in
