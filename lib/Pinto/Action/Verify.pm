@@ -26,7 +26,9 @@ with qw( Pinto::Role::Interface::Action::Verify );
 sub execute {
     my ($self) = @_;
 
-    my $rs  = $self->repos->select_distributions();
+
+    # FIXME!
+    my $rs  = $self->repos->db->schema->resultset('Distribution')->search;
 
     while ( my $dist = $rs->next ) {
         my $archive = $dist->archive( $self->repos->root_dir );
