@@ -82,8 +82,6 @@ sub is_vcs_file {
     return exists $VCS_FILES{ $file->basename() };
 }
 
-
-
 #-------------------------------------------------------------------------------
 
 sub mtime {
@@ -121,48 +119,6 @@ sub sha256 {
     my $sha256 = Digest::SHA->new(256)->addfile($fh)->hexdigest();
 
     return $sha256;
-}
-
-#-------------------------------------------------------------------------------
-
-sub added_dist_message {
-    my ($distribution) = @_;
-
-    return _dist_message($distribution, 'Added');
-}
-
-#-------------------------------------------------------------------------------
-
-sub removed_dist_message {
-    my ($distribution) = @_;
-
-    return _dist_message($distribution, 'Removed');
-}
-
-#-------------------------------------------------------------------------------
-
-sub imported_dist_message {
-    my ($distribution) = @_;
-
-    return _dist_message($distribution, 'Imported');
-}
-
-#-------------------------------------------------------------------------------
-
-sub imported_prereq_dist_message {
-    my ($distribution) = @_;
-
-    return _dist_message($distribution, 'Imported prerequisite');
-}
-
-#-------------------------------------------------------------------------------
-
-sub _dist_message {
-    my ($dist, $action) = @_;
-
-    my $vnames = join "\n    ", sort map { $_->vname() } $dist->packages();
-
-    return "$action distribution $dist providing:\n    $vnames";
 }
 
 #-------------------------------------------------------------------------------
