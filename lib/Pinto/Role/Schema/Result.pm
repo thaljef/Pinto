@@ -1,3 +1,5 @@
+# ABSTRACT: Attributes and methods for all Schema::Result objects
+
 package Pinto::Role::Schema::Result;
 
 use Moose::Role;

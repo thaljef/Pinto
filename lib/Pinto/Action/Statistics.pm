@@ -25,7 +25,11 @@ with qw( Pinto::Role::Interface::Action::Statistics );
 sub execute {
     my ($self) = @_;
 
-    my $stats = Pinto::Statistics->new( db => $self->repos->db() );
+    # FIXME!
+    my $stack = $self->repos->get_stack;
+    my $stats = Pinto::Statistics->new( db    => $self->repos->db,
+                                        stack => $stack->name );
+
     print { $self->out() } $stats->to_formatted_string();
 
     return $self->result;

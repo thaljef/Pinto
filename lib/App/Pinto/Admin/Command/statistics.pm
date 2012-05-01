@@ -45,16 +45,15 @@ __END__
 
 =head1 DESCRIPTION
 
-This command reports some statistics about the repository
+This command reports some statistics about the repository.  It is
+currently only reports information about the master stack.
 
 =head1 COMMAND ARGUMENTS
 
-None
+None.
 
 =head1 COMMAND OPTIONS
 
-None
-
-=back
+None.
 
 =cut

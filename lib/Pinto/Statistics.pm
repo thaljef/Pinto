@@ -1,8 +1,9 @@
+# ABSTRACT: Report statistics about a Pinto repository
+
 package Pinto::Statistics;
 
-# ABSTRACT: Calculates statistics about a Pinto repository
-
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
 use String::Format;
 

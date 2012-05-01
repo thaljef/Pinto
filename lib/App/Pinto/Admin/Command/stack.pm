@@ -1,6 +1,9 @@
+# ABSTRACT: manage stacks within the repository
+
 package App::Pinto::Admin::Command::stack;
 
-# ABSTRACT: manage stacks within the repository
+use strict;
+use warnings;
 
 #-----------------------------------------------------------------------------
 
