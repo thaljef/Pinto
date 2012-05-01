@@ -6,8 +6,6 @@ use Moose;
 
 use String::Format;
 
-use Pinto::Types qw(StackName);
-
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -19,9 +17,7 @@ use namespace::autoclean;
 
 has stack => (
     is      => 'ro',
-    isa     => StackName,
-    default => 'default',
-    coerce  => 1,
+    isa     => Str,
 );
 
 
@@ -92,11 +88,11 @@ sub to_formatted_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-        'D' => sub { $self->total_distributions()   },
-        'd' => sub { $self->stack_distributions()   },
-        'k' => sub { $self->stack()                 },
-        'P' => sub { $self->total_packages()        },
-        'p' => sub { $self->stack_packages()        },
+        'D' => sub { $self->total_distributions   },
+        'd' => sub { $self->stack_distributions   },
+        'k' => sub { $self->stack                 },
+        'P' => sub { $self->total_packages        },
+        'p' => sub { $self->stack_packages        },
     );
 
     $format ||= $self->default_format();

@@ -35,7 +35,7 @@ sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
     my $file  = $args{file};
-    my $stack = $args{stack} || 'default';
+    my $stack = $args{stack};
 
     $self->info("Writing index for stack $stack at $file");
 

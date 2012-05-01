@@ -124,6 +124,8 @@ sub BUILD {
 
 #-------------------------------------------------------------------------------
 
+=method get_stack()
+
 =method get_stack( name => $stack_name )
 
 =method get_stack( name => $stack_name, nocroak => 1 )
@@ -131,7 +133,9 @@ sub BUILD {
 Returns the L<Pinto::Schema::Result::Stack> object with the given
 C<$stack_name>.  If there is no stack with such a name in the
 repository, throws an exception.  If the C<nocroak> option is true,
-than an exception will not be thrown and undef will be returned.
+than an exception will not be thrown and undef will be returned.  If
+you do not specify a stack name (or it is undefined) then you'll get
+whatever stack is currently marked as the master stack.
 
 =cut
 
@@ -140,6 +144,7 @@ sub get_stack {
 
     my $stk_name = $args{name};
     return $stk_name if ref $stk_name;  # Is object (or struct) so just return
+    return $self->get_master_stack if not $stk_name;
 
     my $where = { name => $stk_name };
     my $stack = $self->db->select_stack( $where );
@@ -148,6 +153,30 @@ sub get_stack {
         unless $stack or $args{nocroak};
 
     return $stack;
+}
+
+#-------------------------------------------------------------------------------
+
+=method get_master_stack()
+
+Returns the L<Pinto::Schema::Result::Stack> that is currently marked
+as the master stack in this repository.  This is what you get when you
+call C<get_stack> without any arguments.
+
+At any time, there must be exactly one master stack.  This method will
+throw an exception if it discovers that condition is not true.
+
+=cut
+
+sub get_master_stack {
+    my ($self) = @_;
+
+    my $where = {is_master => 1};
+    my @stacks = $self->db->select_stacks( $where )->all;
+
+    throw "PANIC! There must be exactly one master stack" if @stacks != 1;
+
+    return $stacks[0];
 }
 
 #-------------------------------------------------------------------------------
@@ -320,7 +349,7 @@ sub pull {
 sub create_stack {
     my ($self, %args) = @_;
 
-    my $name  = $args{name};
+    my $name  = Pinto::Util::normalize_stack_name($args{name});
     my $props = $args{properties};
 
     throw "Stack $name already exists"

@@ -64,6 +64,28 @@ my $t = Pinto::Tester->new;
 #------------------------------------------------------------------------------
 
 {
+
+  # Marking master stack...
+  my $default_stack = $t->pinto->repos->get_stack;
+  ok defined $default_stack, 'get_stack with no args returned a stack';
+  ok $default_stack->is_master, 'default stack is the master stack';
+
+  my $dev_stack = $t->pinto->repos->get_stack(name => 'dev');
+  ok defined $dev_stack, 'got the dev stack';
+
+
+  $dev_stack->mark_as_master;
+  ok $dev_stack->is_master, 'dev stack is now master';
+
+  # Force reload from DB...
+  $default_stack->discard_changes;
+  ok !$default_stack->is_master, 'default stack is no longer master';
+
+}
+
+#------------------------------------------------------------------------------
+
+{
   # Copy from a stack that doesn't exist
   $t->run_throws_ok('Stack::Copy', {from_stack => 'nowhere',
                                     to_stack   => 'somewhere'},
@@ -75,6 +97,16 @@ my $t = Pinto::Tester->new;
                                     to_stack   => 'dev'},
                                     qr/Stack dev already exists/);
 
+
+  # Create stack with invalid name
+  $t->run_throws_ok('Stack::Create', {stack => '$bogus@'},
+                                      qr/Invalid stack name/);
+
+
+  # Copy to stack with invalid name
+  $t->run_throws_ok('Stack::Copy', {from_stack => 'default',
+                                    to_stack   => '$bogus@'},
+                                    qr/Invalid stack name/);
 }
 
 

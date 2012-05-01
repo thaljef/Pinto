@@ -4,6 +4,8 @@ package Pinto::Action::Stack::Props;
 
 use Moose;
 
+use String::Format;
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -16,8 +18,7 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Attribute::out
-         Pinto::Role::Attribute::stack );
+with qw( Pinto::Role::Interface::Action::Stack::Props );
 
 #------------------------------------------------------------------------------
 
@@ -28,7 +29,7 @@ sub execute {
 
     my $props = $stack->get_properties;
     while ( my ($prop, $value) = each %{$props} ) {
-        print { $self->out } "$prop = $value\n";
+        print { $self->out } stringf($self->format, {n => $prop, v => $value});
     }
 
     return $self->result;
@@ -36,7 +37,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 

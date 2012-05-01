@@ -14,6 +14,8 @@ use Digest::SHA;
 use DateTime;
 use Readonly;
 
+use Pinto::Exception qw(throw);
+
 use namespace::autoclean;
 
 #-------------------------------------------------------------------------------

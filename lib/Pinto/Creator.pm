@@ -138,8 +138,9 @@ sub _create_db {
                                    logger => $self->logger );
     $db->deploy;
 
-    my $default_stack = $db->schema->resultset('Stack')->create({name => 'default'});
-    $default_stack->set_property('description' => 'the default stack');
+    my $stack_attrs = {name => 'default', is_master => 1};
+    my $stack = $db->schema->resultset('Stack')->create($stack_attrs);
+    $stack->set_property('description' => 'the default stack');
 
     $db->write_index;
 

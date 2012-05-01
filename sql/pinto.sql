@@ -1,4 +1,3 @@
-/* TODO: store dists as author and filename */
 
 CREATE TABLE distribution (
        id      INTEGER PRIMARY KEY NOT NULL,
@@ -23,6 +22,7 @@ CREATE TABLE package (
 CREATE TABLE stack (
        id                 INTEGER PRIMARY KEY NOT NULL,
        name               TEXT                NOT NULL,
+       is_master          INTEGER             NOT NULL,
        last_modified_on   INTEGER             NOT NULL,
        last_modified_by   TEXT                NOT NULL
 );

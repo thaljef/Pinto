@@ -37,6 +37,11 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
+=head2 is_master
+
+  data_type: 'integer'
+  is_nullable: 0
+
 =head2 last_modified_on
 
   data_type: 'integer'
@@ -54,6 +59,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
+  "is_master",
+  { data_type => "integer", is_nullable => 0 },
   "last_modified_on",
   { data_type => "integer", is_nullable => 0 },
   "last_modified_by",
@@ -132,8 +139,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 13:28:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MQGkcmLWNWlHaSLsjeps5w
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 23:42:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+cZifKwSL/tyNuAyPZfviQ
 
 #-------------------------------------------------------------------------------
 
@@ -147,6 +154,7 @@ with 'Pinto::Role::Schema::Result';
 
 use String::Format;
 
+use Pinto::Util;
 use Pinto::Exception qw(throw);
 
 use overload ( '""'     => 'to_string' );
@@ -163,6 +171,7 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
+  $args->{is_master} ||= 0;
   $args->{last_modified_on} ||= time;
   $args->{last_modified_by} ||= $ENV{USER};
 
@@ -173,8 +182,8 @@ sub FOREIGNBUILDARGS {
 #------------------------------------------------------------------------------
 
 before delete => sub {
-  my ($self, @args) = @_;
-  throw 'You cannot remote the default stack' if $self->name eq 'default';
+    my ($self, @args) = @_;
+    throw 'You cannot remove the master stack' if $self->is_master;
 };
 
 #------------------------------------------------------------------------------
@@ -194,9 +203,12 @@ sub copy {
   my ($self, $changes) = @_;
 
   $changes ||= {};
-  my $to_stack_name = $changes->{name};
+  my $to_stack_name = Pinto::Util::normalize_stack_name( $changes->{name} );
+
   throw "Stack $to_stack_name already exists"
     if $self->result_source->resultset->find({name => $to_stack_name});
+
+  $changes->{is_master} = 0; # Never duplicate the master flag
 
   return $self->next::method($changes);
 }
@@ -245,6 +257,26 @@ sub copy_members {
 
 #------------------------------------------------------------------------------
 
+sub mark_as_master {
+    my ($self) = @_;
+
+    if ($self->is_master) {
+        $self->warning("Stack $self is already the master");
+        return 0;
+    }
+
+    $self->debug('Marking all stacks as non-master');
+    my $rs = $self->result_source->resultset->search;
+    $rs->update_all( {is_master => 0} );
+
+    $self->warning("Marking stack $self as master");
+    $self->update({is_master => 1});
+
+    return 1;
+}
+
+#------------------------------------------------------------------------------
+
 sub touch {
     my ($self, $time, $user) = @_;
 
@@ -280,7 +312,6 @@ sub get_properties {
 
 sub set_property {
     my ($self, $prop_name, $value) = @_;
-
     return $self->set_properties( {$prop_name => $value} );
 }
 
@@ -291,8 +322,9 @@ sub set_properties {
 
     my $attrs  = {key => 'stack_name_unique'};
     while (my ($name, $value) = each %{$props}) {
-        my $values = {name => $name, value => $value};
-        $self->update_or_create_related('stack_properties', $values, $attrs);
+        $name = Pinto::Util::normalize_property_name($name);
+        my $nv_pair = {name => $name, value => $value};
+        $self->update_or_create_related('stack_properties', $nv_pair, $attrs);
     }
 
     $self->touch;

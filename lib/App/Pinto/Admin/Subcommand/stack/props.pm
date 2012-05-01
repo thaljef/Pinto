@@ -15,11 +15,24 @@ use base 'App::Pinto::Admin::Subcommand';
 
 #------------------------------------------------------------------------------
 
+sub opt_spec {
+
+  return (
+      [ 'format=s' => 'Format specification (See POD for details)' ],
+  );
+}
+
+#------------------------------------------------------------------------------
+
+
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
     $self->usage_error('Cannot specify multiple stacks')
         if @{$args} > 1;
+
+    $opts->{format} = eval qq{"$opts->{format}"} ## no critic qw(StringyEval)
+        if $opts->{format};
 
     return 1;
 }
@@ -44,8 +57,9 @@ END_USAGE
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my $stack = $args->[0] || 'default';
-    my $result = $self->pinto->run($self->action_name, %{$opts}, stack => $stack);
+    my $stack = $args->[0];
+    my $result = $self->pinto->run($self->action_name, %{$opts},
+                                                       stack => $stack);
 
     return $result->exit_status;
 }
@@ -75,7 +89,19 @@ and will be forced to lowercase.
 
 =head1 SUBCOMMAND OPTIONS
 
-NONE
+=over 4
+
+=item --format=FORMAT_SPECIFICATION
+
+Sets the format of the output using C<printf>-style placeholders.
+Valid placeholders are:
+
+  Placeholder    Meaning
+  -----------------------------------------------------------------------------
+  %n             Property name
+  %v             Package value
+
+=back
 
 =cut
 

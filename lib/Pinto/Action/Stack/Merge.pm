@@ -3,9 +3,7 @@
 package Pinto::Action::Stack::Merge;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
-
-use Pinto::Types qw(StackName);
+use MooseX::Types::Moose qw(Bool Str);
 
 use namespace::autoclean;
 
@@ -23,17 +21,15 @@ extends 'Pinto::Action';
 
 has from_stack => (
     is       => 'ro',
-    isa      => StackName,
+    isa      => Str,
     required => 1,
-    coerce   => 1,
 );
 
 
 has to_stack => (
     is       => 'ro',
-    isa      => StackName,
+    isa      => Str,
     required => 1,
-    coerce   => 1,
 );
 
 

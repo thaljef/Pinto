@@ -114,9 +114,7 @@ sub select_stacks {
     $where ||= {};
     $attrs ||= {};
 
-    my $stack = $self->schema->resultset('Stack')->search( $where, $attrs );
-
-    return $stack;
+    return $self->schema->resultset('Stack')->search( $where, $attrs );
 }
 
 #-------------------------------------------------------------------------------
@@ -127,9 +125,7 @@ sub select_stack {
     $attrs ||= {};
     $attrs->{key} = 'name_unique';
 
-    my $stack = $self->schema->resultset('Stack')->find( $where, $attrs );
-
-    return $stack;
+    return $self->schema->resultset('Stack')->find( $where, $attrs );
 }
 
 #-------------------------------------------------------------------------------
@@ -137,9 +133,7 @@ sub select_stack {
 sub create_stack {
     my ($self, $attrs) = @_;
 
-    my $stack = $self->schema->resultset('Stack')->create( $attrs );
-
-    return $stack;
+    return $self->schema->resultset('Stack')->create( $attrs );
 }
 
 #-------------------------------------------------------------------------------
@@ -150,8 +144,9 @@ sub write_index {
     my $writer = Pinto::IndexWriter->new( logger => $self->logger(),
                                           db     => $self );
 
-    my $index_file = $self->config->index_file();
-    $writer->write(file => $index_file);
+    my $index_file = $self->config->index_file;
+    my $stack = $self->select_stacks({is_master => 1})->single->name;
+    $writer->write(file => $index_file, stack => $stack);
 
     return $self;
 }

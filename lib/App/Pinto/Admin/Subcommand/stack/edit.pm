@@ -18,7 +18,8 @@ use base 'App::Pinto::Admin::Subcommand';
 sub opt_spec {
 
     return (
-        ['properties|props=s%' => 'name=value pairs of properties' ]
+        ['master'              => 'mark the stack as master'],
+        ['properties|props=s%' => 'name=value pairs of properties'],
     );
 }
 
@@ -53,8 +54,9 @@ END_USAGE
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my $stack = $args->[0] || 'default';
-    my $result = $self->pinto->run($self->action_name, %{$opts}, stack => $stack);
+    my $stack = $args->[0];
+    my $result = $self->pinto->run($self->action_name, %{$opts},
+                                                       stack => $stack);
 
     return $result->exit_status;
 }
@@ -85,6 +87,15 @@ and will be forced to lowercase.
 =head1 SUBCOMMAND OPTIONS
 
 =over 4
+
+=item --master
+
+Causes the selected stack to be marked as the master.  The master
+stack becomes the default stack for all operations where you do no not
+specify an explicit stack.  The master stack also becomes the index
+file for your repository.  DO NOT CHANGE THE MASTER STACK WITHOUT DUE
+DILLIGENCE.  It has broad impact, especially if your repository has
+multiple users.
 
 =item --properties name1=value1
 
