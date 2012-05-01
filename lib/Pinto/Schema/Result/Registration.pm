@@ -169,6 +169,9 @@ with 'Pinto::Role::Schema::Result';
 use Carp;
 use String::Format;
 
+use Pinto::Util;
+use Pinto::Exception qw(throw);
+
 use overload ( '""'     => 'to_string',
                '<=>'    => 'compare',
                fallback => undef );
@@ -181,43 +184,67 @@ sub FOREIGNBUILDARGS {
     $args ||= {};
     $args->{is_pinned} ||= 0;
 
+    # These attributes are derived from the related package object.  We've
+    # denormalized the table slightly to ensure data integrity and optimize
+    # the table for generating the index file (all the data is in one table).
+    # So you can't set these attributes directly.  Their values are computed
+    # down below during INSERT or UPDATE operations.
+
+    for my $attr ( qw(package_name package_version distribution_path) ){
+        throw "Attribute '$attr' cannot be set directly" if $args->{$attr};
+    }
+
     return $args;
 }
 
 #-------------------------------------------------------------------------------
 
 sub insert {
-    my ($self, @args) = @_;
+    my ($self) = @_;
 
-    # Denormalize a bit..
+    # Compute values for denormalized attributes...
+
     $self->package_name($self->package->name);
     $self->package_version($self->package->version->stringify);
     $self->distribution_path($self->package->distribution->path);
 
     $self->stack->touch;
 
-    return $self->next::method(@args);
-}
+    return $self->next::method;
+ }
 
 #-------------------------------------------------------------------------------
 
 sub update {
-    my ($self, @args) = @_;
+    my ($self, $args) = @_;
 
-    my $r = $self->next::method(@args);
+    $args ||= {};
 
-    # HACK: This forces the name, version, and path fields to always come
-    # from the related package/distribution objects.  So you cannot explictly
-    # set these yourself.  There is probably a better way to do this.
+    # These columns are derived from the package.  We've denormalized
+    # the table slightly to ensure data integrity and optimize the table
+    # for generating the index file (all the data is in one table).
 
-    my $changes = {};
-    $changes->{package_name}      = $self->package->name;
-    $changes->{package_version}   = $self->package->version;
-    $changes->{distribution_path} = $self->package->distribution->path;
+    for my $attr ( qw(package_name package_version distribution_path) ){
+        throw "Attribute '$attr' cannot be set directly" if $args->{$attr};
+    }
 
+
+    # TODO: Denormalizing the table here feels a bit wonky.  Again,
+    # we could probably do this with DB triggers, but I just despise them.
+
+    my $pkg = $args->{package} || $self->package;
+
+    $args->{package_name}      = $pkg->name;
+    $args->{package_version}   = $pkg->version;
+    $args->{distribution_path} = $pkg->distribution->path;
+
+    # TODO: Do we need to check if the object was actually updated
+    # before touching the stack?  It seems unlikely, but it is possible
+    # that none of the attributes changed so no UPDATE was issued.  We could
+    # probably avoid that kind of dilemma with triggers, but I hate them :(
     $self->stack->touch;
 
-    return $self->next::method($changes);
+    return $self->next::method($args);
 }
 
 #-------------------------------------------------------------------------------
@@ -225,6 +252,10 @@ sub update {
 sub delete {
     my ($self, @args) = @_;
 
+    # TODO: Do we need to check if the object was actually deleted
+    # before touching the stack?  It seems unlikely, but it is possible
+    # that the object was never in_storage to begin with.  We could
+    # probably avoid that kind of dilemma with triggers, but I hate them :(
     $self->stack->touch;
 
     return $self->next::method(@args);
@@ -250,15 +281,12 @@ sub compare {
     my ($reg_a, $reg_b) = @_;
 
     my $pkg = __PACKAGE__;
-    confess "Can only compare $pkg objects"
-        if ($pkg ne ref $reg_a) || ($pkg ne ref $reg_b);
+    throw "Can only compare $pkg objects"
+        if not ( $reg_a->isa($pkg) && $reg_b->isa($pkg) );
 
     return 0 if $reg_a->id == $reg_b->id;
 
-    my $r =   ( $reg_a->is_pinned <=> $reg_b->is_pinned  )
-           || ( $reg_a->package   <=> $reg_b->package    );
-
-    return $r;
+    return $reg_a->package <=> $reg_b->package;
 };
 
 #------------------------------------------------------------------------------
@@ -267,24 +295,25 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-         n => sub { $self->name                                            },
-         N => sub { $self->package->vname                                  },
-         v => sub { $self->version                                         },
-         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'    },
-         p => sub { $self->path                                            },
-         P => sub { $self->package->distribution->archive                  },
-         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'    },
-         S => sub { $self->package->distribution->source                   },
-         a => sub { $self->package->distribution->author                   },
-         d => sub { $self->package->distribution->name                     },
-         D => sub { $self->package->distribution->vname                    },
-         w => sub { $self->package->distribution->version                  },
-         u => sub { $self->package->distribution->url                      },
-         k => sub { $self->stack->name                                     },
-         e => sub { $self->stack->description                              },
-         u => sub { $self->stack->mtime                                    },
-         U => sub { scalar localtime $self->stack->mtime                   },
-         y => sub { $self->is_pinned                        ? '+' : ' '    },
+         n => sub { $self->package->name                                        },
+         N => sub { $self->package->vname                                       },
+         v => sub { $self->package->version                                     },
+         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'         },
+         p => sub { $self->package->distribution->path                          },
+         P => sub { $self->package->distribution->archive                       },
+         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'         },
+         S => sub { $self->package->distribution->source                        },
+         a => sub { $self->package->distribution->author                        },
+         d => sub { $self->package->distribution->name                          },
+         D => sub { $self->package->distribution->vname                         },
+         w => sub { $self->package->distribution->version                       },
+         u => sub { $self->package->distribution->url                           },
+         k => sub { $self->stack->name                                          },
+         M => sub { $self->stack->is_master                 ? '*' : ' '         },
+         e => sub { $self->stack->get_property('description')                   },
+         u => sub { $self->stack->last_modified_on                              },
+         U => sub { Pinto::Util::ls_time_format($self->stack->last_modified_on) },
+         y => sub { $self->is_pinned                        ? '+' : ' '         },
     );
 
     # Some attributes are just undefined, usually because of
