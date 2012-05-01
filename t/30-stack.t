@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Exception;
 
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
@@ -81,6 +82,8 @@ my $t = Pinto::Tester->new;
   $default_stack->discard_changes;
   ok !$default_stack->is_master, 'default stack is no longer master';
 
+  throws_ok { $default_stack->is_master(0) } qr/cannot directly set is_master/,
+    'Setting is_master directly throws exception';
 }
 
 #------------------------------------------------------------------------------

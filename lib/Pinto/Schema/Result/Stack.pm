@@ -188,6 +188,13 @@ before delete => sub {
 
 #------------------------------------------------------------------------------
 
+before is_master => sub {
+    my ($self, @args) = @_;
+    throw 'You cannot directly set is_master.  Use mark_as_master' if @args;
+};
+
+#------------------------------------------------------------------------------
+
 sub registration {
     my ($self, %args) = @_;
 
@@ -364,10 +371,12 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-          'k' => sub { $self->name                                          },
-          'j' => sub { $self->last_modified_by                              },
-          'U' => sub { Pinto::Util::ls_time_format($self->last_modified_on) },
-          'e' => sub { $self->get_property('description')             },
+           k => sub { $self->name                                          },
+           M => sub { $self->is_master              ? '*' : ' '            },
+           j => sub { $self->last_modified_by                              },
+           u => sub { $self->last_modified_on                              },
+           U => sub { Pinto::Util::ls_time_format($self->last_modified_on) },
+           e => sub { $self->get_property('description')                   },
     );
 
     $format ||= $self->default_format();
