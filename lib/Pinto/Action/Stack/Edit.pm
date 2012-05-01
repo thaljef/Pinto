@@ -20,7 +20,7 @@ with qw( Pinto::Role::Attribute::stack );
 
 has properties => (
                    is => 'ro',
-                   isa => 'HashRef',
+                   isa => 'HashRef[Str]',
                    default => 1,
 );
 

@@ -124,7 +124,38 @@ with 'Pinto::Role::Schema::Result';
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 12:42:35
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Z05ZOuRC81L0D/lHByjugw
 
+#------------------------------------------------------------------------------
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+# ABSTRACT: Represents stack metadata
+
+#------------------------------------------------------------------------------
+
+use Pinto::Exception qw(throw);
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+
+sub FOREIGNBUILDARGS {
+    my ($class, $args) = @_;
+
+    $args ||= {};
+    if (defined $args->{name}) {
+        $args->{name} = lc $args->{name};
+        throw "Invalid property name $args->{name}"
+            if $args->{name} =~ m{[^a-z0-9-_.:]};
+    }
+
+    return $args;
+}
+
+#------------------------------------------------------------------------------
+
 __PACKAGE__->meta->make_immutable;
+
+#------------------------------------------------------------------------------
 1;
+
+__END__
