@@ -58,8 +58,8 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir pin [OPTIONS] STACK_NAME PACKAGE_NAME ...
-  pinto-admin --root=/some/dir pin [OPTIONS] STACK_NAME < LIST_OF_PACKAGE_NAMES
+  pinto-admin --root=/some/dir pin [OPTIONS] TARGET ...
+  pinto-admin --root=/some/dir pin [OPTIONS] < LIST_OF_TARGETS
 
 =head1 DESCRIPTION
 
@@ -74,7 +74,18 @@ from a package, please see the C<unpin> command.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the names of the packages you wish to pin.
+Arguments are the targets you wish to unpin.  Targets can be
+specified as packages or distributions, such as:
+
+  Some::Package
+  Some::Other::Package
+
+  AUTHOR/Some-Dist-1.2.tar.gz
+  AUTHOR/Some-Other-Dist-1.3.zip
+
+When pinning a distribution, all the packages in that distribution
+become pinned.  Likewise when pinning a package, all its sister
+packages in the same distributon also become pinned.
 
 You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"
@@ -86,7 +97,9 @@ or ';') will be ignored.
 
 =item --stack=NAME
 
-Name of the stack on which to pin the target.  Defaults to 'default'.
+Pins the package on the stack with the given NAME.  Defaults to the
+name of whichever stack is currently marked as the master stack.  Use
+the C<stack list> command to see the stacks in the repository.
 
 =back
 

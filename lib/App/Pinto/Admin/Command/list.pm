@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::list;
 
-# ABSTRACT: list the contents of the repository
+# ABSTRACT: list the contents of a stack
 
 use strict;
 use warnings;
@@ -64,9 +64,9 @@ __END__
 
 =head1 DESCRIPTION
 
-This command lists the distributions and packages that are in your
-repository.  You can format the output to see the specific bits of
-information that you want.
+This command lists the distributions and packages that are registered
+to a stack within the repository.  You can format the output to see
+the specific bits of information that you want.
 
 For a large repository, it can take fair amount of time to list
 everything.  You might consider using the C<--packages> or
@@ -85,32 +85,25 @@ stack as an argument. So the following examples are equivalent:
 
 =over 4
 
-=item --index
-
-Limits the listing to records for packages that are in the index.  Using
-the C<--noindex> option has the opposite effect of limiting the listing
-to records for packages that are not in the index.
-
 =item -D=PATTERN
 
 =item --distributions=PATTERN
 
-Limits the listing to records where the distributions path matches
+Limit the listing to records where the distributions path matches
 C<PATTERN>.  Note that C<PATTERN> is just a plain string, not a regular
 expression.  The C<PATTERN> will match if it appears anywhere in the
 distribution path.
 
 =item --format=FORMAT_SPECIFICATION
 
-Sets the format of the output using C<printf>-style placeholders.
-Valid placeholders are:
+Format of the output using C<printf>-style placeholders.  Valid
+placeholders are:
 
   Placeholder    Meaning
   -----------------------------------------------------------------------------
   %n             Package name
   %N             Package name-version
   %v             Package version
-  %x             Index status:                   (@) = is latest
   %y             Pin status:                     (+) = is pinned
   %m             Distribution maturity:          (d) = developer, (r) = release
   %p             Distribution index path [1]
@@ -122,6 +115,11 @@ Valid placeholders are:
   %D             Distribution name-version
   %w             Distribution version
   %u             Distribution url
+  %k             Stack name
+  %e             Stack description
+  %M             Stack status                   (*) = is master
+  %U             Stack last-modified-time
+  %j             Stack last-modified-user
   %%             A literal '%'
 
 
@@ -135,27 +133,26 @@ You can also specify the minimum field widths and left or right
 justification, using the usual notation.  For example, this is what
 the default format looks like.
 
-  %x%m%s %-38n %v %p\n
+  %m%s %-38n %v %p\n
 
 =item -P=PATTERN
 
 =item --packages=PATTERN
 
-Limits the listing to records where the package name matches
+Limit the listing to records where the package name matches
 C<PATTERN>.  Note that C<PATTERN> is just a plain string, not a
 regular expression.  The C<PATTERN> will match if it appears anywhere
 in the package name.
 
 =item --pinned
 
-Limits the listing to records for packages that are pinned.  Using the
-option C<--nopinned> has the opposite effect of limiting the listing
-to packages that are not pinned.
+Limit the listing to records for packages that are pinned.
 
 =item --stack=NAME
 
-List records for packages in the stack named C<NAME>.  If not
-specified, records for packages in the default stack will be listed.
+List the contents of the stack with the given NAME.  Defaults to the
+name of whichever stack is currently marked as the master stack.  Use
+the C<stack list> command to see the stacks in the repository.
 
 =back
 

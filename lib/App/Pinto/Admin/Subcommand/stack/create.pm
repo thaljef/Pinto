@@ -24,7 +24,6 @@ sub opt_spec {
 
     return (
         [ 'description|d=s' => 'Brief description of the stack' ],
-        [ 'message|m=s'     => 'Message for the revision log'   ],
     );
 
 
@@ -61,7 +60,8 @@ END_USAGE
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my $result = $self->pinto->run($self->action_name, %{$opts}, stack => $args->[0]);
+    my $result = $self->pinto->run($self->action_name, %{$opts},
+                                                       stack => $args->[0]);
 
     return $result->exit_status;
 }
@@ -81,12 +81,13 @@ __END__
 
 This command creates a new empty stack.
 
-Please see the C<remove> subcommand to remove a stack, or see the
-C<copy> subcommand to create a new stack from another one.
+Please see the C<stack copy> subcommand to create a new stack from
+another one, or the C<stack edit> subcommand to change a stack's
+properties after it has been created.
 
 =head1 SUBCOMMAND ARGUMENTS
 
-The one required argument is the name of the stack you wish to create.
+The required argument is the name of the stack you wish to create.
 Stack names must be alphanumeric (including "-" or "_") and will be
 forced to lowercase.
 
@@ -97,10 +98,6 @@ forced to lowercase.
 =item --description=TEXT
 
 Annotates this stack with a description of its purpose.
-
-=item --message=MESSAGE
-
-Use the given MESSAGE as the revision log message.
 
 =back
 

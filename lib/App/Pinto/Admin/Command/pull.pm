@@ -25,9 +25,9 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'norecurse'   => 'Do not recursively pull prereqs' ],
+        [ 'norecurse'   => 'Do not recursively pull prereqs'   ],
         [ 'pin'         => 'Pin all the packages to the stack' ],
-        [ 'stack|s=s'   => 'Put packages into this stack' ],
+        [ 'stack|s=s'   => 'Put packages into this stack'      ],
     );
 }
 
@@ -70,32 +70,25 @@ __END__
 
 =head1 DESCRIPTION
 
-This command locates a package in your upstream repositories and then
-pulls the distribution providing that package into your repository.
+This command locate packages in your upstream repositories and then
+pulls the distributions providing those packages into your repository.
 Then it recursively locates and pulls all the distributions that are
-necessary to satisfy its prerequisites.  You can also request to
-directly pull a particular distribution.
+necessary to satisfy their prerequisites.  You can also request to
+directly pull particular distributions.
 
 When locating packages, Pinto first looks at the the packages that
 already exist in the local repository, then Pinto looks at the
 packages that are available available on the upstream repositories.
-At present, Pinto takes the *first* package it can find that satisfies
-the prerequisite.  In the future, you may be able to direct Pinto to
-instead choose the *latest* package that satisfies the prerequisite.
-(NOT SURE THOSE LAST TWO STATEMENTS ARE TRUE).
 
-Pulled distributions will be assigned to their original author
-(compare this to the C<add> command which makes B<you> the author of
-the distribution).  Also, packages provided by pulled distributions
-are still considered foreign, so locally added packages will always
-override ones that you pulled, even if the pulled package has a
-higher version.
+You can also use this command to simply put packages into one stack or
+another, and those packages (or their prerequisites) may or may not
+already be in the repository.
 
 =head1 COMMAND ARGUMENTS
 
 Arguments are the targets that you want to pull.  Targets can be
 specified as packages (with or without a minimum version number) or
-as particular distributions.  For example:
+a distributions.  For example:
 
   Foo::Bar                                 # Pulls any version of Foo::Bar
   Foo::Bar-1.2                             # Pulls Foo::Bar 1.2 or higher
@@ -112,14 +105,14 @@ or ';') will be ignored.
 
 =item --norecurse
 
-Prevents L<Pinto> from recursively pulling any distributions required
-to satisfy prerequisites.
+Do not recursively pull any distributions required to satisfy
+prerequisites for the targets.
 
 =item --stack=NAME
 
-Instructs L<Pinto> to place all the packages within the distribution
-into the stack with the given NAME.  All packages are always placed
-in the C<default> stack as well.
+Adds all the packages on the stack with the given NAME.  Defaults to the
+name of whichever stack is currently marked as the master stack.  Use
+the C<stack list> command to see the stacks in the repository.
 
 =back
 

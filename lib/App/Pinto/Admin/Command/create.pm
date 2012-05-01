@@ -66,9 +66,9 @@ __END__
 
 This command creates a new, empty repository.  If the target directory
 does not exist, it will be created for you.  If it does already exist,
-then it must be empty.  The new repository will contain empty index
-files.  You can set the configuration parameters of the new repository
-using the command line options listed below.
+then it must be empty.  The new repository will contain an empty (but
+valid) index file.  You can set the configuration parameters of the
+new repository using the command line options listed below.
 
 =head1 COMMAND ARGUMENTS
 
@@ -77,12 +77,6 @@ None.
 =head1 COMMAND OPTIONS
 
 =over 4
-
-=item --devel
-
-Instructs L<Pinto> to include development releases in the index.  A
-development release is any archive that includes an underscore (_) in
-the last component of the version number.
 
 =item --source URL
 

@@ -53,8 +53,6 @@ This command is a no-operation.  It locks and initializes the
 repository, but does not perform any operations.  This is really only
 used for diagnostic purposes.  So don't worry about it too much.
 
-Note this command never changes the state of your repository.
-
 =head1 COMMAND ARGUMENTS
 
 None.

@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Subcommand::stack::list;
 
-# ABSTRACT: list names of stacks (or their contents)
+# ABSTRACT: show stacks (or their contents)
 
 use strict;
 use warnings;
@@ -92,15 +92,15 @@ __END__
 
 =head1 DESCRIPTION
 
-This command lists the names and descriptions of the stacks in the
-repository.  Or it will list the members of a particular stack.
+This command lists the names (and some other details) of all the
+stacks in the repository.  Or it will list the contents of a
+particular stack.
 
 =head1 SUBCOMMAND ARGUMENTS
 
-If given no arguments, then the names and descriptions of the stacks
-are shown.  If given a C<STACK> argument, then the members of
-that stack will be listed.  So the following two commands are
-equivalent:
+If given no arguments, then just stack names and basic information are
+shown.  If given a C<STACK> argument, then the contents of that stack
+will be listed instead.  So the following two commands are equivalent:
 
 $> pinto-admin --root=/some/dir list --stack=development
 $> pinto-admin --root=/some/dir stack list development
@@ -111,15 +111,16 @@ $> pinto-admin --root=/some/dir stack list development
 
 =item --format=FORMAT_SPECIFICATION
 
-Sets the format of each record in the listing with C<printf>-style
-placeholders.  Valid placeholders are:
+Format each record in the listing with C<printf>-style placeholders.
+Valid placeholders are:
 
   Placeholder    Meaning
   -----------------------------------------------------------------------------
   %k             Stack name
   %e             Stack description
-  %u             Last modification time of stack (as integer)
-  %U             Last modification time of stack (as human-readable string)
+  %M             Stack status                                    (*) = master
+  %U             Stack last-modified-on
+  %j             Stack last-modified-by
   %%             A literal '%'
 
 =back

@@ -77,6 +77,8 @@ __END__
 
 =head1 DESCRIPTION
 
+!! THIS COMMAND IS EXPERIMENTAL. DO NOT USE ON A LIVE REPOSITORY !!
+
 This command merges the packages from one stack (the C<SOURCE>) into
 another (the C<TARGET>).  Merge rules are as follows:
 
@@ -103,8 +105,8 @@ C<copy> or C<create> subcommands to create stacks.
 
 =head1 SUBCOMMAND ARGUMENTS
 
-The two required arguments are the name of the C<SOURCE> stack and the
-name of the C<TARGET> stack.
+Required arguments are the name of the C<SOURCE> stack and the name of
+the C<TARGET> stack.
 
 =head1 SUBCOMMAND OPTIONS
 
@@ -113,11 +115,8 @@ name of the C<TARGET> stack.
 =item --dryrun
 
 Conflicts will be reported, but the stacks will not be merged and the
-repository will not be changed.
-
-=item --message=MESSAGE
-
-Use the given MESSAGE for the revision log message.
+repository will not be changed.  Note: This option is currently not
+functional.
 
 =back
 

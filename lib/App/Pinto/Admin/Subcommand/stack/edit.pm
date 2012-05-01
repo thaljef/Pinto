@@ -70,7 +70,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir stack edit [OPTIONS] STACK
+  pinto-admin --root=/some/dir stack edit [OPTIONS] [STACK]
 
 =head1 DESCRIPTION
 
@@ -79,10 +79,10 @@ subcommand to display properties.
 
 =head1 SUBCOMMAND ARGUMENTS
 
-The one argument is the name of the stack you wish to edit the
-properties for.  If you do not specify a stack, it defaults to
-'default'.  Stack names must be alphanumeric (including "-" or "_")
-and will be forced to lowercase.
+The argument is the name of the stack you wish to edit the properties
+for.  If you do not specify a stack, it defaults to whichever stack is
+currently marked as master.  Stack names must be alphanumeric
+(including "-" or "_") and will be forced to lowercase.
 
 =head1 SUBCOMMAND OPTIONS
 
@@ -92,7 +92,7 @@ and will be forced to lowercase.
 
 Causes the selected stack to be marked as the master.  The master
 stack becomes the default stack for all operations where you do no not
-specify an explicit stack.  The master stack also becomes the index
+specify an explicit stack.  The master stack also governs the index
 file for your repository.  DO NOT CHANGE THE MASTER STACK WITHOUT DUE
 DILLIGENCE.  It has broad impact, especially if your repository has
 multiple users.
@@ -106,7 +106,7 @@ set multiple properties.  If the property with that name does not
 already exist, it will be created.  Property names must be
 alphanumeric, and may not contain spaces.  They will also be forced to
 lowercase.  Properties starting with the prefix 'pinto:' are reserved
-for internal use -- SO DO NOT CHANGE THEM.
+for internal use, SO DO NOT CHANGE THEM.
 
 =back
 

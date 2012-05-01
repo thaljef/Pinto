@@ -77,15 +77,15 @@ __END__
 
 =head1 DESCRIPTION
 
-This command shows the properties of a stack.  See the C<edit>
+This command shows the properties of a stack.  See the C<stack edit>
 subcommand to change the properties.
 
 =head1 SUBCOMMAND ARGUMENTS
 
-The one argument is the name of the stack you wish to see the
-properties for.  If you do not specify a stack, it defaults to
-'default'.  Stack names must be alphanumeric (including "-" or "_")
-and will be forced to lowercase.
+The argument is the name of the stack you wish to see the properties
+for.  If you do not specify a stack, it defaults to whichever stack is
+marked as the master.  Stack names must be alphanumeric (including "-"
+or "_") and will be forced to lowercase.
 
 =head1 SUBCOMMAND OPTIONS
 
@@ -93,8 +93,8 @@ and will be forced to lowercase.
 
 =item --format=FORMAT_SPECIFICATION
 
-Sets the format of the output using C<printf>-style placeholders.
-Valid placeholders are:
+Format the output using C<printf>-style placeholders.  Valid
+placeholders are:
 
   Placeholder    Meaning
   -----------------------------------------------------------------------------

@@ -25,22 +25,15 @@ __END__
 
 =head1 DESCRIPTION
 
-This command reports distributions that are listed in the index of
-your repository, but the archives are not actually present.  This can
-occur when L<Pinto> aborts unexpectedly due to an exception or you
-terminate a command prematurely.  It can also happen when the index of
-the source repository contains distributions that aren't actually
-present in that repository (CPAN mirrors are known to do this
-occasionally).
+This command reports distributions that are defined in the repository
+database, but the archives are not actually present.  This could occur
+when L<Pinto> aborts unexpectedly due to an exception or you terminate
+a command prematurely.
 
-If some foreign distributions are missing from your repository, then
-running a C<mirror> command will usually fix things.  If local
-distributions are missing, then you need to get a copy of that
-distribution use the C<add> command to put it back in the repository.
-Or, you can just use the C<remove> command to delete the local
-distribution from the index if you no longer care about it.
-
-Note this command never changes the state of your repository.
+At the moment, it isn't clear how to fix this situation.  In a future
+release you might be able to replace the archive for the distribution.
+But for now, this command simply lets you know if something has gone
+wrong in your repository.
 
 =head1 COMMAND ARGUMENTS
 

@@ -27,16 +27,15 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/path/to/repos [global options] stack COMMAND [command options] [ARGS]
+  pinto-admin --root=/path/to/repos [global options] stack SUBCOMMAND [subcommand options] [ARGS]
 
 =head1 DESCRIPTION
 
 The C<stack> command provides several subcommands for managing stacks.
 Each stack is a subset of the packages within the repository.  Stacks
-are used to manage the evolution of your dependencies.  You can
-"branch" and "merge" stacks, much like a version control system.
-Typical stack names are things like "development" or "production" or
-"feature-xyz".
+are used to manage the evolution of your dependencies.  You can "copy"
+and "merge" stacks, much like a version control system.  Typical stack
+names are things like "development" or "production" or "feature-xyz".
 
 =head1 SUBCOMMANDS
 
@@ -55,29 +54,26 @@ To see the complete manual for a subcommand:
 
   $> pinto-admin stack manual SUBCOMMAND
 
-=head1 THE DEFAULT STACK
+=head1 THE MASTER STACK
 
-Every package added to the repository must go into a stack.  But if
-that stack has pins that conflict with the incoming packages, then
-L<Pinto> will refuse to add all the packages in the archive to the
-stack.  But we don't want to lose that archive because it may not be
-available in the future.
+Many commands accept a stack name as an optional parameter.  In such
+cases, if you do not specify an explicit stack name, it defaults to
+whichever stack has been marked as the "master" stack.  The master
+stack also governs which packages appear in the static index file for
+your repository.
 
-L<Pinto> has a built-in stack named C<default>.  You cannot pin
-packages on the C<default> stack nor can you delete the C<default>
-stack.  So the C<default> stack provides a safe landing place for
-packages so L<Pinto> never has to completely reject an archive that
-has conflicting packages.  Whenever you add a package to a custom
-stack, L<Pinto> automatically adds it to the C<default> stack as well.
+When you first create a repository, it has a stack named "default" and
+it is marked as the master.  So initially, the default stack name for
+all commands is "default".
 
-If there was a conflict in your custom stack, the package will still
-be in the repository under the C<default> stack.  Once you've resolved
-the conflict (usually by removing the right pins) then you can put the
-new packages into your custom stack without having to go get another
-copy of the archive (which may not exist by now).
+Over time, you may create new stacks which you can view with the
+C<stack list> command.  At some point, you may wish to select one of
+them to become the new master stack, which you can do with the
+C<stack edit> command.  Be sure to read and understand the caveats
+about changing the master stack.
 
 =head1 SEE ALSO
 
-L<pinto-admin> for global command options.
+L<pinto-admin> for global options.
 
 =cut

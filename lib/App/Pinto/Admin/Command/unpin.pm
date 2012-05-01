@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::unpin;
 
-# ABSTRACT: free a package that has been pinned
+# ABSTRACT: free a packages that have been pinned
 
 use strict;
 use warnings;
@@ -21,7 +21,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'stack|s=s'   => 'Name of stack to unpin' ],
+        [ 'stack|s=s' => 'Stack from which to unpin the target' ],
     );
 }
 
@@ -63,13 +63,24 @@ __END__
 
 =head1 DESCRIPTION
 
-This command unpins a package in the stack, so that the package can be
-merged into another stack with a newer version of the package, or the
-package can be upgraded to a newer version within this stack.
+This command unpins package in the stack, so that the stack can be
+merged into another stack with a newer packages, or so the packages
+can be upgraded to a newer version within this stack.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the names of the packages you wish to unpin.
+Arguments are the targets you wish to unpin.  Targets can be
+specified as packages or distributions, such as:
+
+  Some::Package
+  Some::Other::Package
+
+  AUTHOR/Some-Dist-1.2.tar.gz
+  AUTHOR/Some-Other-Dist-1.3.zip
+
+When unpinning a distribution, all the packages in that distribution
+become unpinned.  Likewise when unpinning a package, all its sister
+packages in the same distributon also become unpinned.
 
 You can also pipe arguments to this command over STDIN.  In that case,
 blank lines and lines that look like comments (i.e. starting with "#"
@@ -81,7 +92,9 @@ or ';') will be ignored.
 
 =item --stack=NAME
 
-Unpin the package on the stack with the given NAME.  Defaults to C<default>.
+Unpins the package on the stack with the given NAME.  Defaults to the
+name of whichever stack is currently marked as the master stack.  Use
+the C<stack list> command to see your stacks.
 
 =back
 

@@ -24,7 +24,6 @@ sub opt_spec {
 
     return (
         [ 'description|d=s' => 'Brief description of the stack' ],
-        [ 'message|m=s'     => 'Message for the revision log'  ],
     );
 
 
@@ -75,22 +74,23 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir stack copy [OPTIONS] STACK NEW_STACK
+  pinto-admin --root=/some/dir stack copy [OPTIONS] FROM_STACK TO_STACK
 
 =head1 DESCRIPTION
 
 This command creates a new stack by copying an existing one.  All the
-pins from the existing stack will also be copied to the new one.  The
-new stack must not already exist.
+pins and properties from the existing stack will also be copied to the
+new one.  The new stack must not already exist.
 
-Please see the C<remove> subcommand to remove a stack, or see the
-C<create> subcommand to create a new empty stack.
+Please see the C<stack create> subcommand to create a new empty stack, or
+the C<stack edit> subcommand to change a stack's properties after it has
+been created.
 
 =head1 SUBCOMMAND ARGUMENTS
 
-The two required arguments are the name of the source and target stacks.
-Stack names must be alphanumeric (including "-" or "_") and will be
-forced to lowercase.
+The two required arguments are the name of the source and target
+stacks.  Stack names must be alphanumeric (including "-" or "_") and
+will be forced to lowercase.
 
 =head1 SUBCOMMAND OPTIONS
 
@@ -98,11 +98,7 @@ forced to lowercase.
 
 =item --description=TEXT
 
-Annotates this stack with a description of its purpose.
-
-=item --message=MESSAGE
-
-Use the given message as the revision log message.
+Annotates the new stack with a brief description of its purpose.
 
 =back
 
