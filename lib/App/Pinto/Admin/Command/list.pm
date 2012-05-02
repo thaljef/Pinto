@@ -80,6 +80,9 @@ stack as an argument. So the following examples are equivalent:
   pinto-admin --root /some/dir list --stack dev
   pinto-admin --root /some/dir list dev
 
+A stack specified as an argument in this fashion will override any
+stack specified with the C<--stack> option.
+
 =head1 COMMAND OPTIONS
 
 =over 4
@@ -153,7 +156,7 @@ List the contents of the stack with the given NAME.  Defaults to the
 name of whichever stack is currently marked as the master stack.  Use
 the C<stack list> command to see the stacks in the repository.
 
-If the stack name is '*' then the contents of all stacks will be
+If the stack name is '@' then the contents of all stacks will be
 listed.  And unless an explicit C<--format> was given, the listing
 will include the name of the stack on each record.
 

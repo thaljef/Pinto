@@ -59,7 +59,7 @@ sub execute {
     my $stk_name = $self->stack;
     my $format;
 
-    if (defined $stk_name and $stk_name eq '*') {
+    if (defined $stk_name and $stk_name eq '@') {
         # If listing all stacks, then include the stack name
         # in the listing, unless a custom format has been given
         $format = $self->has_format ? $self->format
