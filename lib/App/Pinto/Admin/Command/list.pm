@@ -28,7 +28,6 @@ sub opt_spec {
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'format=s'          => 'Format specification (See POD for details)' ],
         [ 'stack|s=s'         => 'List a stack other than the default' ],
-
     );
 }
 
@@ -153,6 +152,10 @@ Limit the listing to records for packages that are pinned.
 List the contents of the stack with the given NAME.  Defaults to the
 name of whichever stack is currently marked as the master stack.  Use
 the C<stack list> command to see the stacks in the repository.
+
+If the stack name is '*' then the contents of all stacks will be
+listed.  And unless an explicit C<--format> was given, the listing
+will include the name of the stack on each record.
 
 =back
 
