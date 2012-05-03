@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::verify;
 
-# ABSTRACT: report distributions that are missing
+# ABSTRACT: report archives that are missing
 
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-# ABSTRACT: pull distributions from upstream repositories
+# ABSTRACT: pull archives from upstream repositories
 
 package App::Pinto::Admin::Command::pull;
 

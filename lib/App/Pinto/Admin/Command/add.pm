@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::add;
 
-# ABSTRACT: add local distributions to the repository
+# ABSTRACT: add local archives to the repository
 
 use strict;
 use warnings;

@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::list;
 
-# ABSTRACT: list the contents of a stack
+# ABSTRACT: show the packages in a stack
 
 use strict;
 use warnings;

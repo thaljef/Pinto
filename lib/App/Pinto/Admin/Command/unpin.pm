@@ -1,6 +1,6 @@
 package App::Pinto::Admin::Command::unpin;
 
-# ABSTRACT: free a packages that have been pinned
+# ABSTRACT: free packages that have been pinned
 
 use strict;
 use warnings;
