@@ -1,8 +1,10 @@
-package Pinto::Role::Loggable;
-
 # ABSTRACT: Something that wants to log its activity
 
+package Pinto::Role::Loggable;
+
 use Moose::Role;
+
+use Pinto::Logger;
 
 use namespace::autoclean;
 
