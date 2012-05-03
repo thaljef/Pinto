@@ -18,7 +18,7 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
 
 {
   my $archive = make_dist_archive("ME/Foo-Bar-0.01=Foo-0.01,Bar-0.01~Baz-1.2");
-  my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
+  my $local = Pinto::Tester->new(init_args => {sources => $source->root_url});
   $local->run_ok('Add', {archives => $archive, author => 'ME'});
 
   $local->registration_ok('ME/Foo-Bar-0.01/Foo-0.01');
@@ -31,7 +31,7 @@ $source->populate('PAUL/Nuts-2.3=Nuts-2.3');
 
 {
   my $archive = make_dist_archive("ME/Foo-Bar-0.01=Foo-0.01,Bar-0.01~Baz-2.4");
-  my $local = Pinto::Tester->new(creator_args => {sources => $source->root_url});
+  my $local = Pinto::Tester->new(init_args => {sources => $source->root_url});
   $local->run_throws_ok( 'Add', {archives => $archive, author => 'ME'},
                           qr/Cannot find prerequisite Baz-2.4/);
 }

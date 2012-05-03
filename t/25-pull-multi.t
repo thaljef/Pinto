@@ -27,7 +27,7 @@ my $sources  = sprintf '%s %s', $source_1->root_url, $source_2->root_url;
 
 {
   # DistB-1 requires PkgC-2.  Source 1 has PkgC-1, but source 2 has PkgC-2
-  my $local = Pinto::Tester->new( creator_args => {sources => $sources} );
+  my $local = Pinto::Tester->new( init_args => {sources => $sources} );
   $local->run_ok('Pull', {targets => 'PkgA-1'});
   $local->registration_ok('JOHN/DistA-1/PkgA-1');
   $local->registration_ok('JOHN/DistB-1/PkgB-1');
@@ -38,7 +38,7 @@ my $sources  = sprintf '%s %s', $source_1->root_url, $source_2->root_url;
 
 {
   # DistD-1 requires PkgC-1. Source 1 has newer PkgC-1, but source 2 has newer PkgC-2
-  my $local = Pinto::Tester->new( creator_args => {sources => $sources} );
+  my $local = Pinto::Tester->new( init_args => {sources => $sources} );
   $local->run_ok('Pull', {targets => 'PkgD-1'});
   $local->registration_ok('JOHN/DistD-1/PkgD-1');
   $local->registration_ok('FRED/DistC-2/PkgC-2');

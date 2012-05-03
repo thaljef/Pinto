@@ -1,6 +1,6 @@
-package Pinto::Creator;
+package Pinto::Initializer;
 
-# ABSTRACT: Creates a new Pinto repository
+# ABSTRACT: Initializes a new Pinto repository
 
 use Moose;
 
@@ -28,7 +28,7 @@ with qw( Pinto::Role::Loggable
 #------------------------------------------------------------------------------
 
 
-sub create {
+sub init {
     my ($self, %args) = @_;
 
     # Sanity checks

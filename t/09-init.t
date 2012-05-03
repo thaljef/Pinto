@@ -27,7 +27,7 @@ is $pinto->config->sources,  'http://cpan.perl.org', 'Got default sources';
 # Test custom config
 
 my $config = {sources => 'MySource', log_level => 'debug'};
-$t = Pinto::Tester->new(creator_args => $config);
+$t = Pinto::Tester->new(init_args => $config);
 $pinto = $t->pinto;
 
 is $pinto->config->log_level,   'debug',  'Got custom log_level';

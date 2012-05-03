@@ -15,7 +15,7 @@ use Test::Exception;
 
 use Pinto;
 use Pinto::Util;
-use Pinto::Creator;
+use Pinto::Initializer;
 use Pinto::Tester::Util qw(make_dist_struct make_dist_archive parse_reg_spec);
 use Pinto::Types qw(Uri Dir);
 
@@ -37,11 +37,11 @@ has pinto_args => (
 );
 
 
-has creator_args => (
+has init_args => (
    isa        => HashRef,
    default    => sub { {} },
    traits     => ['Hash'],
-   handles    => { creator_args => 'elements' },
+   handles    => { init_args => 'elements' },
 );
 
 
@@ -86,8 +86,8 @@ sub _build_pinto {
                          verbose     => 3, );
 
 
-    my $creator = Pinto::Creator->new(%defaults, %log_defaults);
-    $creator->create( $self->creator_args() );
+    my $initializer = Pinto::Initializer->new(%defaults, %log_defaults);
+    $initializer->init( $self->init_args );
 
     my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args());
     return $pinto;

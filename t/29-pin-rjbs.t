@@ -19,7 +19,7 @@ $cpan->populate( qw( JOHN/DistA-1=PkgA-1~PkgB-1
 
 #------------------------------------------------------------------------------
 
-my $local = Pinto::Tester->new(creator_args => {sources => $cpan->root_url});
+my $local = Pinto::Tester->new(init_args => {sources => $cpan->root_url});
 
 # PkgA requires PkgB (above). MyDist requires both PkgA and PkgB...
 my $archive =  make_dist_archive('MyDist-1=MyPkg-1~PkgA-1,PkgB-1');

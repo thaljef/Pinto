@@ -1,4 +1,4 @@
-package App::Pinto::Admin::Command::create;
+package App::Pinto::Admin::Command::init;
 
 # ABSTRACT: create a new empty repository
 
@@ -21,7 +21,6 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'devel'       => 'Include development releases in the repository index' ],
         [ 'log_level=s' => 'Minimum logging level for the repository log file'    ],
         [ 'source=s@'   => 'URL of upstream repository (repeatable)' ],
     );
@@ -41,8 +40,8 @@ sub execute {
     # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
     $opts->{sources} = join ' ', @{ delete $opts->{source} } if defined $opts->{source};
 
-    my $creator = Pinto::Creator->new( %{ $global_opts } );
-    $creator->create( %{$opts} );
+    my $initializer = Pinto::Initializer->new( %{ $global_opts } );
+    $initializer->init( %{$opts} );
     return 0;
 }
 
