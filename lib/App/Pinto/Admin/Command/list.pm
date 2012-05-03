@@ -119,7 +119,7 @@ placeholders are:
   %u             Distribution url
   %k             Stack name
   %e             Stack description
-  %M             Stack status                   (*) = is master
+  %M             Stack status                   (*) = is default
   %U             Stack last-modified-time
   %j             Stack last-modified-user
   %%             A literal '%'
@@ -153,7 +153,7 @@ Limit the listing to records for packages that are pinned.
 =item --stack=NAME
 
 List the contents of the stack with the given NAME.  Defaults to the
-name of whichever stack is currently marked as the master stack.  Use
+name of whichever stack is currently marked as the default stack.  Use
 the L<stacks|App::Pinto::Admin::Command::stack> command to see the
 stacks in the repository.
 

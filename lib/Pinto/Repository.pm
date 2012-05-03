@@ -135,7 +135,7 @@ C<$stack_name>.  If there is no stack with such a name in the
 repository, throws an exception.  If the C<nocroak> option is true,
 than an exception will not be thrown and undef will be returned.  If
 you do not specify a stack name (or it is undefined) then you'll get
-whatever stack is currently marked as the master stack.
+whatever stack is currently marked as the default stack.
 
 =cut
 
@@ -144,7 +144,7 @@ sub get_stack {
 
     my $stk_name = $args{name};
     return $stk_name if ref $stk_name;  # Is object (or struct) so just return
-    return $self->get_master_stack if not $stk_name;
+    return $self->get_default_stack if not $stk_name;
 
     my $where = { name => $stk_name };
     my $stack = $self->db->select_stack( $where );
@@ -157,24 +157,24 @@ sub get_stack {
 
 #-------------------------------------------------------------------------------
 
-=method get_master_stack()
+=method get_default_stack()
 
 Returns the L<Pinto::Schema::Result::Stack> that is currently marked
-as the master stack in this repository.  This is what you get when you
+as the default stack in this repository.  This is what you get when you
 call C<get_stack> without any arguments.
 
-At any time, there must be exactly one master stack.  This method will
+At any time, there must be exactly one default stack.  This method will
 throw an exception if it discovers that condition is not true.
 
 =cut
 
-sub get_master_stack {
+sub get_default_stack {
     my ($self) = @_;
 
-    my $where = {is_master => 1};
+    my $where = {is_default => 1};
     my @stacks = $self->db->select_stacks( $where )->all;
 
-    throw "PANIC! There must be exactly one master stack" if @stacks != 1;
+    throw "PANIC! There must be exactly one default stack" if @stacks != 1;
 
     return $stacks[0];
 }

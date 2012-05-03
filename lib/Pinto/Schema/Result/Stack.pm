@@ -37,7 +37,7 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
-=head2 is_master
+=head2 is_default
 
   data_type: 'integer'
   is_nullable: 0
@@ -59,7 +59,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
-  "is_master",
+  "is_default",
   { data_type => "integer", is_nullable => 0 },
   "last_modified_on",
   { data_type => "integer", is_nullable => 0 },
@@ -139,8 +139,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 23:42:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+cZifKwSL/tyNuAyPZfviQ
+# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-05-03 00:46:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2X9BNMm9xjPjECGdDWDVXA
 
 #-------------------------------------------------------------------------------
 
@@ -171,7 +171,7 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
-  $args->{is_master} ||= 0;
+  $args->{is_default} ||= 0;
   $args->{last_modified_on} ||= time;
   $args->{last_modified_by} ||= $ENV{USER};
 
@@ -183,14 +183,14 @@ sub FOREIGNBUILDARGS {
 
 before delete => sub {
     my ($self, @args) = @_;
-    throw 'You cannot remove the master stack' if $self->is_master;
+    throw 'You cannot remove the default stack' if $self->is_default;
 };
 
 #------------------------------------------------------------------------------
 
-before is_master => sub {
+before is_default => sub {
     my ($self, @args) = @_;
-    throw 'You cannot directly set is_master.  Use mark_as_master' if @args;
+    throw 'You cannot directly set is_default.  Use mark_as_default' if @args;
 };
 
 #------------------------------------------------------------------------------
@@ -215,7 +215,7 @@ sub copy {
   throw "Stack $to_stack_name already exists"
     if $self->result_source->resultset->find({name => $to_stack_name});
 
-  $changes->{is_master} = 0; # Never duplicate the master flag
+  $changes->{is_default} = 0; # Never duplicate the default flag
 
   return $self->next::method($changes);
 }
@@ -264,20 +264,20 @@ sub copy_members {
 
 #------------------------------------------------------------------------------
 
-sub mark_as_master {
+sub mark_as_default {
     my ($self) = @_;
 
-    if ($self->is_master) {
-        $self->warning("Stack $self is already the master");
+    if ($self->is_default) {
+        $self->warning("Stack $self is already the default");
         return 0;
     }
 
-    $self->debug('Marking all stacks as non-master');
+    $self->debug('Marking all stacks as non-default');
     my $rs = $self->result_source->resultset->search;
-    $rs->update_all( {is_master => 0} );
+    $rs->update_all( {is_default => 0} );
 
-    $self->warning("Marking stack $self as master");
-    $self->update({is_master => 1});
+    $self->warning("Marking stack $self as default");
+    $self->update({is_default => 1});
 
     return 1;
 }
@@ -372,7 +372,7 @@ sub to_string {
 
     my %fspec = (
            k => sub { $self->name                                          },
-           M => sub { $self->is_master              ? '*' : ' '            },
+           M => sub { $self->is_default              ? '*' : ' '           },
            j => sub { $self->last_modified_by                              },
            u => sub { $self->last_modified_on                              },
            U => sub { Pinto::Util::ls_time_format($self->last_modified_on) },

@@ -46,7 +46,7 @@ __END__
 =head1 DESCRIPTION
 
 This command reports some statistics about the repository.  It is
-currently only reports information about the master stack.
+currently only reports information about the default stack.
 
 =head1 COMMAND ARGUMENTS
 

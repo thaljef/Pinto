@@ -145,7 +145,7 @@ sub write_index {
                                           db     => $self );
 
     my $index_file = $self->config->index_file;
-    my $stack = $self->select_stacks({is_master => 1})->single->name;
+    my $stack = $self->select_stacks({is_default => 1})->single->name;
     $writer->write(file => $index_file, stack => $stack);
 
     return $self;

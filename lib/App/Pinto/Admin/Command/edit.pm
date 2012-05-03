@@ -18,7 +18,7 @@ use base 'App::Pinto::Admin::Command';
 sub opt_spec {
 
     return (
-        ['master'              => 'mark the stack as master'],
+        ['default'             => 'mark stack as the default'     ],
         ['properties|props=s%' => 'name=value pairs of properties'],
     );
 }
@@ -82,21 +82,21 @@ properties.
 
 The argument is the name of the stack you wish to edit the properties
 for.  If you do not specify a stack, it defaults to whichever stack is
-currently marked as master.  Stack names must be alphanumeric
+currently marked as default.  Stack names must be alphanumeric
 (including "-" or "_") and will be forced to lowercase.
 
 =head1 COMMAND OPTIONS
 
 =over 4
 
-=item --master
+=item --default
 
-Causes the selected stack to be marked as the master.  The master
-stack becomes the default stack for all operations where you do no not
-specify an explicit stack.  The master stack also governs the index
-file for your repository.  DO NOT CHANGE THE MASTER STACK WITHOUT DUE
-DILLIGENCE.  It has broad impact, especially if your repository has
-multiple users.
+Causes the selected stack to be marked as the "default".  The
+"default" stack becomes the default for all operations where you do no
+not specify an explicit stack.  The default stack also governs the
+index file for your repository.  DO NOT CHANGE THE DEFAULT STACK
+WITHOUT DUE DILLIGENCE.  It has broad impact, especially if your
+repository has multiple users.
 
 =item --properties name1=value1
 

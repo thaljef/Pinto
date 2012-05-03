@@ -138,7 +138,7 @@ sub _create_db {
                                    logger => $self->logger );
     $db->deploy;
 
-    my $stack_attrs = {name => 'default', is_master => 1};
+    my $stack_attrs = {name => 'default', is_default => 1};
     my $stack = $db->schema->resultset('Stack')->create($stack_attrs);
     $stack->set_property('description' => 'the default stack');
 

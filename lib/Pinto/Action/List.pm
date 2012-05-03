@@ -67,7 +67,7 @@ sub execute {
     }
     else{
         # Otherwise, list only the named stack, falling back to
-        # the master stack if no stack was named at all.
+        # the default stack if no stack was named at all.
         my $stack = $self->repos->get_stack(name => $stk_name);
         $where->{'stack.name'} = $stack->name;
         $format = $self->format;

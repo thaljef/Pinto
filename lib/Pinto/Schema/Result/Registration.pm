@@ -313,7 +313,7 @@ sub to_string {
          w => sub { $self->package->distribution->version                       },
          u => sub { $self->package->distribution->url                           },
          k => sub { $self->stack->name                                          },
-         M => sub { $self->stack->is_master                 ? '*' : ' '         },
+         M => sub { $self->stack->is_default                 ? '*' : ' '         },
          e => sub { $self->stack->get_property('description')                   },
          u => sub { $self->stack->last_modified_on                              },
          U => sub { Pinto::Util::ls_time_format($self->stack->last_modified_on) },

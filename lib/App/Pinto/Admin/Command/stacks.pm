@@ -86,7 +86,7 @@ Valid placeholders are:
   -----------------------------------------------------------------------------
   %k             Stack name
   %e             Stack description
-  %M             Stack master status                               (*) = master
+  %M             Stack default status                               (*) = default
   %U             Stack last-modified-on
   %j             Stack last-modified-by
   %%             A literal '%'

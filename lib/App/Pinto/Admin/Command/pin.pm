@@ -100,7 +100,7 @@ or ';') will be ignored.
 =item --stack=NAME
 
 Pins the package on the stack with the given NAME.  Defaults to the
-name of whichever stack is currently marked as the master stack.  Use
+name of whichever stack is currently marked as the default stack.  Use
 the L<stacks|App::Pinto::Admin::Command::stacks> command to see the
 stacks in the repository.
 

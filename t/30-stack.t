@@ -66,24 +66,24 @@ my $t = Pinto::Tester->new;
 
 {
 
-  # Marking master stack...
+  # Marking default stack...
   my $default_stack = $t->pinto->repos->get_stack;
   ok defined $default_stack, 'get_stack with no args returned a stack';
-  ok $default_stack->is_master, 'default stack is the master stack';
+  ok $default_stack->is_default, 'default stack is the default stack';
 
   my $dev_stack = $t->pinto->repos->get_stack(name => 'dev');
   ok defined $dev_stack, 'got the dev stack';
 
 
-  $dev_stack->mark_as_master;
-  ok $dev_stack->is_master, 'dev stack is now master';
+  $dev_stack->mark_as_default;
+  ok $dev_stack->is_default, 'dev stack is now default';
 
   # Force reload from DB...
   $default_stack->discard_changes;
-  ok !$default_stack->is_master, 'default stack is no longer master';
+  ok !$default_stack->is_default, 'default stack is no longer default';
 
-  throws_ok { $default_stack->is_master(0) } qr/cannot directly set is_master/,
-    'Setting is_master directly throws exception';
+  throws_ok { $default_stack->is_default(0) } qr/cannot directly set is_default/,
+    'Setting is_default directly throws exception';
 }
 
 #------------------------------------------------------------------------------

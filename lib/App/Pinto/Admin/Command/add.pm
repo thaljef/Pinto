@@ -114,7 +114,7 @@ L<pin|App::Pinto::Admin::Command::pin> command, if you so desire.
 =item --stack=NAME
 
 Puts all the packages onto the stack with the given NAME.  Defaults
-to the name of whichever stack is currently marked as the master
+to the name of whichever stack is currently marked as the default
 stack.  Use the L<stacks|App::Pinto::Admin::Command::stacks> command
 to see the stacks in the repository.
 

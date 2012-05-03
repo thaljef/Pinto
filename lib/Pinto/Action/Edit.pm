@@ -24,7 +24,7 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->get_stack(name => $self->stack);
-    $stack->mark_as_master if $self->master;
+    $stack->mark_as_default if $self->default;
     $stack->set_properties($self->properties);
 
     return $self->result->changed;
