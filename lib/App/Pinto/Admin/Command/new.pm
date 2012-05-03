@@ -1,6 +1,6 @@
 # ABSTRACT: create a new empty stack
 
-package App::Pinto::Admin::Command::create;
+package App::Pinto::Admin::Command::new;
 
 use strict;
 use warnings;
