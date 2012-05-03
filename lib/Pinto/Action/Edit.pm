@@ -1,6 +1,6 @@
 # ABSTRACT: Change stack properties
 
-package Pinto::Action::Stack::Edit;
+package Pinto::Action::Edit;
 
 use Moose;
 
@@ -16,7 +16,7 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Stack::Edit );
+with qw( Pinto::Role::Interface::Action::Edit );
 
 #------------------------------------------------------------------------------
 

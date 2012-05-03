@@ -1,13 +1,13 @@
-# ABSTRACT: create a new stack by copying another
+# ABSTRACT: create a new empty stack
 
-package App::Pinto::Admin::Subcommand::stack::copy;
+package App::Pinto::Admin::Command::create;
 
 use strict;
 use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Admin::Subcommand';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ use base 'App::Pinto::Admin::Subcommand';
 
 #------------------------------------------------------------------------------
 
-sub command_names { qw(copy cp) }
+sub command_names { qw(create new) }
 
 #------------------------------------------------------------------------------
 
@@ -30,11 +30,12 @@ sub opt_spec {
 }
 
 #------------------------------------------------------------------------------
+
 sub validate_args {
     my ($self, $opts, $args) = @_;
 
-    $self->usage_error('Must specify FROM_STACK and TO_STACK')
-        if @{$args} != 2;
+    $self->usage_error('Must specify exactly one stack')
+        if @{$args} != 1;
 
     return 1;
 }
@@ -47,7 +48,7 @@ sub usage_desc {
     my ($command) = $self->command_names();
 
     my $usage =  <<"END_USAGE";
-%c --root=PATH stack $command [OPTIONS] FROM_STACK TO_STACK
+%c --root=PATH stack $command [OPTIONS] STACK
 END_USAGE
 
     chomp $usage;
@@ -59,8 +60,8 @@ END_USAGE
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my %stacks = ( from_stack => $args->[0], to_stack => $args->[1] );
-    my $result = $self->pinto->run($self->action_name, %{$opts}, %stacks);
+    my $result = $self->pinto->run($self->action_name, %{$opts},
+                                                       stack => $args->[0]);
 
     return $result->exit_status;
 }
@@ -74,32 +75,31 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto-admin --root=/some/dir stack copy [OPTIONS] FROM_STACK TO_STACK
+  pinto-admin --root=/some/dir stack create [OPTIONS] STACK
 
 =head1 DESCRIPTION
 
-This command creates a new stack by copying an existing one.  All the
-pins and properties from the existing stack will also be copied to the
-new one.  The new stack must not already exist.
+This command creates a new empty stack.
 
-Please see the C<stack create> subcommand to create a new empty stack, or
-the C<stack edit> subcommand to change a stack's properties after it has
-been created.
+Please see the C<stack copy> subcommand to create a new stack from
+another one, or the C<stack edit> subcommand to change a stack's
+properties after it has been created.
 
-=head1 SUBCOMMAND ARGUMENTS
+=head1 COMMAND ARGUMENTS
 
-The two required arguments are the name of the source and target
-stacks.  Stack names must be alphanumeric (including "-" or "_") and
-will be forced to lowercase.
+The required argument is the name of the stack you wish to create.
+Stack names must be alphanumeric (including "-" or "_") and will be
+forced to lowercase.
 
-=head1 SUBCOMMAND OPTIONS
+=head1 COMMAND OPTIONS
 
 =over 4
 
 =item --description=TEXT
 
-Annotates the new stack with a brief description of its purpose.
+Annotates this stack with a description of its purpose.
 
 =back
 
 =cut
+

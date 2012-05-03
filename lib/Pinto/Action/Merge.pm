@@ -1,6 +1,6 @@
 # ABSTRACT: Merge packages from one stack into another
 
-package Pinto::Action::Stack::Merge;
+package Pinto::Action::Merge;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);

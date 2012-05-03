@@ -36,7 +36,7 @@ $cpan->populate( qw( JOHN/DistA-2=PkgA-2~PkgB-2
 $local->clear_cache; # Make sure we get new index from CPAN
 
 # We would like to try and upgrade to PkgA-2.  So create a new stack
-$local->run_ok('Stack::Copy', {from_stack => 'default', to_stack => 'xxx'});
+$local->run_ok('Copy', {from_stack => 'default', to_stack => 'xxx'});
 
 # Now upgrade to PkgA-2 on the xxx stack
 $local->run_ok('Pull', {targets => 'PkgA-2', stack => 'xxx'});
@@ -70,7 +70,7 @@ $local->run_ok('Unpin', {targets => 'PkgB'});
 $local->registration_ok('FRED/DistB-1/PkgB-1/default/-');
 
 # Now we can bring over the work that was done on the xxx stack...
-$local->run_ok('Stack::Merge', {from_stack => 'xxx', to_stack => 'default'});
+$local->run_ok('Merge', {from_stack => 'xxx', to_stack => 'default'});
 
 # And now the default stack should have all the latest and greatest...
 $local->registration_ok('JOHN/DistA-2/PkgA-2');

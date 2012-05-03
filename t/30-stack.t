@@ -18,7 +18,7 @@ my $t = Pinto::Tester->new;
 {
   # Create a new stack...
   my ($stk_name, $stk_desc) = ('dev', 'the development stack');
-  $t->run_ok('Stack::Create', {stack => $stk_name, description => $stk_desc});
+  $t->run_ok('New', {stack => $stk_name, description => $stk_desc});
   my $stack = $t->pinto->repos->get_stack(name => $stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
   is $stack->get_property('description'), $stk_desc, 'Got correct stack description';
@@ -47,7 +47,7 @@ my $t = Pinto::Tester->new;
   # Copy dev -> qa...
   my $dev_stk_name = 'dev';
   my ($qa_stk_name, $qa_stk_desc) = ('qa', 'the qa stack');
-  $t->run_ok('Stack::Copy', {from_stack  => $dev_stk_name,
+  $t->run_ok('Copy', {from_stack  => $dev_stk_name,
                              to_stack    => $qa_stk_name,});
 
   my $dev_stack = $t->pinto->repos->get_stack(name => $dev_stk_name);
@@ -90,24 +90,24 @@ my $t = Pinto::Tester->new;
 
 {
   # Copy from a stack that doesn't exist
-  $t->run_throws_ok('Stack::Copy', {from_stack => 'nowhere',
+  $t->run_throws_ok('Copy', {from_stack => 'nowhere',
                                     to_stack   => 'somewhere'},
                                     qr/Stack nowhere does not exist/);
 
 
   # Copy to a stack that already exists
-  $t->run_throws_ok('Stack::Copy', {from_stack => 'default',
+  $t->run_throws_ok('Copy', {from_stack => 'default',
                                     to_stack   => 'dev'},
                                     qr/Stack dev already exists/);
 
 
   # Create stack with invalid name
-  $t->run_throws_ok('Stack::Create', {stack => '$bogus@'},
+  $t->run_throws_ok('New', {stack => '$bogus@'},
                                       qr/Invalid stack name/);
 
 
   # Copy to stack with invalid name
-  $t->run_throws_ok('Stack::Copy', {from_stack => 'default',
+  $t->run_throws_ok('Copy', {from_stack => 'default',
                                     to_stack   => '$bogus@'},
                                     qr/Invalid stack name/);
 }

@@ -1,6 +1,6 @@
-# ABSTRACT: An action to create a new stack by copying another
+# ABSTRACT: Create a new empty stack
 
-package Pinto::Action::Stack::Copy;
+package Pinto::Action::New;
 
 use Moose;
 
@@ -16,25 +16,22 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Stack::Copy );
+with qw( Pinto::Role::Interface::Action::New );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->from_stack);
-    my $copy = $stack->copy_deeply({name => $self->to_stack});
-    my $description = $self->description || "copy of stack $stack";
-    $copy->set_property('description' => $description);
-    $copy->touch($stack->last_modified_on);
+    my $stack = $self->repos->create_stack(name => $self->stack);
+    $stack->set_property('description' => $self->description);
 
     return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable;
+__PACKAGE__->meta->make_immutable();
 
 #------------------------------------------------------------------------------
 

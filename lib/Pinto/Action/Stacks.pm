@@ -1,6 +1,6 @@
 # ABSTRACT: List known stacks in the repository
 
-package Pinto::Action::Stack::List;
+package Pinto::Action::Stacks;
 
 use Moose;
 
@@ -16,7 +16,7 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Stack::List );
+with qw( Pinto::Role::Interface::Action::Stacks );
 
 #------------------------------------------------------------------------------
 

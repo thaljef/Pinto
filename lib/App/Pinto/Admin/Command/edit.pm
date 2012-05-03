@@ -1,13 +1,13 @@
 # ABSTRACT: change stack properties
 
-package App::Pinto::Admin::Subcommand::stack::edit;
+package App::Pinto::Admin::Command::edit;
 
 use strict;
 use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Admin::Subcommand';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
@@ -77,14 +77,14 @@ __END__
 This command edits the properties of a stack.  See the C<props>
 subcommand to display properties.
 
-=head1 SUBCOMMAND ARGUMENTS
+=head1 COMMAND ARGUMENTS
 
 The argument is the name of the stack you wish to edit the properties
 for.  If you do not specify a stack, it defaults to whichever stack is
 currently marked as master.  Stack names must be alphanumeric
 (including "-" or "_") and will be forced to lowercase.
 
-=head1 SUBCOMMAND OPTIONS
+=head1 COMMAND OPTIONS
 
 =over 4
 

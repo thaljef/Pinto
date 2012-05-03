@@ -1,13 +1,13 @@
 # ABSTRACT: merge one stack into another
 
-package App::Pinto::Admin::Subcommand::stack::merge;
+package App::Pinto::Admin::Command::merge;
 
 use strict;
 use warnings;
 
 #-----------------------------------------------------------------------------
 
-use base 'App::Pinto::Admin::Subcommand';
+use base 'App::Pinto::Admin::Command';
 
 #------------------------------------------------------------------------------
 
@@ -103,12 +103,12 @@ the C<SOURCE> are also placed on the C<TARGET>.  Both C<SOURCE> and
 C<TARGET> stacks must already exist before merging.  Please see the
 C<copy> or C<create> subcommands to create stacks.
 
-=head1 SUBCOMMAND ARGUMENTS
+=head1 COMMAND ARGUMENTS
 
 Required arguments are the name of the C<SOURCE> stack and the name of
 the C<TARGET> stack.
 
-=head1 SUBCOMMAND OPTIONS
+=head1 COMMAND OPTIONS
 
 =over 4
 

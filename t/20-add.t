@@ -32,7 +32,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 
 {
   my $t = Pinto::Tester->new;
-  $t->run_ok('Stack::Create', {stack => 'dev'});
+  $t->run_ok('New', {stack => 'dev'});
   $t->run_ok('Add', {archives => $archive, author => $auth, stack => 'dev'});
 
   $t->registration_ok( "$auth/$dist/$pkg1/dev" );

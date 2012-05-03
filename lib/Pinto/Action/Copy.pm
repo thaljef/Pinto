@@ -1,10 +1,8 @@
-# ABSTRACT: Show stack properties
+# ABSTRACT: An action to create a new stack by copying another
 
-package Pinto::Action::Stack::Props;
+package Pinto::Action::Copy;
 
 use Moose;
-
-use String::Format;
 
 use namespace::autoclean;
 
@@ -18,21 +16,20 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Stack::Props );
+with qw( Pinto::Role::Interface::Action::Copy );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repos->get_stack(name => $self->from_stack);
+    my $copy = $stack->copy_deeply({name => $self->to_stack});
+    my $description = $self->description || "copy of stack $stack";
+    $copy->set_property('description' => $description);
+    $copy->touch($stack->last_modified_on);
 
-    my $props = $stack->get_properties;
-    while ( my ($prop, $value) = each %{$props} ) {
-        print { $self->out } stringf($self->format, {n => $prop, v => $value});
-    }
-
-    return $self->result;
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

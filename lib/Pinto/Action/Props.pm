@@ -1,8 +1,10 @@
-# ABSTRACT: Create a new empty stack
+# ABSTRACT: Show stack properties
 
-package Pinto::Action::Stack::Create;
+package Pinto::Action::Props;
 
 use Moose;
+
+use String::Format;
 
 use namespace::autoclean;
 
@@ -16,22 +18,26 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Stack::Create );
+with qw( Pinto::Role::Interface::Action::Props );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->create_stack(name => $self->stack);
-    $stack->set_property('description' => $self->description);
+    my $stack = $self->repos->get_stack(name => $self->stack);
 
-    return $self->result->changed;
+    my $props = $stack->get_properties;
+    while ( my ($prop, $value) = each %{$props} ) {
+        print { $self->out } stringf($self->format, {n => $prop, v => $value});
+    }
+
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 
