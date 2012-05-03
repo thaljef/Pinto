@@ -1,0 +1,22 @@
+mint   - create a new repository
+add    - add a local dist
+pull   - pull (remote) dists to a stack
+copy   - copy a stack
+merge  - merge two stacks together
+list   - list stack contents
+pin    - pin packages to the stack
+unpin  - loosen a package that has been pinned
+edit   - edit stack properties
+props  - show stack properties
+stacks - list stacks
+new    - create stack
+
+look
+smoke
+install
+graph
+ack
+diff
+log
+
+ 
