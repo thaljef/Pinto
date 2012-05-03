@@ -32,9 +32,9 @@ my $t = Pinto::Tester->new;
   $t->registration_ok( 'ME/FooAndBar-1/Foo-1/dev/-' );
   $t->registration_ok( 'ME/FooAndBar-1/Bar-1/dev/-' );
 
-  # Should not be on the default stack...
-  $t->registration_not_ok( 'ME/FooAndBar-1/Foo-1/default/-' );
-  $t->registration_not_ok( 'ME/FooAndBar-1/Bar-1/default/-' );
+  # Should not be on the init stack...
+  $t->registration_not_ok( 'ME/FooAndBar-1/Foo-1/init/-' );
+  $t->registration_not_ok( 'ME/FooAndBar-1/Bar-1/init/-' );
 
   # Check that mtime was updated...
   $stack->discard_changes; # Causes it to reload from DB
@@ -67,9 +67,9 @@ my $t = Pinto::Tester->new;
 {
 
   # Marking default stack...
-  my $default_stack = $t->pinto->repos->get_stack;
-  ok defined $default_stack, 'get_stack with no args returned a stack';
-  ok $default_stack->is_default, 'default stack is the default stack';
+  my $init_stack = $t->pinto->repos->get_stack;
+  ok defined $init_stack, 'get_stack with no args returned a stack';
+  ok $init_stack->is_default, 'init stack is the default stack';
 
   my $dev_stack = $t->pinto->repos->get_stack(name => 'dev');
   ok defined $dev_stack, 'got the dev stack';
@@ -79,10 +79,10 @@ my $t = Pinto::Tester->new;
   ok $dev_stack->is_default, 'dev stack is now default';
 
   # Force reload from DB...
-  $default_stack->discard_changes;
-  ok !$default_stack->is_default, 'default stack is no longer default';
+  $init_stack->discard_changes;
+  ok !$init_stack->is_default, 'init stack is no longer default';
 
-  throws_ok { $default_stack->is_default(0) } qr/cannot directly set is_default/,
+  throws_ok { $init_stack->is_default(0) } qr/cannot directly set is_default/,
     'Setting is_default directly throws exception';
 }
 
@@ -91,25 +91,25 @@ my $t = Pinto::Tester->new;
 {
   # Copy from a stack that doesn't exist
   $t->run_throws_ok('Copy', {from_stack => 'nowhere',
-                                    to_stack   => 'somewhere'},
-                                    qr/Stack nowhere does not exist/);
+                             to_stack   => 'somewhere'},
+                             qr/Stack nowhere does not exist/);
 
 
   # Copy to a stack that already exists
-  $t->run_throws_ok('Copy', {from_stack => 'default',
-                                    to_stack   => 'dev'},
-                                    qr/Stack dev already exists/);
+  $t->run_throws_ok('Copy', {from_stack => 'init',
+                             to_stack   => 'dev'},
+                             qr/Stack dev already exists/);
 
 
   # Create stack with invalid name
   $t->run_throws_ok('New', {stack => '$bogus@'},
-                                      qr/Invalid stack name/);
+                            qr/Invalid stack name/);
 
 
   # Copy to stack with invalid name
-  $t->run_throws_ok('Copy', {from_stack => 'default',
-                                    to_stack   => '$bogus@'},
-                                    qr/Invalid stack name/);
+  $t->run_throws_ok('Copy', {from_stack => 'init',
+                              to_stack   => '$bogus@'},
+                              qr/Invalid stack name/);
 }
 
 

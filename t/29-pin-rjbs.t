@@ -36,7 +36,7 @@ $cpan->populate( qw( JOHN/DistA-2=PkgA-2~PkgB-2
 $local->clear_cache; # Make sure we get new index from CPAN
 
 # We would like to try and upgrade to PkgA-2.  So create a new stack
-$local->run_ok('Copy', {from_stack => 'default', to_stack => 'xxx'});
+$local->run_ok('Copy', {from_stack => 'init', to_stack => 'xxx'});
 
 # Now upgrade to PkgA-2 on the xxx stack
 $local->run_ok('Pull', {targets => 'PkgA-2', stack => 'xxx'});
@@ -46,11 +46,11 @@ $local->registration_ok('JOHN/DistA-2/PkgA-2/xxx');
 $local->registration_ok('FRED/DistB-2/PkgB-2/xxx');
 
 # But wait!  We learn that PkgB-2 breaks our app. We want to be sure
-# we don't upgrade that.  So pin it on the default (prod) stack
+# we don't upgrade that.  So pin it on the init (prod) stack
 $local->run_ok('Pin', {targets => 'PkgB'});
 
-# Make sure PkgB-1 is now pinned on default stack
-$local->registration_ok('FRED/DistB-1/PkgB-1/default/+');
+# Make sure PkgB-1 is now pinned on init stack
+$local->registration_ok('FRED/DistB-1/PkgB-1/init/+');
 
 # Ooo! Super cool DistC-1 is released to CPAN
 $cpan->populate('MARK/DistC-1=PkgC-2~PkgB-2');
@@ -61,18 +61,18 @@ $local->clear_cache; # Make sure we get new index from CPAN
 $local->run_throws_ok('Pull', {targets => 'MARK/DistC-1.tar.gz'}, qr{Unable to register});
 
 # DistC-1 requires PkgB-2, but were are still pinned at PkgB-1...
-$local->log_like(qr{Cannot add FRED/DistB-2/PkgB-2 to stack default because PkgB is pinned to FRED/DistB-1/PkgB-1});
+$local->log_like(qr{Cannot add FRED/DistB-2/PkgB-2 to stack init because PkgB is pinned to FRED/DistB-1/PkgB-1});
 
 # After a while, we fix our code to work with PkgB-2, so we unpin...
 $local->run_ok('Unpin', {targets => 'PkgB'});
 
-# Make sure PkgB-1 is not pinned on default stack...
-$local->registration_ok('FRED/DistB-1/PkgB-1/default/-');
+# Make sure PkgB-1 is not pinned on the init stack...
+$local->registration_ok('FRED/DistB-1/PkgB-1/init/-');
 
 # Now we can bring over the work that was done on the xxx stack...
-$local->run_ok('Merge', {from_stack => 'xxx', to_stack => 'default'});
+$local->run_ok('Merge', {from_stack => 'xxx', to_stack => 'init'});
 
-# And now the default stack should have all the latest and greatest...
+# And now the init stack should have all the latest and greatest...
 $local->registration_ok('JOHN/DistA-2/PkgA-2');
 $local->registration_ok('FRED/DistB-2/PkgB-2');
 

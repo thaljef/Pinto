@@ -39,13 +39,13 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
   $t->populate('AUTHOR/FooAndBar-1.2=Foo-1.2,Bar-0.0');
 
   # Without .tar.gz extension
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo-1.2/default');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo-1.2/init');
 
   # With .tar.gz extension
-  $t->registration_ok('AUTHOR/FooAndBar-1.2.tar.gz/Foo-1.2/default');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2.tar.gz/Foo-1.2/init');
 
   # With explicit stack
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar-0.0/default');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar-0.0/init');
 
   # Without explicit stack
   $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar-0.0');
