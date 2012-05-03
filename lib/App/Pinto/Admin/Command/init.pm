@@ -5,7 +5,7 @@ package App::Pinto::Admin::Command::init;
 use strict;
 use warnings;
 
-use Pinto::Creator;
+use Pinto::Initializer;
 
 #-----------------------------------------------------------------------------
 

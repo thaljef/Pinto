@@ -110,9 +110,10 @@ prerequisites for the targets.
 
 =item --stack=NAME
 
-Adds all the packages on the stack with the given NAME.  Defaults to the
-name of whichever stack is currently marked as the master stack.  Use
-the C<stack list> command to see the stacks in the repository.
+Puts all the packages onto the stack with the given NAME.  Defaults
+to the name of whichever stack is currently marked as the master
+stack.  Use the L<stacks|App::Pinto::Admin::Command::stacks> command
+to see the stacks in the repository.
 
 =back
 

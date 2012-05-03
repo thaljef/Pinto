@@ -77,9 +77,10 @@ __END__
 
 This command creates a new empty stack.
 
-Please see the C<stack copy> subcommand to create a new stack from
-another one, or the C<stack edit> subcommand to change a stack's
-properties after it has been created.
+Please see the L<copy|App::Pinto::Admin::Command::copy> command to
+create a new stack from another one, or the
+L<edit:App::Pinto::Admin::Command::copy> subcommand to change a
+stack's properties after it has been created.
 
 =head1 COMMAND ARGUMENTS
 

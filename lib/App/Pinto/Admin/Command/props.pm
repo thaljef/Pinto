@@ -77,8 +77,9 @@ __END__
 
 =head1 DESCRIPTION
 
-This command shows the properties of a stack.  See the C<stack edit>
-subcommand to change the properties.
+This command shows the properties of a stack.  See the
+L<edit|App::Pinto::Admin::Command::edit> command to change the
+properties.
 
 =head1 COMMAND ARGUMENTS
 

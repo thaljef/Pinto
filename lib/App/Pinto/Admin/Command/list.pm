@@ -154,9 +154,10 @@ Limit the listing to records for packages that are pinned.
 
 List the contents of the stack with the given NAME.  Defaults to the
 name of whichever stack is currently marked as the master stack.  Use
-the C<stack list> command to see the stacks in the repository.
+the L<stacks|App::Pinto::Admin::Command::stack> command to see the
+stacks in the repository.
 
-If the stack name is '@' then the contents of all stacks will be
+If the stack name is "@" then the contents of all stacks will be
 listed.  And unless an explicit C<--format> was given, the listing
 will include the name of the stack on each record.
 

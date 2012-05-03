@@ -69,8 +69,10 @@ stack.  The pin is local to the stack and does not affect any other
 stacks.
 
 A package must be in the stack before you can pin it.  To bring a
-package into the stack, use the C<pull> command.  To remove the pin
-from a package, please see the C<unpin> command.
+package into the stack, use the
+L<pull|App::Pinto::Admin::Command::pull> command.  To remove the pin
+from a package, please see the
+L<unpin|App::Pinto::Admin::Command::unpin> command.
 
 =head1 COMMAND ARGUMENTS
 
@@ -99,7 +101,8 @@ or ';') will be ignored.
 
 Pins the package on the stack with the given NAME.  Defaults to the
 name of whichever stack is currently marked as the master stack.  Use
-the C<stack list> command to see the stacks in the repository.
+the L<stacks|App::Pinto::Admin::Command::stacks> command to see the
+stacks in the repository.
 
 =back
 

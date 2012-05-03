@@ -94,7 +94,8 @@ or ';') will be ignored.
 
 Unpins the package on the stack with the given NAME.  Defaults to the
 name of whichever stack is currently marked as the master stack.  Use
-the C<stack list> command to see your stacks.
+the L<stacks|App::Pinto::Admin::Command::stacks> command to see your
+stacks.
 
 =back
 

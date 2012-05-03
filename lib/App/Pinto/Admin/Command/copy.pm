@@ -82,9 +82,10 @@ This command creates a new stack by copying an existing one.  All the
 pins and properties from the existing stack will also be copied to the
 new one.  The new stack must not already exist.
 
-Please see the C<stack create> subcommand to create a new empty stack, or
-the C<stack edit> subcommand to change a stack's properties after it has
-been created.
+Please see the L<new|App::Pinto::Admin::Command::new> command to
+create a new empty stack, or the
+L<edit|App::Pinto::Admin::Command::edit> command to change a stack's
+properties after it has been created.
 
 =head1 COMMAND ARGUMENTS
 

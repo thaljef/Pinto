@@ -108,12 +108,15 @@ prerequisites of the added distributions.
 Pins all the packages in the added distributions to the stack, so they
 cannot be changed until you unpin them.  The pin does not apply to any
 prerequisites that are pulled in for this distribution.  However, you
-may pin them separately with the C<pin> command, if you so desire.
+may pin them separately with the
+L<pin|App::Pinto::Admin::Command::pin> command, if you so desire.
 
 =item --stack=NAME
 
-Places all the packages within the distribution into the stack with
-the given NAME.  Otherwise, packages go onto the 'default' stack.
+Puts all the packages onto the stack with the given NAME.  Defaults
+to the name of whichever stack is currently marked as the master
+stack.  Use the L<stacks|App::Pinto::Admin::Command::stacks> command
+to see the stacks in the repository.
 
 =back
 
