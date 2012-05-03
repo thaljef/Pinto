@@ -1,0 +1,20 @@
+In theory, Pinto could be used to manage dependencies of any type.
+Not sure this is wortwhile but, here goes...
+
+Terminology
+  Archive : The physical file that you contains your release
+  Module  : A component within the Archive that other archives may depend on
+
+In Perl, a Module is a package.  But it could be something else in
+Java or Ruby or whatever.  It just has to have a unique name and
+version. (Question: could there be separate namespaces for each
+language?)
+
+For each flavor of archive (Perl dist, Java jar, Ruby Gem, etc) need a
+separate extractor that knows how to find the modules that are
+provided and required by the archive.
+
+Also: 
+  Look at the Pin-Priority feature of Debian for an example of 
+  how they manage pins.
+
