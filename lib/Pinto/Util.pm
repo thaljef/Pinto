@@ -125,23 +125,6 @@ sub sha256 {
 
 #-------------------------------------------------------------------------------
 
-sub args_from_fh {
-    my ($fh) = @_;
-
-    my @args;
-    while (my $line = <$fh>) {
-        chomp $line;
-        next if not length $line;
-        next if $line =~ m/^ \s* [;#]/x;
-        next if $line !~ m/\S/x;
-        push @args, $line;
-    }
-
-    return @args;
-}
-
-#-------------------------------------------------------------------------------
-
 =func normalize_property_name( $prop_name )
 
 Normalizes the property name and returns it.  Throws an exception if
