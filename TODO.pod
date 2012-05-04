@@ -18,8 +18,6 @@
 
 =item Create a type for StackPropertyName
 
-=item Relocate stack merging code
-
 #--------------------------
 
 =item Prettier stack listing and stack prop listing

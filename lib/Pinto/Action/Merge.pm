@@ -12,46 +12,25 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# ISA
 
 extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
-# Attributes
 
-has from_stack => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
-
-
-has to_stack => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1,
-);
-
-
-has dryrun => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => 0,
-);
+with qw( Pinto::Role::Interface::Action::Merge );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $from_stk_name = $self->from_stack;
-    my $to_stk_name = $self->to_stack;
+    my $from_stack = $self->repos->get_stack(name => $self->from_stack);
+    my $to_stack   = $self->repos->get_stack(name => $self->to_stack);
 
-    $self->notice("Merging stack $from_stk_name into stack $to_stk_name");
+    $self->notice("Merging stack $from_stack into stack $to_stack");
 
-    my $did_merge = $self->repos->merge_stack( from   => $self->from_stack,
-                                               to     => $self->to_stack,
-                                               dryrun => $self->dryrun );
+    my $did_merge = $from_stack->merge( to     => $to_stack,
+                                        dryrun => $self->dryrun );
 
     $self->result->changed unless $self->dryrun;
 

@@ -367,6 +367,29 @@ sub delete_properties {
 
 #-------------------------------------------------------------------------------
 
+sub merge {
+    my ($self, %args) = @_;
+
+    my $to_stk = $args{to};
+    my $dryrun = $args{dryrun};
+
+    my $conflicts;
+    for my $reg ($self->registrations) {
+        $self->info("Merging package $reg into stack $to_stk");
+        $conflicts += $reg->merge(%args);
+    }
+
+    throw "There were $conflicts conflicts.  Merge aborted"
+        if $conflicts and not $dryrun;
+
+    $self->info('Dry run merge -- no changes were made')
+        and return if $dryrun;
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
 sub to_string {
     my ($self, $format) = @_;
 

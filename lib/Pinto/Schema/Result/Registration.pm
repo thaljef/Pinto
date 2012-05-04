@@ -281,6 +281,85 @@ sub unpin {
 
 #-------------------------------------------------------------------------------
 
+sub merge {
+    my ($self, %args) = @_;
+
+    my $to_stk = $args{to};
+    my $dryrun = $args{dryrun};
+
+    my $from_pkg = $self->package;
+    my $to_reg   = $to_stk->registration(package => $from_pkg);
+
+    # CASE 1:  The package is not registered on the target stack,
+    # so we can go ahead and just add it there.
+
+    if (not defined $to_reg) {
+         $self->debug("Adding package $from_pkg to stack $to_stk");
+         return 0 if $dryrun;
+         $self->copy( {stack => $to_stk} );
+         return 0;
+     }
+
+    # CASE 2:  The exact same package is in both the source
+    # and the target stacks, so we don't have to merge.  But
+    # if the source is pinned, then we should also copy the
+    # pin to the target.
+
+    if ($self == $to_reg) {
+        $self->debug("$self and $to_reg are the same");
+        if ($self->is_pinned and not $to_reg->is_pinned) {
+            $self->debug("Adding pin to $to_reg");
+            return 0 if $dryrun;
+            $to_reg->pin;
+            return 0;
+        }
+        return 0;
+    }
+
+    # CASE 3:  The package in the target stack is newer than the
+    # one in the source stack.  If the package in the source stack
+    # is pinned, then we have a conflict, so whine.  If it is not
+    # pinned then there is nothing to do because the package in
+    # the target stack is already newer.
+
+    if ($to_reg > $self) {
+        if ( $self->is_pinned ) {
+            $self->warning("$self is pinned to a version older than $to_reg");
+            return 1;
+        }
+        $self->debug("$to_reg is already newer than $self");
+        return 0;
+    }
+
+
+    # CASE 4:  The package in the target stack is older than the
+    # one in the source stack.  If the package in the target stack
+    # is pinned, then we have a conflict, so whine.  If it is not
+    # pinned, then upgrade the package in the target stack with
+    # the newer package in the source stack.
+
+    if ($to_reg < $self) {
+        if ( $to_reg->is_pinned ) {
+            $self->warning("$to_reg is pinned to a version older than $self");
+            return 1;
+        }
+        my $from_pkg = $self->package;
+        $self->info("Upgrading $to_reg to $from_pkg");
+        return 0 if $dryrun;
+        $to_reg->delete;
+        $self->copy( {stack => $to_reg->stack} );
+        return 0;
+    }
+
+    # CASE 5:  The above logic should cover all possible scenarios.
+    # So if we get here then either our logic is flawed or something
+    # weird has happened in the database.
+
+    throw "Unable to merge $self into $to_reg";
+}
+
+#-------------------------------------------------------------------------------
+
 sub compare {
     my ($reg_a, $reg_b) = @_;
 
