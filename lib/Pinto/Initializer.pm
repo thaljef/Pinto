@@ -9,8 +9,6 @@ use autodie;
 use PerlIO::gzip;
 use Path::Class;
 
-use Pinto::Logger;
-use Pinto::Config;
 use Pinto::Database;
 
 use namespace::autoclean;
@@ -21,8 +19,7 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Loggable
-         Pinto::Role::Configurable
+with qw( Pinto::Role::Configurable
          Pinto::Role::PathMaker );
 
 #------------------------------------------------------------------------------
@@ -33,7 +30,7 @@ sub init {
 
     # Sanity checks
     my $root_dir = $self->config->root_dir();
-    $self->fatal("Directory $root_dir is not empty")
+    die "Directory $root_dir must be empty to create a repository there\n"
         if -e $root_dir and $root_dir->children();
 
     # Create repos root directory
@@ -134,8 +131,7 @@ END_MODLIST
 sub _create_db {
     my ($self) = @_;
 
-    my $db = Pinto::Database->new( config => $self->config,
-                                   logger => $self->logger );
+    my $db = Pinto::Database->new( config => $self->config );
     $db->deploy;
 
     my $stack_attrs = {name => 'init', is_default => 1};
