@@ -28,15 +28,12 @@ with qw( Pinto::Role::Configurable
 
 =attr db
 
-=method write_index
-
 =cut
 
 has db => (
     is         => 'ro',
     isa        => 'Pinto::Database',
     lazy       => 1,
-    handles    => [ qw(write_index) ],
     default    => sub { Pinto::Database->new( config => $_[0]->config,
                                               logger => $_[0]->logger ) },
 );
@@ -360,6 +357,21 @@ sub create_stack {
 
     return $stack;
 
+}
+
+#-------------------------------------------------------------------------------
+
+sub write_index {
+    my ($self, %args) = @_;
+
+    my $writer = Pinto::IndexWriter->new(logger => $self->logger);
+
+    $args{file}  ||= $self->config->index_file unless $args{handle};
+    $args{stack} ||= $self->get_default_stack;
+
+    $writer->write(%args);
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------

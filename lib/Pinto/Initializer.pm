@@ -10,6 +10,7 @@ use PerlIO::gzip;
 use Path::Class;
 
 use Pinto::Database;
+use Pinto::Repository;
 
 use namespace::autoclean;
 
@@ -64,7 +65,10 @@ sub init {
     $self->mkpath($authors_dir);
 
     # Write authors index
-    $self->_write_mailrc();
+    $self->_write_mailrc;
+
+    # Write the packages index
+    $self->_write_index;
 
     $self->notice("Created new repository at directory $root_dir");
 
@@ -138,7 +142,16 @@ sub _create_db {
     my $stack = $db->schema->resultset('Stack')->create($stack_attrs);
     $stack->set_property('description' => 'the initial stack');
 
-    $db->write_index;
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _write_index {
+    my ($self) = @_;
+
+    my $repos = Pinto::Repository->new( config => $self->config );
+    $repos->write_index;
 
     return;
 }

@@ -4,6 +4,7 @@ package Pinto::IndexWriter;
 
 use Moose;
 
+use Path::Class qw(file);
 use PerlIO::gzip;
 
 use Pinto::Exception qw(throw);
@@ -15,16 +16,6 @@ use namespace::autoclean;
 # VERSION
 
 #------------------------------------------------------------------------------
-# Attributes
-
-has db => (
-    is       => 'ro',
-    isa      => 'Pinto::Database',
-    required => 1,
-);
-
-#------------------------------------------------------------------------------
-# Roles
 
 with qw(Pinto::Role::Loggable);
 
@@ -34,18 +25,33 @@ with qw(Pinto::Role::Loggable);
 sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
-    my $file  = $args{file};
-    my $stack = $args{stack};
+    my $handle = $args{handle};
+    my $file   = $args{file};
+    my $stack  = $args{stack};
+    my $nozip  = $args{nozip};
 
-    $self->info("Writing index for stack $stack at $file");
+    throw "Must specify either an output handle or file name"
+        if not ($handle xor $file);
+
+    if ($file) {
+        my $io_layer = $nozip ? '' : ':gzip';
+        open $handle, ">:$io_layer", $file or throw "Cannot open $file: $!";
+        $self->info("Writing index for stack $stack at $file");
+    }
+    else {
+        my $fileno   = $handle->fileno;
+        $self->info("Writing index for stack $stack to handle $handle");
+        my $filename = $handle->can('filename') ? file$handle->filename: 'UNKNOWN';
+        $file = file($filename);
+    }
 
     my @records = $self->_get_index_records($stack);
     my $count = @records;
 
-    open my $fh, '>:gzip', $file or throw "Cannot open $file: $!";
-    $self->_write_header($fh, $file, $count);
-    $self->_write_records($fh, @records);
-    close $fh;
+
+    $self->_write_header($handle, $file, $count);
+    $self->_write_records($handle, @records);
+    close $handle;
 
     return $self;
 }
@@ -105,14 +111,12 @@ sub _get_index_records {
     # like one produced by PAUSE.  Also, this is about twice as fast
     # as using an iterator to read each record lazily.
 
-    my $where  = { 'stack.name' => $stack };
-    my $select = [ qw(package_name package_version distribution_path) ];
-    my $attrs  = { select => $select, join => 'stack' };
-
-    my $records = $self->db->select_registrations( $where, $attrs );
-    my @records =  sort {$a->[0] cmp $b->[0]} $records->cursor->all;
+    my $attrs   = {select => [qw(package_name package_version distribution_path)] };
+    my $rs      = $stack->search_related_rs('registrations', {}, $attrs);
+    my @records =  sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
 
     return @records;
+
 
 }
 
