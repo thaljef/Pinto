@@ -55,37 +55,26 @@ sub run {
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->warning(@_) };
 
-    # Load the Action class
-    my $action_class = $self->action_base_class . "::$action_name";
-    Class::Load::load_class($action_class);
+    my $result = try {
 
+        my $action_class = $self->action_base_class . "::$action_name";
+        Class::Load::load_class($action_class);
 
-    # Construct the Action
-    my $action =  $action_class->new( logger => $self->logger,
-                                      repos  => $self->repos,
-                                      %args );
-
-    # Do it!
-    return $self->_run($action);
-}
-
-#------------------------------------------------------------------------------
-
-sub _run {
-    my ($self, $action) = @_;
-
-    my $result;
-
-    try {
         $self->repos->lock;
         my $guard = $self->repos->db->schema->txn_scope_guard;
-        $result = $action->execute;
-        $self->repos->write_index if $result->made_changes;
-        $self->info('No changes were made') if not $result->made_changes;
-        $self->repos->unlock;
+
+        @args{qw(logger repos)} = ($self->logger, $self->repos);
+        my $action = $action_class->new( %args );
+        my $res = $action->execute;
+
+        $self->repos->write_index if $res->made_changes;
+        $self->info('No changes were made') if not $res->made_changes;
         $guard->commit;
+        $self->repos->unlock;
+        $res; # Returned from try{}
     }
     catch {
+
         $self->repos->unlock;
         $self->fatal($_);
     };
