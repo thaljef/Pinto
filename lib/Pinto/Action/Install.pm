@@ -4,6 +4,8 @@ package Pinto::Action::Install;
 
 use Moose;
 
+use Pinto::Exception qw(throw);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -46,9 +48,8 @@ sub execute {
 
     # Run cpanm
     $self->debug(join ' ', 'Running:', $self->cpanm_exe, @cpanm_opts);
-    my $status = system $self->cpanm_exe, @cpanm_opts, @{ $self->targets };
-
-    $self->result->failed if $status != 0;
+    0 == system($self->cpanm_exe, @cpanm_opts, @{ $self->targets })
+      or throw "Installation failed.  See the cpanm build log for details";
 
     return $self->result;
 }
