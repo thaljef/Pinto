@@ -213,7 +213,7 @@ sub register {
         next;
       }
 
-      if ( $incumbent_pkg < $pkg and $incumbent->is_pinned ) {
+      if ( $incumbent->is_pinned ) {
         my $pkg_name = $pkg->name;
         $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
         $errors++;
