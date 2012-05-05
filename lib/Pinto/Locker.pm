@@ -25,7 +25,8 @@ our $LOCKFILE_TIMEOUT = 50;
 has _lock => (
     is         => 'rw',
     isa        => 'File::NFSLock',
-    predicate  => 'is_locked',
+    predicate  => '_is_locked',
+    clearer    => '_clear_lock',
     init_arg   => undef,
 );
 
@@ -49,7 +50,7 @@ sub lock {                                   ## no critic qw(Homonym)
     my ($self, $lock_type) = @_;
 
     my $root_dir  = $self->root_dir;
-    throw "$root_dir is already locked" if $self->is_locked;
+    throw "$root_dir is already locked" if $self->_is_locked;
 
     my $lock_file = $root_dir->file('.lock')->stringify;
     my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
@@ -73,9 +74,10 @@ get to work.
 sub unlock {
     my ($self) = @_;
 
-    return $self if not $self->is_locked;
+    return $self if not $self->_is_locked;
 
     $self->_lock->unlock or throw 'Unable to unlock repository';
+    $self->_clear_lock;
 
     my $root_dir = $self->config->root_dir;
     $self->debug("Process $$ released the lock on $root_dir");
