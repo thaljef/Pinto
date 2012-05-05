@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.040_003 2012-05-04 21:38:07 America/Los_Angeles
+
      Fixed bug in 35-install.t that would cause the test to fail
      (instead of skipping) if cpanm was not installed.  Thanks
      Andreas!
