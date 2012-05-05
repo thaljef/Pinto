@@ -18,12 +18,9 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-has timeout => (
-    is      => 'ro',
-    isa     => 'Int',
-    default => 50
-);
+our $LOCKFILE_TIMEOUT = 50;
 
+#-----------------------------------------------------------------------------
 
 has _lock => (
     is         => 'rw',
@@ -55,7 +52,7 @@ sub lock_exclusive {
     throw "$root_dir is already locked" if $self->is_locked;
 
     my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock = File::NFSLock->new($lock_file, 'EX', $self->timeout)
+    my $lock = File::NFSLock->new($lock_file, 'EX', $LOCKFILE_TIMEOUT)
         or throw 'Unable to lock the repository -- please try later';
 
     $self->debug("Process $$ got exclusive lock on $root_dir");
@@ -73,7 +70,7 @@ sub lock_shared {
     throw "$root_dir is already locked" if $self->is_locked;
 
     my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock = File::NFSLock->new($lock_file, 'SH', $self->timeout)
+    my $lock = File::NFSLock->new($lock_file, 'SH', $LOCKFILE_TIMEOUT)
         or throw 'Unable to lock the repository -- please try later';
 
     $self->debug("Process $$ got shared lock on $root_dir");

@@ -21,9 +21,10 @@ die "fork failed: $!" unless defined $pid;
 
 if ($pid) {
     # parent
-    sleep 10; # Let the child start
+    sleep 3; # Let the child start
     print "Starting parent: $$\n";
 
+    local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
     $t->run_throws_ok('Nop', {}, qr/Unable to lock/,
       'Parent refused access to locked repository');
 
@@ -36,8 +37,7 @@ if ($pid) {
 else {
     # child
     print "Starting child: $$\n";
-    warn "Will be sleeping for 70 seconds, don't be alarmed...\n";
-    my $result = $t->pinto->run('Nop', sleep => 70);
+    my $result = $t->pinto->run('Nop', sleep => 12);
     exit $result->exit_status;
 }
 
