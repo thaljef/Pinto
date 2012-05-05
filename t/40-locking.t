@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::File;
 
 use Pinto::Tester;
 
@@ -24,6 +25,9 @@ if ($pid) {
     sleep 3; # Let the child start
     print "Starting parent: $$\n";
 
+    my $lock_file = $t->root->file('.lock.NFSLock');
+    file_exists_ok($lock_file);
+
     local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
     $t->run_throws_ok('Nop', {}, qr/Unable to lock/,
       'Parent refused access to locked repository');
@@ -33,6 +37,7 @@ if ($pid) {
     is($?, 0, "child finished succesfully");
 
     $t->run_ok('Nop', {}, 'Got access after the child died');
+    file_not_exists_ok($lock_file);
 }
 else {
     # child
