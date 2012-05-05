@@ -15,7 +15,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-skip_all('cpanm required for install tests') unless which('cpanm');
+plan skip_all => 'cpanm required for install tests' unless which('cpanm');
 
 #------------------------------------------------------------------------------
 
