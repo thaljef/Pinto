@@ -76,7 +76,9 @@ has cache => (
                                                 logger => $_[0]->logger ) },
 );
 
-=method lock
+=method lock_shared
+
+=method lock_exclusive
 
 =method unlock
 
@@ -86,7 +88,7 @@ has locker  => (
     is         => 'ro',
     isa        => 'Pinto::Locker',
     lazy       => 1,
-    handles    => [ qw(lock unlock) ],
+    handles    => [ qw(lock_shared lock_exclusive unlock) ],
     default    => sub { Pinto::Locker->new( config => $_[0]->config,
                                             logger => $_[0]->logger ) },
 );
