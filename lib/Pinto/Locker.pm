@@ -45,35 +45,17 @@ we patiently wait until we timeout, which is about 60 seconds.
 
 =cut
 
-sub lock_exclusive {
-    my ($self) = @_;
+sub lock {                                   ## no critic qw(Homonym)
+    my ($self, $lock_type) = @_;
 
     my $root_dir  = $self->root_dir;
     throw "$root_dir is already locked" if $self->is_locked;
 
     my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock = File::NFSLock->new($lock_file, 'EX', $LOCKFILE_TIMEOUT)
+    my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
         or throw 'Unable to lock the repository -- please try later';
 
-    $self->debug("Process $$ got exclusive lock on $root_dir");
-    $self->_lock($lock);
-
-    return $self;
-}
-
-#-----------------------------------------------------------------------------
-
-sub lock_shared {
-    my ($self) = @_;
-
-    my $root_dir  = $self->root_dir;
-    throw "$root_dir is already locked" if $self->is_locked;
-
-    my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock = File::NFSLock->new($lock_file, 'SH', $LOCKFILE_TIMEOUT)
-        or throw 'Unable to lock the repository -- please try later';
-
-    $self->debug("Process $$ got shared lock on $root_dir");
+    $self->debug("Process $$ got $lock_type lock on $root_dir");
     $self->_lock($lock);
 
     return $self;

@@ -88,7 +88,9 @@ has locker  => (
     is         => 'ro',
     isa        => 'Pinto::Locker',
     lazy       => 1,
-    handles    => [ qw(lock_shared lock_exclusive unlock) ],
+    handles    => { lock_exclusive => [lock => 'EX'],
+                    lock_shared    => [lock => 'SH'],
+                    unlock         => 'unlock' },
     default    => sub { Pinto::Locker->new( config => $_[0]->config,
                                             logger => $_[0]->logger ) },
 );
