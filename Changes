@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+     Fixed bug in 35-install.t that would cause the test to fail
+     (instead of skipping) if cpanm was not installed.  Thanks
+     Andreas!
+
+     Switched to using File::NFSLock instead of Lockfile::Simple.  The
+     latter uses some deprecated syntax that causes lots of ugly
+     warnings on newer perls.
+
+     Still alpha testing.
+
 0.040_002 2012-05-04 16:19:11 America/Los_Angeles
 
      Added Action::Install.  Still alpha testing.
