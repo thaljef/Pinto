@@ -26,6 +26,13 @@ has repos => (
 );
 
 
+has username => (
+    is       => 'ro',
+    isa      => Str,
+    default  => sub { $ENV{USER} },
+);
+
+
 has result => (
     is       => 'ro',
     isa      => 'Pinto::Result',
