@@ -3,6 +3,9 @@
 package Pinto::Action::Pull;
 
 use Moose;
+use MooseX::Types::Moose qw(Str Bool);
+
+use Pinto::Types qw(ArrayRefOfPkgsOrDists);
 
 use namespace::autoclean;
 
@@ -16,8 +19,40 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Pull
-         Pinto::Role::PackageImporter );
+with qw( Pinto::Role::PackageImporter );
+
+#------------------------------------------------------------------------------
+
+has targets => (
+    isa      => ArrayRefOfPkgsOrDists,
+    traits   => [ qw(Array) ],
+    handles  => {targets => 'elements'},
+    required => 1,
+    coerce   => 1,
+);
+
+has stack => (
+    is       => 'ro',
+    isa      => Str,
+);
+
+has pin => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
+has norecurse => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
+has dryrun => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
 
 #------------------------------------------------------------------------------
 

@@ -17,7 +17,25 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Merge );
+has from_stack => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+
+has to_stack => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+
+has dryrun => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
 
 #------------------------------------------------------------------------------
 

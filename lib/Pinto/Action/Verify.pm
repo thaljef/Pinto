@@ -1,4 +1,4 @@
-# ABSTRACT: Verify all distributions are present in the repository
+# ABSTRACT: Report distributions that are missing
 
 package Pinto::Action::Verify;
 
@@ -18,10 +18,9 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Verify );
+with qw( Pinto::Role::Reporter );
 
 #------------------------------------------------------------------------------
-# Methods
 
 sub execute {
     my ($self) = @_;

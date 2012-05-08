@@ -3,6 +3,7 @@
 package Pinto::Action::Nop;
 
 use Moose;
+use MooseX::Types::Moose qw(Int);
 
 use namespace::autoclean;
 
@@ -16,7 +17,11 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Nop );
+has sleep => (
+    is      => 'ro',
+    isa     => Int,
+    default => 0,
+);
 
 #------------------------------------------------------------------------------
 

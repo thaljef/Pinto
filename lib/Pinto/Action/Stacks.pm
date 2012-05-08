@@ -3,6 +3,7 @@
 package Pinto::Action::Stacks;
 
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
 use namespace::autoclean;
 
@@ -16,7 +17,15 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Stacks );
+with qw( Pinto::Role::Reporter );
+
+#------------------------------------------------------------------------------
+
+has format => (
+    is      => 'ro',
+    isa     => Str,
+    default => "%M %-16k %-16j %U\n",
+);
 
 #------------------------------------------------------------------------------
 

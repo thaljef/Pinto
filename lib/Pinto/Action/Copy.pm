@@ -3,6 +3,7 @@
 package Pinto::Action::Copy;
 
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
 use namespace::autoclean;
 
@@ -16,7 +17,25 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Copy );
+has from_stack => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+
+has to_stack => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+
+has description => (
+    is         => 'ro',
+    isa        => Str,
+    predicate  => 'has_description',
+);
 
 #------------------------------------------------------------------------------
 

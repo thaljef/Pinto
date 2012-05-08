@@ -3,6 +3,7 @@
 package Pinto::Action::New;
 
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
 use namespace::autoclean;
 
@@ -16,7 +17,18 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::New );
+has stack => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
+);
+
+
+has description => (
+    is         => 'ro',
+    isa        => Str,
+    predicate  => 'has_description',
+);
 
 #------------------------------------------------------------------------------
 

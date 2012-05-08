@@ -3,7 +3,7 @@
 package Pinto::Action::List;
 
 use Moose;
-use MooseX::Types::Moose qw(HashRef);
+use MooseX::Types::Moose qw(HashRef Str Bool);
 
 use namespace::autoclean;
 
@@ -17,9 +17,42 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::List );
+with qw( Pinto::Role::Reporter );
 
 #------------------------------------------------------------------------------
+
+has stack => (
+    is       => 'ro',
+    isa      => Str,
+);
+
+
+has pinned => (
+    is     => 'ro',
+    isa    => Bool,
+);
+
+
+has packages => (
+    is     => 'ro',
+    isa    => Str,
+);
+
+
+has distributions => (
+    is     => 'ro',
+    isa    => Str,
+);
+
+
+has format => (
+    is        => 'ro',
+    isa       => Str,
+    default   => "%m%s%y %-40n %12v  %p\n",
+    predicate => 'has_format',
+    lazy      => 1,
+);
+
 
 has where => (
     is       => 'ro',

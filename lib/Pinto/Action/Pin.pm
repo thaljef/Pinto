@@ -3,7 +3,9 @@
 package Pinto::Action::Pin;
 
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
+use Pinto::Types qw(ArrayRefOfPkgsOrDists);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -18,7 +20,19 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Pin );
+has stack => (
+    is       => 'ro',
+    isa      => Str,
+);
+
+
+has targets => (
+    isa      => ArrayRefOfPkgsOrDists,
+    traits   => [ qw(Array) ],
+    handles  => {targets => 'elements'},
+    required => 1,
+    coerce   => 1,
+);
 
 #------------------------------------------------------------------------------
 

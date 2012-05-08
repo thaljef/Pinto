@@ -3,6 +3,9 @@
 package Pinto::Action::Install;
 
 use Moose;
+use MooseX::Types::Moose qw(HashRef ArrayRef Maybe Str);
+
+use File::Which qw(which);
 
 use Pinto::Exception qw(throw);
 
@@ -18,7 +21,34 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Install );
+has cpanm_options => (
+    is      => 'ro',
+    isa     => HashRef[Maybe[Str]],
+    default => sub { {} },
+    lazy    => 1,
+);
+
+
+has cpanm_exe => (
+    is      => 'ro',
+    isa     => Str,
+    default => sub { which('cpanm') || '' },
+    lazy    => 1,
+);
+
+
+has stack   => (
+    is      => 'ro',
+    isa     => Str,
+);
+
+
+has targets => (
+    is      => 'ro',
+    isa     => ArrayRef[Str],
+    default => sub { [] },
+    lazy    => 1,
+);
 
 #------------------------------------------------------------------------------
 

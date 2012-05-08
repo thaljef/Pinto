@@ -3,8 +3,9 @@
 package Pinto::Action::Add;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Bool Str);
 
+use Pinto::Types qw(AuthorID ArrayRefOfFiles);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -19,8 +20,64 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Add
-         Pinto::Role::PackageImporter );
+with qw( Pinto::Role::PackageImporter );
+
+#------------------------------------------------------------------------------
+
+has author => (
+    is         => 'ro',
+    isa        => AuthorID,
+    builder    => '_build_author',
+    coerce     => 1,
+    lazy       => 1,
+);
+
+
+has archives  => (
+    isa       => ArrayRefOfFiles,
+    traits    => [ qw(Array) ],
+    handles   => {archives => 'elements'},
+    required  => 1,
+    coerce    => 1,
+);
+
+
+has stack => (
+    is       => 'ro',
+    isa      => Str,
+);
+
+has pin => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
+has norecurse => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
+
+has dryrun => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
+#------------------------------------------------------------------------------
+
+sub _build_author {
+    my ($self) = @_;
+
+    # Try looking in their .pause file
+    my $pause_id = $self->pausecfg->{user};
+    return uc $pause_id if $pause_id;
+
+    # Fall back to username
+    return uc $self->username;
+}
 
 #------------------------------------------------------------------------------
 

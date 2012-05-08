@@ -3,6 +3,7 @@
 package Pinto::Action::Edit;
 
 use Moose;
+use MooseX::Types::Moose qw(Str HashRef Bool Maybe);
 
 use namespace::autoclean;
 
@@ -16,7 +17,24 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Edit );
+has stack => (
+    is       => 'ro',
+    isa      => Maybe[Str],
+);
+
+
+has properties => (
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub{ {} },
+);
+
+
+has default => (
+  is      => 'ro',
+  isa     => Bool,
+  default => 0,
+);
 
 #------------------------------------------------------------------------------
 

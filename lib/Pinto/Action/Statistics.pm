@@ -3,6 +3,7 @@
 package Pinto::Action::Statistics;
 
 use Moose;
+use MooseX::Types::Moose qw(Str);
 
 use Pinto::Statistics;
 
@@ -18,7 +19,14 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Statistics );
+with qw( Pinto::Role::Reporter );
+
+#------------------------------------------------------------------------------
+
+has stack => (
+    is       => 'ro',
+    isa      => Str,
+);
 
 #------------------------------------------------------------------------------
 
@@ -26,11 +34,11 @@ sub execute {
     my ($self) = @_;
 
     # FIXME!
-    my $stack = $self->repos->get_stack;
+    my $stack = $self->repos->get_stack( $self->stack );
     my $stats = Pinto::Statistics->new( db    => $self->repos->db,
                                         stack => $stack->name );
 
-    print { $self->out() } $stats->to_formatted_string();
+    print { $self->out } $stats->to_formatted_string();
 
     return $self->result;
 }

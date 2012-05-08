@@ -3,6 +3,7 @@
 package Pinto::Action::Props;
 
 use Moose;
+use MooseX::Types::Moose qw(Maybe Str);
 
 use String::Format;
 
@@ -18,7 +19,21 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Interface::Action::Props );
+with qw( Pinto::Role::Reporter );
+
+#------------------------------------------------------------------------------
+
+has stack  => (
+    is       => 'ro',
+    isa      => Maybe[Str],
+);
+
+
+has format => (
+    is      => 'ro',
+    isa     => Str,
+    default => "%n = %v\n",
+);
 
 #------------------------------------------------------------------------------
 
