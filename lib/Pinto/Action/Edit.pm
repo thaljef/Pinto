@@ -3,6 +3,7 @@
 package Pinto::Action::Edit;
 
 use Moose;
+use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str HashRef Bool Maybe);
 
 use namespace::autoclean;
@@ -13,13 +14,14 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
 has stack => (
     is       => 'ro',
     isa      => Maybe[Str],
+    alias    => 'operand',
 );
 
 
@@ -31,10 +33,14 @@ has properties => (
 
 
 has default => (
-  is      => 'ro',
-  isa     => Bool,
-  default => 0,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

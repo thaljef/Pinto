@@ -3,6 +3,7 @@
 package Pinto::Action::Unpin;
 
 use Moose;
+use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str);
 
 use Pinto::Types qw(ArrayRefOfPkgsOrDists);
@@ -28,10 +29,16 @@ has targets => (
     coerce   => 1,
 );
 
+
 has stack => (
     is       => 'ro',
     isa      => Str,
+    alias    => 'operand',
 );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

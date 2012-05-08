@@ -3,6 +3,7 @@
 package Pinto::Action::Copy;
 
 use Moose;
+use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str);
 
 use namespace::autoclean;
@@ -13,7 +14,7 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ has to_stack => (
     is       => 'ro',
     isa      => Str,
     required => 1,
+    alias    => 'operand',
 );
 
 
@@ -36,6 +38,10 @@ has description => (
     isa        => Str,
     predicate  => 'has_description',
 );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

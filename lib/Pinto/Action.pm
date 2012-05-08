@@ -3,7 +3,7 @@
 package Pinto::Action;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Str);
 
 use Pinto::Result;
 

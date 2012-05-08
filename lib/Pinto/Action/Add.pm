@@ -3,6 +3,7 @@
 package Pinto::Action::Add;
 
 use Moose;
+use MooseX::Aliases;
 use MooseX::Types::Moose qw(Bool Str);
 
 use Pinto::Types qw(AuthorID ArrayRefOfFiles);
@@ -20,14 +21,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::PackageImporter );
-
-#------------------------------------------------------------------------------
-
 has author => (
     is         => 'ro',
     isa        => AuthorID,
-    builder    => '_build_author',
+    default    => sub { uc ($_[0]->pausecfg->{user} || $_[0]->username) },
     coerce     => 1,
     lazy       => 1,
 );
@@ -45,7 +42,9 @@ has archives  => (
 has stack => (
     is       => 'ro',
     isa      => Str,
+    alias    => 'operand',
 );
+
 
 has pin => (
     is        => 'ro',
@@ -53,14 +52,8 @@ has pin => (
     default   => 0,
 );
 
+
 has norecurse => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
-);
-
-
-has dryrun => (
     is        => 'ro',
     isa       => Bool,
     default   => 0,
@@ -68,16 +61,7 @@ has dryrun => (
 
 #------------------------------------------------------------------------------
 
-sub _build_author {
-    my ($self) = @_;
-
-    # Try looking in their .pause file
-    my $pause_id = $self->pausecfg->{user};
-    return uc $pause_id if $pause_id;
-
-    # Fall back to username
-    return uc $self->username;
-}
+with qw( Pinto::Role::Operator Pinto::Role::PackageImporter );
 
 #------------------------------------------------------------------------------
 

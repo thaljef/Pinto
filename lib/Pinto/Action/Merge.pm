@@ -3,6 +3,7 @@
 package Pinto::Action::Merge;
 
 use Moose;
+use MooseX::Aliases;
 use MooseX::Types::Moose qw(Bool Str);
 
 use namespace::autoclean;
@@ -28,14 +29,12 @@ has to_stack => (
     is       => 'ro',
     isa      => Str,
     required => 1,
+    alias    => 'operand',
 );
 
+#------------------------------------------------------------------------------
 
-has dryrun => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
-);
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

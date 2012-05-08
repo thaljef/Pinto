@@ -1,10 +1,9 @@
-# ABSTRACT: Something that reports about the repository
+# ABSTRACT: Something that operates on the repository
 
-package Pinto::Role::Reporter;
+package Pinto::Role::Operator;
 
 use Moose::Role;
-
-use Pinto::Types qw(IO);
+use MooseX::Types::Moose qw(Bool);
 
 use namespace::autoclean;
 
@@ -14,11 +13,14 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-has out => (
+requires qw(operand);
+
+#-----------------------------------------------------------------------------
+
+has dryrun => (
     is      => 'ro',
-    isa     => IO,
-    coerce  => 1,
-    default => sub { [fileno(STDOUT), '>'] },
+    isa     => Bool,
+    default => 0,
 );
 
 #-----------------------------------------------------------------------------

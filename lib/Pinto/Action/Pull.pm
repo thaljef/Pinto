@@ -3,6 +3,7 @@
 package Pinto::Action::Pull;
 
 use Moose;
+use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str Bool);
 
 use Pinto::Types qw(ArrayRefOfPkgsOrDists);
@@ -19,10 +20,6 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::PackageImporter );
-
-#------------------------------------------------------------------------------
-
 has targets => (
     isa      => ArrayRefOfPkgsOrDists,
     traits   => [ qw(Array) ],
@@ -31,10 +28,13 @@ has targets => (
     coerce   => 1,
 );
 
+
 has stack => (
     is       => 'ro',
     isa      => Str,
+    alias    => 'operand',
 );
+
 
 has pin => (
     is        => 'ro',
@@ -42,17 +42,16 @@ has pin => (
     default   => 0,
 );
 
+
 has norecurse => (
     is        => 'ro',
     isa       => Bool,
     default   => 0,
 );
 
-has dryrun => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
-);
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Operator Pinto::Role::PackageImporter );
 
 #------------------------------------------------------------------------------
 
