@@ -12,8 +12,6 @@
 
 =item Option to enforce strict stacks (no overlapping dists)
 
-=item Re-examine interface classes
-
 =item Write test cases for Stack operations
 
 =item Create a type for StackPropertyName
@@ -24,13 +22,7 @@
 
 =item Re-examine log levels for messages
 
-=item Divide actions into Actions and Reports
-
-=item Create Request (or Event) superclass for Action and Report
-
 =item Verify checksums during 'verify'
-
-=item Enable shared (for Reports) and exclusive locking (for Actions)
 
 =item Add hooks before/after adding and pulling
 
@@ -48,8 +40,6 @@
 
 =item Warn if an unmerged stack is being deleted
 
-=item Way to view all packages (not just in a stack)
-
 =item Way to pin/unpin all packages in a stack
 
 =item Make the Store transactional
@@ -61,8 +51,6 @@
 =item Examine the delta between two stacks
 
 =item Rewrite tests with Test::Class
-
-=item Extract new Roles into Pinto-Common
 
 =back
 
@@ -103,8 +91,6 @@ Not yet -- no clear use case.
 
 =item news: list recent additions. maybe something from Changes file
 
-=item assign: change ownership of a distribution
-
 =back
 
 =head1 OTHER STUFF TODO
@@ -137,9 +123,6 @@ added in the last action (if any).
 =item Tests, tests, tests.
 
 =item Look for better ways to use Moose roles.
-
-=item Look into using Path::Class::SVN or Alien::SVN instead of using
-my home-grown interface to Subversion.
 
 =item Profile and look for performance optimizations.
 
