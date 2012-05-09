@@ -62,7 +62,8 @@ sub run {
     my $runner = $action_class->does('Pinto::Role::Operator') ?
       '_run_operator' : '_run_reporter';
 
-    my $result = $self->$runner($action_class, %args);
+    my $result = try   { $self->$runner($action_class, %args)   }
+                 catch { $self->repos->unlock; $self->fatal($_) };
 
     return $result;
 }
@@ -72,21 +73,14 @@ sub run {
 sub _run_reporter {
     my ($self, $action_class, %args) = @_;
 
-    my $result = try {
-
-        $self->repos->lock_shared;
-        @args{qw(logger repos)} = ($self->logger, $self->repos);
-        my $action = $action_class->new( %args );
-        my $res = $action->execute;
-        $res; # Returned from try{}
-    }
-    catch {
-
-        $self->repos->unlock;
-        $self->fatal($_);
-    };
+    $self->repos->lock_shared;
+    @args{qw(logger repos)} = ($self->logger, $self->repos);
+    my $action = $action_class->new( %args );
+    my $result = $action->execute;
+    $self->repos->unlock;
 
     return $result;
+
 }
 
 #------------------------------------------------------------------------------
@@ -94,38 +88,28 @@ sub _run_reporter {
 sub _run_operator {
     my ($self, $action_class, %args) = @_;
 
-    my $result = try {
+    $self->repos->lock_exclusive;
+    my $guard = $self->repos->db->schema->txn_scope_guard;
+    @args{qw(logger repos)} = ($self->logger, $self->repos);
+    my $action = $action_class->new( %args );
+    my $result = $action->execute;
 
-        $self->repos->lock_exclusive;
-        my $guard = $self->repos->db->schema->txn_scope_guard;
-        @args{qw(logger repos)} = ($self->logger, $self->repos);
-        my $action = $action_class->new( %args );
-        my $res = $action->execute;
-
-        if ($action->dryrun) {
-            $self->info('Dryrun: rolling back database');
-            undef $guard;
-        }
-        elsif ( not $res->made_changes ) {
-            $self->info('No changes were made');
-            undef $guard;
-        }
-        else {
-            $self->repos->write_index;
-            $guard->commit;
-        }
-
-        $self->repos->unlock;
-        $res; # Returned from try{}
+    if ($action->dryrun) {
+        $self->info('Dryrun: rolling back database');
+        undef $guard;
     }
-    catch {
+    elsif ( not $result->made_changes ) {
+        $self->info('No changes were made');
+        undef $guard;
+    }
+    else {
+        $self->repos->write_index;
+        $guard->commit;
+    }
 
-        $self->repos->unlock;
-        $self->fatal($_);
-    };
+    $self->repos->unlock;
 
     return $result;
-
 }
 
 #------------------------------------------------------------------------------
