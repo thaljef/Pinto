@@ -4,6 +4,10 @@
 
 
 
+=item Redo Distribution schema (primary key: author filename)
+
+=item List by author
+
 =item Command to list dependencies and dependants
 
 =item Way to verify prereqs on a stack
