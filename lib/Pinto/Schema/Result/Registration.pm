@@ -285,7 +285,6 @@ sub merge {
     my ($self, %args) = @_;
 
     my $to_stk = $args{to};
-    my $dryrun = $args{dryrun};
 
     my $from_pkg = $self->package;
     my $to_reg   = $to_stk->registration(package => $from_pkg);
@@ -295,7 +294,6 @@ sub merge {
 
     if (not defined $to_reg) {
          $self->debug("Adding package $from_pkg to stack $to_stk");
-         return 0 if $dryrun;
          $self->copy( {stack => $to_stk} );
          return 0;
      }
@@ -309,7 +307,6 @@ sub merge {
         $self->debug("$self and $to_reg are the same");
         if ($self->is_pinned and not $to_reg->is_pinned) {
             $self->debug("Adding pin to $to_reg");
-            return 0 if $dryrun;
             $to_reg->pin;
             return 0;
         }
@@ -345,7 +342,6 @@ sub merge {
         }
         my $from_pkg = $self->package;
         $self->info("Upgrading $to_reg to $from_pkg");
-        return 0 if $dryrun;
         $to_reg->delete;
         $self->copy( {stack => $to_reg->stack} );
         return 0;

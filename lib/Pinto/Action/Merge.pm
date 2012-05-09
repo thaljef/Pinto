@@ -46,10 +46,9 @@ sub execute {
 
     $self->notice("Merging stack $from_stack into stack $to_stack");
 
-    my $did_merge = $from_stack->merge( to     => $to_stack,
-                                        dryrun => $self->dryrun );
+    my $did_merge = $from_stack->merge( to => $to_stack );
 
-    $self->result->changed unless $self->dryrun;
+    $self->result->changed if $did_merge;
 
     return $self->result;
 }

@@ -371,7 +371,6 @@ sub merge {
     my ($self, %args) = @_;
 
     my $to_stk = $args{to};
-    my $dryrun = $args{dryrun};
 
     my $conflicts;
     for my $reg ($self->registrations) {
@@ -379,13 +378,9 @@ sub merge {
         $conflicts += $reg->merge(%args);
     }
 
-    throw "There were $conflicts conflicts.  Merge aborted"
-        if $conflicts and not $dryrun;
+    throw "There were $conflicts conflicts.  Merge aborted" if $conflicts;
 
-    $self->info('Dry run merge -- no changes were made')
-        and return if $dryrun;
-
-    return;
+    return 1;
 }
 
 #------------------------------------------------------------------------------
