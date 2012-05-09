@@ -54,8 +54,8 @@ sub _pull_by_package_spec {
     if ($latest && $latest->version >= $pkg_ver) {
         my $dist = $latest->distribution;
         $self->debug("Already have package $pspec or newer as $latest");
-        $dist->register(stack => $stack);
-        return ($dist, 0);
+        my $did_register = $dist->register(stack => $stack);
+        return ($dist, $did_register);
     }
 
     my $dist_url = $self->repos->locate( package => $pspec->name,
@@ -92,8 +92,8 @@ sub _pull_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
-        $got_dist->register(stack => $stack);
-        return ($got_dist, 0);
+        my $did_register = $got_dist->register(stack => $stack);
+        return ($got_dist, $did_register);
     }
 
     my $dist_url = $self->repos->locate(distribution => $dspec->path)

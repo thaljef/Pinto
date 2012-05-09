@@ -55,21 +55,66 @@ sub run {
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->warning(@_) };
 
+    my $action_class = $self->action_base_class . "::$action_name";
+    Class::Load::try_load_class($action_class)
+        or $self->fatal("Unable to load action: $action_class");
+
+    my $runner = $action_class->does('Pinto::Role::Operator') ?
+      '_run_operator' : '_run_reporter';
+
+    my $result = $self->$runner($action_class, %args);
+
+    return $result;
+}
+
+#------------------------------------------------------------------------------
+
+sub _run_reporter {
+    my ($self, $action_class, %args) = @_;
+
     my $result = try {
 
-        my $action_class = $self->action_base_class . "::$action_name";
-        Class::Load::load_class($action_class);
+        $self->repos->lock_shared;
+        @args{qw(logger repos)} = ($self->logger, $self->repos);
+        my $action = $action_class->new( %args );
+        my $res = $action->execute;
+        $res; # Returned from try{}
+    }
+    catch {
+
+        $self->repos->unlock;
+        $self->fatal($_);
+    };
+
+    return $result;
+}
+
+#------------------------------------------------------------------------------
+
+sub _run_operator {
+    my ($self, $action_class, %args) = @_;
+
+    my $result = try {
 
         $self->repos->lock_exclusive;
         my $guard = $self->repos->db->schema->txn_scope_guard;
-
         @args{qw(logger repos)} = ($self->logger, $self->repos);
         my $action = $action_class->new( %args );
         my $res = $action->execute;
 
-        $self->repos->write_index if $res->made_changes;
-        $self->info('No changes were made') if not $res->made_changes;
-        $guard->commit;
+        if ($action->dryrun) {
+            $self->info('Dryrun: rolling back database');
+            undef $guard;
+        }
+        elsif ( not $res->made_changes ) {
+            $self->info('No changes were made');
+            undef $guard;
+        }
+        else {
+            $self->repos->write_index;
+            $guard->commit;
+        }
+
         $self->repos->unlock;
         $res; # Returned from try{}
     }
@@ -80,6 +125,7 @@ sub run {
     };
 
     return $result;
+
 }
 
 #------------------------------------------------------------------------------
