@@ -23,10 +23,21 @@ __PACKAGE__->load_namespaces;
 
 #-------------------------------------------------------------------------------
 
+use MooseX::ClassAttribute;
+
+#-------------------------------------------------------------------------------
+
 has logger => (
-  is      => 'rw',
-  isa     => 'Pinto::Logger',
-  handles => [ qw(debug notice info warning error fatal) ],
+    is      => 'rw',
+    isa     => 'Pinto::Logger',
+    handles => [ qw(debug notice info warning error fatal) ],
+);
+
+
+class_has version => (
+    is        => 'ro',
+    isa       => 'Int',
+    default   => 1,
 );
 
 #-------------------------------------------------------------------------------

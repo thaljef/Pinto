@@ -4,6 +4,7 @@ package Pinto::Repository;
 
 use Moose;
 
+use Pinto::Util;
 use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
@@ -119,6 +120,71 @@ sub BUILD {
         my $root_dir = $self->config->root_dir();
         throw "Directory $root_dir does not look like a Pinto repository";
     }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_property {
+    my ($self, @prop_names) = @_;
+
+    my %props = %{ $self->get_properties };
+    return @props{@prop_names};
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_properties {
+    my ($self) = @_;
+
+    my @props = $self->db->repository_properties->search->all;
+
+    return { map { $_->name => $_->value } @props };
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_property {
+    my ($self, $prop_name, $value) = @_;
+    return $self->set_properties( {$prop_name => $value} );
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_properties {
+    my ($self, $props) = @_;
+
+    while (my ($name, $value) = each %{$props}) {
+        $name = Pinto::Util::normalize_property_name($name);
+        my $nv_pair = {name => $name, value => $value};
+        $self->db->repository_properties->update_or_create($nv_pair);
+    }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_property {
+    my ($self, @prop_names) = @_;
+
+    for my $prop_name (@prop_names) {
+        my $where = {name => $prop_name};
+        my $prop = $self->db->repository_properties->update_or_create($where);
+        $prop->delete if $prop;
+    }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_properties {
+    my ($self) = @_;
+
+    my $props_rs = $self->db->repository_properties->search;
+    $props_rs->delete;
 
     return $self;
 }

@@ -138,12 +138,25 @@ sub create_stack {
 
 #-------------------------------------------------------------------------------
 
+sub repository_properties {
+    my ($self) = @_;
+
+    return $self->schema->resultset('RepositoryProperty');
+}
+
+#-------------------------------------------------------------------------------
+
 sub deploy {
     my ($self) = @_;
 
     $self->mkpath( $self->config->db_dir() );
     $self->debug( 'Creating database at ' . $self->config->db_file );
     $self->schema->deploy;
+
+    my $props = { name  => 'pinto:schema-version',
+                  value => $self->schema->version };
+
+    $self->schema->resultset('RepositoryProperty')->create($props);
 
     return $self;
 }
