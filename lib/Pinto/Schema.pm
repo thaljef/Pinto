@@ -23,10 +23,6 @@ __PACKAGE__->load_namespaces;
 
 #-------------------------------------------------------------------------------
 
-use MooseX::ClassAttribute;
-
-#-------------------------------------------------------------------------------
-
 has logger => (
     is      => 'rw',
     isa     => 'Pinto::Logger',
@@ -34,9 +30,10 @@ has logger => (
 );
 
 
-class_has version => (
+has version => (
     is        => 'ro',
     isa       => 'Int',
+    init_arg  => undef,
     default   => 1,
 );
 

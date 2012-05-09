@@ -153,7 +153,7 @@ sub deploy {
     $self->debug( 'Creating database at ' . $self->config->db_file );
     $self->schema->deploy;
 
-    my $props = { name  => 'pinto:schema-version',
+    my $props = { name  => 'pinto:schema_version',
                   value => $self->schema->version };
 
     $self->schema->resultset('RepositoryProperty')->create($props);
