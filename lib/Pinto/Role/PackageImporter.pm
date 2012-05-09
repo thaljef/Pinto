@@ -87,8 +87,8 @@ sub _pull_by_distribution_spec {
 
     $self->info("Looking for distribution $dspec");
 
-    my $path     = $dspec->path;
-    my $got_dist = $self->repos->get_distribution(path => $path);
+    my $got_dist = $self->repos->get_distribution( author  => $dspec->author,
+                                                   archive => $dspec->archive );
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");

@@ -286,23 +286,19 @@ sub get_package {
 
 #-------------------------------------------------------------------------------
 
-=method get_distribution( path => $dist_path )
+=method get_distribution( author => $author, archive => $archive )
 
 Returns the L<Pinto::Schema::Result::Distribution> with the given
-C<$dist_path>.  If there is no distribution with such a path in the
-respoistory, returns nothing.  Note the C<$dist_path> is a Unix-style
-path fragment that identifies the location of the distribution archive
-within the repository, such as F<J/JE/JEFF/Pinto-0.033.tar.gz>
+author ID and archive name.  If there is no distribution in the
+respoistory, returns nothing.
 
 =cut
 
 sub get_distribution {
     my ($self, %args) = @_;
 
-    my $dist_path = $args{path};
-
-    my $where = { path => $dist_path };
     my $attrs = { prefetch => 'packages' };
+    my $where = { author => $args{author}, archive => $args{archive} };
     my $dist  = $self->db->select_distributions( $where, $attrs )->first;
 
     return $dist;
@@ -336,16 +332,16 @@ sub add {
     throw "Archive $archive does not exist"  if not -e $archive;
     throw "Archive $archive is not readable" if not -r $archive;
 
-    my $basename   = $archive->basename();
-    my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path  = $author_dir->file($basename)->as_foreign('Unix')->stringify();
+    my $archive_basename = $archive->basename;
+    my $dist_pretty      = "$author/$archive_basename";
 
-    $self->get_distribution(path => $dist_path)
-        and throw "Distribution $dist_path already exists";
+    $self->get_distribution(author => $author, archive => $archive_basename)
+        and throw "Distribution $dist_pretty already exists";
 
     # Assemble the basic structure...
-    my $dist_struct = { path     => $dist_path,
+    my $dist_struct = { author   => $author,
                         source   => $source,
+                        archive  => $archive_basename,
                         mtime    => Pinto::Util::mtime($archive),
                         md5      => Pinto::Util::md5($archive),
                         sha256   => Pinto::Util::sha256($archive) };
@@ -360,16 +356,16 @@ sub add {
 
     my $p = @provides;
     my $r = @requires;
-    $self->info("Archvie $dist_path provides $p and requires $r packages");
+    $self->info("Distribution $dist_pretty provides $p and requires $r packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
     # the repository will still be clean.
 
     my $dist = $self->db->create_distribution( $dist_struct );
-    my $repo_archive = $dist->archive( $self->root_dir() );
-    $self->fetch( from => $archive, to => $repo_archive );
-    $self->store->add_archive( $repo_archive );
+    my $archive_in_repos = $dist->native_path( $self->root_dir );
+    $self->fetch( from => $archive, to => $archive_in_repos );
+    $self->store->add_archive( $archive_in_repos );
 
     return $dist;
 }

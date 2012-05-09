@@ -63,8 +63,9 @@ sub run {
     my $runner = $action_class->does('Pinto::Role::Operator') ?
       '_run_operator' : '_run_reporter';
 
-    my $result = try   { $self->$runner($action_class, %args)   }
-                 catch { $self->repos->unlock; $self->fatal($_) };
+    my $result = try     { $self->$runner($action_class, %args)   }
+                 finally { $self->repos->unlock }
+                 catch   { $self->fatal($_) };
 
     return $result;
 }
@@ -97,11 +98,11 @@ sub _run_operator {
         my $res    = $action->execute;
 
         if ($action->dryrun) {
-            $self->info('Dryrun -- rolling back database');
+            $self->notice('Dryrun -- rolling back database');
             $self->repos->db->schema->txn_rollback;
         }
         elsif ( not $res->made_changes ) {
-            $self->info('No changes were made');
+            $self->notice('No changes were made');
             $self->repos->db->schema->txn_rollback;
         }
         else {

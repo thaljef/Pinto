@@ -8,7 +8,8 @@ CREATE TABLE repository_property (
 
 CREATE TABLE distribution (
        id      INTEGER PRIMARY KEY NOT NULL,
-       path    TEXT                NOT NULL,
+       author  TEXT                NOT NULL,
+       archive TEXT                NOT NULL,
        source  TEXT                NOT NULL,
        mtime   INTEGER             NOT NULL,
        md5     TEXT                NOT NULL,
@@ -69,7 +70,7 @@ CREATE TABLE prerequisite (
 
 
 /* Schema::Loader names the indexes for us */
-CREATE UNIQUE INDEX a ON distribution(path);
+CREATE UNIQUE INDEX a ON distribution(author, archive);
 CREATE UNIQUE INDEX b ON package(name, distribution);
 CREATE UNIQUE INDEX c ON stack(name);
 CREATE UNIQUE INDEX d ON registration(stack, package_name);

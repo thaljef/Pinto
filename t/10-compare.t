@@ -66,7 +66,8 @@ sub _make_pkg {
     my ($pkg_name, $pkg_version, $is_local) = split '-', $pkg_spec;
 
     my $dist = make_dist_obj(
-          path     => "A/AU/AUTHOR/$dist_name-0.00.tar.gz",
+          author   => 'AUTHOR',
+          archive  => "$dist_name-0.00.tar.gz",
           mtime    => $mtime || 0,
           id       => $id++,
     );

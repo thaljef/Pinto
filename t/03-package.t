@@ -11,7 +11,7 @@ use Pinto::Tester::Util qw(make_dist_obj make_pkg_obj);
 
 #------------------------------------------------------------------------------
 
-my $dist = make_dist_obj(path => 'A/AU/AUTHOR/Foo-2.001_02.tar.gz');
+my $dist = make_dist_obj(author => 'AUTHOR', archive => 'Foo-2.001_02.tar.gz');
 my $pkg  = make_pkg_obj(name => 'Foo', version => '2.001_02', distribution => $dist);
 
 is($pkg->name(), 'Foo', 'name attribute');
@@ -22,14 +22,14 @@ is("$pkg", 'AUTHOR/Foo-2.001_02/Foo-2.001_02', 'default strigification');
 
 #------------------------------------------------------------------------------
 
-$dist = make_dist_obj(path => 'A/AU/AUTHOR/Foo-2.0.tar.gz', source => 'http://remote');
+$dist = make_dist_obj(author => 'AUTHOR', archive => 'Foo-2.0.tar.gz', source => 'http://remote');
 $pkg  = make_pkg_obj(name => 'Foo', distribution => $dist );
 
 is($pkg->vname(), 'Foo-0', 'vname with undef version');
 
 #------------------------------------------------------------------------------
 
-$dist = make_dist_obj(path => 'A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz', source => 'http://remote');
+$dist = make_dist_obj(author => 'AUTHOR', archive => 'Foo-2.0-TRIAL.tar.gz', source => 'http://remote');
 $pkg  = make_pkg_obj(name => 'Foo', distribution => $dist, version => 1.2);
 
 my %formats = (

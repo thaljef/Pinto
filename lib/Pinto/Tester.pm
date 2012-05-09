@@ -190,7 +190,7 @@ sub registration_ok {
     # Test distribution object...
     my $dist = $pkg->distribution;
     $self->tb->is_eq($dist->path,  $dist_path, "Distribution has correct dist path");
-    $self->path_exists_ok( [$dist->archive] );
+    $self->path_exists_ok( [$dist->native_path] );
 
     # Test pins...
     $self->tb->ok($reg->is_pinned,  "Registration $reg is pinned") if $is_pinned;
