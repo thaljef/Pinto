@@ -68,8 +68,10 @@ sub _execute {
     }
     elsif ($target->isa('Pinto::DistributionSpec')) {
 
-        $dist = $self->repos->get_distribution(path => $target->path)
-            or throw "Distribution $target does not exist";
+        $dist = $self->repos->get_distribution( author => $target->author,
+                                                archive => $target->archive );
+
+        throw "Distribution $target does not exist" if not $dist;
     }
     else {
 
@@ -86,7 +88,7 @@ sub _execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 
