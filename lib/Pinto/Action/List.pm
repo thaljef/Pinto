@@ -5,6 +5,8 @@ package Pinto::Action::List;
 use Moose;
 use MooseX::Types::Moose qw(HashRef Str Bool);
 
+use Pinto::Types qw(AuthorID);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -30,6 +32,12 @@ has stack => (
 has pinned => (
     is     => 'ro',
     isa    => Bool,
+);
+
+
+has author => (
+    is     => 'ro',
+    isa    => AuthorID,
 );
 
 
@@ -72,8 +80,12 @@ sub _build_where {
         $where->{'package.name'} = { like => "%$pkg_name%" }
     }
 
-    if (my $dist_path = $self->distributions) {
-        $where->{'package.distribution.path'} = { like => "%$dist_path%" };
+    if (my $dist_name = $self->distributions) {
+        $where->{'package.distribution.archive'} = { like => "%$dist_name%" };
+    }
+
+    if (my $author = $self->author) {
+        $where->{'package.distribution.author'} = $author;
     }
 
     if (my $pinned = $self->pinned) {

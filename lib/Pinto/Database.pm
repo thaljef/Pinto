@@ -101,7 +101,8 @@ sub select_registrations {
 sub create_distribution {
     my ($self, $struct) = @_;
 
-    $self->debug("Inserting distribution $struct->{path} into database");
+    my $pretty_dist = "$struct->{author}/$struct->{archive}";
+    $self->debug("Inserting distribution $pretty_dist into database");
 
     return $self->schema->resultset('Distribution')->create($struct);
 }
