@@ -271,7 +271,7 @@ sub result_not_changed_ok {
 
 #------------------------------------------------------------------------------
 
-sub repository_empty_ok {
+sub repository_clean_ok {
     my ($self) = @_;
 
     my @dists = $self->pinto->repos->db->select_distributions->all;
@@ -280,8 +280,10 @@ sub repository_empty_ok {
     my @pkgs = $self->pinto->repos->db->select_packages->all;
     $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
 
-    my $dir = dir( $self->root(), qw(authors id) );
-    $self->tb->ok(! -e $dir, 'Repository has no archives');
+    my @stacks = $self->pinto->repos->db->select_stacks->all;
+    $self->tb->is_eq(scalar @stacks, 1, 'Database has only one stack');
+    $self->tb->is_eq($stacks[0]->name, 'init',  'The stack is called "init"');
+    $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
 
     return;
 }
