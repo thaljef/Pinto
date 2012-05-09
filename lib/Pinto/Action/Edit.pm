@@ -21,7 +21,7 @@ extends qw( Pinto::Action );
 has stack => (
     is       => 'ro',
     isa      => Maybe[Str],
-    alias    => 'operand',
+    alias    => 'operative_stack',
 );
 
 

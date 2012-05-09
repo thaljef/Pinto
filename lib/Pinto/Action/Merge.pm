@@ -29,7 +29,7 @@ has to_stack => (
     is       => 'ro',
     isa      => Str,
     required => 1,
-    alias    => 'operand',
+    alias    => 'operative_stack',
 );
 
 #------------------------------------------------------------------------------

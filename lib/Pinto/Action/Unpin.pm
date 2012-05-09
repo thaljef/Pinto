@@ -33,7 +33,7 @@ has targets => (
 has stack => (
     is       => 'ro',
     isa      => Str,
-    alias    => 'operand',
+    alias    => 'operative_stack',
 );
 
 #------------------------------------------------------------------------------

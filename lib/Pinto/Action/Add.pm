@@ -42,7 +42,7 @@ has archives  => (
 has stack => (
     is       => 'ro',
     isa      => Str,
-    alias    => 'operand',
+    alias    => 'operative_stack',
 );
 
 
