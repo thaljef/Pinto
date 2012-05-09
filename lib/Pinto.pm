@@ -9,6 +9,7 @@ use Try::Tiny;
 use Class::Load;
 
 use Pinto::Repository;
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -77,7 +78,6 @@ sub _run_reporter {
     @args{qw(logger repos)} = ($self->logger, $self->repos);
     my $action = $action_class->new( %args );
     my $result = $action->execute;
-    $self->repos->unlock;
 
     return $result;
 
@@ -89,25 +89,32 @@ sub _run_operator {
     my ($self, $action_class, %args) = @_;
 
     $self->repos->lock_exclusive;
-    my $guard = $self->repos->db->schema->txn_scope_guard;
-    @args{qw(logger repos)} = ($self->logger, $self->repos);
-    my $action = $action_class->new( %args );
-    my $result = $action->execute;
+    $self->repos->db->schema->txn_begin;
 
-    if ($action->dryrun) {
-        $self->info('Dryrun: rolling back database');
-        undef $guard;
-    }
-    elsif ( not $result->made_changes ) {
-        $self->info('No changes were made');
-        undef $guard;
-    }
-    else {
-        $self->repos->write_index;
-        $guard->commit;
-    }
+    my $result = try {
+        @args{qw(logger repos)} = ($self->logger, $self->repos);
+        my $action = $action_class->new( %args );
+        my $res    = $action->execute;
 
-    $self->repos->unlock;
+        if ($action->dryrun) {
+            $self->info('Dryrun -- rolling back database');
+            $self->repos->db->schema->txn_rollback;
+        }
+        elsif ( not $res->made_changes ) {
+            $self->info('No changes were made');
+            $self->repos->db->schema->txn_rollback;
+        }
+        else {
+            $self->repos->write_index;  # ???
+            $self->repos->db->schema->txn_commit;
+        }
+
+        $res; # returned from try{}
+    }
+    catch {
+        $self->repos->db->schema->txn_rollback;
+        throw "$_";
+    };
 
     return $result;
 }
