@@ -61,9 +61,18 @@ $t->populate('MARK/DistC-2=PkgC-2,PkgD-2');
   file_exists_ok($p5_dir->file('PkgC.pm'));
 
 
-  # Try installing a dist that isn't on the stack
-  $t->run_throws_ok('Install' => {targets => ['PkgA'], stack => 'dev', %cpanm_opts},
-                   qr/Installation failed/);
+  {
+      local $TODO = q{Won't pass with current cpanm'};
+
+      # Try installing a dist that isn't on the stack.  The installation
+      # should fail, but the latest version of cpanm falls back to the
+      # repository index.  Miyagawa agrees this is wrong.  So we're just
+      # waiting for him to pull https://github.com/miyagawa/cpanminus/pull/150
+
+      $t->run_throws_ok('Install' => {targets => ['PkgA'], stack => 'dev', %cpanm_opts},
+                        qr/Installation failed/);
+  }
+
 }
 
 #------------------------------------------------------------------------------
