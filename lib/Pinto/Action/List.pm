@@ -38,6 +38,7 @@ has pinned => (
 has author => (
     is     => 'ro',
     isa    => AuthorID,
+    coerce => 1,
 );
 
 
