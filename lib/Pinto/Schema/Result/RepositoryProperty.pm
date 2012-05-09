@@ -97,7 +97,15 @@ with 'Pinto::Role::Schema::Result';
 # Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-05-08 21:12:59
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JEYmGo1sVZSGRVeWvVpv0g
 
+#-------------------------------------------------------------------------------
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+# VERSION
+
+#-------------------------------------------------------------------------------
+
 __PACKAGE__->meta->make_immutable;
+
+#-------------------------------------------------------------------------------
 1;
+
+__END__
