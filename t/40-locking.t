@@ -28,7 +28,7 @@ $t->pinto; # Just to kick lazy initializers
       sleep 3; # Let the child start
       print "Starting parent: $$\n";
 
-      my $lock_file = $t->root->file('.lock.NFSLock');
+      my $lock_file = $t->root->file('.lock');
       file_exists_ok($lock_file);
 
       local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
@@ -71,7 +71,7 @@ $t->pinto; # Just to kick lazy initializers
       sleep 3; # Let the child start
       print "Starting parent: $$\n";
 
-      my $lock_file = $t->root->file('.lock.NFSLock');
+      my $lock_file = $t->root->file('.lock');
       file_exists_ok($lock_file);
 
       local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
