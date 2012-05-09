@@ -313,7 +313,8 @@ has distname_info => (
     handles  => { name     => 'dist',
                   vname    => 'distvname',
                   version  => 'version',
-                  maturity => 'maturity' },
+                  maturity => 'maturity',
+                  filename => 'filename' },
     default  => sub { CPAN::DistnameInfo->new( $_[0]->path ) },
     lazy     => 1,
 );
@@ -438,6 +439,7 @@ sub to_formatted_string {
          'm' => sub { $self->is_devel()   ? 'd' : 'r'         },
          'p' => sub { $self->path()                           },
          'P' => sub { $self->archive()                        },
+         'f' => sub { $self->filename()                       },
          's' => sub { $self->is_local()   ? 'l' : 'f'         },
          'S' => sub { $self->source()                         },
          'a' => sub { $self->author()                         },

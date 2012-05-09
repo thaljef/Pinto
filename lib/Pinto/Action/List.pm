@@ -48,7 +48,7 @@ has distributions => (
 has format => (
     is        => 'ro',
     isa       => Str,
-    default   => "%m%s%y %-40n %12v  %p\n",
+    default   => "%m%s%y %-40n %12v  %a/%f\n",
     predicate => 'has_format',
     lazy      => 1,
 );
