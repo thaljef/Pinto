@@ -1,5 +1,82 @@
 {{$NEXT}}
 
+     Important:
+   
+     There have been major changes to the interface and behavior of
+     Pinto (read more below).  Beware this version of Pinto is NOT
+     compatible with repositories created with any previous version of
+     Pinto.  If you have an existing repository and you really, really
+     need to preserve it, then contact me and I can work with you to
+     develop a migration plan.  Also, many of the internal modules
+     have been moved around, so I strongly suggest that you remove
+     existing versions of all the Pinto libraries and scripts before
+     installing a new one on top of it.
+
+     New/Changed/Removed Features:
+
+     Pinto now supports multiple indexes called "stacks".  So you
+     could have one stack of dependencies for application X and a
+     different stack for application Y (or one for development, one
+     for production, etc).  Each stack can contain different modules
+     and/or different versions of those modules.  It's like having
+     several repositories in one.
+
+     Stacks can be copied and merged, much like a version control
+     system.  This allows you to experiment with new dependencies
+     without impacting other stacks.  If you have multiple
+     applications with different dependencies (or just different
+     versions of them), this also gives you a way to gradually
+     converge dependencies.  Likewise, it allows you to fork
+     dependencies if two applications need to diverge in some way.
+
+     The VCS integration has been removed.  Most of the people I've
+     talked with did not find this feature particularly useful, since
+     you can't really branch & merge a repository (the database is
+     binary).  This was also the most rickety part of the system.
+
+     The "pinto-admin" and "pinto-remote" applications have been
+     consolidated into one application called "pinto".  It will use
+     the appropriate backend (either Pinto or Pinto::Remote) depending
+     on whether the repository root is a local directory or a remote
+     URL.  However the backends ship separately from the application,
+     so you must choose which to install (or you can choose both).
+
+     The pinto application also has an "install" command, which
+     functions as a stand-in for cpanm.  It is wired to pull
+     distributions only from your repository, using the stack of your
+     choice.
+
+     Pinto no longer supports mirroring CPAN.  I've found that it is
+     difficult to manage application dependencies in the context of an
+     entire mirror of CPAN.  Most people only care about the stuff
+     their application needs, so they don't really need a snapshot of
+     the entire CPAN.  If you really want that, then CPAN::Mini does a
+     fine job.
+
+     Pinto no longer allows you to remove archives from the
+     repository, so the "clean", "purge", and "remove" commands are
+     gone.  Eventually, my goal is to make Pinto behave just like a
+     VCS, where nothing is really deleted and you can always revert
+     back to a previous version.  So you'll be able to take a
+     distribution off of a stack, but the .tar.gz file never really
+     goes away.
+
+     Pinto no longer enforces any sort of permissions on package
+     namespaces.  Previously, Pinto only allowed the original author
+     to update a package (just as PAUSE does).  But the restriction
+     was only advisory -- you could just bypass it by changing your
+     author identity.  Now, Pinto doesn't even bother with that -- any
+     user can upgrade any package.  All the activity is logged to a
+     file so you can see who changed what, but Pinto expects you to be
+     accountable for your actions.
+
+     Pinto now tracks dependencies between the distributions within
+     the repository.  So it can potentially tell you which
+     distributions need to be tested after upgrading a module, or
+     whether the stack actually contains sufficient modules to satisfy
+     all the prerequisites for all the distributions in the stack.  I
+     haven't yet written those commands, but the data is in there.
+
 0.040_003 2012-05-04 21:38:07 America/Los_Angeles
 
      Fixed bug in 35-install.t that would cause the test to fail
