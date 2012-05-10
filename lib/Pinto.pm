@@ -151,69 +151,60 @@ __END__
 
 =head1 SYNOPSIS
 
-See L<pinto-admin> to create and manage a Pinto repository.
+See L<pinto> to create and manage a Pinto repository.
 
-See L<pinto-server> to open remote access to a Pinto repository.
-
-See L<pinto-remote> to interact with a remote Pinto repository.
+See L<pintod> to allow remote access to your Pinto repository.
 
 See L<Pinto::Manual> for more information about the Pinto tools.
 
 =head1 DESCRIPTION
 
-Pinto is a suite of tools for creating and managing a CPAN-like
-repository of Perl archives.  Pinto is inspired by L<CPAN::Mini>,
-L<CPAN::Mini::Inject>, and L<MyCPAN::App::DPAN>, but adds a few
-interesting features:
+Pinto is a suite of tools and libraries for creating and managing a
+custom CPAN-like repository of Perl modules.  The purpose of such a
+repository is to provide a stable, curated stack of dependencies from
+which you can reliably build, test, and delploy your application using
+the standard Perl tools (e.g. L<cpan>, L<cpanm>, L<cpanp>).
+
+=head1 FEATURES
+
+Pinto is inspired by L<Carton>, L<CPAN::Mini::Inject>, and
+L<MyCPAN::App::DPAN>, but adds a few interesting features:
 
 =over 4
 
-=item * Pinto supports several usage patterns
+=item * Pinto supports mutiple indexes
 
-With Pinto, you can create a repository to mirror all the latest
-distributions from another repository.  Or you can create a "sparse
-repository" with just your own private distributions.  Or you can
-create a "project repository" that has all the distributions required
-for a particular project.  Or you can combine any of the above in some
-way.
+A Pinto repository can have multiple indexes.  Each index corresponds
+to a "stack" of dependencies that you can control.  So you can have
+one stack for development, one for production, one for feature-xyz,
+and so on.  You can also branch and merge stacks to experiment with
+new dependencies or upgrades.
 
-=item * Pinto supports adding AND removing archives from the repository
+=item * Pinto helps manage incompatibilies between dependencies
 
-Pinto gives you the power to precisely tune the contents of your
-repository.  So you can be sure that your downstream clients get
-exactly the stack of dependencies that you want them to have.
-
-=item * Pinto can be integrated with your version control system
-
-Pinto can automatically commit to your version control system whenever
-the contents of the repository changes.  This gives you repeatable and
-identifiable snapshots of your dependencies, and a mechanism for
-rollback when things go wrong.
-
-=item * Pinto makes it easier to build several local repositories
-
-Creating new Pinto repositories is easy, and each has its own
-configuration.  So you can have different repositories for each
-department, or each project, or each version of perl, or each
-customer, or whatever you want.
+Sometimes, you discover that a new version of a dependency is
+incompatible with your application.  Pinto allows you to "pin" a
+dependency to a stack, which prevents it from being accidentally
+upgraded (either directly or via some other dependency).
 
 =item * Pinto can pull archives from multiple remote repositories
 
-Pinto can mirror or import distributions from multiple sources, so you
-can create private (or public) networks of repositories that enable
-separate teams or individuals to collaborate and share distributions.
+Pinto can pull dependencies from multiple sources, so you can create
+private (or public) networks of repositories that enable separate
+teams or individuals to collaborate and share Perl modules.
 
 =item * Pinto supports team development
 
-Pinto is suitable for small to medium-sized development teams, where
-several developers might contribute new distributions at the same
-time.  Pinto ensures that concurrent users don't step on each other.
+Pinto is suitable for small to medium-sized development teams and
+supports concurrent users.  Pinto also has a web service interface
+(via L<pintod>), so remote developers can use a centrally hosted
+repository.
 
 =item * Pinto has a robust command line interface.
 
-The L<pinto-admin> and L<pinto-remote> command line tools have options
-to control every aspect of your Pinto repository.  They are well
-documented and behave in the customary UNIX fashion.
+The L<pinto> utility has commands and options to control every aspect
+of your Pinto repository.  They are well documented and behave in the
+customary UNIX fashion.
 
 =item * Pinto can be extended.
 
@@ -224,9 +215,11 @@ several distributions.
 
 =back
 
-In some ways, Pinto is also similar to L<PAUSE|http://pause.perl.org>.
+=head1 Pinto vs PAUSE
+
+In some ways, Pinto is similar to L<PAUSE|http://pause.perl.org>.
 Both are capable of accepting distributions and constructing a
-directory structure and index that toolchain clients understand.  But
+directory structure and index that Perl installers understand.  But
 there are some important differences:
 
 =over
@@ -234,33 +227,31 @@ there are some important differences:
 =item * Pinto does not promise to index exactly like PAUSE does
 
 Over the years, PAUSE has evolved complicated heuristics for dealing
-with all the different ways that Perl code is written and
-distributions are organized.  Pinto is much less sophisticated, and
-only aspires to produce an index that is "good enough" for most
-applications.
+with all the different ways that Perl code is written and packaged.
+Pinto is much less sophisticated, and only aspires to produce an index
+that is "good enough" for most situations.
 
 =item * Pinto does not understand author permissions
 
 PAUSE has a system of assigning ownership and co-maintenance
-permission to individuals or groups.  But Pinto only has a basic
-"first-come" system of ownership.  The ownership controls are only
-advisory and can easily be bypassed (see next item below).
+permission of modules to specific people.  Pinto does not have any
+such permission system.  All activity is logged so you can identify
+the culprit, but Pinto expects you to be accountable for your actions.
 
-
-=item * Pinto is not secure
+=item * Pinto is not (always) secure
 
 PAUSE requires authors to authenticate themselves before they can
-upload or remove distributions.  However, Pinto does not authenticate
-and permits users masquerade as anybody they want to be.  This is
-actually intentional and designed to encourage collaboration among
-developers.
+upload or remove modules.  Pinto does not require authentication, so
+any user with sufficient file permission can potentialy change the
+repository.  However L<pintod> does suport HTTP authentication, which
+gives you some control over access to a remote repository.
 
 =back
 
 =head1 BUT WHERE IS THE API?
 
 For now, the Pinto API is private and subject to radical change
-without notice.  Any module documentation you see is purely for my own
+without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
 the L</SYNOPSIS> are your public user interface.
 
