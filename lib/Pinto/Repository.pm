@@ -403,6 +403,155 @@ sub pull {
     return $dist;
 }
 
+#------------------------------------------------------------------------------
+
+sub get_or_pull {
+    my ($self, %args) = @_;
+
+    my $target = $args{target};
+    my $stack  = $args{stack};
+
+    if ( $target->isa('Pinto::PackageSpec') ){
+        return $self->_pull_by_package_spec($target, $stack);
+    }
+    elsif ($target->isa('Pinto::DistributionSpec') ){
+        return $self->_pull_by_distribution_spec($target, $stack);
+    }
+    else {
+        my $type = ref $target;
+        throw "Don't know how to pull a $type";
+    }
+}
+
+#------------------------------------------------------------------------------
+
+sub _pull_by_package_spec {
+    my ($self, $pspec, $stack) = @_;
+
+    $self->info("Looking for package $pspec");
+
+    my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
+    my $latest = $self->get_package(name => $pkg_name);
+
+    if ($latest && $latest->version >= $pkg_ver) {
+        my $dist = $latest->distribution;
+        $self->debug("Already have package $pspec or newer as $latest");
+        my $did_register = $dist->register(stack => $stack);
+        return ($dist, $did_register);
+    }
+
+    my $dist_url = $self->locate( package => $pspec->name,
+                                  version => $pspec->version,
+                                  latest  => 1 );
+
+    throw "Cannot find prerequisite $pspec anywhere"
+      if not $dist_url;
+
+    $self->debug("Found package $pspec or newer in $dist_url");
+
+    if ( Pinto::Util::isa_perl($dist_url) ) {
+        $self->debug("Distribution $dist_url is a perl. Skipping it.");
+        return (undef, 0);
+    }
+
+    $self->notice("Pulling distribution $dist_url");
+    my $dist = $self->pull(url => $dist_url);
+
+    $dist->register( stack => $stack );
+
+    return ($dist, 1);
+}
+
+#------------------------------------------------------------------------------
+
+sub _pull_by_distribution_spec {
+    my ($self, $dspec, $stack) = @_;
+
+    $self->info("Looking for distribution $dspec");
+
+    my $got_dist = $self->get_distribution( author  => $dspec->author,
+                                            archive => $dspec->archive );
+
+    if ($got_dist) {
+        $self->info("Already have distribution $dspec");
+        my $did_register = $got_dist->register(stack => $stack);
+        return ($got_dist, $did_register);
+    }
+
+    my $dist_url = $self->locate(distribution => $dspec->path)
+      or throw "Cannot find prerequisite $dspec anywhere";
+
+    $self->debug("Found package $dspec at $dist_url");
+
+    if ( Pinto::Util::isa_perl($dist_url) ) {
+        $self->debug("Distribution $dist_url is a perl. Skipping it.");
+        return (undef , 0);
+    }
+
+    $self->notice("Pulling distribution $dist_url");
+    my $dist = $self->pull(url => $dist_url);
+
+    $dist->register( stack => $stack );
+
+    return ($dist, 1);
+}
+
+#------------------------------------------------------------------------------
+
+sub pull_prerequisites {
+    my ($self, %args) = @_;
+
+    my $dist  = $args{dist};
+    my $stack = $args{stack};
+
+    my @prereq_queue = $dist->prerequisite_specs;
+    my %visited = ($dist->path => 1);
+    my @pulled;
+    my %seen;
+
+  PREREQ:
+    while (my $prereq = shift @prereq_queue) {
+
+        my ($required_dist, $did_pull) = $self->get_or_pull( target => $prereq,
+                                                             stack  => $stack );
+        next PREREQ if not ($required_dist and $did_pull);
+        push @pulled, $required_dist if $did_pull;
+
+        if ( $visited{$required_dist->path} ) {
+            # We don't need to recurse into prereqs more than once
+            $self->debug("Already visited archive $required_dist");
+            next PREREQ;
+        }
+
+      NEW_PREREQ:
+        for my $new_prereq ( $required_dist->prerequisite_specs ) {
+
+            # This is all pretty hacky.  It might be better to represent the queue
+            # as a hash table instead of a list, since we really need to keep track
+            # of things by name.
+
+            # Add this prereq to the queue only if greater than the ones we already got
+            my $name = $new_prereq->{name};
+
+            next NEW_PREREQ if exists $seen{$name}
+                               && $new_prereq->{version} <= $seen{$name};
+
+            # Take any prior versions of this prereq out of the queue
+            @prereq_queue = grep { $_->{name} ne $name } @prereq_queue;
+
+            # Note that this is the latest version of this prereq we've seen so far
+            $seen{$name} = $new_prereq->{version};
+
+            # Push the prereq onto the queue
+            push @prereq_queue, $new_prereq;
+        }
+
+        $visited{$required_dist->path} = 1;
+    }
+
+    return @pulled;
+}
+
 #-------------------------------------------------------------------------------
 
 =method create_stack(name => $stk_name, properties => { $key => $value, ... } )

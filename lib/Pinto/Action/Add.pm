@@ -61,7 +61,7 @@ has norecurse => (
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Operator Pinto::Role::PackageImporter );
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 
@@ -105,7 +105,8 @@ sub _execute {
     $dist->register( stack => $stack );
     $dist->pin( stack => $stack ) if $self->pin;
 
-    $self->pull_prerequisites( $dist, $stack ) unless $self->norecurse;
+    $self->repos->pull_prerequisites( dist  => $dist,
+                                      stack => $stack ) unless $self->norecurse;
 
     return;
 }
