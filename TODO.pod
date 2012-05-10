@@ -2,13 +2,15 @@
 
 =over 4
 
+=item Move guts of PackageImporter into Repos class.
 
+=item Attach logger to Repos object.  Delegate methods.
 
-=item Redo Distribution schema (primary key: author filename)
+=item Capture username in log messages.
 
-=item List by author
+=item Decide if there should be an init stack or not.
 
-=item Command to list dependencies and dependants
+=item Command to list dependors and dependants
 
 =item Way to verify prereqs on a stack
 
