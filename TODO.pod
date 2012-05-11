@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Move guts of PackageImporter into Repos class.
-
 =item Attach logger to Repos object.  Delegate methods.
 
 =item Capture username in log messages.
