@@ -4,7 +4,7 @@ package Pinto::Role::Reporter;
 
 use Moose::Role;
 
-use Pinto::Types qw(IO);
+use Pinto::Types qw(Io);
 
 use namespace::autoclean;
 
@@ -16,7 +16,7 @@ use namespace::autoclean;
 
 has out => (
     is      => 'ro',
-    isa     => IO,
+    isa     => Io,
     coerce  => 1,
     default => sub { [fileno(STDOUT), '>'] },
 );
