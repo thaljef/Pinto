@@ -3,10 +3,11 @@
 package Pinto::Action::Install;
 
 use Moose;
-use MooseX::Types::Moose qw(HashRef ArrayRef Maybe Str);
+use MooseX::Types::Moose qw(Maybe HashRef ArrayRef Maybe Str);
 
 use File::Which qw(which);
 
+use Pinto::Types qw(StackName);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -32,14 +33,15 @@ has cpanm_options => (
 has cpanm_exe => (
     is      => 'ro',
     isa     => Str,
-    default => sub { which('cpanm') || '' },
+    default => sub { which('cpanm') || throw 'Could not find cpanm in PATH' },
     lazy    => 1,
 );
 
 
 has stack   => (
     is      => 'ro',
-    isa     => Str,
+    isa     => StackName,
+    coerce  => 1,
 );
 
 
@@ -49,6 +51,28 @@ has targets => (
     default => sub { [] },
     lazy    => 1,
 );
+
+#------------------------------------------------------------------------------
+
+sub BUILD {
+    my ($self) = @_;
+
+    my $cpanm_exe = $self->cpanm_exe;
+
+    my $cpanm_version_cmd = "$cpanm_exe --version";
+    my $cpanm_version_cmd_output = qx{$cpanm_version_cmd};  ## no critic qw(Backtick)
+    throw "Could not learn version of cpanm: $!" if $?;
+
+    my ($cpanm_version) = $cpanm_version_cmd_output =~ m{version ([\d.]+)}
+      or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
+
+    my $min_cpanm_version = '1.5013';
+    if ($cpanm_version < $min_cpanm_version) {
+      throw "Your cpanm ($cpanm_version) is too old. Must have $min_cpanm_version or newer";
+    }
+
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
