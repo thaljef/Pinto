@@ -4,9 +4,9 @@ package Pinto::Action::Pull;
 
 use Moose;
 use MooseX::Aliases;
-use MooseX::Types::Moose qw(Str Bool);
+use MooseX::Types::Moose qw(Undef Bool);
 
-use Pinto::Types qw(ArrayRefOfPkgsOrDists);
+use Pinto::Types qw(Specs StackName);
 
 use namespace::autoclean;
 
@@ -21,7 +21,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => ArrayRefOfPkgsOrDists,
+    isa      => Specs,
     traits   => [ qw(Array) ],
     handles  => {targets => 'elements'},
     required => 1,
@@ -30,9 +30,11 @@ has targets => (
 
 
 has stack => (
-    is       => 'ro',
-    isa      => Str,
-    alias    => 'operative_stack',
+    is        => 'ro',
+    isa       => StackName | Undef,
+    alias     => 'operative_stack',
+    default   => undef,
+    coerce    => 1,
 );
 
 
@@ -51,7 +53,7 @@ has norecurse => (
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Operator Pinto::Role::PackageImporter );
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

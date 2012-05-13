@@ -4,7 +4,9 @@ package Pinto::Action::Edit;
 
 use Moose;
 use MooseX::Aliases;
-use MooseX::Types::Moose qw(Str HashRef Bool Maybe);
+use MooseX::Types::Moose qw(Undef Str HashRef Bool);
+
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -20,8 +22,10 @@ extends qw( Pinto::Action );
 
 has stack => (
     is       => 'ro',
-    isa      => Maybe[Str],
+    isa      => StackName | Undef,
     alias    => 'operative_stack',
+    default  => undef,
+    coerce   => 1,
 );
 
 

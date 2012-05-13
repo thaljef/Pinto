@@ -6,6 +6,8 @@ use Moose;
 use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str);
 
+use Pinto::Types qw(StackName);
+
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -20,16 +22,18 @@ extends qw( Pinto::Action );
 
 has from_stack => (
     is       => 'ro',
-    isa      => Str,
+    isa      => StackName,
     required => 1,
+    coerce   => 1,
 );
 
 
 has to_stack => (
     is       => 'ro',
-    isa      => Str,
-    required => 1,
+    isa      => StackName,
     alias    => 'operative_stack',
+    required => 1,
+    coerce   => 1,
 );
 
 

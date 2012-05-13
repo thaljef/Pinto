@@ -3,9 +3,11 @@
 package Pinto::Action::Props;
 
 use Moose;
-use MooseX::Types::Moose qw(Maybe Str);
+use MooseX::Types::Moose qw(Undef Maybe);
 
 use String::Format;
+
+use Pinto::Types qw(StackName);
 
 use namespace::autoclean;
 
@@ -24,8 +26,10 @@ with qw( Pinto::Role::Reporter );
 #------------------------------------------------------------------------------
 
 has stack  => (
-    is       => 'ro',
-    isa      => Maybe[Str],
+    is        => 'ro',
+    isa       => StackName | Undef,
+    default   => undef,
+    coerce    => 1,
 );
 
 

@@ -3,7 +3,7 @@
 package Pinto::Action::Install;
 
 use Moose;
-use MooseX::Types::Moose qw(Maybe HashRef ArrayRef Maybe Str);
+use MooseX::Types::Moose qw(Undef Maybe HashRef ArrayRef Maybe Str);
 
 use File::Which qw(which);
 
@@ -39,17 +39,18 @@ has cpanm_exe => (
 
 
 has stack   => (
-    is      => 'ro',
-    isa     => StackName,
-    coerce  => 1,
+    is        => 'ro',
+    isa       => StackName | Undef,
+    default   => undef,
+    coerce    => 1,
 );
 
 
 has targets => (
-    is      => 'ro',
-    isa     => ArrayRef[Str],
-    default => sub { [] },
-    lazy    => 1,
+    isa      => ArrayRef[Str],
+    traits   => [ 'Array' ],
+    handles  => { targets => 'elements' },
+    required => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -79,9 +80,9 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    # Write index to a temp location
-    my $temp_index_fh = File::Temp->new;
     my $stack = $self->repos->get_stack(name => $self->stack);
+
+    my $temp_index_fh = File::Temp->new;
     $self->repos->write_index(stack => $stack, handle => $temp_index_fh);
 
     # Wire cpanm to our repo
@@ -102,7 +103,7 @@ sub execute {
 
     # Run cpanm
     $self->debug(join ' ', 'Running:', $self->cpanm_exe, @cpanm_opts);
-    0 == system($self->cpanm_exe, @cpanm_opts, @{ $self->targets })
+    0 == system($self->cpanm_exe, @cpanm_opts, $self->targets)
       or throw "Installation failed.  See the cpanm build log for details";
 
     return $self->result;

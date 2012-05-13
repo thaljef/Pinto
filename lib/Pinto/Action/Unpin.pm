@@ -4,9 +4,9 @@ package Pinto::Action::Unpin;
 
 use Moose;
 use MooseX::Aliases;
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Undef);
 
-use Pinto::Types qw(ArrayRefOfPkgsOrDists);
+use Pinto::Types qw(Specs StackName);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -22,7 +22,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => ArrayRefOfPkgsOrDists,
+    isa      => Specs,
     traits   => [ qw(Array) ],
     handles  => {targets => 'elements'},
     required => 1,
@@ -31,9 +31,11 @@ has targets => (
 
 
 has stack => (
-    is       => 'ro',
-    isa      => Str,
-    alias    => 'operative_stack',
+    is        => 'ro',
+    isa       => Undef | StackName,
+    alias     => 'operative_stack',
+    default   => undef,
+    coerce    => 1,
 );
 
 #------------------------------------------------------------------------------

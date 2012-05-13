@@ -103,13 +103,23 @@ my $t = Pinto::Tester->new;
 
   # Create stack with invalid name
   $t->run_throws_ok('New', {stack => '$bogus@'},
-                            qr/Invalid stack name/);
+                            qr/must be alphanumeric/);
 
 
   # Copy to stack with invalid name
   $t->run_throws_ok('Copy', {from_stack => 'init',
                               to_stack   => '$bogus@'},
-                              qr/Invalid stack name/);
+                              qr/must be alphanumeric/);
+
+  # Copy to stack with no name
+  $t->run_throws_ok('Copy', {from_stack => 'init',
+                              to_stack   => ''},
+                              qr/must be alphanumeric/);
+
+  # Copy to stack with undef name
+  $t->run_throws_ok('Copy', {from_stack => 'init',
+                              to_stack   => undef},
+                              qr/must be alphanumeric/);
 }
 
 

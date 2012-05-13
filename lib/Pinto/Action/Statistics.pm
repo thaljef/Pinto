@@ -3,8 +3,9 @@
 package Pinto::Action::Statistics;
 
 use Moose;
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Undef);
 
+use Pinto::Types qw(StackName);
 use Pinto::Statistics;
 
 use namespace::autoclean;
@@ -24,8 +25,10 @@ with qw( Pinto::Role::Reporter );
 #------------------------------------------------------------------------------
 
 has stack => (
-    is       => 'ro',
-    isa      => Str,
+    is        => 'ro',
+    isa       => StackName | Undef,
+    default   => undef,
+    coerce    => 1,
 );
 
 #------------------------------------------------------------------------------

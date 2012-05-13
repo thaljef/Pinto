@@ -3,9 +3,9 @@
 package Pinto::Action::List;
 
 use Moose;
-use MooseX::Types::Moose qw(HashRef Str Bool);
+use MooseX::Types::Moose qw(Undef HashRef Str Bool);
 
-use Pinto::Types qw(AuthorID);
+use Pinto::Types qw(Author StackName);
 
 use namespace::autoclean;
 
@@ -24,8 +24,10 @@ with qw( Pinto::Role::Reporter );
 #------------------------------------------------------------------------------
 
 has stack => (
-    is       => 'ro',
-    isa      => Str,
+    is        => 'ro',
+    isa       => StackName | Undef,
+    default   => undef,
+    coerce    => 1,
 );
 
 
@@ -37,7 +39,7 @@ has pinned => (
 
 has author => (
     is     => 'ro',
-    isa    => AuthorID,
+    isa    => Author,
     coerce => 1,
 );
 

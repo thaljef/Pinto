@@ -4,9 +4,9 @@ package Pinto::Action::Add;
 
 use Moose;
 use MooseX::Aliases;
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::Types::Moose qw(Undef Bool Str);
 
-use Pinto::Types qw(AuthorID ArrayRefOfFiles);
+use Pinto::Types qw(Author Files StackName);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -23,7 +23,7 @@ extends qw( Pinto::Action );
 
 has author => (
     is         => 'ro',
-    isa        => AuthorID,
+    isa        => Author,
     default    => sub { uc ($_[0]->pausecfg->{user} || $_[0]->username) },
     coerce     => 1,
     lazy       => 1,
@@ -31,7 +31,7 @@ has author => (
 
 
 has archives  => (
-    isa       => ArrayRefOfFiles,
+    isa       => Files,
     traits    => [ qw(Array) ],
     handles   => {archives => 'elements'},
     required  => 1,
@@ -41,8 +41,10 @@ has archives  => (
 
 has stack => (
     is       => 'ro',
-    isa      => Str,
+    isa      => StackName | Undef,
     alias    => 'operative_stack',
+    default  => undef,
+    coerce   => 1,
 );
 
 
