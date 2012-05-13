@@ -10,17 +10,33 @@
 
 =item Command to list dependors and dependants
 
+=item Command to list outdated packages
+
 =item Way to verify prereqs on a stack
 
 =item Command to unregister a pkg/dist ??
-
-=item Option to enforce strict stacks (no overlapping dists)
 
 =item Write test cases for Stack operations
 
 =item Create a type for StackPropertyName
 
 #--------------------------
+
+=item Stack property: strict (no overlapping dists)
+
+=item Stack property: target perl
+
+=item Stack property: source repositories
+
+=item Stack property: allow devel releases
+
+=item Repo property: log level
+
+=item Repo property: default sources
+
+=item Repo property: default target perl
+
+=item Repo property: defautl devel option
 
 =item Prettier stack listing and stack prop listing
 
