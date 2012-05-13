@@ -2,23 +2,23 @@
 
 =over 4
 
-=item Attach logger to Repos object.  Delegate methods.
+=item Verify schema version before each Action.
 
-=item Capture username in log messages.
+=item Attach logger to Repos object.  Delegate methods.??
 
-=item Decide if there should be an init stack or not.
+=item Capture username in log messages.??
+
+=item Command to show raw index
 
 =item Command to list dependors and dependants
 
 =item Command to list outdated packages
 
-=item Way to verify prereqs on a stack
+=item Command to verify prereqs on a stack
 
 =item Command to unregister a pkg/dist ??
 
 =item Write test cases for Stack operations
-
-=item Create a type for StackPropertyName
 
 #--------------------------
 
