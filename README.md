@@ -20,7 +20,10 @@ Pinto is a suite of tools and libraries for creating and managing a
 custom CPAN-like repository of Perl modules.  The purpose of such a
 repository is to provide a stable, curated stack of dependencies from
 which you can reliably build, test, and delploy your application using
-the standard Perl tools (e.g. [cpan](http://search.cpan.org/perldoc?cpan), [cpanm](http://search.cpan.org/perldoc?cpanm), [cpanp](http://search.cpan.org/perldoc?cpanp)).
+the standard Perl tool chain. Pinto supports various operations for
+gathering and managing distribution dependencies within the
+repository, so that you can control precisely which dependencies go
+into your application.
 
 # METHODS
 
