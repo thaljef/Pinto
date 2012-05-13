@@ -3,7 +3,7 @@
 package Pinto::Action::Props;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef Maybe);
+use MooseX::Types::Moose qw(Undef Str Maybe);
 
 use String::Format;
 
