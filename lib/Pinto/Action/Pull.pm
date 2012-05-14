@@ -74,7 +74,6 @@ sub _execute {
 
     my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target,
                                                        stack  => $stack );
-    return if not $dist;
 
     unless ( $self->norecurse ) {
         my @prereq_dists = $self->repos->pull_prerequisites( dist  => $dist,
