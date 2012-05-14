@@ -2,14 +2,6 @@
 
 =over 4
 
-=item Verify schema version before each Action.
-
-=item Attach logger to Repos object.  Delegate methods.??
-
-=item Capture username in log messages.??
-
-=item Command to show raw index
-
 =item Command to list dependors and dependants
 
 =item Command to list outdated packages
