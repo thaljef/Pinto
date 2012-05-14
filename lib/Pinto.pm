@@ -115,7 +115,7 @@ sub _run_operator {
     }
     catch {
         $self->repos->db->schema->txn_rollback;
-        throw "$_";
+        die $_;        ## no critic qw(Carping)
     };
 
     return $result;
