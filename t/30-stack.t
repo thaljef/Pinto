@@ -27,14 +27,14 @@ my $t = Pinto::Tester->new;
   sleep 2; # So the mtime changes.
 
   # Add to the stack...
-  my $foo_and_bar_1 = make_dist_archive('FooAndBar-1=Foo-1,Bar-1');
+  my $foo_and_bar_1 = make_dist_archive('FooAndBar-1 = Foo~1,Bar~1');
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1});
-  $t->registration_ok( 'ME/FooAndBar-1/Foo-1/dev/-' );
-  $t->registration_ok( 'ME/FooAndBar-1/Bar-1/dev/-' );
+  $t->registration_ok( 'ME/FooAndBar-1/Foo~1/dev/-' );
+  $t->registration_ok( 'ME/FooAndBar-1/Bar~1/dev/-' );
 
   # Should not be on the init stack...
-  $t->registration_not_ok( 'ME/FooAndBar-1/Foo-1/init/-' );
-  $t->registration_not_ok( 'ME/FooAndBar-1/Bar-1/init/-' );
+  $t->registration_not_ok( 'ME/FooAndBar-1/Foo~1/init/-' );
+  $t->registration_not_ok( 'ME/FooAndBar-1/Bar~1/init/-' );
 
   # Check that mtime was updated...
   $stack->discard_changes; # Causes it to reload from DB
@@ -48,7 +48,7 @@ my $t = Pinto::Tester->new;
   my $dev_stk_name = 'dev';
   my ($qa_stk_name, $qa_stk_desc) = ('qa', 'the qa stack');
   $t->run_ok('Copy', {from_stack  => $dev_stk_name,
-                             to_stack    => $qa_stk_name,});
+                      to_stack    => $qa_stk_name,});
 
   my $dev_stack = $t->pinto->repos->get_stack(name => $dev_stk_name);
   my $qa_stack = $t->pinto->repos->get_stack(name => $qa_stk_name);

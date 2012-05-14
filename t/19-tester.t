@@ -7,7 +7,7 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 #-------------------------------------------------------------------------------
 
 {
-  my $spec = 'AUTHOR/FooAndBar-1.2=Foo-1.2,Bar-0.0~Baz-3.1,Nuts-2.4';
+  my $spec = 'AUTHOR/FooAndBar-1.2=Foo~1.2,Bar~0.0&Baz~3.1,Nuts~2.4';
   my $struct = make_dist_struct($spec);
   is $struct->{cpan_author}, 'AUTHOR', 'Got author';
   is $struct->{name}, 'FooAndBar', 'Got name';
@@ -21,7 +21,7 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 
 {
   my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
-      = parse_reg_spec('AUTHOR/Foo-1.2/Foo-2.0/my_stack/+');
+      = parse_reg_spec('AUTHOR/Foo-1.2/Foo~2.0/my_stack/+');
 
   is $author,       'AUTHOR';
   is $dist_archive, 'Foo-1.2.tar.gz';
@@ -36,19 +36,19 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 {
   my $t = Pinto::Tester->new;
 
-  $t->populate('AUTHOR/FooAndBar-1.2=Foo-1.2,Bar-0.0');
+  $t->populate('AUTHOR/FooAndBar-1.2=Foo~1.2,Bar~0.0');
 
   # Without .tar.gz extension
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo-1.2/init');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo~1.2/init');
 
   # With .tar.gz extension
-  $t->registration_ok('AUTHOR/FooAndBar-1.2.tar.gz/Foo-1.2/init');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2.tar.gz/Foo~1.2/init');
 
   # With explicit stack
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar-0.0/init');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar~0.0/init');
 
   # Without explicit stack
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar-0.0');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar~0.0');
 }
 
 #-------------------------------------------------------------------------------

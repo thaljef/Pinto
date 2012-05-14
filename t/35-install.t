@@ -24,10 +24,10 @@ warn "You will see some messages from cpanm, don't be alarmed...\n";
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
-$t->populate('JOHN/DistA-1=PkgA-1~PkgB-1,PkgC-1');
-$t->populate('PAUL/DistB-1=PkgB-1~PkgD-2');
-$t->populate('MARK/DistC-1=PkgC-1');
-$t->populate('MARK/DistC-2=PkgC-2,PkgD-2');
+$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
+$t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
+$t->populate('MARK/DistC-1 = PkgC~1');
+$t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
 
 #------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ $t->populate('MARK/DistC-2=PkgC-2,PkgD-2');
   file_exists_ok($p5_dir->file('PkgC.pm'));
 
 
-  $t->run_throws_ok('Install' => {targets => ['PkgA'], stack => 'dev', %cpanm_opts},
+  $t->run_throws_ok('Install' => {nopull => 1, targets => ['PkgA'], stack => 'dev', %cpanm_opts},
                     qr/Installation failed/);
 }
 

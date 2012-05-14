@@ -86,16 +86,16 @@ sub make_dist_struct {
 sub parse_dist_spec {
     my ($spec) = @_;
 
-    # AUTHOR / Foo-1.2 = Foo-1.0,Bar-2 ~Baz-1.1,Nuts-2.3
-    # -------- -------   ------------- -----------------
-    #    |        |             |             |
-    #  auth*    dist         provides      requires*
+    # AUTHOR / Foo-1.2 = Foo~1.0,Bar~2 & Baz~1.1,Nuts~2.3
+    # -------- -------   -------------   ----------------
+    #    |        |             |               |
+    #  auth*    dist         provides       requires*
     #
     # * means optional (including the delimiter)
     #   All whitespace is ignored too
 
     $spec =~ s{\s+}{}g;  # Remove any whitespace
-    $spec =~ m{ ^ (?: ([^/]+) /)? (.+) = ([^~]+) (?: ~ (.+) )? $ }mx
+    $spec =~ m{ ^ (?: ([^/]+) /)? (.+) = ([^&]+) (?: & (.+) )? $ }mx
         or confess "Could not parse distribution spec: $spec";
 
     my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
@@ -115,7 +115,7 @@ sub parse_pkg_spec {
     my ($spec) = @_;
 
     # Looks like: "Foo" or "Foo-1" or "Foo-Bar-2.3.4_1"
-    $spec =~ m/^ ( .+? ) (?: - ( [\d\._]+ ) )? $/x
+    $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x
         or confess "Could not parse spec: $spec";
 
     return {name => $1, version => $2 || 0};
@@ -143,7 +143,7 @@ sub parse_reg_spec {
     $is_pinned = ($is_pinned eq '+' ? 1 : 0) if defined $is_pinned;
 
     # Parse package name/version
-    my ($pkg_name, $pkg_version) = split m{-}x, $pkg;
+    my ($pkg_name, $pkg_version) = split m{~}x, $pkg;
 
     # Set defaults
     $stack_name  ||= 'init';

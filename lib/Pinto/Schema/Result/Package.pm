@@ -207,7 +207,7 @@ sub registration {
 sub vname {
     my ($self) = @_;
 
-    return $self->name() . '-' . $self->version();
+    return $self->name() . '~' . $self->version();
 }
 
 #------------------------------------------------------------------------------
