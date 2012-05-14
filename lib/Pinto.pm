@@ -9,7 +9,6 @@ use Try::Tiny;
 use Class::Load;
 
 use Pinto::Repository;
-use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
