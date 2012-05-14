@@ -3,7 +3,8 @@
 package Pinto::Action::Install;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef Maybe HashRef ArrayRef Maybe Str);
+use MooseX::Aliases;
+use MooseX::Types::Moose qw(Undef Bool HashRef ArrayRef Maybe Str);
 
 use File::Which qw(which);
 
@@ -41,6 +42,7 @@ has cpanm_exe => (
 has stack   => (
     is        => 'ro',
     isa       => StackName | Undef,
+    alias     => 'operative_stack',
     default   => undef,
     coerce    => 1,
 );
@@ -52,6 +54,17 @@ has targets => (
     handles  => { targets => 'elements' },
     required => 1,
 );
+
+
+has nopull => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 
@@ -82,12 +95,45 @@ sub execute {
 
     my $stack = $self->repos->get_stack(name => $self->stack);
 
+    do { $self->_pull($stack, $_) for $self->targets } unless $self->nopull;
+
+    $self->_install($stack, $self->targets);
+
+    return $self->result;
+ }
+
+#------------------------------------------------------------------------------
+
+sub _pull {
+    my ($self, $stack, $target) = @_;
+
+    if (-d $target or -f $target) {
+        $self->info("Target $target is a file or directory.  Won't pull it");
+        return;
+    }
+
+    my $target_spec = Pinto::SpecFactory->make_spec($target);
+    my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target_spec,
+                                                       stack  => $stack );
+
+    $did_pull += $self->repos->pull_prerequisites( dist  => $dist,
+                                                   stack => $stack );
+
+    $self->result->changed if $did_pull;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _install {
+    my ($self, $stack, @targets) = @_;
+
     my $temp_index_fh = File::Temp->new;
     $self->repos->write_index(stack => $stack, handle => $temp_index_fh);
 
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
-    $opts->{'mirror-only'}  = undef;
     $opts->{'mirror-index'} = $temp_index_fh->filename;
     $opts->{mirror}         = 'file://' . $self->repos->root->absolute;
 
@@ -103,10 +149,10 @@ sub execute {
 
     # Run cpanm
     $self->debug(join ' ', 'Running:', $self->cpanm_exe, @cpanm_opts);
-    0 == system($self->cpanm_exe, @cpanm_opts, $self->targets)
+    0 == system($self->cpanm_exe, @cpanm_opts, @targets)
       or throw "Installation failed.  See the cpanm build log for details";
 
-    return $self->result;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
