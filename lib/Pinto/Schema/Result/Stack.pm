@@ -287,6 +287,8 @@ sub mark_as_default {
 sub touch {
     my ($self, $time, $user) = @_;
 
+    return unless $self->in_storage;
+
     my %changes;
     $changes{last_modified_on} = $time || time;
     $changes{last_modified_by} = $user || $ENV{USER};
