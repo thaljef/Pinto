@@ -126,6 +126,26 @@ sub BUILD {
 
 #-------------------------------------------------------------------------------
 
+sub check_schema_version {
+    my ($self) = @_;
+
+    my $class_schema_version = $Pinto::Schema::SCHEMA_VERSION;
+    my $db_schema_version = $self->get_property('pinto:schema_version');
+
+    throw "Could not find the version of this repository"
+      if not defined $db_schema_version;
+
+    throw "Your repository is too old for this version of Pinto"
+      if $class_schema_version > $db_schema_version;
+
+    throw "This version of Pinto is too old for this repository"
+      if $class_schema_version < $db_schema_version;
+
+    return;
+}
+
+#-------------------------------------------------------------------------------
+
 sub get_property {
     my ($self, @prop_names) = @_;
 

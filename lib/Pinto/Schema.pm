@@ -23,18 +23,14 @@ __PACKAGE__->load_namespaces;
 
 #-------------------------------------------------------------------------------
 
+our $SCHEMA_VERSION = 1;
+
+#-------------------------------------------------------------------------------
+
 has logger => (
     is      => 'rw',
     isa     => 'Pinto::Logger',
     handles => [ qw(debug notice info warning error fatal) ],
-);
-
-
-has version => (
-    is        => 'ro',
-    isa       => 'Int',
-    init_arg  => undef,
-    default   => 1,
 );
 
 #-------------------------------------------------------------------------------

@@ -155,7 +155,7 @@ sub deploy {
     $self->schema->deploy;
 
     my $props = { name  => 'pinto:schema_version',
-                  value => $self->schema->version };
+                  value => $Pinto::Schema::SCHEMA_VERSION };
 
     $self->schema->resultset('RepositoryProperty')->create($props);
 

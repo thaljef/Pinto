@@ -57,8 +57,7 @@ sub run {
     local $SIG{__WARN__} = sub { $self->warning(@_) };
 
     my $action_class = $self->action_base_class . "::$action_name";
-    Class::Load::try_load_class($action_class)
-        or $self->fatal("Unable to load action: $action_class");
+    Class::Load::load_class($action_class);
 
     my $runner = $action_class->does('Pinto::Role::Operator') ?
       '_run_operator' : '_run_reporter';
@@ -76,6 +75,7 @@ sub _run_reporter {
     my ($self, $action_class, %args) = @_;
 
     $self->repos->lock_shared;
+    $self->repos->check_schema_version;
     @args{qw(logger repos)} = ($self->logger, $self->repos);
     my $action = $action_class->new( %args );
     my $result = $action->execute;
@@ -90,6 +90,7 @@ sub _run_operator {
     my ($self, $action_class, %args) = @_;
 
     $self->repos->lock_exclusive;
+    $self->repos->check_schema_version;
     $self->repos->db->schema->txn_begin;
 
     my $result = try {
