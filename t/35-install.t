@@ -15,7 +15,12 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-plan skip_all => 'cpanm required for install tests' unless which('cpanm');
+my $cpanm_exe = which('cpanm');
+plan skip_all => 'cpanm required for install tests' unless $cpanm_exe;
+
+my $min_cpanm   = 1.5013;
+my ($cpanm_ver) = qx{$cpanm_exe --version} =~ m{version ([\d._]+)};
+plan skip_all => "Need cpanm $min_cpanm or newer" unless $cpanm_ver >= $min_cpanm;
 
 #------------------------------------------------------------------------------
 
@@ -61,7 +66,7 @@ $t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
   file_exists_ok($p5_dir->file('PkgC.pm'));
 
 
-  $t->run_throws_ok('Install' => {nopull => 1, targets => ['PkgA'], stack => 'dev', %cpanm_opts},
+  $t->run_throws_ok('Install' => {targets => ['PkgA'], stack => 'dev', %cpanm_opts},
                     qr/Installation failed/);
 }
 

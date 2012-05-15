@@ -56,7 +56,7 @@ has targets => (
 );
 
 
-has nopull => (
+has pull => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
@@ -95,7 +95,7 @@ sub execute {
 
     my $stack = $self->repos->get_stack(name => $self->stack);
 
-    do { $self->_pull($stack, $_) for $self->targets } unless $self->nopull;
+    do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
 
     $self->_install($stack, $self->targets);
 
