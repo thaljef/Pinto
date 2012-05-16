@@ -6,8 +6,8 @@ use Moose;
 use MooseX::Types::Moose qw(Bool);
 
 use Try::Tiny;
-use Dist::Requires 0.005;  # Bug fixes, better tempdir cleanup
-use Dist::Metadata 0.922;  # Supports zip
+use Dist::Requires;
+use Dist::Metadata;
 
 use Pinto::Exception qw(throw);
 
