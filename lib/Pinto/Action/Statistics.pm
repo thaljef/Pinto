@@ -37,9 +37,10 @@ sub execute {
     my ($self) = @_;
 
     # FIXME!
-    my $stack = $self->repos->get_stack( $self->stack );
-    my $stats = Pinto::Statistics->new( db    => $self->repos->db,
-                                        stack => $stack->name );
+    my $stack = $self->repos->get_stack(name => $self->stack);
+
+    my $stats = Pinto::Statistics->new(db    => $self->repos->db,
+                                       stack => $stack->name);
 
     print { $self->out } $stats->to_formatted_string();
 
