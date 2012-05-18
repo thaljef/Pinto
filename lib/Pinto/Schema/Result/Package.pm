@@ -196,10 +196,12 @@ sub register {
 sub registration {
     my ($self, %args) = @_;
 
-    my $where = {name => $args{stack}};
-    my $stack = $self->result_source->schema->resultset('Stack')->find($where);
+    my $where1 = {name => $args{stack}};
+    my $stack  = $self->result_source->schema->resultset('Stack')->find($where1);
 
-    return $self->find_related('registrations', {stack => $stack});
+    my $attrs  = {key  => 'stack_package_name_unique'};
+    my $where2 = {stack => $stack, package_name => $self->name};
+    return $self->find_related('registrations', $where2, $attrs);
 }
 
 #------------------------------------------------------------------------------
