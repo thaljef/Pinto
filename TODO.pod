@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Command options to specify provided/required packages
+
 =item Command to list dependors and dependants
 
 =item Command to list outdated packages
