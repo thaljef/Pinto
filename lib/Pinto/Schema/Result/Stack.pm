@@ -255,7 +255,7 @@ sub copy_members {
 
     for my $registration ( $self->registrations ) {
         my $pkg = $registration->package;
-        $self->debug("Copying package $pkg into stack $to_stack");
+        $self->debug( sub{"Copying package $pkg into stack $to_stack"} );
         $registration->copy( { stack => $to_stack } );
     }
 

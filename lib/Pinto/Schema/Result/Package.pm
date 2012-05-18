@@ -226,6 +226,9 @@ sub as_spec {
 sub to_string {
     my ($self, $format) = @_;
 
+    # my ($pkg, $file, $line) = caller;
+    # warn __PACKAGE__ . " stringified from $file at line $line";
+
     my %fspec = (
          'n' => sub { $self->name()                                   },
          'N' => sub { $self->vname()                                  },

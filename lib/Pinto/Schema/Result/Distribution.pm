@@ -201,15 +201,16 @@ sub register {
 
     for my $pkg ($self->packages) {
 
-      if ($pkg->registrations_rs->find( {stack => $stack->id} ) ) {
-          $self->debug("Package $pkg is already on stack $stack");
+      if (defined $pkg->registrations_rs->find( {stack => $stack->id} ) ) {
+        $DB::single = 1;
+          $self->debug( sub {"Package $pkg is already on stack $stack"} );
           next;
       }
 
       my $incumbent = $stack->registration(package => $pkg->name);
 
       if (not $incumbent) {
-          $self->debug("Registering $pkg on stack $stack");
+          $self->debug(sub {"Registering $pkg on stack $stack"} );
           $pkg->register(stack => $stack);
           $did_register++;
           next;
@@ -390,7 +391,8 @@ sub package {
     my $pkg_name = $args{name};
 
     my $where = {name => $pkg_name};
-    my $pkg = $self->find_related('packages', $where) or return;
+    my $attrs = {key => 'name_distribution_unique'};
+    my $pkg = $self->find_related('packages', $where, $attrs) or return;
 
     if (my $stk_name = $args{stack}){
         return $pkg->registration(stack => $stk_name) ? $pkg : ();
