@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.042     2012-05-17 21:55:19 America/Los_Angeles
+
      finally{...} doesn't seem to work properly on older perls, and
      this caused several test failures.  According to the perldelta,
      5.14 introduced several changes to exception handling.  So I've
