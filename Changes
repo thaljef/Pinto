@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+     finally{...} doesn't seem to work properly on older perls, and
+     this caused several test failures.  According to the perldelta,
+     5.14 introduced several changes to exception handling.  So I've
+     moved the exception handling into the catch{...} block.
+ 
 0.041     2012-05-15 11:13:27 America/Los_Angeles
 
      Important:
