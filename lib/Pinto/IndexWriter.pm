@@ -25,10 +25,11 @@ with qw(Pinto::Role::Loggable);
 sub write {                                       ## no critic (BuiltinHomonym)
     my ($self, %args) = @_;
 
-    my $handle = $args{handle};
-    my $file   = $args{file};
-    my $stack  = $args{stack};
-    my $nozip  = $args{nozip};
+    my $handle   = $args{handle};
+    my $file     = $args{file};
+    my $stack    = $args{stack};
+    my $nozip    = $args{nozip};
+    my $filename;
 
     throw "Must specify either an output handle or file name"
         if not ($handle xor $file);
@@ -37,21 +38,20 @@ sub write {                                       ## no critic (BuiltinHomonym)
         my $io_layer = $nozip ? '' : ':gzip';
         open $handle, ">:$io_layer", $file or throw "Cannot open $file: $!";
         $self->info("Writing index for stack $stack at $file");
+        $filename = $file;
     }
     else {
-        my $fileno   = $handle->fileno;
+        my $fileno = $handle->fileno;
         $self->info("Writing index for stack $stack to handle $handle");
-        my $filename = $handle->can('filename') ? file$handle->filename: 'UNKNOWN';
-        $file = file($filename);
+        $filename = file( $handle->can('filename') ? $handle->filename: 'UNKNOWN' );
     }
 
     my @records = $self->_get_index_records($stack);
     my $count = @records;
 
-
-    $self->_write_header($handle, $file, $count);
+    $self->_write_header($handle, $filename, $count);
     $self->_write_records($handle, @records);
-    close $handle;
+    close $handle if $file;
 
     return $self;
 }
