@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+     Bug Fixes:
+
+     Prevent writing to closed handle, when running the install
+     action via pinto remotely.
+
+     Other Stuff:
+
+     Some minor performance optimizations, to reduce the number of
+     trips to the database.
+
 0.042     2012-05-17 21:55:19 America/Los_Angeles
 
      finally{...} doesn't seem to work properly on older perls, and
