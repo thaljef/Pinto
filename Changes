@@ -5,6 +5,9 @@
      Prevent writing to closed handle, when running the install
      action via pinto remotely.
 
+     Now requires Dist::Metadata 0.923 or newer, which indexes
+     more like PAUSE does it.
+
      Other Stuff:
 
      Some minor performance optimizations, to reduce the number of
