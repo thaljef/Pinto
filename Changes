@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.043     2012-06-19 10:47:15 America/Los_Angeles
+
      Bug Fixes:
 
      Prevent writing to closed handle, when running the install
