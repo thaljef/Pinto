@@ -1,0 +1,30 @@
+#!perl
+
+use strict;
+use warnings;
+
+use File::Temp;
+use Path::Class;
+use Package::Locator;
+use LWP::UserAgent;
+use Dist::Metadata;
+
+my $target  = shift or die 'Must specify a target';
+my $locator = Package::Locator->new;
+my $type    = $target =~ m{/} ? 'distribution' : 'package';
+my $url     = $locator->locate($type => $target) or die "Can't find $target";
+
+my $tempdir = File::Temp->newdir;
+my $local   = file($tempdir, file($url->path)->basename);
+my $ua      = LWP::UserAgent->new;
+my $resp    = $ua->mirror($url => $local);
+die "Mirror failed " . $resp->content if not $resp->is_success;
+
+my $dm = Dist::Metadata->new(file => $local, like_pause => 1);
+my $provides = $dm->provides;
+
+for my $pkg ( keys %{$provides} ) {
+  print "$pkg => $provides->{$pkg}->{version}\n";
+}
+
+exit 0;
