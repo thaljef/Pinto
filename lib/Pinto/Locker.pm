@@ -79,7 +79,7 @@ sub unlock {
 
     return $self if not $self->_is_locked;
 
-    $self->_lock->unlock or throw 'Unable to unlock repository';
+    $self->_lock->unlock or warn 'Unable to unlock repository';
     $self->_clear_lock;
 
     my $root_dir = $self->config->root_dir;
