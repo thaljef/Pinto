@@ -131,7 +131,7 @@ has log_file => (
 
 has log_level  => (
     is         => 'ro',
-    isa        => LogLevel,
+    isa        => LogLevel | Int,
     key        => 'log_level',
     default    => 'notice',
     documentation => 'Minimum logging level for the log file',
