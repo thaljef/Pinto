@@ -7,6 +7,7 @@ use File::Temp;
 use Path::Class;
 use Package::Locator;
 use LWP::UserAgent;
+use Pinto::SpecFactory;
 use Dist::Metadata 0.923;
 
 #-----------------------------------------------------------------------------
@@ -18,6 +19,7 @@ exit run(@ARGV) if not caller;
 sub run {
 
   my $target  = shift or die 'Must specify a target';
+  my $spec    = Pinto::SpecFactory->make_spec($target);
   my $type    = $target =~ m{/} ? 'distribution' : 'package';
 
   my $locator = Package::Locator->new;
@@ -53,6 +55,7 @@ provides - Fetch a distribution and report the package index
 =head1 SYNOPSIS
 
   provides Module::Name
+  provides AUTHOR/Dist-Name-0.01.tar.gz
 
 =head1 DESCRIPTION
 
@@ -61,6 +64,15 @@ package index.  The results should match what PAUSE would produce.
 
 =head1 ARGUMENTS
 
-The sole (mandatory) argument is the module name.  The distribution
-that contains the latest version of this module will be retrieved
-from http://cpan.perl.org and indexed.
+The sole (mandatory) argument is a L<package spec|Pinto::PackageSpec>
+or L<distribution spec|Pinto::DistributionSpec>.
+
+=head1 AUTHOR
+
+Jeffrey Ryan Thalhammer <thaljef@cpan.org>
+
+=head1 COPYRIGHT
+
+Imaginative Software Systems, 2012
+
+=cut
