@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.044     2012-07-15 01:39:18 America/Los_Angeles
+
      Bug Fixes:
 
      The magic stack named '@' (meaning all stacks) did
