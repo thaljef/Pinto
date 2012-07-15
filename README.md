@@ -27,12 +27,12 @@ into your application.
 
 # METHODS
 
-## run( $action_name => %action_args )
+## run( $action\_name => %action\_args )
 
 Runs the Action with the given `$action_name`, passing the
 `%action_args` to its constructor.  Returns a [Pinto::Result](http://search.cpan.org/perldoc?Pinto::Result).
 
-## add_logger( $obj )
+## add\_logger( $obj )
 
 Convenience method for installing additional endpoints for logging.
 The object must be an instance of a [Log::Dispatch::Output](http://search.cpan.org/perldoc?Log::Dispatch::Output) subclass.
