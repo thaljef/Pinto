@@ -5,7 +5,7 @@ package Pinto::Action::List;
 use Moose;
 use MooseX::Types::Moose qw(Undef HashRef Str Bool);
 
-use Pinto::Types qw(Author StackName);
+use Pinto::Types qw(Author StackName StackAt StackDefault);
 
 use namespace::autoclean;
 
@@ -25,7 +25,7 @@ with qw( Pinto::Role::Reporter );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | Undef,
+    isa       => StackName | StackAt | StackDefault,
     default   => undef,
     coerce    => 1,
 );
