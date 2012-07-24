@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.045     2012-07-23 23:14:42 America/Los_Angeles
+
      Bug Fixes:
 
      Tests were failing with the latest version of DBIx::Class.
