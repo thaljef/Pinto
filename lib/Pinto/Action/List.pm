@@ -84,11 +84,11 @@ sub _build_where {
     }
 
     if (my $dist_name = $self->distributions) {
-        $where->{'package.distribution.archive'} = { like => "%$dist_name%" };
+        $where->{'distribution.archive'} = { like => "%$dist_name%" };
     }
 
     if (my $author = $self->author) {
-        $where->{'package.distribution.author'} = $author;
+        $where->{'distribution.author'} = $author;
     }
 
     if (my $pinned = $self->pinned) {
@@ -121,11 +121,17 @@ sub execute {
         $format = $self->format;
     }
 
+    # HACK: The 'stack' table should also be prefetched here (not
+    # joined).  But in DBIx-Class 0.08198, the prefetch feature seems
+    # to be broken.  See RT #78456 for details.  In the meantime, this
+    # seems to work around the problem, although it requires an extra
+    # trip to the database if we need the stack name in the listing.
     my $attrs = { order_by => [ qw(me.package_name me.package_version me.distribution_path) ],
-                  prefetch => [ 'stack', {'package' => 'distribution'} ] };
+                  prefetch => {package => 'distribution'},
+                  join     => 'stack' };
 
     my $rs = $self->repos->db->select_registrations($where, $attrs);
-
+    $DB::single = 1;
     while( my $registration = $rs->next ) {
         print { $self->out } $registration->to_string($format);
     }
