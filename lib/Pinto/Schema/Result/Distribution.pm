@@ -202,7 +202,6 @@ sub register {
     for my $pkg ($self->packages) {
 
       if (defined $pkg->registrations_rs->find( {stack => $stack->id} ) ) {
-        $DB::single = 1;
           $self->debug( sub {"Package $pkg is already on stack $stack"} );
           next;
       }

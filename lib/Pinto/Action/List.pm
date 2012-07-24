@@ -131,7 +131,7 @@ sub execute {
                   join     => 'stack' };
 
     my $rs = $self->repos->db->select_registrations($where, $attrs);
-    $DB::single = 1;
+
     while( my $registration = $rs->next ) {
         print { $self->out } $registration->to_string($format);
     }
