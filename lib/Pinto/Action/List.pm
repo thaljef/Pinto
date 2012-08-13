@@ -121,14 +121,8 @@ sub execute {
         $format = $self->format;
     }
 
-    # HACK: The 'stack' table should also be prefetched here (not
-    # joined).  But in DBIx-Class 0.08198, the prefetch feature seems
-    # to be broken.  See RT #78456 for details.  In the meantime, this
-    # seems to work around the problem, although it requires an extra
-    # trip to the database if we need the stack name in the listing.
     my $attrs = { order_by => [ qw(me.package_name me.package_version me.distribution_path) ],
-                  prefetch => {package => 'distribution'},
-                  join     => 'stack' };
+                  prefetch => ['stack', {package => 'distribution'}] };
 
     my $rs = $self->repos->db->select_registrations($where, $attrs);
 
