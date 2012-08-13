@@ -48,12 +48,12 @@ sub changed {
 
 sub exit_status {
     my ($self) = @_;
-    return not $self->was_successful;
+    return $self->was_successful ? 0 : 1;
 }
 
 #-----------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #-----------------------------------------------------------------------------
 1;
