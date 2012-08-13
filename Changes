@@ -1,5 +1,26 @@
 {{$NEXT}}
 
+     Important:
+
+     Removed workaround for bug that appeared in DBIx::Class-0.08198.
+     We now require DBIx-Class-0.08198_01, which is only a developer
+     release at the moment.  So you may have to fetch that dependency
+     manually.
+
+     Bug Fixes:
+
+     Partially resolved #14, where Pinto would blow up if you
+     asked it to pull a core-only package.  In this case, it
+     really should give you a warning.  But for now, it just
+     silently skips it.
+
+     Other Changes:
+
+     Pinto::Tester now constructs the repository on disk
+     immediately upon constructing the object.  Before, you
+     had to access the pinto attribute to trigger it to
+     write anything to disk.
+
 0.045     2012-07-23 23:14:42 America/Los_Angeles
 
      Bug Fixes:
