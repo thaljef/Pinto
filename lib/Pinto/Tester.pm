@@ -34,6 +34,7 @@ has pinto_args => (
    default    => sub { {} },
    traits     => ['Hash'],
    handles    => { pinto_args => 'elements' },
+   lazy       => 1,
 );
 
 
@@ -42,6 +43,7 @@ has init_args => (
    default    => sub { {} },
    traits     => ['Hash'],
    handles    => { init_args => 'elements' },
+   lazy       => 1,
 );
 
 
@@ -73,8 +75,15 @@ has tb => (
    is       => 'ro',
    isa      => 'Test::Builder',
    init_arg => undef,
-   default  => => sub { __PACKAGE__->builder() },
+   default  => sub { __PACKAGE__->builder() },
 );
+
+#------------------------------------------------------------------------------
+# This force the repository to be constructed immediately.  Just
+# making the 'pinto' attribute non-lazy didn't work, probably due to
+# dependencies on other attributes.
+
+sub BUILD { $_[0]->pinto }
 
 #------------------------------------------------------------------------------
 
