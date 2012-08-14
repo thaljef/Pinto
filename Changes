@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.047     2012-08-13 17:21:03 America/Los_Angeles
+
      Added a hook for controling the lockfile timeout via an
      environment variable.  This makes testing for Pinto::Server and
      Pinto::Remote faster.
