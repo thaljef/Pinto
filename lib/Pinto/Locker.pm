@@ -18,7 +18,7 @@ use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
-our $LOCKFILE_TIMEOUT = 50;
+our $LOCKFILE_TIMEOUT = $ENV{PINTO_LOCKFILE_TIMEOUT} || 50; # Seconds
 
 #-----------------------------------------------------------------------------
 
