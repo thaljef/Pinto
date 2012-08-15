@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+     I've worked around the bug that required you to use a
+     development version of DBIx::Class (see previous release
+     notes below).  So now you don't have to manually install
+     anything.
+
 0.048     2012-08-15 09:05:19 America/Los_Angeles
 
      Prefetch is broken in DBIx::Class-0.08198 (see RT #78456) so
