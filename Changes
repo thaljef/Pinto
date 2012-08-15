@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+     Prefetch is broken in DBIx::Class-0.08198 (see RT #78456) so
+     Pinto now requires DBIx::Class-0.08198_01 or later.  At the
+     moment, this is only available as a dev release, so you may have
+     to install it manually before building Pinto.  For example:
+
+     $ cpan JROBINSON/DBIx-Class-0.08198_01.tar.gz
+
 0.047     2012-08-13 17:21:03 America/Los_Angeles
 
      Added a hook for controling the lockfile timeout via an
