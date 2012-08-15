@@ -218,6 +218,7 @@ sub register {
       my $incumbent_pkg = $incumbent->package;
 
       if ( $incumbent_pkg == $pkg ) {
+        # TODO: should this be an exception?
         $self->warning("Package $pkg is already on stack $stack");
         next;
       }
@@ -288,21 +289,30 @@ sub pin {
 sub unpin {
     my ($self, %args) = @_;
 
-    my $stack = $args{stack};
+    my $stack     = $args{stack};
+    my $errors    = 0;
     my $did_unpin = 0;
 
     for my $pkg ($self->packages) {
         my $registration = $pkg->registration(stack => $stack);
 
-        throw "Package $pkg is not registered on stack $stack"
-            if not $registration;
+        if (not $registration) {
+            $self->error("Package $pkg is not registered on stack $stack");
+            $errors++;
+            next;
+        }
 
-        throw "Package $pkg is not pinned on stack $stack"
-            if not $registration->is_pinned;
+
+        if (not $registration->is_pinned) {
+            $self->warning("Package $pkg is not pinned on stack $stack");
+            next;
+        }
 
         $registration->unpin;
         $did_unpin++;
     }
+
+    throw "Unable to unpin distribution $self to stack $stack" if $errors;
 
     $stack->touch if $did_unpin; # Update mtime
 
