@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+     More hacking to workaround the broken prefetch feature
+     in DBIx::Class.  May result is slightly slower performance
+     now that we have to make more trips to the database.
+
+     Added the Clean action to remove orphaned archives
+     from the filesystem.  The Pull and Add actions now
+     automatically clean up if doing a dryrun.
+
 0.050     2012-08-15 14:26:13 America/Los_Angeles
 
      I've worked around the bug that required you to use a
