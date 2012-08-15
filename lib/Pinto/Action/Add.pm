@@ -91,6 +91,8 @@ sub execute {
 
     $self->_execute($_, $stack) for $self->archives;
 
+    $self->repos->clean_files if $self->dryrun;
+
     return $self->result->changed;
 }
 
@@ -115,7 +117,7 @@ sub _execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #-----------------------------------------------------------------------------
 1;

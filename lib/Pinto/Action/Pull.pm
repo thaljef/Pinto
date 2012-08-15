@@ -64,6 +64,8 @@ sub execute {
 
     $self->_execute($_, $stack) for $self->targets;
 
+    $self->repos->clean_files if $self->dryrun;
+
     return $self->result;
 }
 
