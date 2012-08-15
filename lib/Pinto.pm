@@ -106,7 +106,15 @@ sub _run_operator {
             $self->repos->db->schema->txn_rollback;
         }
         else {
-            $self->repos->write_index;  # ???
+
+            # We only need to update the static index file if changes
+            # were made on the stack that the file represents
+            # (i.e. the default stack).
+
+            my $operative_stack = $action->operative_stack;
+            my $default_stack   = $self->repos->get_default_stack->name;
+            $self->repos->write_index if $operative_stack eq $default_stack;
+
             $self->repos->db->schema->txn_commit;
         }
 
