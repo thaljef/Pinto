@@ -122,8 +122,7 @@ sub execute {
     }
 
     ##################################################################
-    # NOTE: The 'join' attribute on this next query should not be
-    # necessary, and the 'prefetch' attribute should probably be:
+    # NOTE: The 'prefetch' attribute on this next query should be:
     #
     # prefetch => ['stack', {package => 'distribution'}]
     #
@@ -134,13 +133,12 @@ sub execute {
     # so I'm not sure why this one fails.
     #
     # In the meantime, I've discovered (by trial-and-error) that this
-    # version of the query seems to work, although it requires us
-    # to make an extra trip to the database to get the stack name,
-    # since it is only join'ed but not prefetch'ed.
+    # version of the query seems to work, although it may require us
+    # to make extra trips to the database to get the related objects
+    # when we stringify the registration.
 
-    my $attrs = { order_by => [ qw(me.package_name me.package_version me.distribution_path) ],
-                  prefetch => {package => 'distribution'},
-                  join     => 'stack' };
+    my $attrs = { order_by => [ qw(package_name package_version distribution_path) ],
+                  prefetch => 'stack' };
 
     ################################################################
 
