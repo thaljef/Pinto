@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.050     2012-08-15 14:26:13 America/Los_Angeles
+
      I've worked around the bug that required you to use a
      development version of DBIx::Class (see previous release
      notes below).  So now you don't have to manually install
