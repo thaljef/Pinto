@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.048     2012-08-15 09:05:19 America/Los_Angeles
+
      Prefetch is broken in DBIx::Class-0.08198 (see RT #78456) so
      Pinto now requires DBIx::Class-0.08198_01 or later.  At the
      moment, this is only available as a dev release, so you may have
