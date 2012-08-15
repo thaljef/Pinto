@@ -275,8 +275,7 @@ sub pin {
         $did_pin++;
     }
 
-    throw "Unable to pin distribution $self to stack $stack"
-      if $errors;
+    throw "Unable to pin distribution $self to stack $stack" if $errors;
 
     $stack->touch if $did_pin; # Update mtime
 
