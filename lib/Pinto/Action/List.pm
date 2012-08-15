@@ -121,8 +121,28 @@ sub execute {
         $format = $self->format;
     }
 
+    ##################################################################
+    # NOTE: The 'join' attribute on this next query should not be
+    # necessary, and the 'prefetch' attribute should probably be:
+    #
+    # prefetch => ['stack', {package => 'distribution'}]
+    #
+    # but that stopped working in DBIx::Class-0.08198.  See RT #78456
+    # for discussion.  It seems to generate the right SQL, but it
+    # doesn't actually populate the related objects from the prefetched
+    # data.  Our other queries that use 'prefetch' seem to work fine,
+    # so I'm not sure why this one fails.
+    #
+    # In the meantime, I've discovered (by trial-and-error) that this
+    # version of the query seems to work, although it requires us
+    # to make an extra trip to the database to get the stack name,
+    # since it is only join'ed but not prefetch'ed.
+
     my $attrs = { order_by => [ qw(me.package_name me.package_version me.distribution_path) ],
-                  prefetch => ['stack', {package => 'distribution'}] };
+                  prefetch => {package => 'distribution'},
+                  join     => 'stack' };
+
+    ################################################################
 
     my $rs = $self->repos->db->select_registrations($where, $attrs);
 
