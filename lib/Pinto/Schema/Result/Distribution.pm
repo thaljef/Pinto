@@ -239,8 +239,7 @@ sub register {
       $did_register++;
     }
 
-    throw "Unable to register distribution $self on stack $stack"
-      if $errors;
+    throw "Unable to register distribution $self on stack $stack" if $errors;
 
     $stack->touch if $did_register; # Update mtime
 
@@ -295,15 +294,11 @@ sub unpin {
     for my $pkg ($self->packages) {
         my $registration = $pkg->registration(stack => $stack);
 
-        if (not $registration) {
-            $self->warning("Package $pkg is not registered on stack $stack");
-            next;
-        }
+        throw "Package $pkg is not registered on stack $stack"
+            if not $registration;
 
-        if (not $registration->is_pinned) {
-            $self->warning("Package $pkg is not pinned on stack $stack");
-            next;
-        }
+        throw "Package $pkg is not pinned on stack $stack"
+            if not $registration->is_pinned;
 
         $registration->unpin;
         $did_unpin++;
