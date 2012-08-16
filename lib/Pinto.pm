@@ -26,15 +26,6 @@ has repos   => (
                                                 logger => $_[0]->logger ) },
 );
 
-
-has action_base_class => (
-    is         => 'ro',
-    isa        => Str,
-    default    => 'Pinto::Action',
-    init_arg   => undef,
-);
-
-
 #------------------------------------------------------------------------------
 
 with qw( Pinto::Role::Configurable
@@ -55,7 +46,7 @@ sub run {
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->warning(@_) };
 
-    my $action_class = $self->action_base_class . "::$action_name";
+    my $action_class = __PACKAGE__ . "::Action::$action_name";
     Class::Load::load_class($action_class);
 
     my $runner = $action_class->does('Pinto::Role::Operator') ?
