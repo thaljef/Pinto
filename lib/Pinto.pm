@@ -98,7 +98,7 @@ sub _run_operator {
         my $res    = $action->execute;
 
         if ($action->dryrun) {
-            $self->notice('Dryrun -- rolling back database');
+            $self->notice('Dryrun -- rolling back');
             $self->repos->db->schema->txn_rollback;
         }
         elsif ( not $res->made_changes ) {
