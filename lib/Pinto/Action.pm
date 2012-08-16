@@ -6,6 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Str);
 
 use Pinto::Result;
+use Pinto::Types qw(Io);
 
 use namespace::autoclean;
 
@@ -18,6 +19,7 @@ use namespace::autoclean;
 with qw( Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
+
 
 has repos => (
     is       => 'ro',
@@ -33,6 +35,14 @@ has username => (
 );
 
 
+has out => (
+    is      => 'ro',
+    isa     => Io,
+    coerce  => 1,
+    default => sub { [fileno(STDOUT), '>'] },
+);
+
+
 has result => (
     is       => 'ro',
     isa      => 'Pinto::Result',
@@ -43,10 +53,9 @@ has result => (
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
-
 1;
 
 __END__
