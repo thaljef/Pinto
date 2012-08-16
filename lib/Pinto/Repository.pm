@@ -636,12 +636,13 @@ sub clean_files {
         return if $archive eq 'CHECKSUMS';
         return if $self->get_distribution(author => $author, archive => $archive);
 
-        $self->notice("Removing orphaned archive $path");
+        $self->notice("Removing orphaned archive at $path");
         $self->store->remove_archive($path);
         $deleted++;
     };
 
     my $authors_id_dir = $self->config->authors_dir->subdir('id');
+    $self->debug("Cleaning orphaned archives beneath $authors_id_dir");
     File::Find::find({no_chdir => 1, wanted => $callback}, $authors_id_dir);
 
     return $deleted;
