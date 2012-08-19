@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+     Orphaned archives are now automatically cleaned whenever
+     you do an Add or Pull action with dryrun enabled.
+
+     Now requires Dist-Requires-0.008, which fixes some test
+     failures on some platforms.
+
+     Some internal refactoring, but no public interface changes.
+
 0.051     2012-08-15 18:27:34 America/Los_Angeles
 
      More hacking to workaround the broken prefetch feature
