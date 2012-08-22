@@ -1,12 +1,20 @@
 {{$NEXT}}
 
+     Important:
+
+     This version of Pinto is not compatible with repositories that
+     were created with prior versions.  The way that archives and
+     indexes are stored on the filesystem has been made simpler
+     and faster.  If using Pinto::Server, you'll need to upgrade
+     that too.
+
+     Other Changes:
+
      Orphaned archives are now automatically cleaned whenever
      you do an Add or Pull action with dryrun enabled.
 
      Now requires Dist-Requires-0.008, which fixes some test
      failures on some platforms.
-
-     Some internal refactoring, but no public interface changes.
 
 0.051     2012-08-15 18:27:34 America/Los_Angeles
 
