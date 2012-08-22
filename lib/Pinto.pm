@@ -1,14 +1,13 @@
-package Pinto;
-
 # ABSTRACT: Curate a repository of Perl modules
 
+package Pinto;
+
 use Moose;
-use MooseX::Types::Moose qw(Str);
 
 use Try::Tiny;
-use Class::Load;
 
 use Pinto::Repository;
+use Pinto::ActionLoader;
 
 use namespace::autoclean;
 
@@ -24,6 +23,15 @@ has repos   => (
     lazy       => 1,
     default    => sub { Pinto::Repository->new( config => $_[0]->config,
                                                 logger => $_[0]->logger ) },
+);
+
+
+has action_loader => (
+    is        => 'ro',
+    isa       => 'Pinto::ActionLoader',
+    lazy      => 1,
+    default   => sub { Pinto::ActionLoader->new( config => $_[0]->config,
+                                                 logger => $_[0]->logger ) },
 );
 
 #------------------------------------------------------------------------------
@@ -46,9 +54,7 @@ sub run {
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->warning(@_) };
 
-    my $action_class = __PACKAGE__ . "::Action::$action_name";
-    Class::Load::load_class($action_class);
-
+    my $action_class = $self->action_loader->load_action(name => $action_name);
     my $runner = $action_class->does('Pinto::Role::Operator') ?
       '_run_operator' : '_run_reporter';
 
