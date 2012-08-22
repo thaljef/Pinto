@@ -10,6 +10,10 @@
 
      Other Changes:
 
+     The Index action is no longer supported.  Now that each
+     stack has its own index file, I see no need to have this
+     Action.
+
      Orphaned archives are now automatically cleaned whenever
      you do an Add or Pull action with dryrun enabled.
 
