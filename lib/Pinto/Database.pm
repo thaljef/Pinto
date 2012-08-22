@@ -8,7 +8,6 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Schema;
-use Pinto::IndexWriter;
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -46,9 +45,8 @@ sub _build_schema {
     try   { $schema = Pinto::Schema->connect($dsn) }
     catch { throw "Database connection error: $_" };
 
-    # Install our logger & config into the schema
+    # Install our logger into the schema
     $schema->logger($self->logger);
-    $schema->config($self->config);
 
     return $schema;
 }

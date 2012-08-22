@@ -304,28 +304,6 @@ sub touch {
 
 #-------------------------------------------------------------------------------
 
-sub create_filesystem {
-    my ($self, %args) = @_;
-
-    my $stack_dir = $self->config->root_dir->subdir($self->name);
-    $stack_dir->mkpath;
-
-    my $stack_modules_dir = $stack_dir->subdir('modules');
-    $stack_modules_dir->mkpath;
-
-    my $stack_authors_dir = $stack_dir->subdir('authors');
-    my $global_authors_dir = $self->config->authors_dir->relative($stack_dir);
-    symlink($global_authors_dir, $stack_authors_dir);
-
-    my $stack_modlist_file = $stack_modules_dir->file('03modlist.data.gz');
-    my $global_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
-    symlink($global_modlist_file, $stack_modlist_file);
-
-    return;
-}
-
-#-------------------------------------------------------------------------------
-
 sub get_property {
     my ($self, @prop_names) = @_;
 

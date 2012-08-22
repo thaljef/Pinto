@@ -57,6 +57,7 @@ sub execute {
 
     my $description = $self->description || "copy of stack $orig";
     $copy->set_property(description => $description);
+    $copy->touch($orig->last_modified_on);
 
     $self->repos->write_index(stack => $copy);
 

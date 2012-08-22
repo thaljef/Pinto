@@ -147,8 +147,8 @@ sub _create_db {
 sub _create_stack {
     my ($self) = @_;
 
-    my $repos = Pinto::Repository->new( config => $self->config );
-    my $stack = $repos->create_stack( name => 'init' );
+    my $repos = Pinto::Repository->new(config => $self->config);
+    my $stack = $repos->create_stack(name => 'init');
 
     $stack->set_properties( {description => 'the initial stack'} );
     $stack->mark_as_default;

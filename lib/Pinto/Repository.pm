@@ -11,6 +11,7 @@ use Pinto::Util;
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
+use Pinto::IndexWriter;
 use Pinto::Store::File;
 use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
@@ -45,19 +46,12 @@ has db => (
 
 =attr store
 
-=method initialize()
-
-=method commit()
-
-=method tag()
-
 =cut
 
 has store => (
     is         => 'ro',
     isa        => 'Pinto::Store::File',
     lazy       => 1,
-    handles    => [ qw(initialize commit tag) ],
     default    => sub { Pinto::Store::File->new( config => $_[0]->config,
                                                  logger => $_[0]->logger ) },
 );
@@ -79,6 +73,8 @@ has cache => (
     default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
                                                 logger => $_[0]->logger ) },
 );
+
+=attr locker
 
 =method lock_shared
 
@@ -170,6 +166,7 @@ sub get_properties {
 
 sub set_property {
     my ($self, $prop_name, $value) = @_;
+
     return $self->set_properties( {$prop_name => $value} );
 }
 
@@ -206,6 +203,7 @@ sub delete_property {
 sub delete_properties {
     my ($self) = @_;
 
+    # TODO: Do not allow deletion of system props
     my $props_rs = $self->db->repository_properties->search;
     $props_rs->delete;
 
@@ -398,15 +396,17 @@ sub add {
 
 =method pull( url => $url )
 
-Pulls a distribution archive from a remote repository and C<add>s it
-to this repository.  The packages provided by the distribution will be
-indexed, and the prerequisites will be recorded.  Returns a
-L<Pinto::Schema::Result::Distribution> object representing the newly
-pulled distribution.
-
 =method pull( package => $spec )
 
 =method pull( distribution => $spec )
+
+Pulls a distribution archive from an upstream repository and adds it
+to this repository.  The packages provided by the distribution will be
+indexed, and the prerequisites will be recorded.  The target can be
+specified as a URL, a L<Pinto::PackageSpec> or as a
+L<Pinto::DistributionSpec>.  Returns a
+L<Pinto::Schema::Result::Distribution> object representing the newly
+pulled distribution.
 
 =cut
 
@@ -596,7 +596,7 @@ sub create_stack {
     my $stack = $self->db->create_stack( {name => $name, is_default => $is_default} );
     $stack->set_properties($props) if $props;
 
-    $stack->create_filesystem(base_dir => $self->root);
+    $self->create_stack_filesystem(stack => $stack);
 
     return $stack;
 
@@ -611,7 +611,7 @@ sub copy_stack {
     my $to_stack_name = $args{to};
 
     my $copy = $from_stack->copy_deeply( {name => $to_stack_name} );
-    $copy->create_filesystem(base_dir => $self->root);
+    $self->create_stack_filesystem(stack => $copy);
 
     return $copy;
 }
@@ -621,15 +621,40 @@ sub copy_stack {
 sub write_index {
     my ($self, %args) = @_;
 
-    my $writer = Pinto::IndexWriter->new(logger => $self->logger);
-
     $args{stack} ||= $self->get_default_stack;
-    $args{file}  ||= $self->root->subdir($args{stack}->name, 'modules', '02packages.details.txt.gz') unless $args{handle};
+    $args{logger} = $self->logger;
+    $args{config} = $self->config;
 
-    $writer->write(%args);
+    my $writer = Pinto::IndexWriter->new( %args );
+    $writer->write_index;
 
     return $self;
 }
+
+#-------------------------------------------------------------------------------
+
+sub create_stack_filesystem {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+
+    my $stack_dir = $self->root_dir->subdir($stack->name);
+    $stack_dir->mkpath;
+
+    my $stack_modules_dir = $stack_dir->subdir('modules');
+    $stack_modules_dir->mkpath;
+
+    my $stack_authors_dir  = $stack_dir->subdir('authors');
+    my $global_authors_dir = $self->config->authors_dir->relative($stack_dir);
+    _symlink($global_authors_dir, $stack_authors_dir);
+
+    my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
+    my $global_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
+    _symlink($global_modlist_file, $stack_modlist_file);
+
+    return $self;
+}
+
 
 #-------------------------------------------------------------------------------
 

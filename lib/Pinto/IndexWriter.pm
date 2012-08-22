@@ -3,11 +3,13 @@
 package Pinto::IndexWriter;
 
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
-use Path::Class qw(file);
 use PerlIO::gzip;
+use Path::Class qw(file);
 
 use Pinto::Exception qw(throw);
+use Pinto::Types qw(File Io);
 
 use namespace::autoclean;
 
@@ -17,41 +19,43 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Loggable);
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
-# Methods
 
-sub write {                                       ## no critic (BuiltinHomonym)
-    my ($self, %args) = @_;
+has stack => (
+    is       => 'ro',
+    isa      => 'Pinto::Schema::Result::Stack',
+    required => 1,
+);
 
-    my $handle   = $args{handle};
-    my $file     = $args{file};
-    my $stack    = $args{stack};
-    my $nozip    = $args{nozip};
-    my $filename;
 
-    throw "Must specify either an output handle or file name"
-        if not ($handle xor $file);
+has index_file  => (
+    is      => 'ro',
+    isa     => File,
+    lazy    => 1,
+    default => sub { file( $_[0]->config->root, $_[0]->stack->name,
+                           qw(modules 02packages.details.txt.gz)) }
+);
 
-    if ($file) {
-        my $io_layer = $nozip ? '' : ':gzip';
-        open $handle, ">:$io_layer", $file or throw "Cannot open $file: $!";
-        $self->info("Writing index for stack $stack at $file");
-        $filename = $file;
-    }
-    else {
-        my $fileno = $handle->fileno;
-        $self->info("Writing index for stack $stack to handle $handle");
-        $filename = file( $handle->can('filename') ? $handle->filename: 'UNKNOWN' );
-    }
+#------------------------------------------------------------------------------
+
+sub write_index {
+    my ($self) = @_;
+
+    my $index_file  = $self->index_file;
+    my $stack = $self->stack;
+
+    $self->info("Writing index for stack $stack at $index_file");
+    open my $handle, ">:gzip", $index_file or throw "Cannot open $index_file: $!";
 
     my @records = $self->_get_index_records($stack);
     my $count = @records;
 
-    $self->_write_header($handle, $filename, $count);
+    $self->_write_header($handle, $index_file, $count);
     $self->_write_records($handle, @records);
-    close $handle if $file;
+    close $handle;
 
     return $self;
 }
