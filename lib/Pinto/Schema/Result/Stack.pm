@@ -307,20 +307,18 @@ sub touch {
 sub create_filesystem {
     my ($self, %args) = @_;
 
-    my $base_dir = $args{base_dir} or throw 'Must specify a base_dir';
-
-    my $stack_dir = $base_dir->subdir($self->name);
+    my $stack_dir = $self->config->root_dir->subdir($self->name);
     $stack_dir->mkpath;
 
     my $stack_modules_dir = $stack_dir->subdir('modules');
     $stack_modules_dir->mkpath;
 
     my $stack_authors_dir = $stack_dir->subdir('authors');
-    my $global_authors_dir = $base_dir->subdir('.authors')->relative($stack_dir);
+    my $global_authors_dir = $self->config->authors_dir->relative($stack_dir);
     symlink($global_authors_dir, $stack_authors_dir);
 
     my $stack_modlist_file = $stack_modules_dir->file('03modlist.data.gz');
-    my $global_modlist_file = $base_dir->subdir('.modules')->file('03modlist.data.gz')->relative($stack_modules_dir);
+    my $global_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
     symlink($global_modlist_file, $stack_modlist_file);
 
     return;

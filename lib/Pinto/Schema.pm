@@ -33,6 +33,12 @@ has logger => (
     handles => [ qw(debug notice info warning error fatal) ],
 );
 
+
+has config => (
+    is      => 'rw',
+    isa     => 'Pinto::Config',
+);
+
 #-------------------------------------------------------------------------------
 
 1;

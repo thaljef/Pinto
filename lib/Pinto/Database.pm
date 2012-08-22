@@ -46,8 +46,9 @@ sub _build_schema {
     try   { $schema = Pinto::Schema->connect($dsn) }
     catch { throw "Database connection error: $_" };
 
-    # Install our logger into the schema
+    # Install our logger & config into the schema
     $schema->logger($self->logger);
+    $schema->config($self->config);
 
     return $schema;
 }
