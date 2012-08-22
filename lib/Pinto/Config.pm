@@ -30,11 +30,21 @@ has root       => (
     coerce     => 1,
 );
 
+
 has authors_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
     default   => sub { return $_[0]->root_dir->subdir('.authors') },
+    lazy      => 1,
+);
+
+
+has authors_id_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->authors_dir->subdir('id') },
     lazy      => 1,
 );
 

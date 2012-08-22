@@ -386,8 +386,8 @@ sub add {
     # the repository will still be clean.
 
     my $dist = $self->db->create_distribution( $dist_struct );
-    my @basedir = ($self->root_dir, qw(.authors id) );
-    my $archive_in_repos = $dist->native_path( @basedir );
+    my $basedir = $self->config->authors_id_dir;
+    my $archive_in_repos = $dist->native_path( $basedir );
     $self->fetch( from => $archive, to => $archive_in_repos );
     $self->store->add_archive( $archive_in_repos );
 
