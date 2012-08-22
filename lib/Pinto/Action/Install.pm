@@ -97,6 +97,8 @@ sub execute {
 
     do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
 
+    $self->repos->write_index(stack => $stack) if $self->result->made_changes;
+
     $self->_install($stack, $self->targets);
 
     return $self->result;
@@ -128,9 +130,6 @@ sub _pull {
 
 sub _install {
     my ($self, $stack, @targets) = @_;
-
-    my $temp_index_fh = File::Temp->new;
-    $self->repos->write_index(stack => $stack, handle => $temp_index_fh);
 
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
