@@ -196,7 +196,7 @@ sub registration_ok {
     $self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
 
     # Archive should be reachable through gobal authors dir (e.g. .authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
-    $self->path_exists_ok( [qw(.authors id), $dist->native_path] );
+    $self->path_exists_ok( [ qw(.authors id), $dist->native_path ] );
 
     # Test pins...
     $self->tb->ok($reg->is_pinned,  "Registration $reg is pinned") if $is_pinned;
