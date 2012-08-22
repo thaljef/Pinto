@@ -386,7 +386,8 @@ sub add {
     # the repository will still be clean.
 
     my $dist = $self->db->create_distribution( $dist_struct );
-    my $archive_in_repos = $dist->native_path( $self->root_dir );
+    my @basedir = ($self->root_dir, qw(.authors id) );
+    my $archive_in_repos = $dist->native_path( @basedir );
     $self->fetch( from => $archive, to => $archive_in_repos );
     $self->store->add_archive( $archive_in_repos );
 
@@ -584,17 +585,35 @@ sub pull_prerequisites {
 sub create_stack {
     my ($self, %args) = @_;
 
-    my $name  = Pinto::Util::normalize_stack_name($args{name});
-    my $props = $args{properties};
+    my $name       = Pinto::Util::normalize_stack_name($args{name});
+    my $is_default = $args{is_default} || 0;
+    my $props      = $args{properties};
+
 
     throw "Stack $name already exists"
         if $self->get_stack(name => $name, nocroak => 1);
 
-    my $stack = $self->db->create_stack( {name => $name} );
+    my $stack = $self->db->create_stack( {name => $name, is_default => $is_default} );
     $stack->set_properties($props) if $props;
+
+    $stack->create_filesystem(base_dir => $self->root);
 
     return $stack;
 
+}
+
+#-------------------------------------------------------------------------------
+
+sub copy_stack {
+    my ($self, %args) = @_;
+
+    my $from_stack    = $args{from};
+    my $to_stack_name = $args{to};
+
+    my $copy = $from_stack->copy_deeply( {name => $to_stack_name} );
+    $copy->create_filesystem(base_dir => $self->root);
+
+    return $copy;
 }
 
 #-------------------------------------------------------------------------------
@@ -604,8 +623,8 @@ sub write_index {
 
     my $writer = Pinto::IndexWriter->new(logger => $self->logger);
 
-    $args{file}  ||= $self->config->index_file unless $args{handle};
     $args{stack} ||= $self->get_default_stack;
+    $args{file}  ||= $self->root->subdir($args{stack}->name, 'modules', '02packages.details.txt.gz') unless $args{handle};
 
     $writer->write(%args);
 
@@ -646,6 +665,20 @@ sub clean_files {
     File::Find::find({no_chdir => 1, wanted => $callback}, $authors_id_dir);
 
     return $deleted;
+}
+
+#-------------------------------------------------------------------------------
+
+sub _symlink {
+    my ($to, $from) = @_;
+
+    # TODO: symlink is not supported on windows.  Consider using Win32::API
+    # as a workaround.  But from what I've read, it requires admin rights :(
+
+    my $ok = symlink $to, $from
+        or throw "symlink to $to from $from failed: $!";
+
+    return $ok;
 }
 
 #-------------------------------------------------------------------------------

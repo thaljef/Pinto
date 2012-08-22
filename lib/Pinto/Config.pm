@@ -34,7 +34,7 @@ has authors_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->root_dir->subdir('authors') },
+    default   => sub { return $_[0]->root_dir->subdir('.authors') },
     lazy      => 1,
 );
 
@@ -43,16 +43,7 @@ has modules_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->root_dir->subdir('modules') },
-    lazy      => 1,
-);
-
-
-has index_file => (
-    is        => 'ro',
-    isa       => File,
-    init_arg  => undef,
-    default   => sub { return $_[0]->modules_dir->file('02packages.details.txt.gz') },
+    default   => sub { return $_[0]->root_dir->subdir('.modules') },
     lazy      => 1,
 );
 
@@ -62,6 +53,15 @@ has mailrc_file => (
     isa       => File,
     init_arg  => undef,
     default   => sub { return $_[0]->authors_dir->file('01mailrc.txt.gz') },
+    lazy      => 1,
+);
+
+
+has modlist_file => (
+    is        => 'ro',
+    isa       => File,
+    init_arg  => undef,
+    default   => sub { return $_[0]->modules_dir->file('03modlist.data.gz') },
     lazy      => 1,
 );
 

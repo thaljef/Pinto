@@ -21,7 +21,7 @@ my $source_2 = Pinto::Tester->new;
 $source_2->populate( 'FRED/DistB-1 = PkgB~1',
                      'FRED/DistC-2 = PkgC~2' );
 
-my $sources  = sprintf '%s %s', $source_1->root_url, $source_2->root_url;
+my $sources  = sprintf '%s %s', $source_1->stack_url, $source_2->stack_url;
 
 #------------------------------------------------------------------------------
 

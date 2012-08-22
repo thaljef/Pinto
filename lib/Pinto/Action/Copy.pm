@@ -52,11 +52,13 @@ with qw( Pinto::Role::Operator );
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->from_stack);
-    my $copy = $stack->copy_deeply({name => $self->to_stack});
-    my $description = $self->description || "copy of stack $stack";
-    $copy->set_property('description' => $description);
-    $copy->touch($stack->last_modified_on);
+    my $orig = $self->repos->get_stack(name => $self->from_stack);
+    my $copy = $self->repos->copy_stack(from => $orig, to => $self->to_stack);
+
+    my $description = $self->description || "copy of stack $orig";
+    $copy->set_property(description => $description);
+
+    $self->repos->write_index(stack => $copy);
 
     return $self->result->changed;
 }

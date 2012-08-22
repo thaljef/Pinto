@@ -15,9 +15,9 @@ my $pinto = $t->pinto;
 
 $t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 $t->path_exists_ok( [qw(.pinto db pinto.db)] );
-$t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
-$t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
-$t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
+$t->path_exists_ok( [qw(init modules 02packages.details.txt.gz)] );
+$t->path_exists_ok( [qw(init modules 03modlist.data.gz)] );
+$t->path_exists_ok( [qw(init authors 01mailrc.txt.gz)] );
 
 is $pinto->config->devel,    0, 'Got default devel';
 is $pinto->config->log_level,   'notice', 'Got default log_level';

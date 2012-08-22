@@ -134,8 +134,8 @@ sub _install {
 
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
-    $opts->{'mirror-index'} = $temp_index_fh->filename;
-    $opts->{mirror}         = 'file://' . $self->repos->root->absolute;
+    $opts->{'mirror-only'} = '';
+    $opts->{mirror} = 'file://' . $self->repos->root->absolute . "/$stack";
 
     # Process other cpanm options
     my @cpanm_opts;

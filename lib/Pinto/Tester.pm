@@ -63,14 +63,6 @@ has root => (
 );
 
 
-has root_url => (
-   is       => 'ro',
-   isa      => Uri,
-   default  => sub { URI->new('file://' . $_[0]->root->resolve->absolute) },
-   lazy     => 1,
-);
-
-
 has tb => (
    is       => 'ro',
    isa      => 'Test::Builder',
@@ -98,7 +90,7 @@ sub _build_pinto {
     my $initializer = Pinto::Initializer->new(%defaults, %log_defaults);
     $initializer->init( $self->init_args );
 
-    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args());
+    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args);
     return $pinto;
 }
 
@@ -176,8 +168,8 @@ sub registration_ok {
         = parse_reg_spec($reg_spec);
 
     my $author_dir = Pinto::Util::author_dir($author);
-    my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
+    my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
+    my $stack      = $self->pinto->repos->get_stack(name => $stack_name);
 
     my $where = { stack => $stack->id, package_name => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
@@ -199,14 +191,19 @@ sub registration_ok {
     # Test distribution object...
     my $dist = $pkg->distribution;
     $self->tb->is_eq($dist->path,  $dist_path, "Distribution has correct dist path");
-    $self->path_exists_ok( [$dist->native_path] );
+
+    # Archive should be reachable through stack symlink (e.g. $stack/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
+    $self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
+
+    # Archive should be reachable through gobal authors dir (e.g. .authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
+    $self->path_exists_ok( [qw(.authors id), $dist->native_path] );
 
     # Test pins...
     $self->tb->ok($reg->is_pinned,  "Registration $reg is pinned") if $is_pinned;
     $self->tb->ok(!$reg->is_pinned, "Registration $reg is not pinned") if not $is_pinned;
 
     # Test checksums...
-    $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
+    $self->path_exists_ok( [qw(.authors id), $author_dir, 'CHECKSUMS'] );
     # TODO: test actual checksum values?
 
     return;
@@ -359,6 +356,16 @@ sub clear_cache {
     $self->pinto->repos->clear_cache;
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub stack_url {
+    my ($self, $stack_name) = @_;
+
+    $stack_name ||= 'init';
+
+    return URI->new('file://' . $self->root->resolve->absolute . "/$stack_name");
 }
 
 #------------------------------------------------------------------------------

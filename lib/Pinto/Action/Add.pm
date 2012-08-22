@@ -91,9 +91,13 @@ sub execute {
 
     $self->_execute($_, $stack) for $self->archives;
 
+    $self->repos->write_index(stack => $stack) unless $self->dryrun;
+
     $self->repos->clean_files if $self->dryrun;
 
-    return $self->result->changed;
+    $self->result->changed unless $self->dryrun;
+
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

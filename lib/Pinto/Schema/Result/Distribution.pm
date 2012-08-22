@@ -358,7 +358,6 @@ sub native_path {
     my ($self, @base) = @_;
 
     return Path::Class::file( @base,
-                              qw(authors id),
                               substr($self->author, 0, 1),
                               substr($self->author, 0, 2),
                               $self->author,

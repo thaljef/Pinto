@@ -22,7 +22,7 @@ is($dist->version, '1.2', 'dist version');
 is($dist->is_local, 1, 'is_local is true when origin eq q{LOCAL}');
 is($dist->is_devel, q{}, 'this is not a devel dist');
 is($dist->path, 'F/FO/FOO/Bar-1.2.tar.gz', 'Logical archive path');
-is($dist->native_path('here'), file( qw(here authors id F FO FOO Bar-1.2.tar.gz) ), 'Physical archive path, with base');
+is($dist->native_path('here'), file( qw(here F FO FOO Bar-1.2.tar.gz) ), 'Physical archive path, with base');
 is("$dist", 'FOO/Bar-1.2.tar.gz', 'Stringifies to author/archive');
 
 #-----------------------------------------------------------------------------

@@ -67,9 +67,10 @@ sub init {
     # Write authors index
     $self->_write_mailrc;
 
-    # Write the packages index
-    $self->_write_index;
+    # Create the inital stack
+    $self->_create_stack;
 
+    # Log message for posterity
     $self->notice("Created new repository at directory $root_dir");
 
     return $self;
@@ -81,7 +82,7 @@ sub init {
 sub _write_modlist {
     my ($self) = @_;
 
-    my $modlist_file = $self->config->modules_dir->file('03modlist.data.gz');
+    my $modlist_file = $self->config->modlist_file;
     open my $fh, '>:gzip', $modlist_file;
     print {$fh} $self->_modlist_data();
     close $fh;
@@ -95,7 +96,7 @@ sub _write_modlist {
 sub _write_mailrc {
     my ($self) = @_;
 
-    my $mailrc_file = $self->config->mailrc_file();
+    my $mailrc_file = $self->config->mailrc_file;
     open my $fh, '>:gzip', $mailrc_file;
     print {$fh} '';
     close $fh;
@@ -138,20 +139,21 @@ sub _create_db {
     my $db = Pinto::Database->new( config => $self->config );
     $db->deploy;
 
-    my $stack_attrs = {name => 'init', is_default => 1};
-    my $stack = $db->schema->resultset('Stack')->create($stack_attrs);
-    $stack->set_property('description' => 'the initial stack');
-
     return;
 }
 
 #------------------------------------------------------------------------------
 
-sub _write_index {
+sub _create_stack {
     my ($self) = @_;
 
     my $repos = Pinto::Repository->new( config => $self->config );
-    $repos->write_index;
+    my $stack = $repos->create_stack( name => 'init' );
+
+    $stack->set_properties( {description => 'the initial stack'} );
+    $stack->mark_as_default;
+
+    $repos->write_index(stack => $stack);
 
     return;
 }

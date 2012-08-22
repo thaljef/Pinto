@@ -18,7 +18,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 # Do a bunch of operations with dryrun=1, and make sure repos is still empty
 
 {
-  my $local = Pinto::Tester->new(init_args => {sources => $source->root_url});
+  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
   $local->run_ok('Pull', {dryrun => 1, targets => 'Baz~1.2'});
   $local->repository_clean_ok;
 

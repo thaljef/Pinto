@@ -223,11 +223,15 @@ sub copy {
 #------------------------------------------------------------------------------
 
 sub copy_deeply {
-    my ($self, @args) = @_;
+    my ($self, $changes) = @_;
 
-    my $copy = $self->copy(@args);
+    my $copy = $self->copy($changes);
     $self->copy_properties(to => $copy);
     $self->copy_members(to => $copy);
+
+    # Normally, settng properties & members would change the mtime of the
+    # stack.  But we want the copy to have the same mtime as the original
+
     $copy->touch($self->last_modified_on);
 
     return $copy;
@@ -296,6 +300,30 @@ sub touch {
     $self->update( \%changes );
 
     return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub create_filesystem {
+    my ($self, %args) = @_;
+
+    my $base_dir = $args{base_dir} or throw 'Must specify a base_dir';
+
+    my $stack_dir = $base_dir->subdir($self->name);
+    $stack_dir->mkpath;
+
+    my $stack_modules_dir = $stack_dir->subdir('modules');
+    $stack_modules_dir->mkpath;
+
+    my $stack_authors_dir = $stack_dir->subdir('authors');
+    my $global_authors_dir = $base_dir->subdir('.authors')->relative($stack_dir);
+    symlink($global_authors_dir, $stack_authors_dir);
+
+    my $stack_modlist_file = $stack_modules_dir->file('03modlist.data.gz');
+    my $global_modlist_file = $base_dir->subdir('.modules')->file('03modlist.data.gz')->relative($stack_modules_dir);
+    symlink($global_modlist_file, $stack_modlist_file);
+
+    return;
 }
 
 #-------------------------------------------------------------------------------

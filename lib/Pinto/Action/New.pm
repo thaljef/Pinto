@@ -45,7 +45,10 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->create_stack(name => $self->stack);
-    $stack->set_property('description' => $self->description);
+
+    $stack->set_property(description => $self->description) if $self->has_description;
+
+    $self->repos->write_index(stack => $stack);
 
     return $self->result->changed;
 }
