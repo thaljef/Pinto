@@ -85,7 +85,7 @@ sub _execute {
         $did_pull += @prereq_dists;
     }
 
-    $self->result->changed if $did_pull;
+    $self->result->changed if $did_pull and not $self->dryrun;
 
     return;
 }
