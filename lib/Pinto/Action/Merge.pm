@@ -3,7 +3,7 @@
 package Pinto::Action::Merge;
 
 use Moose;
-use MooseX::Aliases;
+use MooseX::Types::Moose qw(Bool);
 
 use Pinto::Types qw(StackName);
 
@@ -30,14 +30,16 @@ has from_stack => (
 has to_stack => (
     is       => 'ro',
     isa      => StackName,
-    alias    => 'operative_stack',
     required => 1,
     coerce   => 1,
 );
 
-#------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Operator );
+has dryrun => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
 
 #------------------------------------------------------------------------------
 

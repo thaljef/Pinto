@@ -3,7 +3,6 @@
 package Pinto::Action::Unpin;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Undef);
 
 use Pinto::Types qw(Specs StackName);
@@ -33,14 +32,9 @@ has targets => (
 has stack => (
     is        => 'ro',
     isa       => Undef | StackName,
-    alias     => 'operative_stack',
     default   => undef,
     coerce    => 1,
 );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

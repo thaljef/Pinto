@@ -3,7 +3,6 @@
 package Pinto::Action::Delete;
 
 use Moose;
-use MooseX::Aliases;
 
 use Pinto::Types qw(StackName);
 
@@ -22,14 +21,9 @@ extends qw( Pinto::Action );
 has stack => (
     is       => 'ro',
     isa      => StackName,
-    alias    => 'operative_stack',
     required => 1,
     coerce   => 1,
 );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

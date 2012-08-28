@@ -7,6 +7,7 @@ use MooseX::Types::Moose qw(Str);
 
 use Pinto::Result;
 use Pinto::Types qw(Io);
+use Pinto::Exception;
 
 use namespace::autoclean;
 
@@ -50,6 +51,10 @@ has result => (
     init_arg => undef,
     lazy     => 1,
 );
+
+#------------------------------------------------------------------------------
+
+sub execute { throw 'Abstract method' }
 
 #------------------------------------------------------------------------------
 

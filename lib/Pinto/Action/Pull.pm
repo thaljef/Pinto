@@ -3,7 +3,6 @@
 package Pinto::Action::Pull;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Undef Bool);
 
 use Pinto::Types qw(Specs StackName);
@@ -32,7 +31,6 @@ has targets => (
 has stack => (
     is        => 'ro',
     isa       => StackName | Undef,
-    alias     => 'operative_stack',
     default   => undef,
     coerce    => 1,
 );
@@ -51,9 +49,12 @@ has norecurse => (
     default   => 0,
 );
 
-#------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Operator );
+has dryrun => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
 
 #------------------------------------------------------------------------------
 
@@ -78,6 +79,8 @@ sub _execute {
 
     my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target,
                                                        stack  => $stack );
+
+    $dist->pin( stack => $stack ) if $dist && $self->pin;
 
     if ($dist and not $self->norecurse) {
         my @prereq_dists = $self->repos->pull_prerequisites( dist  => $dist,

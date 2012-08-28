@@ -3,7 +3,6 @@
 package Pinto::Action::Install;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Undef Bool HashRef ArrayRef Maybe Str);
 
 use File::Which qw(which);
@@ -42,7 +41,6 @@ has cpanm_exe => (
 has stack   => (
     is        => 'ro',
     isa       => StackName | Undef,
-    alias     => 'operative_stack',
     default   => undef,
     coerce    => 1,
 );
@@ -61,10 +59,6 @@ has pull => (
     isa     => Bool,
     default => 0,
 );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

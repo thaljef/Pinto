@@ -49,52 +49,24 @@ C<%action_args> to its constructor.  Returns a L<Pinto::Result>.
 =cut
 
 sub run {
-    my ($self, $action_name, %args) = @_;
+    my ($self, $action_name, %action_args) = @_;
 
     # Divert any warnings to our logger
     local $SIG{__WARN__} = sub { $self->warning(@_) };
-
-    my $action_class = $self->action_loader->load_action(name => $action_name);
-    my $runner = $action_class->does('Pinto::Role::Operator') ?
-      '_run_operator' : '_run_reporter';
-
-    my $result = try     { $self->$runner($action_class, %args)   }
-                 catch   { $self->repos->unlock; $self->fatal($_) };
-
-    $self->repos->unlock;
-    return $result;
-}
-
-#------------------------------------------------------------------------------
-
-sub _run_reporter {
-    my ($self, $action_class, %args) = @_;
-
-    $self->repos->lock_shared;
-    $self->repos->check_schema_version;
-    @args{qw(logger repos)} = ($self->logger, $self->repos);
-    my $action = $action_class->new( %args );
-    my $result = $action->execute;
-
-    return $result;
-
-}
-
-#------------------------------------------------------------------------------
-
-sub _run_operator {
-    my ($self, $action_class, %args) = @_;
 
     $self->repos->lock_exclusive;
     $self->repos->check_schema_version;
     $self->repos->db->schema->txn_begin;
 
-    my $result = try {
-        @args{qw(logger repos)} = ($self->logger, $self->repos);
-        my $action = $action_class->new( %args );
-        my $res    = $action->execute;
+    my $action_class = $self->action_loader->load_action(name => $action_name);
 
-        if ($action->dryrun) {
+    my $result = try {
+
+        @action_args{qw(logger repos)} = ($self->logger, $self->repos);
+        my $action = $action_class->new( %action_args );
+        my $res = $action->execute;
+
+        if ($action->can('dryrun') && $action->dryrun) {
             $self->notice('Dryrun -- rolling back');
             $self->repos->db->schema->txn_rollback;
         }
@@ -111,8 +83,10 @@ sub _run_operator {
     catch {
         $self->repos->db->schema->txn_rollback;
         die $_;        ## no critic qw(Carping)
+
     };
 
+    $self->repos->unlock;
     return $result;
 }
 

@@ -3,7 +3,6 @@
 package Pinto::Action::Edit;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Undef Str HashRef Bool);
 
 use Pinto::Types qw(StackName);
@@ -23,7 +22,6 @@ extends qw( Pinto::Action );
 has stack => (
     is       => 'ro',
     isa      => StackName | Undef,
-    alias    => 'operative_stack',
     default  => undef,
     coerce   => 1,
 );
@@ -41,10 +39,6 @@ has default => (
     isa     => Bool,
     default => 0,
 );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 

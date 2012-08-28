@@ -3,7 +3,6 @@
 package Pinto::Action::Add;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Undef Bool Str);
 
 use Pinto::Types qw(Author Files StackName);
@@ -42,7 +41,6 @@ has archives  => (
 has stack => (
     is       => 'ro',
     isa      => StackName | Undef,
-    alias    => 'operative_stack',
     default  => undef,
     coerce   => 1,
 );
@@ -61,9 +59,16 @@ has norecurse => (
     default   => 0,
 );
 
+
+has dryrun => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Operator Pinto::Role::PauseConfig );
+with qw( Pinto::Role::PauseConfig );
 
 #------------------------------------------------------------------------------
 

@@ -49,12 +49,12 @@ we patiently wait until we timeout, which is about 60 seconds.
 sub lock {                                   ## no critic qw(Homonym)
     my ($self, $lock_type) = @_;
 
-    my $root_dir  = $self->root_dir;
-    throw "$root_dir is already locked" if $self->_is_locked;
+    return if $self->_is_locked;
 
     local $File::NFSLock::LOCK_EXTENSION = '';
     local @File::NFSLock::CATCH_SIGS = ();
 
+    my $root_dir  = $self->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
     my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
         or throw 'Unable to lock the repository -- please try later';

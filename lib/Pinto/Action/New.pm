@@ -3,7 +3,6 @@
 package Pinto::Action::New;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str);
 
 use Pinto::Types qw(StackName);
@@ -23,7 +22,6 @@ extends qw( Pinto::Action );
 has stack => (
     is       => 'ro',
     isa      => StackName,
-    alias    => 'operative_stack',
     required => 1,
     coerce   => 1,
 );
@@ -34,10 +32,6 @@ has description => (
     isa        => Str,
     predicate  => 'has_description',
 );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Operator );
 
 #------------------------------------------------------------------------------
 
