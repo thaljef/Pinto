@@ -1,0 +1,23 @@
+# pinto(1) completion
+#
+
+_pinto_actions()
+{
+   COMPREPLY=( $( compgen -W 'commands help add copy delete edit index init install list manual merge new nop pin props pull stacks statistics unpin verify version' \
+        -- $cur ) )
+}
+
+_pinto()
+{
+    local cur
+
+    COMPREPLY=()
+    cur=${COMP_WORDS[COMP_CWORD]}
+
+    if [[ $COMP_CWORD -eq 1 ]] ; then
+        _pinto_actions
+    else
+        return 0
+    fi
+}
+complete -F _pinto pinto
