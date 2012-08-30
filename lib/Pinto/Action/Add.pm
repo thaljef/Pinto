@@ -98,8 +98,6 @@ sub execute {
 
     $self->repos->write_index(stack => $stack) unless $self->dryrun;
 
-    $self->repos->clean_files if $self->dryrun;
-
     $self->result->changed unless $self->dryrun;
 
     return $self->result;

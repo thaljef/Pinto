@@ -31,7 +31,8 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->get_stack(name => $self->stack);
-    $stack->delete;
+
+    $self->repos->delete_stack(stack => $stack);
 
     return $self->result->changed;
 }

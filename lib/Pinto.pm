@@ -69,6 +69,7 @@ sub run {
         if ($action->can('dryrun') && $action->dryrun) {
             $self->notice('Dryrun -- rolling back');
             $self->repos->db->schema->txn_rollback;
+            $self->repos->clean_files;
         }
         elsif ( not $res->made_changes ) {
             $self->notice('No changes were made');
@@ -82,6 +83,7 @@ sub run {
     }
     catch {
         $self->repos->db->schema->txn_rollback;
+        $self->repos->unlock;
         die $_;        ## no critic qw(Carping)
 
     };

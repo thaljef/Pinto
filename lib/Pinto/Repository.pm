@@ -618,6 +618,17 @@ sub copy_stack {
 
 #-------------------------------------------------------------------------------
 
+sub delete_stack {
+   my ($self, %args) = @_;
+
+   $args{stack}->delete;
+   $self->delete_stack_filesystem(%args);
+
+   return $self;
+}
+
+#-------------------------------------------------------------------------------
+
 sub write_index {
     my ($self, %args) = @_;
 
@@ -645,23 +656,36 @@ sub create_stack_filesystem {
     $stack_modules_dir->mkpath;
 
     my $stack_authors_dir  = $stack_dir->subdir('authors');
-    my $global_authors_dir = $self->config->authors_dir->relative($stack_dir);
-    _symlink($global_authors_dir, $stack_authors_dir);
+    my $shared_authors_dir = $self->config->authors_dir->relative($stack_dir);
+    _symlink($shared_authors_dir, $stack_authors_dir);
 
     my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
-    my $global_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
-    _symlink($global_modlist_file, $stack_modlist_file);
+    my $shared_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
+    _symlink($shared_modlist_file, $stack_modlist_file);
 
     return $self;
 }
 
+#-------------------------------------------------------------------------------
+
+sub delete_stack_filesystem {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+    my $stack_dir = $self->root_dir->subdir($stack->name);
+
+    $self->debug("Removing stack directory $stack_dir");
+    $stack_dir->rmtree or throw "Failed to remove $stack_dir" if -e $stack_dir;
+
+    return $self;
+}
 
 #-------------------------------------------------------------------------------
 
 =method clean_files()
 
 Deletes all distribution archives that are on the filesystem but not
-listed in a stack.  This can happen when an Action fails or is aborted
+in the database.  This can happen when an Action fails or is aborted
 prematurely.
 
 =cut
@@ -678,6 +702,10 @@ sub clean_files {
         my $archive = $path->basename;
 
         return if $archive eq 'CHECKSUMS';
+        return if $archive eq '01mailrc.txt.gz';
+
+        # TODO: Optimize by fetching all known distributions in one query.
+        # Then stash in hash keyed by path.  Delete any path not in hash.
         return if $self->get_distribution(author => $author, archive => $archive);
 
         $self->notice("Removing orphaned archive at $path");
@@ -685,9 +713,9 @@ sub clean_files {
         $deleted++;
     };
 
-    my $authors_id_dir = $self->config->authors_dir->subdir('id');
-    $self->debug("Cleaning orphaned archives beneath $authors_id_dir");
-    File::Find::find({no_chdir => 1, wanted => $callback}, $authors_id_dir);
+    my $authors_dir = $self->config->authors_dir;
+    $self->debug("Cleaning orphaned archives beneath $authors_dir");
+    File::Find::find({no_chdir => 1, wanted => $callback}, $authors_dir);
 
     return $deleted;
 }

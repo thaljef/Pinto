@@ -67,8 +67,6 @@ sub execute {
 
     $self->repos->write_index(stack => $stack) if $self->result->made_changes;
 
-    $self->repos->clean_files if $self->dryrun;
-
     return $self->result;
 }
 
