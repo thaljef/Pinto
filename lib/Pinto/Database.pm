@@ -22,6 +22,7 @@ use namespace::autoclean;
 has schema => (
    is         => 'ro',
    isa        => 'Pinto::Schema',
+   handles    => [ qw(txn_begin txn_commit txn_rollback) ],
    init_arg   => undef,
    lazy_build => 1,
 );

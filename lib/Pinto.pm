@@ -56,7 +56,7 @@ sub run {
 
     $self->repos->lock_exclusive;
     $self->repos->check_schema_version;
-    $self->repos->db->schema->txn_begin;
+    $self->repos->txn_begin;
 
     my $action_class = $self->action_loader->load_action(name => $action_name);
 
@@ -66,23 +66,26 @@ sub run {
         my $action = $action_class->new( %action_args );
         my $res = $action->execute;
 
+        # TODO: Consider using a role to indicate whether an
+        # Action can do a dryrun (e.g. Pinto::Role::Dryrunable)
+
         if ($action->can('dryrun') && $action->dryrun) {
             $self->notice('Dryrun -- rolling back');
-            $self->repos->db->schema->txn_rollback;
+            $self->repos->txn_rollback;
             $self->repos->clean_files;
         }
         elsif ( not $res->made_changes ) {
             $self->notice('No changes were made');
-            $self->repos->db->schema->txn_rollback;
+            $self->repos->txn_rollback;
         }
         else {
-            $self->repos->db->schema->txn_commit;
+            $self->repos->txn_commit;
         }
 
         $res; # returned from try{}
     }
     catch {
-        $self->repos->db->schema->txn_rollback;
+        $self->repos->txn_rollback;
         $self->repos->unlock;
         die $_;        ## no critic qw(Carping)
 

@@ -39,6 +39,7 @@ has db => (
     is         => 'ro',
     isa        => 'Pinto::Database',
     lazy       => 1,
+    handles    => [ qw(txn_begin txn_commit txn_rollback) ],
     default    => sub { Pinto::Database->new( config => $_[0]->config,
                                               logger => $_[0]->logger ) },
 );
