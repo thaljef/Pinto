@@ -19,20 +19,17 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
 {
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+
   $local->run_ok('Pull', {dryrun => 1, targets => 'Baz~1.2'});
-  $local->repository_clean_ok;
-
-  $local->run_ok('Copy', {dryrun => 1, from_stack => 'init', to_stack => 'dev'});
-  $local->repository_clean_ok;
-
-  $local->run_ok('New', {dryrun => 1, stack => 'qa'});
-  $local->repository_clean_ok;
-
-  $local->run_ok('Edit', {dryrun => 1, stack => 'init', properties => {foo => 'bar'}});
   $local->repository_clean_ok;
 
   $local->run_ok('Merge', {dryrun => 1, from_stack => 'init', to_stack => 'init'});
   $local->repository_clean_ok;
+
+  my $archive = make_dist_archive('Qux-2.0 = Qux~2.0');
+  $local->run_ok('Add', {dryrun => 1, archives => $archive});
+  $local->repository_clean_ok;
+
 }
 
 #------------------------------------------------------------------------------
