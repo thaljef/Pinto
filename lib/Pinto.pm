@@ -7,7 +7,8 @@ use Moose;
 use Try::Tiny;
 
 use Pinto::Repository;
-use Pinto::ActionLoader;
+use Pinto::ActionFactory;
+use Pinto::RunnerFactory;
 
 use namespace::autoclean;
 
@@ -17,7 +18,7 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-has repos   => (
+has repos => (
     is         => 'ro',
     isa        => 'Pinto::Repository',
     lazy       => 1,
@@ -26,12 +27,21 @@ has repos   => (
 );
 
 
-has action_loader => (
+has action_factory => (
     is        => 'ro',
-    isa       => 'Pinto::ActionLoader',
+    isa       => 'Pinto::ActionFactory',
     lazy      => 1,
-    default   => sub { Pinto::ActionLoader->new( config => $_[0]->config,
-                                                 logger => $_[0]->logger ) },
+    default   => sub { Pinto::ActionFactory->new( config => $_[0]->config,
+                                                  logger => $_[0]->logger ) },
+);
+
+has runner_factory => (
+    is        => 'ro',
+    isa       => 'Pinto::RunnerFactory',
+    lazy      => 1,
+    default   => sub { Pinto::RunnerFactory->new( repos  => $_[0]->repos,
+                                                  config => $_[0]->config,
+                                                  logger => $_[0]->logger ) },
 );
 
 #------------------------------------------------------------------------------
@@ -41,57 +51,21 @@ with qw( Pinto::Role::Configurable
 
 #------------------------------------------------------------------------------
 
-=method run( $action_name => %action_args )
+=method run( $action_name => @action_args )
 
 Runs the Action with the given C<$action_name>, passing the
-C<%action_args> to its constructor.  Returns a L<Pinto::Result>.
+C<@action_args> to its constructor.  Returns a L<Pinto::Result>.
 
 =cut
 
+
 sub run {
-    my ($self, $action_name, %action_args) = @_;
+    my ($self, $action_name, @action_args) = @_;
 
-    # Divert any warnings to our logger
-    local $SIG{__WARN__} = sub { $self->warning(@_) };
+    my $action = $self->action_factory->create_action($action_name => @action_args);
+    my $runner = $self->runner_factory->create_runner(action => $action);
+    my $result = $runner->run(action => $action);
 
-    $self->repos->lock_exclusive;
-    $self->repos->check_schema_version;
-    $self->repos->txn_begin;
-
-    my $action_class = $self->action_loader->load_action(name => $action_name);
-
-    my $result = try {
-
-        @action_args{qw(logger repos)} = ($self->logger, $self->repos);
-        my $action = $action_class->new( %action_args );
-        my $res = $action->execute;
-
-        # TODO: Consider using a role to indicate whether an
-        # Action can do a dryrun (e.g. Pinto::Role::Dryrunable)
-
-        if ($action->can('dryrun') && $action->dryrun) {
-            $self->notice('Dryrun -- rolling back');
-            $self->repos->txn_rollback;
-            $self->repos->clean_files;
-        }
-        elsif ( not $res->made_changes ) {
-            $self->notice('No changes were made');
-            $self->repos->txn_rollback;
-        }
-        else {
-            $self->repos->txn_commit;
-        }
-
-        $res; # returned from try{}
-    }
-    catch {
-        $self->repos->txn_rollback;
-        $self->repos->unlock;
-        die $_;        ## no critic qw(Carping)
-
-    };
-
-    $self->repos->unlock;
     return $result;
 }
 
