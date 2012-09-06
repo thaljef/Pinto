@@ -26,10 +26,7 @@ augment run => sub {
 
         my $res = $action->execute;
 
-        # TODO: Consider using a role to indicate whether an
-        # Action can do a dryrun (e.g. Pinto::Role::Dryrunable)
-
-        if ($action->can('dryrun') && $action->dryrun) {
+        if ($action->dryrun) {
             $self->notice('Dryrun -- rolling back');
             $self->repos->txn_rollback;
             $self->repos->clean_files;

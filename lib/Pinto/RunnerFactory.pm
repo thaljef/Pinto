@@ -37,7 +37,7 @@ sub create_runner {
     my ($self, %args) = @_;
 
     my $action = $args{action};
-    my $runner_class = $self->load_class_for_runner(name => $action->runner);
+    my $runner_class = $self->load_class_for_runner($action);
     my $runner = $runner_class->new(repos => $self->repos, logger => $self->logger);
 
     return $runner;
@@ -46,10 +46,18 @@ sub create_runner {
 #------------------------------------------------------------------------------
 
 sub load_class_for_runner {
-    my ($self, %args) = @_;
+    my ($self, $action) = @_;
 
-    my $runner_name = ucfirst $args{name} || throw 'Must specify an action name';
-    my $runner_class = $self->runner_class_namespace . '::' . $runner_name;
+    my $runner_class;
+
+    $runner_class = 'Pinto::Runner::Transactional'
+      if $action->does('Pinto::Role::Action::Transactional');
+
+    $runner_class = 'Pinto::Runner::NonTransactional'
+      if $action->does('Pinto::Role::Action::NonTransactional');
+
+    throw "Don't know how to run action $action" if not $runner_class;
+
     Class::Load::load_class($runner_class);
 
     return $runner_class;
