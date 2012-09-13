@@ -1,23 +1,19 @@
-Issue with revisions...
+Revision Workflow-
 
-Should each Action manage its own revision?
-  Pros: Each action has more control
-  Cons: Each action gets more (same) complexity
+Begin txn
+rev = new revision
+stack.head = revision
 
-Not all actions require a revision.
+On INSERT:
 
-Possible states:
-  Immutable/Success
-  Immutable/Failure
-  Mutable/Success/DidMutate
-  Mutable/Success/DidNotMutate
-  Mutable/Failure/DidMutate      - rollback
-  Mutable/Failure/DidNotMutate   - rollback
+  asssert registration.stack.head.is_committed == 0;
 
-When an action fails, who does the cleanup?
+  registration_history = registration
+  registration_history.created_in_revision = registration.stack.head
 
-Each MutatorAction requires a stack attribute
+On DELETE:
 
-Want a contract between action type and stack attribute
+  registration_history.deleted_in_revision = registration.stack.head
 
-But I want that at the interface level, not in concrete class.
+revision.is_committed = 1
+Commit txn
