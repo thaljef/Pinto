@@ -308,6 +308,52 @@ sub get_package {
 
 #-------------------------------------------------------------------------------
 
+=method get_stacks_for_distribution( $dist )
+
+Returns the L<Pinto:Schema::Result::Stack>s for the
+given L<Pinto:Schema::Result::Distribution> object.
+
+=cut
+
+sub get_stacks_for_distribution {
+    my ($self, $dist) = @_;
+
+    my %stacks;
+    my @stacks;
+    my $packages = $dist->packages;
+    while (my $p = $packages->next) {
+        my $registrations = $p->registrations;
+        while (my $r = $registrations->next) {
+            my $s = $r->stack;
+            $stacks{$s} ||= $s;
+        }
+    }
+    push @stacks, values %stacks;
+    $self->info(join(", ", map { $_->name } @stacks)."\n");
+    return @stacks;
+}
+
+#-------------------------------------------------------------------------------
+
+=method drop_distribution( author => $author, archive => $archive )
+
+Drops the L<Pinto::Schema::Result::Distribution> with the given author
+ID and archive name from repository completely, inclusive all related
+information to it.
+
+=cut
+
+sub drop_distribution {
+    my ($self, %args) = @_;
+
+    my $attrs = { prefetch => 'packages' };
+    my $where = { author => $args{author}, archive => $args{archive} };
+    $self->db->select_distributions( $where, $attrs )->delete_all;
+    return;
+}
+
+#-------------------------------------------------------------------------------
+
 =method get_distribution( author => $author, archive => $archive )
 
 Returns the L<Pinto::Schema::Result::Distribution> with the given
@@ -330,7 +376,7 @@ sub get_distribution {
 
 =method add( archive => $path, author => $id )
 
-=method add( archive => $path, author => $id, source => $url )
+=method add( archive => $path, author => $id, source => $url, force => $bool )
 
 Adds the distribution archive located on the local filesystem at
 C<$path> to the repository in the author directory for the author with
@@ -339,7 +385,8 @@ and the prerequisites will be recorded.  If the the C<source> is
 specified, it must be the URL to the root of the repository where the
 distribution came from.  Otherwise, the C<source> defaults to
 C<LOCAL>.  Returns a L<Pinto::Schema::Result::Distribution> object
-representing the newly added distribution.
+representing the newly added distribution. If C<force> is true then
+an existing distribution archive will be removed before added back.
 
 =cut
 
@@ -350,6 +397,7 @@ sub add {
     my $author  = $args{author};
     my $source  = $args{source} || 'LOCAL';
     my $index   = $args{index}  || 1;  # Is this needed?
+    my $force   = $args{force};
 
     throw "Archive $archive does not exist"  if not -e $archive;
     throw "Archive $archive is not readable" if not -r $archive;
@@ -357,8 +405,14 @@ sub add {
     my $archive_basename = $archive->basename;
     my $dist_pretty      = "$author/$archive_basename";
 
-    $self->get_distribution(author => $author, archive => $archive_basename)
-        and throw "Distribution $dist_pretty already exists";
+    if (my $dist = $self->get_distribution(author => $author, archive => $archive_basename)) {
+        if ($force) {
+            $self->info("Distribution $dist_pretty already exists, force drop before add");
+            $self->drop_distribution(author => $author, archive => $archive_basename);
+        } else {
+            throw "Distribution $dist_pretty already exists";
+        }
+    }
 
     # Assemble the basic structure...
     my $dist_struct = { author   => $author,
