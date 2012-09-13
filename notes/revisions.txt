@@ -17,3 +17,25 @@ On DELETE:
 
 revision.is_committed = 1
 Commit txn
+
+
+# SAMPLE TRIGGERS...
+
+CREATE TRIGGER AFTER INSERT ON registration
+BEGIN
+
+       INSERT INTO registration_history SELECT new.*, NULL, NULL from new;
+       UPDATE registration_history SET created_in_revision = (SELECT max id FROM revision WHERE revision.stack = new.stack);
+
+END;
+
+
+CREATE TRIGGER AFTER DELETE ON registration
+BEGIN
+
+       INSERT INTO registration_history SELECT new.*, NULL, NULL from new;
+       UPDATE registration_history SET deleted_in_revision = (SELECT max id FROM revision WHERE revision.stack = new.stack);
+
+END;
+
+
