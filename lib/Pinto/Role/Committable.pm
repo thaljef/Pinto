@@ -1,8 +1,9 @@
-# ABSTRACT: Role for actions that are transactional
+# ABSTRACT: Role for actions that commit changes to the repository
 
-package Pinto::Role::Action::Transactional;
+package Pinto::Role::Committable;
 
 use Moose::Role;
+use MooseX::Types::Moose qw(Bool Str);
 
 #------------------------------------------------------------------------------
 
