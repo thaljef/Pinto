@@ -212,8 +212,6 @@ sub insert {
     $self->package_version($self->package->version->stringify);
     $self->distribution_path($self->package->distribution->path);
 
-    $self->stack->touch;
-
     return $self->next::method;
  }
 
@@ -242,27 +240,7 @@ sub update {
     $args->{package_version}   = $pkg->version;
     $args->{distribution_path} = $pkg->distribution->path;
 
-    # TODO: Do we need to check if the object was actually updated
-    # before touching the stack?  It seems unlikely, but it is possible
-    # that none of the attributes changed so no UPDATE was issued.  We could
-    # probably avoid that kind of dilemma with triggers, but I hate them :(
-    $self->stack->touch;
-
     return $self->next::method($args);
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete {
-    my ($self, @args) = @_;
-
-    # TODO: Do we need to check if the object was actually deleted
-    # before touching the stack?  It seems unlikely, but it is possible
-    # that the object was never in_storage to begin with.  We could
-    # probably avoid that kind of dilemma with triggers, but I hate them :(
-    $self->stack->touch;
-
-    return $self->next::method(@args);
 }
 
 #-------------------------------------------------------------------------------
@@ -394,8 +372,8 @@ sub to_string {
          k => sub { $self->stack->name                                          },
          M => sub { $self->stack->is_default                 ? '*' : ' '        },
          e => sub { $self->stack->get_property('description')                   },
-         u => sub { $self->stack->last_modified_on                              },
-         U => sub { Pinto::Util::ls_time_format($self->stack->last_modified_on) },
+         j => sub { $self->stack->head_revision->committed_by                   },
+         u => sub { $self->stack->head_revision->committed_on                   },
          y => sub { $self->is_pinned                        ? '+' : ' '         },
     );
 

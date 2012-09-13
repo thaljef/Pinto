@@ -42,14 +42,10 @@ __PACKAGE__->table("stack");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 last_modified_on
+=head2 head_revision
 
   data_type: 'integer'
-  is_nullable: 0
-
-=head2 last_modified_by
-
-  data_type: 'text'
+  is_foreign_key: 1
   is_nullable: 0
 
 =cut
@@ -61,10 +57,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "is_default",
   { data_type => "integer", is_nullable => 0 },
-  "last_modified_on",
-  { data_type => "integer", is_nullable => 0 },
-  "last_modified_by",
-  { data_type => "text", is_nullable => 0 },
+  "head_revision",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -95,6 +89,36 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
+=head2 head_revision
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Revision>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "head_revision",
+  "Pinto::Schema::Result::Revision",
+  { id => "head_revision" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+=head2 registration_histories
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::RegistrationHistory>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registration_histories",
+  "Pinto::Schema::Result::RegistrationHistory",
+  { "foreign.stack" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
 =head2 registrations
 
 Type: has_many
@@ -106,6 +130,21 @@ Related object: L<Pinto::Schema::Result::Registration>
 __PACKAGE__->has_many(
   "registrations",
   "Pinto::Schema::Result::Registration",
+  { "foreign.stack" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
+=head2 revisions
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Revision>
+
+=cut
+
+__PACKAGE__->has_many(
+  "revisions",
+  "Pinto::Schema::Result::Revision",
   { "foreign.stack" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
@@ -139,8 +178,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-05-03 00:46:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2X9BNMm9xjPjECGdDWDVXA
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-12 19:45:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vRvq/OfG3Ibx5T/SZab3eg
 
 #-------------------------------------------------------------------------------
 
@@ -172,8 +211,6 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{is_default} ||= 0;
-  $args->{last_modified_on} ||= time;
-  $args->{last_modified_by} ||= $ENV{USER};
 
   return $args;
 }
@@ -229,11 +266,6 @@ sub copy_deeply {
     $self->copy_properties(to => $copy);
     $self->copy_members(to => $copy);
 
-    # Normally, settng properties & members would change the mtime of the
-    # stack.  But we want the copy to have the same mtime as the original
-
-    $copy->touch($self->last_modified_on);
-
     return $copy;
 }
 
@@ -288,22 +320,6 @@ sub mark_as_default {
 
 #------------------------------------------------------------------------------
 
-sub touch {
-    my ($self, $time, $user) = @_;
-
-    return unless $self->in_storage;
-
-    my %changes;
-    $changes{last_modified_on} = $time || time;
-    $changes{last_modified_by} = $user || $ENV{USER};
-
-    $self->update( \%changes );
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
 sub get_property {
     my ($self, @prop_names) = @_;
 
@@ -340,7 +356,6 @@ sub set_properties {
         $self->update_or_create_related('stack_properties', $nv_pair, $attrs);
     }
 
-    $self->touch;
     return $self;
 }
 
@@ -395,12 +410,12 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                          },
-           M => sub { $self->is_default              ? '*' : ' '           },
-           j => sub { $self->last_modified_by                              },
-           u => sub { $self->last_modified_on                              },
-           U => sub { Pinto::Util::ls_time_format($self->last_modified_on) },
-           e => sub { $self->get_property('description')                   },
+           k => sub { $self->name                                                     },
+           M => sub { $self->is_default                          ? '*' : ' '          },
+           j => sub { $self->head_revision->committed_by                              },
+           u => sub { $self->head_revision->committed_on                              },
+           U => sub { Pinto::Util::ls_time_format($self->head_revision->committed_on) },
+           e => sub { $self->get_property('description')                              },
     );
 
     $format ||= $self->default_format();

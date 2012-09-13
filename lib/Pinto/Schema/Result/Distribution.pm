@@ -242,8 +242,6 @@ sub register {
 
     throw "Unable to register distribution $self on stack $stack" if $errors;
 
-    $stack->touch if $did_register; # Update mtime
-
     return $did_register;
 }
 
@@ -276,8 +274,6 @@ sub pin {
     }
 
     throw "Unable to pin distribution $self to stack $stack" if $errors;
-
-    $stack->touch if $did_pin; # Update mtime
 
     return $did_pin;
 
@@ -312,8 +308,6 @@ sub unpin {
     }
 
     throw "Unable to unpin distribution $self to stack $stack" if $errors;
-
-    $stack->touch if $did_unpin; # Update mtime
 
     return $did_unpin;
 }
