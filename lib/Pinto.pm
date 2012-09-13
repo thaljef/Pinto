@@ -8,7 +8,6 @@ use Try::Tiny;
 
 use Pinto::Repository;
 use Pinto::ActionFactory;
-use Pinto::RunnerFactory;
 
 use namespace::autoclean;
 
@@ -23,7 +22,7 @@ has repos => (
     isa        => 'Pinto::Repository',
     lazy       => 1,
     default    => sub { Pinto::Repository->new( config => $_[0]->config,
-                                                logger => $_[0]->logger ) },
+                                                logger => $_[0]->logger, ) },
 );
 
 
@@ -32,16 +31,8 @@ has action_factory => (
     isa       => 'Pinto::ActionFactory',
     lazy      => 1,
     default   => sub { Pinto::ActionFactory->new( config => $_[0]->config,
-                                                  logger => $_[0]->logger ) },
-);
-
-has runner_factory => (
-    is        => 'ro',
-    isa       => 'Pinto::RunnerFactory',
-    lazy      => 1,
-    default   => sub { Pinto::RunnerFactory->new( repos  => $_[0]->repos,
-                                                  config => $_[0]->config,
-                                                  logger => $_[0]->logger ) },
+                                                  logger => $_[0]->logger,
+                                                  repos  => $_[0]->repos, ) },
 );
 
 #------------------------------------------------------------------------------
@@ -63,8 +54,7 @@ sub run {
     my ($self, $action_name, @action_args) = @_;
 
     my $action = $self->action_factory->create_action($action_name => @action_args);
-    my $runner = $self->runner_factory->create_runner(action => $action);
-    my $result = $runner->run(action => $action);
+    my $result = $action->execute;
 
     return $result;
 }
