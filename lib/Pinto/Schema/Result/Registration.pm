@@ -111,6 +111,20 @@ __PACKAGE__->set_primary_key("id");
 
 __PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "package_name"]);
 
+=head2 C<stack_package_unique>
+
+=over 4
+
+=item * L</stack>
+
+=item * L</package>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("stack_package_unique", ["stack", "package"]);
+
 =head1 RELATIONS
 
 =head2 package
@@ -157,8 +171,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-05-01 08:58:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hPckPn0RQHVTiNk3qYaL8Q
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-14 13:53:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vVMTiTt58Vt2uqE5hPFjTA
 
 #------------------------------------------------------------------------------
 

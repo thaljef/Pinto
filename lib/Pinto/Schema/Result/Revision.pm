@@ -283,6 +283,18 @@ sub close {
 
 #------------------------------------------------------------------------------
 
+sub undo {
+    my ($self) = @_;
+
+    $self->notice("Undoing revision $self");
+
+    $_->undo for reverse $self->registration_histories;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub to_string {
     my ($self, $format) = @_;
 
@@ -315,7 +327,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%k: %02b %g';
+    return '%k@%b';
 }
 
 #------------------------------------------------------------------------------

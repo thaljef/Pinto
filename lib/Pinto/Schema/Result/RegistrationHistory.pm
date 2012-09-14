@@ -190,7 +190,42 @@ with 'Pinto::Role::Schema::Result';
 
 use String::Format;
 
+use Pinto::Exception qw(throw);
+
 use overload ( q{""} => 'to_string' );
+
+#-------------------------------------------------------------------------------
+
+sub undo {
+    my ($self) = @_;
+
+    my $state = { stack     => $self->stack->id,
+                  package   => $self->package->id,
+                  is_pinned => $self->is_pinned };
+
+    my $action = $self->action;
+    if ($action eq 'insert') {
+
+        my $attrs = {key => 'stack_package_unique'};
+        my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
+        throw "Found no registrations matching $self" if not $reg;
+        $self->debug("Removing $reg");
+        $reg->delete;
+
+    }
+    elsif ($action eq 'delete') {
+
+        my $reg = $self->result_source->schema->resultset('Registration')->create($state);
+        $self->debug("Restored $reg");
+
+    }
+    else {
+      throw "Don't know how to undo action $action";
+    }
+
+    return $self;
+
+}
 
 #-------------------------------------------------------------------------------
 
