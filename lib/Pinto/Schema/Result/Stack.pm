@@ -359,6 +359,18 @@ sub mark_as_changed {
 
 #------------------------------------------------------------------------------
 
+sub revision {
+    my ($self, %args) = @_;
+
+    return $self->head_revision if not defined $args{number};
+
+    my $rev = $self->find_related( revisions => {number => $args{number}} );
+
+    return defined $rev ? $rev : ();
+}
+
+#------------------------------------------------------------------------------
+
 sub get_property {
     my ($self, @prop_keys) = @_;
 
