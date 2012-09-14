@@ -244,7 +244,11 @@ sub to_string {
            b => sub { $self->number                                        },
            g => sub { $self->message                                       },
            j => sub { $self->committed_by                                  },
-           u => sub { $self->committed_on                                  },
+
+           # TODO: Use DateTime to format the commit date into pretty
+           # strings.  Should also use DBIC's own mechanism to inflate
+           # date values into objects for us.
+           u => sub { scalar localtime $self->committed_on                 },
 
     );
 
