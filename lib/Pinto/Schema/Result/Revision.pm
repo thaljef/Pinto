@@ -100,6 +100,22 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<stack_number_unique>
+
+=over 4
+
+=item * L</stack>
+
+=item * L</number>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("stack_number_unique", ["stack", "number"]);
+
 =head1 RELATIONS
 
 =head2 active_stack
@@ -166,8 +182,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 11:16:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gM9NKJV2APk6q78eSwufVQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-14 11:59:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RngjEE88IKUwc4i8D/AhcQ
 
 #------------------------------------------------------------------------------
 
@@ -212,6 +228,18 @@ sub next_revision_number {
     my $current_revision_number = $revision_rs->count;
 
     return $current_revision_number + 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub previous_revision {
+    my ($self) = @_;
+
+    my $attrs = { key => 'stack_number_unique' };
+    my $where = { stack => $self->stack, number => --$self->number };
+    my $previous_revision = $self->result_source->resultset->find($where, $attrs);
+
+    return defined $previous_revision ? $previous_revision : ();
 }
 
 #------------------------------------------------------------------------------

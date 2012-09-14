@@ -27,7 +27,7 @@ sub execute {
 
     while ( my $dist = $rs->next ) {
         my $archive = $dist->archive( $self->repos->root_dir );
-        print { $self->out } "Missing distribution $archive\n" if not -e $archive;
+        $self->say("Missing distribution $archive") if not -e $archive;
     }
 
     return $self->result;

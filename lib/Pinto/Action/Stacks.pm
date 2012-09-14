@@ -20,7 +20,7 @@ extends 'Pinto::Action';
 has format => (
     is      => 'ro',
     isa     => Str,
-    default => "%M %-16k %-16j %U\n",
+    default => "%M %-16k %-16j %U",
 );
 
 #------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ sub execute {
     my @stacks = $self->repos->db->select_stacks(undef, $attrs)->all;
 
     for my $stack ( @stacks ) {
-        print { $self->out } $stack->to_string($self->format);
+        $self->say($stack->to_string($self->format));
     }
 
     return $self->result;

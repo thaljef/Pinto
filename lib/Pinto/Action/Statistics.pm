@@ -38,7 +38,7 @@ sub execute {
     my $stats = Pinto::Statistics->new(db    => $self->repos->db,
                                        stack => $stack->name);
 
-    print { $self->out } $stats->to_formatted_string();
+    $self->say($stats->to_formatted_string);
 
     return $self->result;
 }

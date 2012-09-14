@@ -55,7 +55,7 @@ has distributions => (
 has format => (
     is        => 'ro',
     isa       => Str,
-    default   => "%m%s%y %-40n %12v  %a/%f\n",
+    default   => "%m%s%y %-40n %12v  %a/%f",
     predicate => 'has_format',
     lazy      => 1,
 );
@@ -107,7 +107,7 @@ sub execute {
         # If listing all stacks, then include the stack name
         # in the listing, unless a custom format has been given
         $format = $self->has_format ? $self->format
-                                    : "%m%s%y %-12k %-40n %12v  %p\n";
+                                    : "%m%s%y %-12k %-40n %12v  %p";
     }
     else{
         # Otherwise, list only the named stack, falling back to
@@ -138,7 +138,7 @@ sub execute {
     my $rs = $self->repos->db->select_registrations($where, $attrs);
 
     while( my $registration = $rs->next ) {
-        print { $self->out } $registration->to_string($format);
+        $self->say($registration->to_string($format));
     }
 
     return $self->result;

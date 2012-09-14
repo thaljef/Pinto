@@ -32,7 +32,7 @@ has stack  => (
 has format => (
     is      => 'ro',
     isa     => Str,
-    default => "%n = %v\n",
+    default => "%n = %v",
 );
 
 #------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ sub execute {
 
     my $props = $stack->get_properties;
     while ( my ($prop, $value) = each %{$props} ) {
-        print { $self->out } stringf($self->format, {n => $prop, v => $value});
+        $self->say(stringf($self->format, {n => $prop, v => $value}));
     }
 
     return $self->result;
