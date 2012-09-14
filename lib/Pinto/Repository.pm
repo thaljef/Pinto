@@ -6,6 +6,7 @@ use Moose;
 
 use Path::Class;
 use File::Find;
+use Scalar::Util qw(blessed);
 
 use Pinto::Util;
 use Pinto::Locker;
@@ -147,10 +148,10 @@ sub check_schema_version {
 #-------------------------------------------------------------------------------
 
 sub get_property {
-    my ($self, @prop_names) = @_;
+    my ($self, @keys) = @_;
 
     my %props = %{ $self->get_properties };
-    return @props{@prop_names};
+    return @props{@keys};
 }
 
 #-------------------------------------------------------------------------------
@@ -160,15 +161,15 @@ sub get_properties {
 
     my @props = $self->db->repository_properties->search->all;
 
-    return { map { $_->name => $_->value } @props };
+    return { map { $_->key => $_->value } @props };
 }
 
 #-------------------------------------------------------------------------------
 
 sub set_property {
-    my ($self, $prop_name, $value) = @_;
+    my ($self, $key, $value) = @_;
 
-    return $self->set_properties( {$prop_name => $value} );
+    return $self->set_properties( {$key => $value} );
 }
 
 #-------------------------------------------------------------------------------
@@ -176,10 +177,10 @@ sub set_property {
 sub set_properties {
     my ($self, $props) = @_;
 
-    while (my ($name, $value) = each %{$props}) {
-        $name = Pinto::Util::normalize_property_name($name);
-        my $nv_pair = {name => $name, value => $value};
-        $self->db->repository_properties->update_or_create($nv_pair);
+    while (my ($key, $value) = each %{$props}) {
+        $key = Pinto::Util::normalize_property_name($key);
+        my $kv_pair = {key => $key, value => $value};
+        $self->db->repository_properties->update_or_create($kv_pair);
     }
 
     return $self;
@@ -188,10 +189,10 @@ sub set_properties {
 #-------------------------------------------------------------------------------
 
 sub delete_property {
-    my ($self, @prop_names) = @_;
+    my ($self, @keys) = @_;
 
-    for my $prop_name (@prop_names) {
-        my $where = {name => $prop_name};
+    for my $key (@keys) {
+        my $where = {key => $key};
         my $prop = $self->db->repository_properties->update_or_create($where);
         $prop->delete if $prop;
     }
@@ -226,6 +227,10 @@ than an exception will not be thrown and undef will be returned.  If
 you do not specify a stack name (or it is undefined) then you'll get
 whatever stack is currently marked as the default stack.
 
+The stack object will not be open for revision, so you will not be
+able to change any of the registrations for that stack.  To get a
+stack that you can modify, use C<open_stack>.
+
 =cut
 
 sub get_stack {
@@ -236,7 +241,8 @@ sub get_stack {
     return $self->get_default_stack if not $stk_name;
 
     my $where = { name => $stk_name };
-    my $stack = $self->db->select_stack( $where );
+    my $attrs = { prefetch => 'head_revision' };
+    my $stack = $self->db->select_stack( $where, $attrs );
 
     throw "Stack $stk_name does not exist"
         unless $stack or $args{nocroak};
@@ -252,6 +258,10 @@ Returns the L<Pinto::Schema::Result::Stack> that is currently marked
 as the default stack in this repository.  This is what you get when you
 call C<get_stack> without any arguments.
 
+The stack object will not be open for revision, so you will not be
+able to change any of the registrations for that stack.  To get a
+stack that you can modify, use C<open_stack>.
+
 At any time, there must be exactly one default stack.  This method will
 throw an exception if it discovers that condition is not true.
 
@@ -261,12 +271,50 @@ sub get_default_stack {
     my ($self) = @_;
 
     my $where = {is_default => 1};
-    my @stacks = $self->db->select_stacks( $where )->all;
+    my $attrs = {prefetch => 'head_revision'};
+    my @stacks = $self->db->select_stacks( $where, $attrs )->all;
 
     throw "PANIC! There must be exactly one default stack" if @stacks != 1;
 
     return $stacks[0];
 }
+
+#-------------------------------------------------------------------------------
+
+=method open_stack()
+
+=method open_stack( name => $stack_name )
+
+Returns the L<Pinto::Schema::Result::Stack> object with the given
+C<$stack_name> and sets the head revision of the stack to point to a
+newly created L<Pinto::Schema::Result::Revision>.  You can them
+proceed to modify the registrations or properties associated with the
+stack.
+
+If you do not specify a stack name (or it is undefined) then you'll
+get whatever stack is currently marked as the default stack.  But if
+you do specify a name, then the stack must already exist or an
+exception will be thrown.
+
+This method also starts a transaction.  Calling C<commit> or
+C<rollback> on the stack will close the transaction.  If the stack
+object goes out of scope before you call close the transaction, it
+will automatically rollback.
+
+Use C<get_stack> instead if you just want to read the registrations
+and properties.
+
+=cut
+
+sub open_stack {
+    my ($self, %args) = @_;
+
+    my $stack = $self->get_stack(%args, nocroak => 0);
+    my $revision = $self->open_revision(stack => $stack);
+
+    return $stack;
+}
+
 
 #-------------------------------------------------------------------------------
 
@@ -459,10 +507,10 @@ sub _pull_by_package_spec {
     my $latest = $self->get_package(name => $pkg_name);
 
     if (defined $latest && ($latest->version >= $pkg_ver)) {
-        my $dist = $latest->distribution;
+        my $got_dist = $latest->distribution;
         $self->debug( sub {"Already have package $pspec or newer as $latest"} );
-        my $did_register = $dist->register(stack => $stack);
-        return ($dist, $did_register);
+        my $did_register = $got_dist->register(stack => $stack);
+        return $got_dist;
     }
 
     my $dist_url = $self->locate( package => $pspec->name,
@@ -480,11 +528,11 @@ sub _pull_by_package_spec {
     }
 
     $self->notice("Pulling distribution $dist_url");
-    my $dist = $self->pull(url => $dist_url);
+    my $pulled_dist = $self->pull(url => $dist_url);
 
-    $dist->register( stack => $stack );
+    $pulled_dist->register( stack => $stack );
 
-    return ($dist, 1);
+    return $pulled_dist;
 }
 
 #------------------------------------------------------------------------------
@@ -500,7 +548,7 @@ sub _pull_by_distribution_spec {
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
         my $did_register = $got_dist->register(stack => $stack);
-        return ($got_dist, $did_register);
+        return $got_dist;
     }
 
     my $dist_url = $self->locate(distribution => $dspec->path)
@@ -514,11 +562,11 @@ sub _pull_by_distribution_spec {
     }
 
     $self->notice("Pulling distribution $dist_url");
-    my $dist = $self->pull(url => $dist_url);
+    my $pulled_dist = $self->pull(url => $dist_url);
 
-    $dist->register( stack => $stack );
+    $pulled_dist->register( stack => $stack );
 
-    return ($dist, 1);
+    return $pulled_dist;
 }
 
 #------------------------------------------------------------------------------
@@ -579,28 +627,27 @@ sub pull_prerequisites {
 
 #-------------------------------------------------------------------------------
 
-=method create_stack(name => $stk_name, properties => { $key => $value, ... } )
+=method create_stack(name => $stk_name)
 
 =cut
 
 sub create_stack {
     my ($self, %args) = @_;
 
-    my $name       = Pinto::Util::normalize_stack_name($args{name});
-    my $is_default = $args{is_default} || 0;
-    my $props      = $args{properties};
+    $args{name} = Pinto::Util::normalize_stack_name($args{name});
+    $args{is_default} ||= 0;
 
+    throw "Stack $args{name} already exists"
+        if $self->get_stack(name => $args{name}, nocroak => 1);
 
-    throw "Stack $name already exists"
-        if $self->get_stack(name => $name, nocroak => 1);
+    my $revision = $self->open_revision;
+    my $stack    = $self->db->create_stack( {%args, head_revision => $revision} );
 
-    my $stack = $self->db->create_stack( {name => $name, is_default => $is_default} );
-    $stack->set_properties($props) if $props;
+    $revision->update( {stack => $stack} );
 
     $self->create_stack_filesystem(stack => $stack);
 
     return $stack;
-
 }
 
 #-------------------------------------------------------------------------------
@@ -611,7 +658,12 @@ sub copy_stack {
     my $from_stack    = $args{from};
     my $to_stack_name = $args{to};
 
-    my $copy = $from_stack->copy_deeply( {name => $to_stack_name} );
+    my $revision = $self->open_revision;
+    my $changes = {head_revision => $revision, name => $to_stack_name};
+    my $copy    = $from_stack->copy_deeply( $changes );
+
+    $revision->update( {stack => $copy} );
+
     $self->create_stack_filesystem(stack => $copy);
 
     return $copy;
@@ -737,20 +789,17 @@ sub _symlink {
 
 #-------------------------------------------------------------------------------
 
-=method locate(path = $dist_path)
+sub open_revision {
+    my ($self, %args) = @_;
 
-=method locate(package => $name)
+    $args{message} ||= '';  # Message usually updated when we commmit
 
-=method locate(package => $name, version => $vers)
+    my $revision = $self->db->create_revision(\%args);
 
+    $args{stack}->update({head_revision => $revision}) if $args{stack};
 
-=method get_or_locate(path = $dist_path)
-
-=method get_or_locate(package => $name)
-
-=method get_or_locate(package => $name, version => $vers)
-
-=cut
+    return $revision;
+}
 
 #-------------------------------------------------------------------------------
 

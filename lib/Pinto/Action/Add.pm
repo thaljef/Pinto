@@ -20,6 +20,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Committable );
+
+#------------------------------------------------------------------------------
+
 has author => (
     is         => 'ro',
     isa        => Author,
@@ -92,15 +96,17 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repos->open_stack(name => $self->stack);
 
     $self->_execute($_, $stack) for $self->archives;
 
-    $self->repos->write_index(stack => $stack) unless $self->dryrun;
+    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
 
-    $self->result->changed unless $self->dryrun;
+    $self->repos->write_index(stack => $stack);
 
-    return $self->result;
+    $stack->close(message => $self->message);
+
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

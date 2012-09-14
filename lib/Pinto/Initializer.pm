@@ -148,12 +148,14 @@ sub _create_stack {
     my ($self) = @_;
 
     my $repos = Pinto::Repository->new(config => $self->config);
-    my $stack = $repos->create_stack(name => 'init');
 
-    $stack->set_properties( {description => 'the initial stack'} );
-    $stack->mark_as_default;
+    my $stack = $repos->create_stack(name => 'init', is_default => 1);
+
+    $stack->set_property(description => 'the initial stack');
 
     $repos->write_index(stack => $stack);
+
+    $stack->close(message => 'Created initial stack');
 
     return;
 }

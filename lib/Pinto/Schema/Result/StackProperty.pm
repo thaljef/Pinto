@@ -38,7 +38,7 @@ __PACKAGE__->table("stack_property");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 name
+=head2 key
 
   data_type: 'text'
   is_nullable: 0
@@ -56,7 +56,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "stack",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "name",
+  "key",
   { data_type => "text", is_nullable => 0 },
   "value",
   { data_type => "text", default_value => "", is_nullable => 1 },
@@ -76,19 +76,19 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<stack_name_unique>
+=head2 C<stack_key_unique>
 
 =over 4
 
 =item * L</stack>
 
-=item * L</name>
+=item * L</key>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("stack_name_unique", ["stack", "name"]);
+__PACKAGE__->add_unique_constraint("stack_key_unique", ["stack", "key"]);
 
 =head1 RELATIONS
 
@@ -121,8 +121,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-04-30 12:42:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Z05ZOuRC81L0D/lHByjugw
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 09:44:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Hr2tDQcORrtek9hk9AtzVw
 
 #------------------------------------------------------------------------------
 

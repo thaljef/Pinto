@@ -32,7 +32,6 @@ $local->registration_ok('FRED/DistB-1/PkgB~1');
 # Now, suppose that PkgA and PkgB both are upgraded on CPAN
 $cpan->populate( 'JOHN/DistA-2 = PkgA~2 & PkgB~2',
                  'FRED/DistB-2 = PkgB~2', );
-
 $local->clear_cache; # Make sure we get new index from CPAN
 
 # We would like to try and upgrade to PkgA-2.  So create a new stack

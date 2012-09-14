@@ -15,7 +15,11 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Committable );
 
 #------------------------------------------------------------------------------
 
@@ -34,28 +38,25 @@ has to_stack => (
     coerce   => 1,
 );
 
-
-has dryrun => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
-
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
     my $from_stack = $self->repos->get_stack(name => $self->from_stack);
-    my $to_stack   = $self->repos->get_stack(name => $self->to_stack);
+    my $to_stack   = $self->repos->open_stack(name => $self->to_stack);
 
     $self->notice("Merging stack $from_stack into stack $to_stack");
 
-    my $did_merge = $from_stack->merge(to => $to_stack);
+    $from_stack->merge(to => $to_stack);
 
-    $self->result->changed if $did_merge;
+    return $self->result if $self->dryrun or not $to_stack->refresh->has_changed;
 
-    return $self->result;
+    $self->repos->write_index(stack => $to_stack);
+
+    $to_stack->close(message => $self->message);
+
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

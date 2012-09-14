@@ -206,39 +206,72 @@ sub FOREIGNBUILDARGS {
 sub insert {
     my ($self) = @_;
 
+    my $stack = $self->stack;
+
+    throw "Stack $stack is not open for revision"
+      if $stack->head_revision->is_committed;
+
+    my $hist = { stack      => $stack,
+                 package    => $self->package,
+                 is_pinned  => $self->is_pinned,
+                 revision   => $stack->head_revision,
+                 action     => 'insert' };
+
+    $self->result_source->schema->resultset('RegistrationHistory')->create($hist);
+
     # Compute values for denormalized attributes...
 
     $self->package_name($self->package->name);
     $self->package_version($self->package->version->stringify);
     $self->distribution_path($self->package->distribution->path);
 
+    $stack->mark_as_changed;
+
     return $self->next::method;
  }
 
 #-------------------------------------------------------------------------------
 
+sub delete {
+    my ($self) = @_;
+
+    my $stack = $self->stack;
+
+    throw "Stack $stack is not open for revision"
+      if $stack->head_revision->is_committed;
+
+    my $hist = { stack      => $stack,
+                 package    => $self->package,
+                 is_pinned  => $self->is_pinned,
+                 revision   => $stack->head_revision,
+                 action     => 'delete' };
+
+    $self->result_source->schema->resultset('RegistrationHistory')->create($hist);
+
+    $stack->mark_as_changed;
+
+    return $self->next::method;
+ }
+
+#------------------------------------------------------------------------------
+
 sub update {
     my ($self, $args) = @_;
 
-    $args ||= {};
+    my $stack = $self->stack;
 
-    # These columns are derived from the package.  We've denormalized
-    # the table slightly to ensure data integrity and optimize the table
-    # for generating the index file (all the data is in one table).
+    throw "Stack $stack is not open for revision"
+      if $stack->head_revision->is_committed;
 
-    for my $attr ( qw(package_name package_version distribution_path) ){
-        throw "Attribute '$attr' cannot be set directly" if $args->{$attr};
-    }
+    my $hist = { stack      => $stack,
+                 package    => $self->package,
+                 is_pinned  => $self->is_pinned,
+                 revision   => $stack->head_revision,
+                 action     => 'update' };
 
+    $self->result_source->schema->resultset('RegistrationHistory')->create($hist);
 
-    # TODO: Denormalizing the table here feels a bit wonky.  Again,
-    # we could probably do this with DB triggers, but I just despise them.
-
-    my $pkg = $args->{package} || $self->package;
-
-    $args->{package_name}      = $pkg->name;
-    $args->{package_version}   = $pkg->version;
-    $args->{distribution_path} = $pkg->distribution->path;
+    $stack->mark_as_changed;
 
     return $self->next::method($args);
 }
@@ -247,14 +280,22 @@ sub update {
 
 sub pin {
     my ($self) = @_;
-    return $self->update({is_pinned => 1});
+
+    throw "$self is already pinned" if $self->is_pinned;
+    $self->update({is_pinned => 1});
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
 
 sub unpin {
     my ($self) = @_;
-    return $self->update({is_pinned => 0});
+
+    throw "$self is not pinned" if not $self->is_pinned;
+    $self->update({is_pinned => 0});
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ __PACKAGE__->table("repository_property");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 name
+=head2 key
 
   data_type: 'text'
   is_nullable: 0
@@ -48,7 +48,7 @@ __PACKAGE__->table("repository_property");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "name",
+  "key",
   { data_type => "text", is_nullable => 0 },
   "value",
   { data_type => "text", default_value => "", is_nullable => 1 },
@@ -68,17 +68,17 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<name_unique>
+=head2 C<key_unique>
 
 =over 4
 
-=item * L</name>
+=item * L</key>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("name_unique", ["name"]);
+__PACKAGE__->add_unique_constraint("key_unique", ["key"]);
 
 =head1 L<Moose> ROLES APPLIED
 
@@ -94,8 +94,8 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-05-08 21:12:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JEYmGo1sVZSGRVeWvVpv0g
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 09:44:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BdIrJcC6PCuaeAO6gQHw7g
 
 #-------------------------------------------------------------------------------
 

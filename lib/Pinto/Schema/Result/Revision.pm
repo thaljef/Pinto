@@ -35,10 +35,16 @@ __PACKAGE__->table("revision");
 =head2 stack
 
   data_type: 'integer'
+  default_value: null
   is_foreign_key: 1
-  is_nullable: 0
+  is_nullable: 1
 
 =head2 number
+
+  data_type: 'integer'
+  is_nullable: 0
+
+=head2 is_committed
 
   data_type: 'integer'
   is_nullable: 0
@@ -64,8 +70,15 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "stack",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  {
+    data_type      => "integer",
+    default_value  => \"null",
+    is_foreign_key => 1,
+    is_nullable    => 1,
+  },
   "number",
+  { data_type => "integer", is_nullable => 0 },
+  "is_committed",
   { data_type => "integer", is_nullable => 0 },
   "committed_on",
   { data_type => "integer", is_nullable => 0 },
@@ -89,22 +102,22 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 registration_histories_created_in_revision
+=head2 active_stack
 
-Type: has_many
+Type: might_have
 
-Related object: L<Pinto::Schema::Result::RegistrationHistory>
+Related object: L<Pinto::Schema::Result::Stack>
 
 =cut
 
-__PACKAGE__->has_many(
-  "registration_histories_created_in_revision",
-  "Pinto::Schema::Result::RegistrationHistory",
-  { "foreign.created_in_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+__PACKAGE__->might_have(
+  "active_stack",
+  "Pinto::Schema::Result::Stack",
+  { "foreign.head_revision" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registration_histories_deleted_in_revision
+=head2 registration_histories
 
 Type: has_many
 
@@ -113,9 +126,9 @@ Related object: L<Pinto::Schema::Result::RegistrationHistory>
 =cut
 
 __PACKAGE__->has_many(
-  "registration_histories_deleted_in_revision",
+  "registration_histories",
   "Pinto::Schema::Result::RegistrationHistory",
-  { "foreign.deleted_in_revision" => "self.id" },
+  { "foreign.revision" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
@@ -131,22 +144,12 @@ __PACKAGE__->belongs_to(
   "stack",
   "Pinto::Schema::Result::Stack",
   { id => "stack" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
-
-=head2 stacks
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->has_many(
-  "stacks",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.head_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "CASCADE",
+    on_update     => "CASCADE",
+  },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -163,8 +166,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-12 13:44:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OT6AaEWHhXSGwBqH0WH1bQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 11:16:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gM9NKJV2APk6q78eSwufVQ
 
 #------------------------------------------------------------------------------
 
@@ -176,6 +179,8 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
+use Pinto::Exception qw(throw);
+
 use String::Format;
 
 use overload ( '""'  => 'to_string' );
@@ -186,31 +191,12 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
-  $args->{committed_on} ||= time;
   $args->{committed_by} ||= $ENV{USER};
-
-  delete $args->{guard}; # Not part of the table
+  $args->{committed_on} = 0;
+  $args->{is_committed} = 0;
+  $args->{number}       = -1;
 
   return $args;
-}
-
-#------------------------------------------------------------------------------
-
-has guard => (
-    is       => 'ro',
-    isa      => 'DBIx::Class::Storage::TxnScopeGuard',
-    handles  => [ qw( commit rollback ) ],
-    required => 1,
-);
-
-#------------------------------------------------------------------------------
-
-sub insert {
-    my ($self) = @_;
-
-    $self->number( $self->next_revision_number );
-
-    return $self->next::method;
 }
 
 #------------------------------------------------------------------------------
@@ -218,12 +204,27 @@ sub insert {
 sub next_revision_number {
     my ($self) = @_;
 
+    my $stack = $self->stack;
+    return 0 if not $stack;
+
     my $where = { stack => $self->stack->id };
     my $revision_rs = $self->result_source->resultset->search($where);
-    my $revision_number_rs = $revision_rs->get_column('number');
-    my $current_revision_number = $revision_number_rs->max;
+    my $current_revision_number = $revision_rs->count;
 
-    return defined $current_revision_number ? $current_revision_number + 1 : 0;
+    return $current_revision_number + 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub close {
+    my ($self, %args) = @_;
+
+    throw "Revision $self is already committed" if $self->is_committed;
+
+    my $next = $self->next_revision_number;
+    $self->update({%args, number => $next, committed_on => time, is_committed => 1});
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -232,7 +233,14 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->stack->name                                   },
+
+           # NOTE: It is possible to define a Revision without a
+           # Stack.  This should only happen when creating a new
+           # Stack.  There is a circular reference between Stacks and
+           # Revisions, so one of them must come first.  Therefore, we
+           # must be prepared for $self->stack to be undefined below.
+           k => sub { defined $self->stack ? $self->stack->name : '()'    },
+
            b => sub { $self->number                                        },
            g => sub { $self->message                                       },
            j => sub { $self->committed_by                                  },

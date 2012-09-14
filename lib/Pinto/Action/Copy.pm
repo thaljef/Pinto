@@ -19,6 +19,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Committable );
+
+#------------------------------------------------------------------------------
+
 has from_stack => (
     is       => 'ro',
     isa      => StackName,
@@ -51,6 +55,8 @@ sub execute {
 
     my $description = $self->description || "copy of stack $orig";
     $copy->set_property(description => $description);
+
+    $copy->close(message => $self->message);
 
     $self->repos->write_index(stack => $copy);
 

@@ -338,13 +338,15 @@ sub populate {
     for my $spec (@specs) {
         my $struct  = make_dist_struct($spec);
         my $archive = make_dist_archive($struct);
+        my $message = "Populated repository with $spec";
 
         my $args = { norecurse => 1,
                      archives  => $archive,
-                     author    => $struct->{cpan_author} };
+                     author    => $struct->{cpan_author},
+                     message   => $message };
 
-        my $r = $self->run_ok('Add', $args, "Populating repository with $spec");
-        croak 'Population failed so the rest of this test is aborted' unless $r->was_successful;
+        my $r = $self->run_ok('Add', $args, $message);
+        croak 'Population failed. Aborting test' unless $r->was_successful;
     }
 
     return $self;

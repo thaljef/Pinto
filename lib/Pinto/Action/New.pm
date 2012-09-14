@@ -19,6 +19,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Committable );
+
+#------------------------------------------------------------------------------
+
 has stack => (
     is       => 'ro',
     isa      => StackName,
@@ -41,6 +45,8 @@ sub execute {
     my $stack = $self->repos->create_stack(name => $self->stack);
 
     $stack->set_property(description => $self->description) if $self->has_description;
+
+    $stack->close(message => $self->message);
 
     $self->repos->write_index(stack => $stack);
 

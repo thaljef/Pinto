@@ -20,6 +20,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Committable );
+
+#------------------------------------------------------------------------------
+
 has stack => (
     is        => 'ro',
     isa       => StackName | Undef,
@@ -41,9 +45,13 @@ has targets => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repos->open_stack(name => $self->stack);
 
     $self->_execute($_, $stack) for $self->targets;
+
+    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
+
+    $stack->close(message => $self->message);
 
     return $self->result->changed;
 }
@@ -74,7 +82,6 @@ sub _execute {
         my $type = ref $target;
         throw "Don't know how to pin target of type $type";
     }
-
 
     $self->notice("Pinning $dist on stack $stack");
     $dist->pin(stack => $stack);

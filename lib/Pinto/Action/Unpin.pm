@@ -20,6 +20,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Committable );
+
+#------------------------------------------------------------------------------
+
 has targets => (
     isa      => Specs,
     traits   => [ qw(Array) ],
@@ -41,9 +45,13 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repos->open_stack(name => $self->stack);
 
     $self->_execute($_, $stack) for $self->targets;
+
+    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
+
+    $stack->close(message => $self->message);
 
     return $self->result->changed;
 }
@@ -77,7 +85,7 @@ sub _execute {
 
 
     $self->notice("Unpinning $dist from stack $stack");
-    $dist->unpin(stack => $stack);
+    $self->result->changed if $dist->unpin(stack => $stack);
 
     return;
 }

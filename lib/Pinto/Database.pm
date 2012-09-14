@@ -139,6 +139,14 @@ sub create_stack {
 
 #-------------------------------------------------------------------------------
 
+sub create_revision {
+    my ($self, $attrs) = @_;
+
+    return $self->schema->resultset('Revision')->create( $attrs );
+}
+
+#-------------------------------------------------------------------------------
+
 sub repository_properties {
     my ($self) = @_;
 
@@ -154,7 +162,7 @@ sub deploy {
     $self->debug( 'Creating database at ' . $self->config->db_file );
     $self->schema->deploy;
 
-    my $props = { name  => 'pinto:schema_version',
+    my $props = { key   => 'pinto:schema_version',
                   value => $Pinto::Schema::SCHEMA_VERSION };
 
     $self->schema->resultset('RepositoryProperty')->create($props);

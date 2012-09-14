@@ -66,13 +66,17 @@ has dryrun => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repos->open_stack(name => $self->stack);
 
     $self->_execute($_, $stack) for $self->targets;
 
-    $self->repos->write_index(stack => $stack) if $self->result->made_changes;
+    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
 
-    return $self->result;
+    $self->repos->write_index(stack => $stack);
+
+    $stack->close(message => $self->message);
+
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------
@@ -80,18 +84,15 @@ sub execute {
 sub _execute {
     my ($self, $target, $stack) = @_;
 
-    my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target,
-                                                       stack  => $stack );
+    my $dist = $self->repos->get_or_pull( target => $target,
+                                          stack  => $stack );
 
     $dist->pin( stack => $stack ) if $dist && $self->pin;
 
     if ($dist and not $self->norecurse) {
         my @prereq_dists = $self->repos->pull_prerequisites( dist  => $dist,
                                                              stack => $stack );
-        $did_pull += @prereq_dists;
     }
-
-    $self->result->changed if $did_pull and not $self->dryrun;
 
     return;
 }
