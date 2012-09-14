@@ -32,9 +32,9 @@ has stack => (
 
 
 has revision => (
-    is        => 'ro',
-    isa       => Int,
-    required  => 1,
+    is       => 'ro',
+    isa      => Int,
+    default  => -1,
 );
 
 #------------------------------------------------------------------------------
@@ -42,7 +42,6 @@ has revision => (
 sub execute {
     my ($self) = @_;
 
-    $DB::single = 1;
     my $stack   = $self->repos->get_stack(name => $self->stack);
     my $headnum = $stack->head_revision->number;
 
@@ -55,15 +54,20 @@ sub execute {
     $self->fatal("Revision $revnum is the head of stack $stack")
       if $revnum == $headnum;
 
+    $self->notice("Reverting stack $stack to revision $revnum");
+
     my $new_head  = $self->repos->open_revision(stack => $stack);
     my $previous_revision = $new_head->previous_revision;
-
 
 
     while ($previous_revision->number > $revnum) {
         $previous_revision->undo;
         $previous_revision = $previous_revision->previous_revision;
     }
+
+    $stack->close(message => $self->message);
+
+    $self->repos->write_index(stack => $stack);
 
     return $self->result->changed;
 }

@@ -46,7 +46,6 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->get_stack(name => $self->stack);
-    my $format = "r%b | %j | %u\n\n%g\n\n";
 
     my $wanted_revision = $self->revision;
     my @revisions = defined $wanted_revision ? $stack->revision(number => $wanted_revision)
@@ -55,7 +54,8 @@ sub execute {
     $self->fatal("No such revision $wanted_revision on stack $stack")
       if (!@revisions && defined $wanted_revision);
 
-    for my $revision (@revisions) {
+    my $format = "%k\@%b | %j | %u\n\n%g\n\n";
+    for my $revision (reverse @revisions) {
         $self->say('-' x 79);
         $self->say($revision->to_string($format));
         $self->say(join "\n", $revision->registration_histories) if $self->detailed;

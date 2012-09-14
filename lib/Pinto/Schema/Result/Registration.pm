@@ -217,29 +217,19 @@ sub FOREIGNBUILDARGS {
 
 #-------------------------------------------------------------------------------
 
+sub update { throw 'Updates to '.  __PACKAGE__ . ' are not allowed'; }
+
+#-------------------------------------------------------------------------------
+
 sub insert {
     my ($self) = @_;
 
-    my $stack = $self->stack;
-
-    throw "Stack $stack is not open for revision"
-      if $stack->head_revision->is_committed;
-
-    my $hist = { stack      => $stack,
-                 package    => $self->package,
-                 is_pinned  => $self->is_pinned,
-                 revision   => $stack->head_revision,
-                 action     => 'insert' };
-
-    $self->result_source->schema->resultset('RegistrationHistory')->create($hist);
-
     # Compute values for denormalized attributes...
-
     $self->package_name($self->package->name);
     $self->package_version($self->package->version->stringify);
     $self->distribution_path($self->package->distribution->path);
 
-    $stack->mark_as_changed;
+    $self->_record_change('insert');
 
     return $self->next::method;
  }
@@ -249,45 +239,49 @@ sub insert {
 sub delete {
     my ($self) = @_;
 
-    my $stack = $self->stack;
-
-    throw "Stack $stack is not open for revision"
-      if $stack->head_revision->is_committed;
-
-    my $hist = { stack      => $stack,
-                 package    => $self->package,
-                 is_pinned  => $self->is_pinned,
-                 revision   => $stack->head_revision,
-                 action     => 'delete' };
-
-    $self->result_source->schema->resultset('RegistrationHistory')->create($hist);
-
-    $stack->mark_as_changed;
+    $self->_record_change('delete');
 
     return $self->next::method;
  }
 
 #------------------------------------------------------------------------------
 
-sub update {
-    my ($self, $args) = @_;
+sub _record_change {
+  my ($self, $action) = @_;
 
-    my $stack = $self->stack;
+    my $stack    = $self->stack;
+    my $revision = $stack->head_revision;
 
     throw "Stack $stack is not open for revision"
-      if $stack->head_revision->is_committed;
+      if $revision->is_committed;
 
     my $hist = { stack      => $stack,
                  package    => $self->package,
                  is_pinned  => $self->is_pinned,
-                 revision   => $stack->head_revision,
-                 action     => 'update' };
+                 revision   => $revision,
+                 action     => $action };
 
-    $self->result_source->schema->resultset('RegistrationHistory')->create($hist);
+    # Update history....
+    my $rs = $self->result_source->schema->resultset('RegistrationHistory');
+
+
+    # Usually, a package is added OR removed only once during a single
+    # revision.  But during a Revert action, we unwind several past
+    # revisions inside of a new revision.  So it is possible that the
+    # same package could have been added AND removed several times
+    # during one of those past revisions.
+
+    if ( my $existing_change = $rs->find($hist) ) {
+        $self->debug("$existing_change already applied to history for revision $revision. Skipping");
+    }
+    else {
+        $self->debug("$self ${action}ed in history for revision $revision");
+        $rs->create($hist);
+    }
 
     $stack->mark_as_changed;
 
-    return $self->next::method($args);
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -296,7 +290,10 @@ sub pin {
     my ($self) = @_;
 
     throw "$self is already pinned" if $self->is_pinned;
-    $self->update({is_pinned => 1});
+
+    $self->delete;
+    $self->is_pinned(1);
+    $self->insert;
 
     return $self;
 }
@@ -307,7 +304,10 @@ sub unpin {
     my ($self) = @_;
 
     throw "$self is not pinned" if not $self->is_pinned;
-    $self->update({is_pinned => 0});
+
+    $self->delete;
+    $self->is_pinned(0);
+    $self->insert;
 
     return $self;
 }

@@ -286,7 +286,7 @@ sub close {
 sub undo {
     my ($self) = @_;
 
-    $self->notice("Undoing revision $self");
+    $self->info("Undoing revision $self");
 
     $_->undo for reverse $self->registration_histories;
 

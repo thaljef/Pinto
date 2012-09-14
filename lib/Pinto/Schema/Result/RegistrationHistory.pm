@@ -209,13 +209,15 @@ sub undo {
         my $attrs = {key => 'stack_package_unique'};
         my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
         throw "Found no registrations matching $self" if not $reg;
-        $self->debug("Removing $reg");
+
         $reg->delete;
+        $self->debug("Removed $reg");
 
     }
     elsif ($action eq 'delete') {
 
         my $reg = $self->result_source->schema->resultset('Registration')->create($state);
+
         $self->debug("Restored $reg");
 
     }
@@ -267,7 +269,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%A %y %a/%D/%N';
+    return '%A%y %a/%D/%N';
 }
 
 #-------------------------------------------------------------------------------

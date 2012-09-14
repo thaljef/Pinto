@@ -792,11 +792,18 @@ sub _symlink {
 sub open_revision {
     my ($self, %args) = @_;
 
-    $args{message} ||= '';  # Message usually updated when we commmit
+    $args{message} ||= '';     # Message usually updated when we commmit
 
     my $revision = $self->db->create_revision(\%args);
+    my $revnum = $revision->number;
 
-    $args{stack}->update({head_revision => $revision}) if $args{stack};
+    if (my $stack = $args{stack}) {
+        $stack->update({head_revision => $revision});
+        $self->debug("Opened new head revision $revnum on stack $stack");
+    }
+    else {
+        $self->debug("Opened new head revision $revnum but not bound to stack" );
+    }
 
     return $revision;
 }
