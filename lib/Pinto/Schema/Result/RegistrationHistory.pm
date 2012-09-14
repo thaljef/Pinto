@@ -178,7 +178,68 @@ with 'Pinto::Role::Schema::Result';
 # Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 11:16:34
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8p6rdIb9PyEo4/Q2PJR6Kg
 
+#-------------------------------------------------------------------------------
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+# ABSTRACT A single change to the registry
+
+#-------------------------------------------------------------------------------
+
+# VERSION
+
+#-------------------------------------------------------------------------------
+
+use String::Format;
+
+use overload ( q{""} => 'to_string' );
+
+#-------------------------------------------------------------------------------
+
+sub to_string {
+   my ($self, $format) = @_;
+
+
+    my %fspec = (
+         A => sub { $self->action eq 'insert'               ? 'A' : 'D'         },
+         n => sub { $self->package->name                                        },
+         N => sub { $self->package->vname                                       },
+         v => sub { $self->package->version                                     },
+         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'         },
+         p => sub { $self->package->distribution->path                          },
+         P => sub { $self->package->distribution->native_path                   },
+         f => sub { $self->package->distribution->archive                       },
+         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'         },
+         S => sub { $self->package->distribution->source                        },
+         a => sub { $self->package->distribution->author                        },
+         d => sub { $self->package->distribution->name                          },
+         D => sub { $self->package->distribution->vname                         },
+         w => sub { $self->package->distribution->version                       },
+         u => sub { $self->package->distribution->url                           },
+         k => sub { $self->stack->name                                          },
+         M => sub { $self->stack->is_default                 ? '*' : ' '        },
+         e => sub { $self->stack->get_property('description')                   },
+         j => sub { $self->stack->head_revision->committed_by                   },
+         u => sub { $self->stack->head_revision->committed_on                   },
+         y => sub { $self->is_pinned                        ? '+' : ' '         },
+    );
+
+    # Some attributes are just undefined, usually because of
+    # oddly named distributions and other old stuff on CPAN.
+    no warnings 'uninitialized';  ## no critic qw(NoWarnings);
+
+    $format ||= $self->default_format();
+    return String::Format::stringf($format, %fspec);
+}
+
+sub default_format {
+
+    return '%A %y %a/%D/%N';
+}
+
+#-------------------------------------------------------------------------------
+
 __PACKAGE__->meta->make_immutable;
+
+#-------------------------------------------------------------------------------
 1;
+
+__END__
