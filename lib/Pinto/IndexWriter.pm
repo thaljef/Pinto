@@ -7,6 +7,7 @@ use MooseX::Types::Moose qw(Bool);
 
 use PerlIO::gzip;
 use Path::Class qw(file);
+use HTTP::Date qw(time2str);
 
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(File Io);
@@ -77,7 +78,7 @@ Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
 Written-By:   Pinto::IndexWriter $version
 Line-Count:   $line_count
-Last-Updated: @{[ scalar localtime() ]}
+Last-Updated: @{[ time2str(time) ]}
 
 END_PACKAGE_HEADER
 
