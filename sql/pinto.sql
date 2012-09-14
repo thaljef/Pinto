@@ -106,10 +106,11 @@ CREATE UNIQUE INDEX c ON stack(name);
 CREATE UNIQUE INDEX d ON stack(head_revision);
 CREATE UNIQUE INDEX e ON registration(stack, package_name);
 CREATE UNIQUE INDEX f ON registration_history(stack, package, is_pinned, revision, action);
-CREATE UNIQUE INDEX g ON prerequisite(distribution, package_name);
-CREATE UNIQUE INDEX h ON stack_property(stack, key);
-CREATE UNIQUE INDEX i ON repository_property(key);
+CREATE UNIQUE INDEX g ON revision(stack, number);
+CREATE UNIQUE INDEX h ON prerequisite(distribution, package_name);
+CREATE UNIQUE INDEX i ON stack_property(stack, key);
+CREATE UNIQUE INDEX j ON repository_property(key);
 
-CREATE        INDEX j ON registration(stack);
-CREATE        INDEX k ON package(name);
-CREATE        INDEX l ON distribution(author);
+CREATE        INDEX k ON registration(stack);
+CREATE        INDEX l ON package(name);
+CREATE        INDEX m ON distribution(author);
