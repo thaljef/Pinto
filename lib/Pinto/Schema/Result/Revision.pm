@@ -210,24 +210,38 @@ sub FOREIGNBUILDARGS {
   $args->{committed_by} ||= $ENV{USER};
   $args->{committed_on} = 0;
   $args->{is_committed} = 0;
-  $args->{number}       = -1;
 
   return $args;
 }
 
 #------------------------------------------------------------------------------
 
-sub next_revision_number {
+sub insert {
+    my ($self) = @_;
+
+    my $new_revnum = $self->new_revision_number;
+    $self->number($new_revnum);
+
+    return $self->next::method;
+}
+
+#------------------------------------------------------------------------------
+
+sub new_revision_number {
     my ($self) = @_;
 
     my $stack = $self->stack;
+
+    # If we don't have a stack attribute, it probably means that it
+    # doesn't exist yet and we are about to create it in this revision.
     return 0 if not $stack;
 
     my $where = { stack => $self->stack->id };
     my $revision_rs = $self->result_source->resultset->search($where);
-    my $current_revision_number = $revision_rs->count;
 
-    return $current_revision_number + 1;
+    # Revision numbers are zero-based.  So just counting the number
+    # of revisions will give us the number for the next one.
+    return $revision_rs->count;
 }
 
 #------------------------------------------------------------------------------
@@ -236,11 +250,24 @@ sub previous_revision {
     my ($self) = @_;
 
     my $attrs = { key => 'stack_number_unique' };
-    my $where = { stack => $self->stack, number => --$self->number };
+    my $where = { stack => $self->stack, number => ($self->number - 1) };
     my $previous_revision = $self->result_source->resultset->find($where, $attrs);
 
     return defined $previous_revision ? $previous_revision : ();
 }
+
+#------------------------------------------------------------------------------
+
+sub next_revision {
+    my ($self) = @_;
+
+    my $attrs = { key => 'stack_number_unique' };
+    my $where = { stack => $self->stack, number => ($self->number + 1) };
+    my $previous_revision = $self->result_source->resultset->find($where, $attrs);
+
+    return defined $previous_revision ? $previous_revision : ();
+}
+
 
 #------------------------------------------------------------------------------
 
@@ -249,8 +276,7 @@ sub close {
 
     throw "Revision $self is already committed" if $self->is_committed;
 
-    my $next = $self->next_revision_number;
-    $self->update({%args, number => $next, committed_on => time, is_committed => 1});
+    $self->update({%args, committed_on => time, is_committed => 1});
 
     return $self;
 }
