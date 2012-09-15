@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Eliminate denormalized data (unecessary preoptimization).
+
 =item Make commit messages mandatory.  Generate message stub, shell out to editor
 
 =item Extract versioning stuff to a separate dist.
@@ -15,6 +17,8 @@
 =item Create command to load repository from a dump
 
 =item Option to specify name/description of the initial stack
+
+=item Try to ensure integrity of commits
 
 #--------------------------
 
