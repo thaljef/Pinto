@@ -22,7 +22,7 @@ my $t = Pinto::Tester->new;
   my $stack = $t->pinto->repos->get_stack(name => $stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
   is $stack->get_property('description'), $stk_desc, 'Got correct stack description';
-  my $old_mtime = $stack->last_modified_on;
+  my $old_mtime = $stack->head_revision->committed_on;
 
   sleep 2; # So the mtime changes.
 
@@ -37,8 +37,8 @@ my $t = Pinto::Tester->new;
   $t->registration_not_ok( 'ME/FooAndBar-1/Bar~1/init/-' );
 
   # Check that mtime was updated...
-  $stack->discard_changes; # Causes it to reload from DB
-  cmp_ok $stack->last_modified_on, '>', $old_mtime, 'Updated stack mtime';
+  $stack->refresh; # Causes it to reload from DB
+  cmp_ok $stack->head_revision->committed_on, '>', $old_mtime, 'Updated stack mtime';
 }
 
 #------------------------------------------------------------------------------
@@ -55,8 +55,9 @@ my $t = Pinto::Tester->new;
 
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
-  is $qa_stack->last_modified_on, $dev_stack->last_modified_on,
-    'Copied stack has same mtime as original';
+
+  is $qa_stack->head_revision->compute_md5, $dev_stack->head_revision->md5,
+    'Copied stack has same checksum';
 
   is $qa_stack->get_property('description'), 'copy of stack dev',
     'Copied stack has default description';
