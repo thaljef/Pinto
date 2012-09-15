@@ -1,6 +1,6 @@
-package Pinto::Initializer;
-
 # ABSTRACT: Initializes a new Pinto repository
+
+package Pinto::Initializer;
 
 use Moose;
 
