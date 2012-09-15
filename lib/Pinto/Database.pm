@@ -112,9 +112,6 @@ sub create_distribution {
 sub select_stacks {
     my ($self, $where, $attrs) = @_;
 
-    $where ||= {};
-    $attrs ||= {};
-
     return $self->schema->resultset('Stack')->search( $where, $attrs );
 }
 
@@ -135,6 +132,14 @@ sub create_stack {
     my ($self, $attrs) = @_;
 
     return $self->schema->resultset('Stack')->create( $attrs );
+}
+
+#-------------------------------------------------------------------------------
+
+sub select_revisions {
+    my ($self, $where, $attrs) = @_;
+
+    return $self->schema->resultset('Revision')->search( $where, $attrs );
 }
 
 #-------------------------------------------------------------------------------
