@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Add checksums to revisions.  Ensure integrity after rollback
-
 =item Make commit messages mandatory.  Generate message stub, shell out to editor
 
 =item Extract versioning stuff to a separate dist.

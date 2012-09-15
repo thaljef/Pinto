@@ -286,9 +286,27 @@ sub close {
 
     throw "Revision $self is already committed" if $self->is_committed;
 
-    $self->update({%args, committed_on => time, is_committed => 1});
+    $self->update( { %args,
+                     committed_on => time,
+                     is_committed => 1,
+                     md5          => $self->compute_md5 } );
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub compute_md5 {
+    my ($self) = @_;
+
+    my $md5 = Digest::MD5->new;
+    my $registrations_rs = $self->stack->registrations_rs;
+
+    while (my $registration = $registrations_rs->next) {
+        $md5->add( $registration->to_string('%a/%D/%N') );
+    }
+
+    return $md5->hexdigest;
 }
 
 #------------------------------------------------------------------------------

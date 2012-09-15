@@ -359,14 +359,22 @@ sub mark_as_changed {
 
 #------------------------------------------------------------------------------
 
+sub has_changed {
+    my ($self, @args) = @_;
+
+    $self->discard_changes;
+
+    return $self->next::method(@args);
+}
+
+#------------------------------------------------------------------------------
+
 sub revision {
     my ($self, %args) = @_;
 
     return $self->head_revision if not defined $args{number};
 
-    my $rev = $self->find_related( revisions => {number => $args{number}} );
-
-    return defined $rev ? $rev : ();
+    return $self->find_related( revisions => {number => $args{number}} );
 }
 
 #------------------------------------------------------------------------------
@@ -392,6 +400,7 @@ sub get_properties {
 
 sub set_property {
     my ($self, $prop_key, $value) = @_;
+
     return $self->set_properties( {$prop_key => $value} );
 }
 

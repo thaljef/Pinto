@@ -6,6 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Int);
 
 use Pinto::Types qw(StackName StackDefault);
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -43,6 +44,24 @@ sub execute {
     my ($self) = @_;
 
     my $stack   = $self->repos->get_stack(name => $self->stack);
+    my $revnum  = $self->_compute_target_revnum($stack);
+
+    $self->_execute($stack, $revnum);
+
+    return $self->result if $self->dryrun or not $stack->has_changed;
+
+    $self->repos->write_index(stack => $stack);
+
+    $stack->close(message => $self->message);
+
+    return $self->result->changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub _compute_target_revnum {
+    my ($self, $stack) = @_;
+
     my $headnum = $stack->head_revision->number;
 
     my $revnum  = $self->revision;
@@ -57,22 +76,28 @@ sub execute {
     $self->fatal("Revision $revnum is the head of stack $stack")
       if $revnum == $headnum;
 
+    return $revnum;
+}
+
+#------------------------------------------------------------------------------
+
+sub _execute {
+    my ($self, $stack, $revnum) = @_;
+
     $self->notice("Reverting stack $stack to revision $revnum");
 
     my $new_head  = $self->repos->open_revision(stack => $stack);
     my $previous_revision = $new_head->previous_revision;
-
 
     while ($previous_revision->number > $revnum) {
         $previous_revision->undo;
         $previous_revision = $previous_revision->previous_revision;
     }
 
-    $stack->close(message => $self->message);
+    throw "Checksum does not match for revision $revnum.  Aborting"
+        if $previous_revision->md5 ne $new_head->compute_md5;
 
-    $self->repos->write_index(stack => $stack);
-
-    return $self->result->changed;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
