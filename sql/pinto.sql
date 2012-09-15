@@ -94,6 +94,7 @@ CREATE TABLE revision (
        committed_on INTEGER             NOT NULL,
        committed_by TEXT                NOT NULL,
        message      TEXT                NOT NULL,
+       md5          TEXT                DEFAULT '',
 
        FOREIGN KEY(stack)  REFERENCES stack(id)
 );

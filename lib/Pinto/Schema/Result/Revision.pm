@@ -64,6 +64,12 @@ __PACKAGE__->table("revision");
   data_type: 'text'
   is_nullable: 0
 
+=head2 md5
+
+  data_type: 'text'
+  default_value: (empty string)
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -86,6 +92,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "message",
   { data_type => "text", is_nullable => 0 },
+  "md5",
+  { data_type => "text", default_value => "", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -182,8 +190,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-14 11:59:29
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RngjEE88IKUwc4i8D/AhcQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-15 01:26:17
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7OH49QpUvSf0NeK8Mt3TOQ
 
 #------------------------------------------------------------------------------
 
