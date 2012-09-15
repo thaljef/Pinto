@@ -2,21 +2,35 @@
 
 =over 4
 
-=item Command options to specify provided/required packages
+=item Add checksums to revisions.  Ensure integrity after rollback
 
-=item Command to list dependors and dependants
+=item Make commit messages mandatory.  Generate message stub, shell out to editor
 
-=item Command to list outdated packages
+=item Extract versioning stuff to a separate dist.
 
-=item Command to verify prereqs on a stack
+=item Command to unregister a pkg/dist
 
-=item Command to unregister a pkg/dist ??
+=item Command to examine the delta between two stacks or revisions
 
-=item Write test cases for Stack operations
+=item Option to initialize bare repository (i.e. no initial stack)
+
+=item Create command to load repository from a dump
+
+=item Option to specify name/description of the initial stack
 
 #--------------------------
 
-=item Stack property: strict (no overlapping dists)
+=item Command to list dependors and dependants
+
+=item Command to verify prereqs on a stack
+
+=item Write test cases for Stack operations
+
+=item Command to list outdated packages
+
+=item Command options to specify provided/required packages (maybe not)
+
+=item Stack property: strict (no overlapping dists) ??
 
 =item Stack property: target perl
 
@@ -36,15 +50,15 @@
 
 =item Re-examine log levels for messages
 
-=item Verify checksums during 'verify'
+=item Should we throw() or just log->fatal()
+
+=item Should we have an heirarchy of exception classes
+
+=item Verify archive checksums during 'verify'
 
 =item Add hooks before/after adding and pulling
 
-=item Ensure there is an open revision before each Repos operation
-
-=item Give revisions properties
-
-=item Compute checksum for stack after each revision
+=item Give revisions properties ??
 
 =item Allow revisions to be tagged
 
@@ -57,12 +71,6 @@
 =item Way to pin/unpin all packages in a stack
 
 =item Make the Store transactional
-
-=item Rollback a stack to prior revision
-
-=item View history for entire repository or stack
-
-=item Examine the delta between two stacks
 
 =item Rewrite tests with Test::Class
 
