@@ -352,19 +352,9 @@ sub mark_as_default {
 sub mark_as_changed {
     my ($self) = @_;
 
-    $self->update( {has_changed => 1} );
+    $self->update( {has_changed => 1} ) unless $self->has_changed;
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub has_changed {
-    my ($self, @args) = @_;
-
-    $self->discard_changes;
-
-    return $self->next::method(@args);
 }
 
 #------------------------------------------------------------------------------
@@ -372,7 +362,7 @@ sub has_changed {
 sub revision {
     my ($self, %args) = @_;
 
-    return $self->head_revision if not defined $args{number};
+    return $self->revisions if not defined $args{number};
 
     return $self->find_related( revisions => {number => $args{number}} );
 }
