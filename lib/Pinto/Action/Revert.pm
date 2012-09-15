@@ -48,6 +48,9 @@ sub execute {
     my $revnum  = $self->revision;
     $revnum     = ($headnum + $revnum) if $revnum < 0;
 
+    $self->fatal("Stack $stack is already at revision 0")
+      if $headnum == 0;
+
     $self->fatal("No such revision $revnum on stack $stack")
       if $revnum > $headnum;
 
