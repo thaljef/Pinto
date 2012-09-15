@@ -56,11 +56,11 @@ override execute => sub {
     # $dumpdir is now something like /tmp/XXXXXX/pinto-dump-YYMMDD
 
     $self->mkpath($dumpdir);
-    $self->_dump_meta($dumpdir);
-#    $self->_dump_manifest($dumpdir);
-#    $self->_dump_archives($dumpdir);
+    $self->_dump_archives($dumpdir);
     $self->_dump_history($dumpdir);
-    $self->_archive_dump($dumpdir);
+    $self->_dump_meta($dumpdir);
+    $self->_dump_manifest($dumpdir);
+    $self->_create_dumpfile($dumpdir);
 
     return $self->result;
 };
@@ -89,15 +89,24 @@ sub _dump_meta {
 #------------------------------------------------------------------------------
 
 sub _dump_manifest {
-    my ($self, $fh) = @_;
+    my ($self, $dumpdir) = @_;
+
+    $self->notice("Writing archive manifest");
+    my $mani = [];
 
     my $dists_rs = $self->repos->db->select_distributions;
-    my $dist_count = $dists_rs->count;
-
-    print $fh "## archives: $dist_count\n";
     while (my $dist = $dists_rs->next) {
-        print $fh $dist->path, "\n";
+        push @{ $mani }, $dist->path;
     }
+
+    # Include metadata files in the manifest too
+    unshift @{ $mani }, qw(MANIFEST.json HISTORY.json META.json);
+
+    my $json = JSON->new->pretty->encode($mani);
+
+    my $meta_fh = $dumpdir->file('MANIFEST.json')->openw;
+    print {$meta_fh} $json;
+    $meta_fh->close;
 
     return $self;
 }
@@ -154,7 +163,24 @@ sub _dump_history {
 
 #------------------------------------------------------------------------------
 
-sub _archive_dump {
+sub _dump_archives {
+    my ($self, $dumpdir) = @_;
+
+    my $dump_authors_dir = $dumpdir->subdir('authors');
+    $self->mkpath( $dump_authors_dir );
+
+    my $abs_repos_authors_id_dir = $self->repos->config->authors_id_dir->absolute;
+    my $dump_authors_id_dir = $dump_authors_dir->subdir('id');
+
+    my $ok = symlink $abs_repos_authors_id_dir, $dump_authors_id_dir;
+    $self->fatal("symlink failed: $!") if not $ok;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _create_dumpfile {
     my ($self, $dumpdir) = @_;
 
     my $outfile = $self->outfile;
@@ -163,7 +189,8 @@ sub _archive_dump {
 
     # TODO: Replace this with Archive::Tar::Wrapper
     my $cwd_guard = cwd_guard($dumpdir->parent->stringify);
-    system qw(tar czf), $abs_outfile, $dumpdir->basename;
+    my $ok = not system qw(tar -c -z -L -f), $abs_outfile, $dumpdir->basename;
+    $self->fatal("tar command failed: $!") if not $ok;
 }
 
 #------------------------------------------------------------------------------
