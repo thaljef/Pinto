@@ -100,7 +100,7 @@ sub execute {
 
     $self->_execute($_, $stack) for $self->archives;
 
-    return $self->result if $self->dryrun or not $stack->has_changed;
+    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
 
     $self->repos->write_index(stack => $stack);
 
