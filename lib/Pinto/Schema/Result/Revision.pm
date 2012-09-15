@@ -214,6 +214,8 @@ use overload ( '""'  => 'to_string' );
 sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
+  # TODO: Should we really default these here or in the DB?
+
   $args ||= {};
   $args->{committed_by} ||= $ENV{USER};
   $args->{committed_on} = 0;
