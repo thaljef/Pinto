@@ -199,6 +199,8 @@ use overload ( '""'     => 'to_string',
 sub FOREIGNBUILDARGS {
     my ($class, $args) = @_;
 
+    # Should we default these here or in the database?
+
     $args ||= {};
     $args->{is_pinned} ||= 0;
 
@@ -264,18 +266,18 @@ sub _record_change {
     # Update history....
     my $rs = $self->result_source->schema->resultset('RegistrationHistory');
 
-
     # Usually, a package is added OR removed only once during a single
     # revision.  But during a Revert action, we unwind several past
     # revisions inside of a new revision.  So it is possible that the
     # same package could have been added AND removed several times
     # during one of those past revisions.
 
-    if ( my $existing_change = $rs->find($hist) ) {
-        $self->debug("$existing_change already applied to history for revision $revision. Skipping");
+    if ( my $change = $rs->find($hist) ) {
+        $self->debug("$change already applied to revision $revision. Skipping");
     }
     else {
-        $self->debug("$self ${action}ed in history for revision $revision");
+        my $verb = $action eq 'delete' ? 'deleted' : 'inserted';
+        $self->debug( sub{"$self $verb in history for revision $revision"} );
         $rs->create($hist);
     }
 
