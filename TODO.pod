@@ -4,9 +4,11 @@
 
 =item Get tests passing again
 
-=item Fix locking mechanism
+=item Fix locking mechanism (lock per stack, shared/exclusive, maybe in db).
 
 =item Eliminate denormalized data (unecessary preoptimization).
+
+=item Rename RegistrationHistory to RegistrationChange.
 
 =item Make commit messages mandatory.  Generate message stub, shell out to editor
 
