@@ -12,6 +12,8 @@
 
 =item Consider moving location of shared authors dir.
 
+=item Write tests for versioning code.
+
 =item Extract versioning stuff to a separate dist.
 
 =item Command to unregister a pkg/dist
@@ -19,6 +21,10 @@
 =item Command to examine the delta between two stacks or revisions
 
 =item Option to initialize bare repository (i.e. no initial stack)
+
+=item Add versioning to the stack props
+
+=item Add stack props and repos props to the dump META
 
 =item Create command to load repository from a dump
 
