@@ -510,7 +510,7 @@ sub _pull_by_package_spec {
         my $got_dist = $latest->distribution;
         $self->debug( sub {"Already have package $pspec or newer as $latest"} );
         my $did_register = $got_dist->register(stack => $stack);
-        return $got_dist;
+        return ($got_dist, 0);
     }
 
     my $dist_url = $self->locate( package => $pspec->name,
@@ -532,7 +532,7 @@ sub _pull_by_package_spec {
 
     $pulled_dist->register( stack => $stack );
 
-    return $pulled_dist;
+    return ($pulled_dist, 1);
 }
 
 #------------------------------------------------------------------------------
@@ -548,7 +548,7 @@ sub _pull_by_distribution_spec {
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
         my $did_register = $got_dist->register(stack => $stack);
-        return $got_dist;
+        return ($got_dist, 0);
     }
 
     my $dist_url = $self->locate(distribution => $dspec->path)
@@ -558,7 +558,7 @@ sub _pull_by_distribution_spec {
 
     if ( Pinto::Util::isa_perl($dist_url) ) {
         $self->debug("Distribution $dist_url is a perl. Skipping it.");
-        return (undef , 0);
+        return (undef, 0);
     }
 
     $self->notice("Pulling distribution $dist_url");
@@ -566,7 +566,7 @@ sub _pull_by_distribution_spec {
 
     $pulled_dist->register( stack => $stack );
 
-    return $pulled_dist;
+    return ($pulled_dist, 1);
 }
 
 #------------------------------------------------------------------------------
@@ -574,6 +574,7 @@ sub _pull_by_distribution_spec {
 sub pull_prerequisites {
     my ($self, %args) = @_;
 
+    $DB::single = 1;
     my $dist  = $args{dist};
     my $stack = $args{stack};
 

@@ -84,8 +84,8 @@ sub execute {
 sub _execute {
     my ($self, $target, $stack) = @_;
 
-    my $dist = $self->repos->get_or_pull( target => $target,
-                                          stack  => $stack );
+    my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target,
+                                                       stack  => $stack );
 
     $dist->pin( stack => $stack ) if $dist && $self->pin;
 
