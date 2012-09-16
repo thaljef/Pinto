@@ -235,7 +235,7 @@ sub insert {
 
     $self->_record_change('insert');
 
-    return $ret;
+    return $return;
  }
 
 #-------------------------------------------------------------------------------
