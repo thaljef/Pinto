@@ -224,26 +224,30 @@ sub update { throw 'Updates to '.  __PACKAGE__ . ' are not allowed'; }
 #-------------------------------------------------------------------------------
 
 sub insert {
-    my ($self) = @_;
+    my ($self, @args) = @_;
 
     # Compute values for denormalized attributes...
     $self->package_name($self->package->name);
     $self->package_version($self->package->version->stringify);
     $self->distribution_path($self->package->distribution->path);
 
+    my $return = $self->next::method(@args);
+
     $self->_record_change('insert');
 
-    return $self->next::method;
+    return $ret;
  }
 
 #-------------------------------------------------------------------------------
 
 sub delete {
-    my ($self) = @_;
+    my ($self, @args) = @_;
+
+    my $return = $self->next::method(@args);
 
     $self->_record_change('delete');
 
-    return $self->next::method;
+    return $return;
  }
 
 #------------------------------------------------------------------------------
