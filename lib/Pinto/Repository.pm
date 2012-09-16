@@ -660,8 +660,8 @@ sub copy_stack {
     my $to_stack_name = $args{to};
 
     my $revision = $self->open_revision;
-    my $changes = {head_revision => $revision, name => $to_stack_name};
-    my $copy    = $from_stack->copy_deeply( $changes );
+    my $changes  = {head_revision => $revision, name => $to_stack_name};
+    my $copy     = $from_stack->copy_deeply( $changes );
 
     $revision->update( {stack => $copy} );
 
