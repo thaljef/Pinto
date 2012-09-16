@@ -1,6 +1,6 @@
-package Pinto::Tester;
-
 # ABSTRACT: A class for testing a Pinto repository
+
+package Pinto::Tester;
 
 use Moose;
 use MooseX::NonMoose;
