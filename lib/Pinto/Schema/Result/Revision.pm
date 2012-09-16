@@ -299,6 +299,9 @@ sub close {
 sub compute_md5 {
     my ($self) = @_;
 
+    throw "Must bind revision to a stack before computing checksum"
+      if not $self->stack;
+
     my $md5 = Digest::MD5->new;
     my $registrations_rs = $self->stack->registrations_rs;
 
