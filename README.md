@@ -25,18 +25,6 @@ gathering and managing distribution dependencies within the
 repository, so that you can control precisely which dependencies go
 into your application.
 
-# METHODS
-
-## run( $action\_name => %action\_args )
-
-Runs the Action with the given `$action_name`, passing the
-`%action_args` to its constructor.  Returns a [Pinto::Result](http://search.cpan.org/perldoc?Pinto::Result).
-
-## add\_logger( $obj )
-
-Convenience method for installing additional endpoints for logging.
-The object must be an instance of a [Log::Dispatch::Output](http://search.cpan.org/perldoc?Log::Dispatch::Output) subclass.
-
 # FEATURES
 
 Pinto is inspired by [Carton](http://search.cpan.org/perldoc?Carton), [CPAN::Mini::Inject](http://search.cpan.org/perldoc?CPAN::Mini::Inject), and
