@@ -4,8 +4,6 @@ package Pinto;
 
 use Moose;
 
-use Try::Tiny;
-
 use Pinto::Repository;
 use Pinto::ActionFactory;
 
@@ -42,14 +40,6 @@ with qw( Pinto::Role::Configurable
 
 #------------------------------------------------------------------------------
 
-=method run( $action_name => @action_args )
-
-Runs the Action with the given C<$action_name>, passing the
-C<@action_args> to its constructor.  Returns a L<Pinto::Result>.
-
-=cut
-
-
 sub run {
     my ($self, $action_name, @action_args) = @_;
 
@@ -60,13 +50,6 @@ sub run {
 }
 
 #------------------------------------------------------------------------------
-
-=method add_logger( $obj )
-
-Convenience method for installing additional endpoints for logging.
-The object must be an instance of a L<Log::Dispatch::Output> subclass.
-
-=cut
 
 sub add_logger {
     my ($self, @args) = @_;
