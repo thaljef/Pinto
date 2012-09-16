@@ -2,9 +2,15 @@
 
 =over 4
 
+=item Get tests passing again
+
+=item Fix locking mechanism
+
 =item Eliminate denormalized data (unecessary preoptimization).
 
 =item Make commit messages mandatory.  Generate message stub, shell out to editor
+
+=item Consider moving location of shared authors dir.
 
 =item Extract versioning stuff to a separate dist.
 
