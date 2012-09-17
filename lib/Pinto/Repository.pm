@@ -667,6 +667,8 @@ sub copy_stack {
 
     $self->create_stack_filesystem(stack => $copy);
 
+    $copy->refresh;  # Make sure $copy has reference to the new $revision
+
     return $copy;
 }
 
