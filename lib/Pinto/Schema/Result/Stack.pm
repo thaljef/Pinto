@@ -417,7 +417,7 @@ sub delete_property {
     my $attrs = {key => 'stack_key_unique'};
 
     for my $prop_key (@prop_keys) {
-          my $where = {name => $prop_key};
+          my $where = {key => $prop_key};
           my $prop = $self->find_related('stack_properties', $where, $attrs);
           $prop->delete if $prop;
     }
