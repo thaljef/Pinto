@@ -1,4 +1,4 @@
-# ABSTRACT: Dump complete repository contents and stack history
+# ABSTRACT: Dump complete repository contents and revision history
 
 package Pinto::Action::Dump;
 
@@ -57,7 +57,7 @@ override execute => sub {
 
     $self->mkpath($dumpdir);
     $self->_dump_archives($dumpdir);
-    $self->_dump_history($dumpdir);
+    $self->_dump_changes($dumpdir);
     $self->_dump_meta($dumpdir);
     $self->_dump_manifest($dumpdir);
     $self->_create_dumpfile($dumpdir);
@@ -100,7 +100,7 @@ sub _dump_manifest {
     }
 
     # Include metadata files in the manifest too
-    unshift @{ $mani }, qw(MANIFEST.json HISTORY.json META.json);
+    unshift @{ $mani }, qw(MANIFEST.json CHANGES.json META.json);
 
     my $json = JSON->new->pretty->encode($mani);
 
@@ -113,7 +113,7 @@ sub _dump_manifest {
 
 #------------------------------------------------------------------------------
 
-sub _dump_history {
+sub _dump_changes {
     my ($self, $dumpdir) = @_;
 
     $self->notice("Dumping repository revision history");
@@ -135,8 +135,8 @@ sub _dump_history {
                                     committed_on => $revision->committed_on,
                                     changes => [] };
 
-            my $registration_histories_rs = $revision->registration_histories_rs;
-            while (my $change = $registration_histories_rs->next) {
+            my $registration_changes_rs = $revision->registration_changes_rs;
+            while (my $change = $registration_changes_rs->next) {
 
                 my $pkg = $change->package;
                 my $change_struct = { package      => $pkg->name,
@@ -154,9 +154,9 @@ sub _dump_history {
         push @{ $hist }, $stack_struct;
     }
 
-    my $history_fh = $dumpdir->file('HISTORY.json')->openw;
-    print $history_fh JSON->new->pretty->encode($hist);
-    close $history_fh;
+    my $changes_fh = $dumpdir->file('CHANGES.json')->openw;
+    print $changes_fh JSON->new->pretty->encode($hist);
+    close $changes_fh;
 
     return $self;
 }

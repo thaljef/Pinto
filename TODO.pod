@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Rename RegistrationHistory to RegistrationChange.
-
 =item Make commit messages mandatory.  Generate message stub, shell out to editor
 
 =item Consider moving location of shared authors dir.

@@ -141,17 +141,17 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registration_histories
+=head2 registration_changes
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::RegistrationHistory>
+Related object: L<Pinto::Schema::Result::RegistrationChange>
 
 =cut
 
 __PACKAGE__->has_many(
-  "registration_histories",
-  "Pinto::Schema::Result::RegistrationHistory",
+  "registration_changes",
+  "Pinto::Schema::Result::RegistrationChange",
   { "foreign.revision" => "self.id" },
   { cascade_copy => 0, cascade_delete => 1 },
 );
@@ -190,8 +190,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-15 01:26:17
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7OH49QpUvSf0NeK8Mt3TOQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-17 14:51:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZspKGFKEbeq4j/t1lZHnTw
 
 #------------------------------------------------------------------------------
 
@@ -319,7 +319,7 @@ sub undo {
 
     $self->info("Undoing revision $self");
 
-    $_->undo for reverse $self->registration_histories;
+    $_->undo for reverse $self->registration_changes;
 
     return $self;
 }

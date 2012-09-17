@@ -1,12 +1,12 @@
 use utf8;
-package Pinto::Schema::Result::RegistrationHistory;
+package Pinto::Schema::Result::RegistrationChange;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Pinto::Schema::Result::RegistrationHistory
+Pinto::Schema::Result::RegistrationChange
 
 =cut
 
@@ -18,11 +18,11 @@ use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
 extends 'DBIx::Class::Core';
 
-=head1 TABLE: C<registration_history>
+=head1 TABLE: C<registration_change>
 
 =cut
 
-__PACKAGE__->table("registration_history");
+__PACKAGE__->table("registration_change");
 
 =head1 ACCESSORS
 
@@ -55,7 +55,7 @@ __PACKAGE__->table("registration_history");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 action
+=head2 event
 
   data_type: 'text'
   is_nullable: 0
@@ -73,7 +73,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "revision",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "action",
+  "event",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -91,7 +91,7 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<stack_package_is_pinned_revision_action_unique>
+=head2 C<stack_package_is_pinned_revision_event_unique>
 
 =over 4
 
@@ -103,15 +103,15 @@ __PACKAGE__->set_primary_key("id");
 
 =item * L</revision>
 
-=item * L</action>
+=item * L</event>
 
 =back
 
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "stack_package_is_pinned_revision_action_unique",
-  ["stack", "package", "is_pinned", "revision", "action"],
+  "stack_package_is_pinned_revision_event_unique",
+  ["stack", "package", "is_pinned", "revision", "event"],
 );
 
 =head1 RELATIONS
@@ -175,8 +175,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 11:16:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8p6rdIb9PyEo4/Q2PJR6Kg
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-17 14:51:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GWuFpa6jy8uIebZocaACBQ
 
 #-------------------------------------------------------------------------------
 
@@ -280,3 +280,4 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 __END__
+

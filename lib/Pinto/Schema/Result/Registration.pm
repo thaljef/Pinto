@@ -253,7 +253,7 @@ sub delete {
 #------------------------------------------------------------------------------
 
 sub _record_change {
-  my ($self, $action) = @_;
+  my ($self, $event) = @_;
 
     my $stack    = $self->stack;
     my $revision = $stack->head_revision;
@@ -265,10 +265,10 @@ sub _record_change {
                  package    => $self->package,
                  is_pinned  => $self->is_pinned,
                  revision   => $revision,
-                 action     => $action };
+                 event      => $event };
 
     # Update history....
-    my $rs = $self->result_source->schema->resultset('RegistrationHistory');
+    my $rs = $self->result_source->schema->resultset('RegistrationChange');
 
     # Usually, a package is added OR removed only once during a single
     # revision.  But during a Revert action, we unwind several past
@@ -280,7 +280,7 @@ sub _record_change {
         $self->debug("$change already applied to revision $revision. Skipping");
     }
     else {
-        my $verb = $action eq 'delete' ? 'deleted' : 'inserted';
+        my $verb = $event eq 'delete' ? 'deleted' : 'inserted';
         $self->debug( sub{"$self $verb in history for revision $revision"} );
         $rs->create($hist);
     }
