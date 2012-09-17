@@ -27,42 +27,35 @@ has message => (
 
 #------------------------------------------------------------------------------
 
+requires qw( execute );
+
+#------------------------------------------------------------------------------
+
 around execute => sub {
     my ($orig, $self, @args) = @_;
 
-    $self->repos->db->schema->txn_begin;
+    $self->repos->db->txn_begin;
 
-    my $result = try  {
+    my $result = try   { $self->$orig(@args) }
+                 catch { $self->repos->db->txn_rollback; die $_ };
 
-        my $res = $self->$orig(@args);
-
-        if ($self->dryrun) {
-            $self->notice('Dryrun -- rolling back database');
-            $self->repos->db->schema->txn_rollback;
-        }
-        elsif ( not $res->made_changes ) {
-            $self->notice('No changes were made');
-            $self->repos->db->schema->txn_rollback;
-        }
-        else {
-            $self->repos->db->schema->txn_commit;
-        }
-
-        $res; # returned from try{}
+    if (not $result->made_changes) {
+        $self->notice('No changes were made');
+        $self->repos->db->txn_rollback;
     }
-    catch {
-        $self->repos->db->schema->txn_rollback;
-        die $_;        ## no critic qw(Carping)
-    };
+    elsif ($self->dryrun) {
+        $self->notice('Dryrun -- rolling back database');
+        $self->repos->db->txn_rollback;
+    }
+    else {
+        $self->debug('Committing changes to database');
+        $self->repos->db->txn_commit;
+    }
 
     return $self->result;
 };
 
 #------------------------------------------------------------------------------
-# TODO: When we support real revision history, make the message
-# attribute required whenever the dryrun attribute is false.
-# ------------------------------------------------------------------------------
-
 1;
 
 __END__

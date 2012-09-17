@@ -51,6 +51,8 @@ sub lock {                                   ## no critic qw(Homonym)
 
     return if $self->_is_locked;
 
+    $lock_type ||= 'SH';
+
     local $File::NFSLock::LOCK_EXTENSION = '';
     local @File::NFSLock::CATCH_SIGS = ();
 

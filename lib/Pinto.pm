@@ -4,6 +4,8 @@ package Pinto;
 
 use Moose;
 
+use Try::Tiny;
+
 use Pinto::Repository;
 use Pinto::ActionFactory;
 
@@ -44,7 +46,14 @@ sub run {
     my ($self, $action_name, @action_args) = @_;
 
     my $action = $self->action_factory->create_action($action_name => @action_args);
-    my $result = $action->execute;
+
+    my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
+    $self->repos->lock($lock_type);
+
+    my $result = try   { $action->execute }
+                 catch { $self->repos->unlock; die $_ };
+
+    $self->repos->unlock;
 
     return $result;
 }

@@ -40,7 +40,6 @@ has db => (
     is         => 'ro',
     isa        => 'Pinto::Database',
     lazy       => 1,
-    handles    => [ qw(txn_begin txn_commit txn_rollback) ],
     default    => sub { Pinto::Database->new( config => $_[0]->config,
                                               logger => $_[0]->logger ) },
 );
@@ -90,9 +89,7 @@ has locker  => (
     is         => 'ro',
     isa        => 'Pinto::Locker',
     lazy       => 1,
-    handles    => { lock_exclusive => [lock => 'EX'],
-                    lock_shared    => [lock => 'SH'],
-                    unlock         => 'unlock' },
+    handles    => [ qw(lock unlock) ],
     default    => sub { Pinto::Locker->new( config => $_[0]->config,
                                             logger => $_[0]->logger ) },
 );
