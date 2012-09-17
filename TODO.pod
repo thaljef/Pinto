@@ -2,10 +2,6 @@
 
 =over 4
 
-=item Get tests passing again
-
-=item Fix locking mechanism (lock per stack, shared/exclusive, maybe in db).
-
 =item Eliminate denormalized data (unecessary preoptimization).
 
 =item Rename RegistrationHistory to RegistrationChange.
@@ -35,6 +31,8 @@
 =item Try to ensure integrity of commits
 
 #--------------------------
+
+=item Improve locking mechanism (one lock per stack, maybe in db).
 
 =item Command to list dependors and dependants
 
