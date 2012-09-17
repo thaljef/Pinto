@@ -571,7 +571,6 @@ sub _pull_by_distribution_spec {
 sub pull_prerequisites {
     my ($self, %args) = @_;
 
-    $DB::single = 1;
     my $dist  = $args{dist};
     my $stack = $args{stack};
 
