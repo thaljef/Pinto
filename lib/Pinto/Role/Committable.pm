@@ -6,6 +6,8 @@ use Moose::Role;
 use MooseX::Types::Moose qw(Bool Str);
 
 use Try::Tiny;
+use Term::EditorEdit;
+use IO::Interactive qw(is_interactive);
 
 #------------------------------------------------------------------------------
 
@@ -20,9 +22,9 @@ has dryrun => (
 );
 
 has message => (
-    is      => 'ro',
-    isa     => Str,
-    default => '',
+    is        => 'ro',
+    isa       => Str,
+    predicate => 'has_message',
 );
 
 #------------------------------------------------------------------------------
@@ -54,6 +56,25 @@ around execute => sub {
 
     return $self->result;
 };
+
+#------------------------------------------------------------------------------
+
+sub edit_message {
+    my ($self, %args) = @_;
+
+    return $self->message if $self->has_message;
+    $self->fatal('Must supply a commit message') if not is_interactive;
+
+    my $primer_header = "\n\n" . '-' x 79 . "\n\n";
+    my $primer = $primer_header . ($args{primer} || 'No details available');
+
+    my $message = Term::EditorEdit->edit(document => $primer);
+    $message =~ s/( \n+ -{79} \n .*)//smx;  # Strip primer
+
+    $self->fatal('Commit message is empty') if $message !~ /\S+/;
+
+    return $message;
+}
 
 #------------------------------------------------------------------------------
 1;

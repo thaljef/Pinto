@@ -49,9 +49,11 @@ sub execute {
 
     $self->_execute($_, $stack) for $self->targets;
 
-    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
+    my $message_primer = join "\n", $stack->head_revision->registration_changes;
 
-    $stack->close(message => $self->message);
+    $stack->close(message => $self->edit_message(primer => $message_primer));
+
+    $self->repos->write_index(stack => $stack);
 
     return $self->result->changed;
 }
