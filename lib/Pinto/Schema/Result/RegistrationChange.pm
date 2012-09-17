@@ -203,8 +203,8 @@ sub undo {
                   package   => $self->package->id,
                   is_pinned => $self->is_pinned };
 
-    my $action = $self->action;
-    if ($action eq 'insert') {
+    my $event = $self->event;
+    if ($event eq 'insert') {
 
         my $attrs = {key => 'stack_package_unique'};
         my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
@@ -214,7 +214,7 @@ sub undo {
         $self->debug("Removed $reg");
 
     }
-    elsif ($action eq 'delete') {
+    elsif ($event eq 'delete') {
 
         my $reg = $self->result_source->schema->resultset('Registration')->create($state);
 
@@ -222,7 +222,7 @@ sub undo {
 
     }
     else {
-      throw "Don't know how to undo action $action";
+      throw "Don't know how to undo event $event";
     }
 
     return $self;
@@ -236,7 +236,7 @@ sub to_string {
 
 
     my %fspec = (
-         A => sub { $self->action eq 'insert'               ? 'A' : 'D'         },
+         A => sub { $self->event eq 'insert'               ? 'A' : 'D'         },
          n => sub { $self->package->name                                        },
          N => sub { $self->package->vname                                       },
          v => sub { $self->package->version                                     },
