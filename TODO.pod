@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Store full URL of archives in the distributions table
+
 =item Consider moving location of shared authors dir.
 
 =item Write tests for versioning code.
@@ -12,17 +14,15 @@
 
 =item Command to examine the delta between two stacks or revisions
 
-=item Option to initialize bare repository (i.e. no initial stack)
-
 =item Add versioning to the stack props
 
 =item Add stack props and repos props to the dump META
 
 =item Create command to load repository from a dump
 
-=item Option to specify name/description of the initial stack
-
 =item Try to ensure integrity of commits
+
+=item Refactor the Initializer class
 
 #--------------------------
 
