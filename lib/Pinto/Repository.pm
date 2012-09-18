@@ -394,7 +394,6 @@ sub add {
     my $archive = $args{archive};
     my $author  = $args{author};
     my $source  = $args{source} || 'LOCAL';
-    my $index   = $args{index}  || 1;  # Is this needed?
 
     throw "Archive $archive does not exist"  if not -e $archive;
     throw "Archive $archive is not readable" if not -r $archive;
