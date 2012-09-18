@@ -71,7 +71,7 @@ sub edit_message {
     my $message = Term::EditorEdit->edit(document => $primer);
     $message =~ s/( \n+ -{79} \n .*)//smx;  # Strip primer
 
-    $self->fatal('Commit message is empty') if $message !~ /\S+/;
+    $self->fatal('Commit message is empty.  Aborting action') if $message !~ /\S+/;
 
     return $message;
 }

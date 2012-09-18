@@ -46,7 +46,9 @@ sub execute {
 
     $stack->set_property(description => $self->description) if $self->has_description;
 
-    $stack->close(message => $self->message);
+    my $message_primer = $stack->head_revision->change_details;
+
+    $stack->close(message => $self->edit_message(primer => $message_primer));
 
     $self->repos->write_index(stack => $stack);
 

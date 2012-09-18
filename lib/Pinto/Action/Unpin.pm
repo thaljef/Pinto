@@ -51,7 +51,9 @@ sub execute {
 
     return $self->result if $self->dryrun or not $stack->refresh->has_changed;
 
-    $stack->close(message => $self->message);
+    my $message_primer = $stack->head_revision->change_details;
+
+    $stack->close(message => $self->edit_message(primer => $message_primer));
 
     return $self->result->changed;
 }

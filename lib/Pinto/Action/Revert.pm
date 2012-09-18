@@ -50,9 +50,11 @@ sub execute {
 
     return $self->result if $self->dryrun or not $stack->refresh->has_changed;
 
-    $self->repos->write_index(stack => $stack);
+    my $message_primer = $stack->head_revision->change_details;
 
-    $stack->close(message => $self->message);
+    $stack->close(message => $self->edit_message(primer => $message_primer));
+
+    $self->repos->write_index(stack => $stack);
 
     return $self->result->changed;
 }

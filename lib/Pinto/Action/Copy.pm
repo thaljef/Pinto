@@ -56,7 +56,9 @@ sub execute {
     my $description = $self->description || "copy of stack $orig";
     $copy->set_property(description => $description);
 
-    $copy->close(message => $self->message);
+    my $message_primer = $copy->head_revision->change_details;
+
+    $copy->close(message => $self->edit_message(primer => $message_primer));
 
     $self->repos->write_index(stack => $copy);
 
