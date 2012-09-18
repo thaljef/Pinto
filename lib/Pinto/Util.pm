@@ -137,6 +137,7 @@ sub normalize_property_name {
     my ($prop_name) = @_;
 
     $prop_name = lc  $prop_name;
+    # TODO: make sure this regex matches the PropertykName type constraint
     throw "Invalid property name $prop_name" if $prop_name =~ m{[^a-z0-9._:-]};
 
     return $prop_name;
@@ -156,6 +157,7 @@ sub normalize_stack_name {
     my ($stack_name) = @_;
 
     $stack_name = lc  $stack_name;
+    # TODO: make sure this regex matches the StackName type constraint
     throw "Invalid stack name $stack_name" if $stack_name =~ m{[^a-z0-9._:-]};
 
     return $stack_name;
