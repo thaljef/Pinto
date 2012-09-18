@@ -460,7 +460,7 @@ sub pull {
     my ($self, %args) = @_;
 
     my $url = $args{url};
-    my ($source, $path, $author) = Pinto::Util::parse_dist_url( $url );
+    my ($host, $path, $author) = Pinto::Util::parse_dist_url( $url );
 
     throw "Distribution $path already exists"
         if $self->get_distribution( path => $path );
@@ -469,7 +469,7 @@ sub pull {
 
     my $dist = $self->add( archive   => $archive,
                            author    => $author,
-                           source    => $source );
+                           source    => $url );
     return $dist;
 }
 
