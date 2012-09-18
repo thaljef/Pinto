@@ -66,6 +66,12 @@ has dryrun => (
     default => 0,
 );
 
+has force => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
 #------------------------------------------------------------------------------
 
 with qw( Pinto::Role::PauseConfig );
@@ -105,19 +111,58 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
+sub _get_dist_information {
+    my ($self, $archive) = @_;
+
+    my @stacks;
+    my %pin;
+
+    my $dist = $self->repos->get_distribution(author  => $self->author,
+                                              archive => $archive->basename);
+    if ($dist) {
+        @stacks = $self->repos->get_stacks_for_distribution($dist);
+ STACK:
+        for my $stack (@stacks) {
+            my $pkgs = $dist->packages;
+            while (my $pkg = $pkgs->next) {
+                if ($pkg->registration(stack => $stack)->is_pinned) {
+                    $pin{$stack} = 1;
+                    next STACK;
+                }
+            }
+        }
+     }
+     return { stacks => \@stacks, pin => \%pin };
+}
+
 sub _execute {
     my ($self, $archive, $stack) = @_;
 
     $self->notice("Adding distribution archive $archive");
 
+    my $force = $self->force;
+
+    # With --force we keep stacks and pinning for later re-add
+    my $old;
+    $old = $self->_get_dist_information($archive) if $force;
+
     my $dist  = $self->repos->add( archive   => $archive,
-                                   author    => $self->author );
+                                   author    => $self->author,
+                                   force     => $force,
+                                 );
 
-    $dist->register( stack => $stack );
-    $dist->pin( stack => $stack ) if $self->pin;
+    my $stacks = $force ? $old->{stacks}
+                        : [$stack];
+    for my $s (@$stacks) {
+        my $pin = $force ? $old->{pin}{$s} || $self->pin && $s eq $stack
+                         : $self->pin;
 
-    $self->repos->pull_prerequisites( dist  => $dist,
-                                      stack => $stack ) unless $self->norecurse;
+        $dist->register( stack => $s );
+        $dist->pin( stack => $s ) if $pin;
+        $self->repos->pull_prerequisites( dist  => $dist,
+                                          stack => $s
+                                        ) unless $self->norecurse;
+    }
 
     return;
 }
