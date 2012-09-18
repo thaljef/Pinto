@@ -460,10 +460,10 @@ sub pull {
     my ($self, %args) = @_;
 
     my $url = $args{url};
-    my ($host, $path, $author) = Pinto::Util::parse_dist_url( $url );
+    my ($host, $path, $author) = Pinto::Util::parse_dist_url($url);
 
     throw "Distribution $path already exists"
-        if $self->get_distribution( path => $path );
+        if $self->get_distribution(path => $path);
 
     my $archive = $self->fetch_temporary(url => $url);
 
