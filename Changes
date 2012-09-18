@@ -6,7 +6,20 @@
      were created with prior versions.  The way that archives and
      indexes are stored on the filesystem has been made simpler
      and faster.  If using Pinto::Server, you'll need to upgrade
-     that too.
+     that too.  Contact thaljef@cpan.org if you need a migration
+     path for an existing repository.
+
+     New Features:
+
+     Now supports a Revert action, which restores the stack to
+     a prior revision.  This is light-weight form of version control.
+
+     Now supports a Log action, which displays the history of
+     changes to a stack.
+
+     Each action that changes the state of the repository now requires
+     a commit message.  You can pass this into the API, or it
+     will prompt for one via your editor.
 
      Other Changes:
 
