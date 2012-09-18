@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Write tests for versioning code.
-
 =item Extract versioning stuff to a separate dist.
 
 =item Command to unregister a pkg/dist
