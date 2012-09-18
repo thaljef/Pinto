@@ -77,9 +77,7 @@ has cache => (
 
 =attr locker
 
-=method lock_shared
-
-=method lock_exclusive
+=method lock( $LOCK_TYPE )
 
 =method unlock
 
