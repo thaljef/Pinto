@@ -35,7 +35,7 @@ has authors_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->root_dir->subdir('.authors') },
+    default   => sub { return $_[0]->pinto_dir->subdir('authors') },
     lazy      => 1,
 );
 
@@ -53,7 +53,7 @@ has modules_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->root_dir->subdir('.modules') },
+    default   => sub { return $_[0]->pinto_dir->subdir('modules') },
     lazy      => 1,
 );
 
@@ -141,7 +141,7 @@ has log_file => (
 
 has log_level  => (
     is         => 'ro',
-    isa        => LogLevel | Int,
+    isa        => Str,
     key        => 'log_level',
     default    => 'notice',
     documentation => 'Minimum logging level for the log file',
