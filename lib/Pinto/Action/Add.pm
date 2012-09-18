@@ -97,18 +97,16 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->open_stack(name => $self->stack);
-
     $self->_execute($_, $stack) for $self->archives;
+    $self->result->changed if $stack->refresh->has_changed;
 
-    return $self->result if $self->dryrun or not $stack->refresh->has_changed;
+    if ( not ($self->dryrun and $stack->has_changed) ) {
+        my $message_primer = $stack->head_revision->change_details;
+        $stack->close(message => $self->edit_message(primer => $message_primer));
+        $self->repos->write_index(stack => $stack);
+    }
 
-    my $message_primer = $stack->head_revision->change_details;
-
-    $stack->close(message => $self->edit_message(primer => $message_primer));
-
-    $self->repos->write_index(stack => $stack);
-
-    return $self->result->changed;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

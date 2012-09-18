@@ -39,14 +39,16 @@ around execute => sub {
     $self->repos->db->txn_begin;
 
     my $result = try   { $self->$orig(@args) }
-                 catch { $self->repos->db->txn_rollback; die $_ };
+                 catch { $self->repos->db->txn_rollback;
+                         $self->repos->clean_files; die $_ };
 
-    if (not $result->made_changes) {
-        $self->notice('No changes were made');
-        $self->repos->db->txn_rollback;
-    }
-    elsif ($self->dryrun) {
+    if ($self->dryrun) {
         $self->notice('Dryrun -- rolling back database');
+        $self->repos->db->txn_rollback;
+        $self->repos->clean_files;
+    }
+    elsif (not $result->made_changes) {
+        $self->notice('No changes were actually made');
         $self->repos->db->txn_rollback;
     }
     else {

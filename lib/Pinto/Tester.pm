@@ -293,7 +293,8 @@ sub repository_clean_ok {
     $self->tb->is_eq($stacks[0]->name, 'init',  'The stack is called "init"');
     $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
 
-    $self->path_not_exists_ok([ qw(authors id) ], 'The authors/id dir is gone');
+    my $authors_id_dir = $self->pinto->config->authors_id_dir;
+    $self->tb->ok(! -e $authors_id_dir, 'The .authors/id dir should be gone');
 
     return;
 }
