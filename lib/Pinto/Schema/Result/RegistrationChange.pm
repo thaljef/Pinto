@@ -180,7 +180,7 @@ with 'Pinto::Role::Schema::Result';
 
 #-------------------------------------------------------------------------------
 
-# ABSTRACT A single change to the registry
+# ABSTRACT: A single change to the registry
 
 #-------------------------------------------------------------------------------
 
