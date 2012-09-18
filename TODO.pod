@@ -26,6 +26,8 @@
 
 =item Consider using natural keys for package/dists.
 
+=item Consider pinning at dist level, not pkg
+
 =item Command to list dependors and dependants
 
 =item Command to verify prereqs on a stack
