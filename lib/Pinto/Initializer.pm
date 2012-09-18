@@ -9,6 +9,7 @@ use autodie;
 use PerlIO::gzip;
 use Path::Class;
 
+use Pinto::Util;
 use Pinto::Database;
 use Pinto::Repository;
 
@@ -22,6 +23,14 @@ use namespace::autoclean;
 
 with qw( Pinto::Role::Configurable
          Pinto::Role::PathMaker );
+
+#------------------------------------------------------------------------------
+
+# TODO: Can we use proper Moose attributes here, rather than passing a big
+# hash of attributes to the init() method.  I seem to remember that I needed
+# to do this so I would have something to give to $config->write.  But I'm
+# not convinced this was the right solution.  It would probably be better
+# to just put all the config attributes into repository props anyway.
 
 #------------------------------------------------------------------------------
 
@@ -67,8 +76,8 @@ sub init {
     # Write authors index
     $self->_write_mailrc;
 
-    # Create the inital stack
-    $self->_create_stack;
+    # Create the inital stack, if needed
+    $self->_create_stack(name => $args{stack}) unless $args{bare};
 
     # Log message for posterity
     $self->notice("Created new repository at directory $root_dir");
@@ -145,13 +154,16 @@ sub _create_db {
 #------------------------------------------------------------------------------
 
 sub _create_stack {
-    my ($self) = @_;
+    my ($self, %args) = @_;
+
+    my $stk_name  = Pinto::Util::normalize_stack_name( $args{name} || 'init');
+    my $stk_description = $args{description} || 'the initial stack';
 
     my $repos = Pinto::Repository->new(config => $self->config);
 
-    my $stack = $repos->create_stack(name => 'init', is_default => 1);
+    my $stack = $repos->create_stack(name => $stk_name, is_default => 1);
 
-    $stack->set_property(description => 'the initial stack');
+    $stack->set_property(description => $stk_description);
 
     $repos->write_index(stack => $stack);
 
