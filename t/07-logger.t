@@ -16,7 +16,7 @@ use Pinto::Logger;
 {
     my $temp     = File::Temp->newdir();
     my $root     = dir($temp->dirname);
-    my $logger   = Pinto::Logger->new(root => $root);
+    my $logger   = Pinto::Logger->new(root => $root, username => 'foo');
     my $log_file = $root->subdir( qw(.pinto log) )->file('pinto.log');
 
     $logger->error('error');     # Logged
@@ -27,16 +27,16 @@ use Pinto::Logger;
 
     ok -e $log_file, "log file exists at $log_file";
 
-    my @lines = $log_file->slurp();
-    is scalar @lines, 3, 'log file contains one line';
+    my @lines = $log_file->slurp;
+    is scalar @lines, 3, 'log file contains correct number of messages';
 
-    like $lines[-1], qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} NOTICE: notice$/,
+    like $lines[-1], qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} foo NOTICE: notice$/,
         'logged message is correct';
 }
 
 #-----------------------------------------------------------------------------
 {
-    my $temp     = File::Temp->newdir();
+    my $temp     = File::Temp->newdir;
     my $root     = dir($temp->dirname);
     my $logger   = Pinto::Logger->new(root => $root);
 
@@ -53,4 +53,4 @@ use Pinto::Logger;
 
 #-----------------------------------------------------------------------------
 
-done_testing();
+done_testing;
