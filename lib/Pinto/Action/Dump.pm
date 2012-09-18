@@ -1,18 +1,20 @@
-# ABSTRACT: Dump complete repository contents and revision history
+# ABSTRACT: Dump repository contents and revision history to a file
 
 package Pinto::Action::Dump;
 
 use Moose;
-use MooseX::Types::Moose qw(Int);
+use MooseX::Types::Moose qw(Int Str);
 
 use JSON;
 use DateTime;
 use Path::Class;
 use File::Temp;
+use File::Which qw(which);
 use File::Basename qw(basename);
 use Cwd::Guard qw(cwd_guard);
 
 use Pinto::Types qw(File);
+use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
@@ -32,6 +34,7 @@ has outfile => (
     is      => 'ro',
     isa     => File,
     default => sub { file('pinto-dump-' . DateTime->now->strftime('%Y%m%d-%H%M%S') . '.tar.gz') },
+    coerce  => 1,
     lazy    => 1,
 );
 
@@ -41,6 +44,13 @@ has dumpversion => (
    isa      => Int,
    default  => 1,
    init_arg => undef,
+);
+
+
+has tar_exe => (
+    is      => 'ro',
+    isa     => Str,
+    default => sub { which('tar') || throw 'Could not find tar in PATH' },
 );
 
 #------------------------------------------------------------------------------
@@ -56,10 +66,11 @@ override execute => sub {
     # $dumpdir is now something like /tmp/XXXXXX/pinto-dump-YYMMDD
 
     $self->mkpath($dumpdir);
-    $self->_dump_archives($dumpdir);
-    $self->_dump_changes($dumpdir);
     $self->_dump_meta($dumpdir);
+    $self->_dump_changes($dumpdir);
+    $self->_dump_distributions($dumpdir);
     $self->_dump_manifest($dumpdir);
+    $self->_link_authors_dir($dumpdir);
     $self->_create_dumpfile($dumpdir);
 
     return $self->result;
@@ -100,7 +111,7 @@ sub _dump_manifest {
     }
 
     # Include metadata files in the manifest too
-    unshift @{ $mani }, qw(MANIFEST.json CHANGES.json META.json);
+    unshift @{ $mani }, $self->_metafiles;
 
     my $json = JSON->new->pretty->encode($mani);
 
@@ -143,7 +154,7 @@ sub _dump_changes {
                                       version      => $pkg->version->stringify,
                                       distribution => $pkg->distribution->path,
                                       is_pinned    => $change->is_pinned,
-                                      action       => $change->action };
+                                      event        => $change->event };
 
                 push @{ $revision_struct->{changes} }, $change_struct;
             }
@@ -163,7 +174,34 @@ sub _dump_changes {
 
 #------------------------------------------------------------------------------
 
-sub _dump_archives {
+sub _dump_distributions {
+    my ($self, $dumpdir) = @_;
+
+    my $distributions = [];
+
+    my $distributions_rs = $self->repos->db->select_distributions;
+    while (my $dist = $distributions_rs->next) {
+
+        my $dist_struct = { author  => $dist->author,
+                            archive => $dist->path,
+                            source  => $dist->source,
+                            mtime   => $dist->mtime,
+                            sha256  => $dist->sha256,
+                            md5     => $dist->md5 };
+
+        push @{ $distributions }, $dist_struct;
+    }
+
+    my $archives_fh = $dumpdir->file('DISTRIBUTIONS.json')->openw;
+    print $archives_fh JSON->new->pretty->encode($distributions);
+    close $archives_fh;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _link_authors_dir {
     my ($self, $dumpdir) = @_;
 
     my $dump_authors_dir = $dumpdir->subdir('authors');
@@ -187,10 +225,22 @@ sub _create_dumpfile {
     $self->info("Creating dump file at $outfile");
     my $abs_outfile = $outfile->absolute;
 
-    # TODO: Replace this with Archive::Tar::Wrapper
+    my @cmd = ($self->tar_exe, qw(-c -z -L -f), $abs_outfile, $dumpdir->basename);
+    $self->debug('Creating dump file: ' . join ' ', @cmd);
+
     my $cwd_guard = cwd_guard($dumpdir->parent->stringify);
-    my $ok = not system qw(tar -c -z -L -f), $abs_outfile, $dumpdir->basename;
+    my $ok = not system @cmd;
+
     $self->fatal("tar command failed: $!") if not $ok;
+}
+
+
+#------------------------------------------------------------------------------
+
+sub _metafiles {
+
+  return qw(MANIFEST.json DISTRIBUTIONS.json CHANGES.json META.json);
+
 }
 
 #------------------------------------------------------------------------------
