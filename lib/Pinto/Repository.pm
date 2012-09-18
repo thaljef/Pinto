@@ -442,15 +442,9 @@ sub add {
 
 =method pull( url => $url )
 
-=method pull( package => $spec )
-
-=method pull( distribution => $spec )
-
-Pulls a distribution archive from an upstream repository and adds it
-to this repository.  The packages provided by the distribution will be
-indexed, and the prerequisites will be recorded.  The target can be
-specified as a URL, a L<Pinto::PackageSpec> or as a
-L<Pinto::DistributionSpec>.  Returns a
+Pulls a distribution archive from a remote URL and adds it to this
+repository.  The packages provided by the distribution will be
+indexed, and the prerequisites will be recorded.  Returns a
 L<Pinto::Schema::Result::Distribution> object representing the newly
 pulled distribution.
 
