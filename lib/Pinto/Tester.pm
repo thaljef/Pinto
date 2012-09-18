@@ -126,7 +126,7 @@ sub path_not_exists_ok {
     my ($self, $path, $name) = @_;
 
     $path = file( $self->root(), @{$path} );
-    $name ||= "Path $path does not exist";
+    $name ||= "Path $path should not exist";
 
     $self->tb->ok(! -e $path, $name);
 
@@ -197,15 +197,15 @@ sub registration_ok {
     # Archive should be reachable through stack symlink (e.g. $stack/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
     $self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
 
-    # Archive should be reachable through gobal authors dir (e.g. .authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
-    $self->path_exists_ok( [ qw(.authors id), $dist->native_path ] );
+    # Archive should be reachable through gobal authors dir (e.g. .pinto/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
+    $self->path_exists_ok( [ qw(.pinto authors id), $dist->native_path ] );
 
     # Test pins...
-    $self->tb->ok($reg->is_pinned,  "Registration $reg is pinned") if $is_pinned;
-    $self->tb->ok(!$reg->is_pinned, "Registration $reg is not pinned") if not $is_pinned;
+    $self->tb->ok($reg->is_pinned,  "Registration $reg should be pinned") if $is_pinned;
+    $self->tb->ok(!$reg->is_pinned, "Registration $reg should not be pinned") if not $is_pinned;
 
     # Test checksums...
-    $self->path_exists_ok( [qw(.authors id), $author_dir, 'CHECKSUMS'] );
+    $self->path_exists_ok( [qw(.pinto authors id), $author_dir, 'CHECKSUMS'] );
     # TODO: test actual checksum values?
 
     return;
@@ -226,9 +226,10 @@ sub registration_not_ok {
     my $where = {stack => $stack->id, package_name => $pkg_name, distribution_path => $dist_path};
     my $reg = $self->pinto->repos->db->select_registration($where);
 
-    return $self->tb->ok(1, "Registration $reg_spec does not exist")
+    return $self->tb->ok(1, "Registration $reg_spec should not exist")
         if not $reg;
 }
+
 #------------------------------------------------------------------------------
 
 sub result_ok {
@@ -279,6 +280,19 @@ sub result_not_changed_ok {
 
 #------------------------------------------------------------------------------
 
+sub head_revision_number_is {
+    my ($self, $revnum, $stack_name, $test_name) = @_;
+
+    my $stack       = $self->pinto->repos->get_stack(name => $stack_name);
+    my $head_revnum = $stack->head_revision->number;
+
+    $test_name ||= "Head revision number of stack $stack matches";
+
+    return $self->tb->is_eq($head_revnum, $revnum, $test_name);
+}
+
+#------------------------------------------------------------------------------
+
 sub repository_clean_ok {
     my ($self) = @_;
 
@@ -294,7 +308,7 @@ sub repository_clean_ok {
     $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
 
     my $authors_id_dir = $self->pinto->config->authors_id_dir;
-    $self->tb->ok(! -e $authors_id_dir, 'The .authors/id dir should be gone');
+    $self->tb->ok(! -e $authors_id_dir, 'The authors/id dir should be gone');
 
     return;
 }
