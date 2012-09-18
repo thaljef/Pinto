@@ -51,7 +51,7 @@ has log_handler => (
 );
 
 
-has log_username => (
+has username => (
     is       => 'rw',
     isa      => Str,
     default  => $ENV{USER} || $ENV{LOGIN} || $ENV{LOGNAME},
@@ -71,7 +71,7 @@ sub _build_log_handler {
                    my $msg   = $args{message};
                    my $level = uc $args{level};
                    my $now   = DateTime->now->iso8601;
-                   my $user  = $self->log_username;
+                   my $user  = $self->username;
                    return "$now $user $level: $msg" };
 
 
