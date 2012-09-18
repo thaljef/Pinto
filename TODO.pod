@@ -2,10 +2,6 @@
 
 =over 4
 
-=item Store full URL of archives in the distributions table
-
-=item Consider moving location of shared authors dir.
-
 =item Write tests for versioning code.
 
 =item Extract versioning stuff to a separate dist.
