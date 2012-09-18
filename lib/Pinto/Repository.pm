@@ -119,6 +119,8 @@ sub BUILD {
         throw "Directory $root_dir does not look like a Pinto repository";
     }
 
+    $self->check_schema_version;
+
     return $self;
 }
 
