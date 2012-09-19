@@ -72,7 +72,8 @@ sub execute {
 
     if ( not ($self->dryrun and $stack->has_changed) ) {
         my $message_primer = $stack->head_revision->change_details;
-        $stack->close(message => $self->edit_message(primer => $message_primer));
+        my $message = $self->edit_message(primer => $message_primer);
+        $stack->close(message => $message, committed_by => $self->username);
         $self->repos->write_index(stack => $stack);
     }
 

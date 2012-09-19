@@ -167,7 +167,7 @@ sub _create_stack {
 
     $repos->write_index(stack => $stack);
 
-    $stack->close(message => 'Created initial stack');
+    $stack->close(message => 'Created initial stack', committed_by => $ENV{USER});
 
     return;
 }

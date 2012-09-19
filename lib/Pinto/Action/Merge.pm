@@ -49,14 +49,16 @@ sub execute {
     $self->notice("Merging stack $from_stack into stack $to_stack");
 
     $from_stack->merge(to => $to_stack);
+    $self->result->changed if $to_stack->refresh->has_changed;
 
-    return $self->result if $self->dryrun or not $to_stack->refresh->has_changed;
+    if ( not ($self->dryrun and $to_stack->has_changed) ) {
+        my $message_primer = $to_stack->head_revision->change_details;
+        my $message = $self->edit_message(primer => $message_primer);
+        $to_stack->close(message => $message, committed_by => $self->username);
+        $self->repos->write_index(stack => $to_stack);
+    }
 
-    $self->repos->write_index(stack => $to_stack);
-
-    $to_stack->close(message => $self->message);
-
-    return $self->result->changed;
+    return $self->result;
 }
 
 #------------------------------------------------------------------------------

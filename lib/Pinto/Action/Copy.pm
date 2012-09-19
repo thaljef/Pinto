@@ -57,8 +57,8 @@ sub execute {
     $copy->set_property(description => $description);
 
     my $message_primer = $copy->head_revision->change_details;
-
-    $copy->close(message => $self->edit_message(primer => $message_primer));
+    my $message = $self->edit_message(primer => $message_primer);
+    $copy->close(message => $message, committed_by => $self->username);
 
     $self->repos->write_index(stack => $copy);
 
