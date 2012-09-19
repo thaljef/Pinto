@@ -121,6 +121,12 @@ incompatible with your application.  Pinto allows you to "pin" a
 dependency to a stack, which prevents it from being accidentally
 upgraded (either directly or via some other dependency).
 
+=item * Pinto has built-in version control
+
+When things go wrong, you can roll back any of the indexes in your
+Pinto repository to a prior revision.  Also, you can view the complete
+history of index changes as you add or upgrade dependencies.
+
 =item * Pinto can pull archives from multiple remote repositories
 
 Pinto can pull dependencies from multiple sources, so you can create
