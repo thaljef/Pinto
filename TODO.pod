@@ -22,6 +22,8 @@
 
 #--------------------------
 
+=item Attribute to indicate of package was explicitly requested for stack
+
 =item Improve locking mechanism (one lock per stack, maybe in db).
 
 =item Consider using natural keys for package/dists.
