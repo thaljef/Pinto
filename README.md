@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.052
+version 0.053
 
 # SYNOPSIS
 
@@ -44,6 +44,12 @@ Sometimes, you discover that a new version of a dependency is
 incompatible with your application.  Pinto allows you to "pin" a
 dependency to a stack, which prevents it from being accidentally
 upgraded (either directly or via some other dependency).
+
+- Pinto has built-in version control
+
+When things go wrong, you can roll back any of the indexes in your
+Pinto repository to a prior revision.  Also, you can view the complete
+history of index changes as you add or upgrade dependencies.
 
 - Pinto can pull archives from multiple remote repositories
 
