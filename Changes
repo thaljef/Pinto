@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+     Requires DBIx::Class-0.08200 or newer.  In certain earlier
+     versions, prefetching was broken.
+
 0.052     2012-09-18 16:15:38 America/Los_Angeles
 
      Important:
