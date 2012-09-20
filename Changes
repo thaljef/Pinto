@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+     For the List action, the magic stack name is now '%'
+     instead of '@'.  This was changed to distinguish it
+     from revision strings that look like stack@1234.
+
 0.054     2012-09-19 22:02:57 America/Los_Angeles
 
      Added a workaround so Pinto can cope with the nonsensical
