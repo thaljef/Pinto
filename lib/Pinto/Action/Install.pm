@@ -22,6 +22,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Committable );
+
+#------------------------------------------------------------------------------
+
 has cpanm_options => (
     is      => 'ro',
     isa     => HashRef[Maybe[Str]],
@@ -90,8 +94,14 @@ sub execute {
     my $stack = $self->repos->get_stack(name => $self->stack);
 
     do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
+    $self->result->changed if $stack->refresh->has_changes;
 
-    $self->repos->write_index(stack => $stack) if $self->result->made_changes;
+    if ($stack->has_changed and not $self->dryrun) {
+        my $message_primer = $stack->head_revision->change_details;
+        my $message = $self->edit_message(primer => $message_primer);
+        $stack->close(message => $message, committed_by => $self->username);
+        $self->repos->write_index(stack => $stack);
+    }
 
     $self->_install($stack, $self->targets);
 
