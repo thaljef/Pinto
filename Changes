@@ -1,7 +1,18 @@
 {{$NEXT}}
 
+     Bug Fixes:
+
+     For all committable actions, a commit message is required only
+     if the action actually changed the state of the repository. A
+     commit message is never required for a dryrun action.
+
+     Other Changes:
+
      Requires DBIx::Class-0.08200 or newer.  In certain earlier
      versions, prefetching was broken.
+
+     The Install action is now committable, but it only matters
+     when it is also pulling packages.
 
 0.052     2012-09-18 16:15:38 America/Los_Angeles
 
