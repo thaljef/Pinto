@@ -71,7 +71,7 @@ sub execute {
     $self->_execute($_, $stack) for $self->targets;
     $self->result->changed if $stack->refresh->has_changed;
 
-    if ($self->pull and $stack->has_changed and not $self->dryrun) {
+    if ($stack->has_changed and not $self->dryrun) {
         my $message_primer = $stack->head_revision->change_details;
         my $message = $self->edit_message(primer => $message_primer);
         $stack->close(message => $message, committed_by => $self->username);
