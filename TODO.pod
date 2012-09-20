@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Decide where to hang the username in the API.
+
 =item Ensure the Store does not overwrite files.
 
 =item Extract versioning stuff to a separate dist.
