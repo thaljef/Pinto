@@ -91,10 +91,11 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->pull ? $self->repos->open_stack(name => $self->stack)
+                            : $self->repos->get_stack(name => $self->stack);
 
     do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
-    $self->result->changed if $stack->refresh->has_changes;
+    $self->result->changed if $stack->refresh->has_changed;
 
     if ($stack->has_changed and not $self->dryrun) {
         my $message_primer = $stack->head_revision->change_details;
