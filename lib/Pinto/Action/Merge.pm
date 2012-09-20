@@ -51,7 +51,7 @@ sub execute {
     $from_stack->merge(to => $to_stack);
     $self->result->changed if $to_stack->refresh->has_changed;
 
-    if ( not ($self->dryrun and $to_stack->has_changed) ) {
+    if ($to_stack->has_changed and not $self->dryrun) {
         my $message_primer = $to_stack->head_revision->change_details;
         my $message = $self->edit_message(primer => $message_primer);
         $to_stack->close(message => $message, committed_by => $self->username);
