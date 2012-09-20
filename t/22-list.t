@@ -25,7 +25,7 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 {
   my $buffer = '';
   my $out = IO::String->new(\$buffer);
-  $t->run_ok( 'List' => {stack => '@', out => $out} );
+  $t->run_ok( 'List' => {stack => '%', out => $out} );
   my @lines = split /\n/, $buffer;
 
   is scalar @lines, 3, 'Got correct number of records in listing';
