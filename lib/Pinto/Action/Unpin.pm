@@ -53,7 +53,7 @@ sub execute {
     if ( $stack->has_changed and not $self->dryrun ) {
         my $message_primer = $stack->head_revision->change_details;
         my $message = $self->edit_message(primer => $message_primer);
-        $stack->close(message => $message, committed_by => $self->username);
+        $stack->close(message => $message);
     }
 
     return $self->result;

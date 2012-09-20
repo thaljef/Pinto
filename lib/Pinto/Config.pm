@@ -31,6 +31,13 @@ has root       => (
 );
 
 
+has username  => (
+    is        => 'ro',
+    isa       => Str,
+    default   => sub { return $ENV{USER} || $ENV{USERNAME} || $ENV{LOGNAME} },
+);
+
+
 has authors_dir => (
     is        => 'ro',
     isa       => Dir,
