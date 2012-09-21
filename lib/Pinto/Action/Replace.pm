@@ -95,7 +95,13 @@ sub execute {
     my @changed_stacks = grep {$self->_replace( $_, $new_dist )} @registered_stacks;
     return $self->result if not @changed_stacks;
 
-    my $primer = join "\n\n", map {$_->head_revision->change_details} @changed_stacks;
+    my $primer = '';
+    for my $stack (@changed_stacks) {
+        $primer .= "STACK: $stack\n";
+        $primer .= $stack->head_revision->change_details;
+        $primer .= "\n\n";
+    }
+
     my $message = $self->edit_message(primer => $primer);
 
     for my $stack (@changed_stacks) {
