@@ -330,7 +330,7 @@ sub undo {
 
     $self->info("Undoing revision $self");
 
-    $_->undo for reverse $self->registration_changes;
+    $_->undo(stack => $self->stack) for reverse $self->registration_changes;
 
     return $self;
 }

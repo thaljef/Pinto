@@ -64,13 +64,11 @@ CREATE TABLE registration (
 
 CREATE TABLE registration_change (
        id           INTEGER PRIMARY KEY NOT NULL,
-       stack        INTEGER             NOT NULL,
+       event        TEXT                NOT NULL,
        package      INTEGER             NOT NULL,
        is_pinned    INTEGER             NOT NULL,
        revision     INTEGER             NOT NULL,
-       event        TEXT                NOT NULL,
 
-       FOREIGN KEY(stack)    REFERENCES stack(id),
        FOREIGN KEY(package)  REFERENCES package(id),
        FOREIGN KEY(revision) REFERENCES revision(id)
 );
@@ -107,7 +105,7 @@ CREATE UNIQUE INDEX c ON stack(name);
 CREATE UNIQUE INDEX d ON stack(head_revision);
 CREATE UNIQUE INDEX e ON registration(stack, package_name);
 CREATE UNIQUE INDEX f ON registration(stack, package);
-CREATE UNIQUE INDEX g ON registration_change(stack, package, is_pinned, revision, event);
+CREATE UNIQUE INDEX g ON registration_change(event, package, is_pinned, revision);
 CREATE UNIQUE INDEX h ON revision(stack, number);
 CREATE UNIQUE INDEX i ON prerequisite(distribution, package_name);
 CREATE UNIQUE INDEX j ON stack_property(stack, key);

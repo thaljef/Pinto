@@ -261,11 +261,10 @@ sub _record_change {
     throw "Stack $stack is not open for revision"
       if $revision->is_committed;
 
-    my $hist = { stack      => $stack,
+    my $hist = { event      => $event,
                  package    => $self->package,
                  is_pinned  => $self->is_pinned,
-                 revision   => $revision,
-                 event      => $event };
+                 revision   => $revision };
 
     # Update history....
     my $rs = $self->result_source->schema->resultset('RegistrationChange');

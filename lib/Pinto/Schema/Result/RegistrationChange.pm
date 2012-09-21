@@ -32,10 +32,9 @@ __PACKAGE__->table("registration_change");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 stack
+=head2 event
 
-  data_type: 'integer'
-  is_foreign_key: 1
+  data_type: 'text'
   is_nullable: 0
 
 =head2 package
@@ -55,26 +54,19 @@ __PACKAGE__->table("registration_change");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 event
-
-  data_type: 'text'
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "stack",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "event",
+  { data_type => "text", is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
   { data_type => "integer", is_nullable => 0 },
   "revision",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "event",
-  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -91,11 +83,11 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<stack_package_is_pinned_revision_event_unique>
+=head2 C<event_package_is_pinned_revision_unique>
 
 =over 4
 
-=item * L</stack>
+=item * L</event>
 
 =item * L</package>
 
@@ -103,15 +95,13 @@ __PACKAGE__->set_primary_key("id");
 
 =item * L</revision>
 
-=item * L</event>
-
 =back
 
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "stack_package_is_pinned_revision_event_unique",
-  ["stack", "package", "is_pinned", "revision", "event"],
+  "event_package_is_pinned_revision_unique",
+  ["event", "package", "is_pinned", "revision"],
 );
 
 =head1 RELATIONS
@@ -146,21 +136,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 stack
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "stack",
-  "Pinto::Schema::Result::Stack",
-  { id => "stack" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -175,8 +150,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-17 14:51:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GWuFpa6jy8uIebZocaACBQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-20 20:30:39
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:F9THyblUg5XM6rx5oIH7Ag
 
 #-------------------------------------------------------------------------------
 
@@ -197,9 +172,11 @@ use overload ( q{""} => 'to_string' );
 #-------------------------------------------------------------------------------
 
 sub undo {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    my $state = { stack     => $self->stack->id,
+    my $stack = $args{stack};
+
+    my $state = { stack     => $stack->id,
                   package   => $self->package->id,
                   is_pinned => $self->is_pinned };
 
@@ -208,7 +185,7 @@ sub undo {
 
         my $attrs = {key => 'stack_package_unique'};
         my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
-        throw "Found no registrations matching $self" if not $reg;
+        throw "Found no registrations matching $self on stack $stack" if not $reg;
 
         $reg->delete;
         $self->debug("Removed $reg");
@@ -236,27 +213,27 @@ sub to_string {
 
 
     my %fspec = (
-         A => sub { $self->event eq 'insert'               ? 'A' : 'D'         },
-         n => sub { $self->package->name                                        },
-         N => sub { $self->package->vname                                       },
-         v => sub { $self->package->version                                     },
-         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'         },
-         p => sub { $self->package->distribution->path                          },
-         P => sub { $self->package->distribution->native_path                   },
-         f => sub { $self->package->distribution->archive                       },
-         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'         },
-         S => sub { $self->package->distribution->source                        },
-         a => sub { $self->package->distribution->author                        },
-         d => sub { $self->package->distribution->name                          },
-         D => sub { $self->package->distribution->vname                         },
-         w => sub { $self->package->distribution->version                       },
-         u => sub { $self->package->distribution->url                           },
-         k => sub { $self->stack->name                                          },
-         M => sub { $self->stack->is_default                 ? '*' : ' '        },
-         e => sub { $self->stack->get_property('description')                   },
-         j => sub { $self->stack->head_revision->committed_by                   },
-         u => sub { $self->stack->head_revision->committed_on                   },
-         y => sub { $self->is_pinned                        ? '+' : ' '         },
+         A => sub { $self->event eq 'insert'                    ? 'A' : 'D'         },
+         n => sub { $self->package->name                                            },
+         N => sub { $self->package->vname                                           },
+         v => sub { $self->package->version                                         },
+         m => sub { $self->package->distribution->is_devel      ? 'd' : 'r'         },
+         p => sub { $self->package->distribution->path                              },
+         P => sub { $self->package->distribution->native_path                       },
+         f => sub { $self->package->distribution->archive                           },
+         s => sub { $self->package->distribution->is_local      ? 'l' : 'f'         },
+         S => sub { $self->package->distribution->source                            },
+         a => sub { $self->package->distribution->author                            },
+         d => sub { $self->package->distribution->name                              },
+         D => sub { $self->package->distribution->vname                             },
+         w => sub { $self->package->distribution->version                           },
+         u => sub { $self->package->distribution->url                               },
+         k => sub { $self->revision->stack->name                                    },
+         M => sub { $self->revision->stack->is_default          ? '*' : ' '         },
+         e => sub { $self->revision->stack->get_property('description')             },
+         j => sub { $self->revision->stack->head_revision->committed_by             },
+         u => sub { $self->revision->revision->committed_on                         },
+         y => sub { $self->is_pinned                            ? '+' : ' '         },
     );
 
     # Some attributes are just undefined, usually because of

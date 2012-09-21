@@ -123,21 +123,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 registration_changes
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::RegistrationChange>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
-);
-
 =head2 registrations
 
 Type: has_many
@@ -197,8 +182,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-17 14:51:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iiRBkYCaNapPwU/nGcqQzQ
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-20 20:30:39
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NfAOBa7alfkRkaNY42pUhg
 
 #-------------------------------------------------------------------------------
 
