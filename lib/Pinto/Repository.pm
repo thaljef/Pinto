@@ -635,8 +635,6 @@ sub create_stack {
 
     $revision->update( {stack => $stack} );
 
-    $self->create_stack_filesystem(stack => $stack);
-
     return $stack;
 }
 
@@ -654,22 +652,9 @@ sub copy_stack {
 
     $revision->update( {stack => $copy} );
 
-    $self->create_stack_filesystem(stack => $copy);
-
     $copy->refresh;  # Make sure $copy has reference to the new $revision
 
     return $copy;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_stack {
-   my ($self, %args) = @_;
-
-   $args{stack}->delete;
-   $self->delete_stack_filesystem(%args);
-
-   return $self;
 }
 
 #-------------------------------------------------------------------------------

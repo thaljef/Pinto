@@ -60,6 +60,7 @@ sub execute {
     my $message = $self->edit_message(primer => $message_primer);
     $copy->close(message => $message);
 
+    $self->repos->create_stack_filesystem(stack => $copy);
     $self->repos->write_index(stack => $copy);
 
     return $self->result->changed;

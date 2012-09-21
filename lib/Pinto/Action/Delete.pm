@@ -32,7 +32,8 @@ sub execute {
 
     my $stack = $self->repos->get_stack(name => $self->stack);
 
-    $self->repos->delete_stack(stack => $stack);
+    $self->repos->delete_stack_filesystem(stack => $stack);
+    $stack->delete;
 
     return $self->result->changed;
 }
