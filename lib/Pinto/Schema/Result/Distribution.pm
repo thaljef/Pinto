@@ -109,6 +109,30 @@ __PACKAGE__->set_primary_key("id");
 
 __PACKAGE__->add_unique_constraint("author_archive_unique", ["author", "archive"]);
 
+=head2 C<md5_unique>
+
+=over 4
+
+=item * L</md5>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("md5_unique", ["md5"]);
+
+=head2 C<sha256_unique>
+
+=over 4
+
+=item * L</sha256>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("sha256_unique", ["sha256"]);
+
 =head1 RELATIONS
 
 =head2 packages
@@ -155,8 +179,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07015 @ 2012-05-09 09:12:08
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HqbbygyiJcg0vCTHPiKzHw
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-21 14:48:08
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lo9xjZQaCJQ7jdjcCKKygw
 
 #-------------------------------------------------------------------------------
 

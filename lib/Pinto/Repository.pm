@@ -425,19 +425,12 @@ sub add {
     my $author  = $args{author};
     my $source  = $args{source} || 'LOCAL';
 
-    throw "Archive $archive does not exist"  if not -e $archive;
-    throw "Archive $archive is not readable" if not -r $archive;
-
-    my $archive_basename = $archive->basename;
-    my $dist_pretty      = "$author/$archive_basename";
-
-    $self->get_distribution(author => $author, archive => $archive_basename)
-        and throw "Distribution $dist_pretty already exists";
+    $self->_validate_archive($author, $archive);
 
     # Assemble the basic structure...
     my $dist_struct = { author   => $author,
                         source   => $source,
-                        archive  => $archive_basename,
+                        archive  => $archive->basename,
                         mtime    => Pinto::Util::mtime($archive),
                         md5      => Pinto::Util::md5($archive),
                         sha256   => Pinto::Util::sha256($archive) };
@@ -452,7 +445,7 @@ sub add {
 
     my $p = @provides;
     my $r = @requires;
-    $self->info("Distribution $dist_pretty provides $p and requires $r packages");
+    $self->info("Distribution $archive provides $p and requires $r packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
@@ -464,6 +457,28 @@ sub add {
     $self->store->add_archive( $archive => $destination );
 
     return $dist;
+}
+
+#------------------------------------------------------------------------------
+
+sub _validate_archive {
+    my ($self, $author, $archive) = @_;
+
+    throw "Archive $archive does not exist"  if not -e $archive;
+    throw "Archive $archive is not readable" if not -r $archive;
+
+    my $basename = $archive->basename;
+    if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
+        throw "Distribution $same_path already exists";
+    }
+
+    # Not yet, need to merge code from topic/replace branch.
+    #my $md5 = Pinto::Util::md5($archive);
+    #if (my $same_md5 = $self->get_distribution(md5 => $md5)) {
+    #    throw "Archive $archive is identical to $same_md5";
+    #}
+
+    return;
 }
 
 #------------------------------------------------------------------------------
