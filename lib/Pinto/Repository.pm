@@ -359,6 +359,8 @@ sub get_package {
 
 =method get_distribution( path => $dist_path )
 
+=method get_distribution( md5 => $md5 )
+
 Returns the L<Pinto::Schema::Result::Distribution> with the given
 author ID and archive name.  If given a L<Pinto::DistributionSpec>
 object, it will get the author ID and archive name from it instead.
@@ -371,17 +373,27 @@ no matching distribution in the respoistory, returns nothing.
 sub get_distribution {
     my ($self, %args) = @_;
 
-    if (my $spec = delete $args{spec}) {
-        $args{author}  = $spec->author;
-        $args{archive} = $spec->archive;
+    my %where;
+    my %attrs = (key => 'author_archive_unique');
+
+    if (my $spec = $args{spec}) {
+        $where{author}  = $spec->author;
+        $where{archive} = $spec->archive;
     }
-    elsif (my $path = delete $args{path}) {
+    elsif (my $path = $args{path}) {
         my ($author, $archive) = Pinto::Util::parse_dist_path($path);
-        $args{author}  = $author;
-        $args{archive} = $archive;
+        $where{author}  = $author;
+        $where{archive} = $archive;
+    }
+    elsif (my $md5 = $args{md5}){
+         $where{md5} = $md5;
+         $attrs{key} = 'md5_unique';
+     }
+    else {
+        %where = %args;
     }
 
-    return $self->db->select_distribution( \%args );
+    return $self->db->select_distribution( \%where, \%attrs );
 
 }
 
@@ -486,11 +498,10 @@ sub _validate_archive {
         throw "Distribution $same_path already exists";
     }
 
-    # Not yet, need to merge code from topic/replace branch.
-    #my $md5 = Pinto::Util::md5($archive);
-    #if (my $same_md5 = $self->get_distribution(md5 => $md5)) {
-    #    throw "Archive $archive is identical to $same_md5";
-    #}
+    my $md5 = Pinto::Util::md5($archive);
+    if (my $same_md5 = $self->get_distribution(md5 => $md5)) {
+        throw "Archive $archive is identical to $same_md5";
+    }
 
     return;
 }

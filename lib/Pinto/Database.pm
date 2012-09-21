@@ -57,8 +57,8 @@ sub _build_schema {
 sub select_distributions {
     my ($self, $where, $attrs) = @_;
 
-    $where ||= {};
-    $attrs ||= {prefetch => 'packages'};
+    $attrs ||= {};
+    $attrs->{prefetch} ||= 'packages';
 
     return $self->schema->resultset('Distribution')->search($where, $attrs);
 }
@@ -68,8 +68,9 @@ sub select_distributions {
 sub select_distribution {
     my ($self, $where, $attrs) = @_;
 
-    $where ||= {};
-    $attrs ||= {prefetch => 'packages', key => 'author_archive_unique'};
+    $attrs ||= {};
+    $attrs->{prefetch} ||= 'packages';
+    $attrs->{key}      ||= 'author_archive_unique';
 
     return $self->schema->resultset('Distribution')->find($where, $attrs);
 }
@@ -79,8 +80,8 @@ sub select_distribution {
 sub select_packages {
     my ($self, $where, $attrs) = @_;
 
-    $where ||= {};
-    $attrs ||= {prefetch => 'distribution'};
+    $attrs ||= {};
+    $attrs->{prefetch} ||= 'distribution';
 
     return $self->schema->resultset('Package')->search($where, $attrs);
 }
@@ -91,7 +92,7 @@ sub select_registration {
   my ($self, $where, $attrs) = @_;
 
   $attrs ||= {};
-  $attrs->{key} = 'stack_package_name_unique';
+  $attrs->{key} ||= 'stack_package_name_unique';
 
   return $self->schema->resultset('Registration')->find($where, $attrs);
 }
@@ -101,8 +102,8 @@ sub select_registration {
 sub select_registrations {
     my ($self, $where, $attrs) = @_;
 
-    $where ||= {};
-    $attrs ||= { pefetch => [ qw( package stack pin ) ] };
+    $attrs ||= {};
+    $attrs->{pefetch} ||= [ qw( package stack pin ) ];
 
     return $self->schema->resultset('Registration')->search($where, $attrs);
 }

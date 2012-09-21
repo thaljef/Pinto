@@ -47,7 +47,10 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 
   $t->run_ok('Add', {archives => $archive, author => $auth});
   $t->run_throws_ok( 'Add', {archives => $archive, author => $auth},
-                     qr/already exists/, 'Cannot add same dist twice' );
+                     qr/already exists/, 'Cannot add dist to same path twice' );
+
+  $t->run_throws_ok( 'Add', {archives => $archive, author => 'JOE'},
+                     qr/is identical/, 'Cannot add identical dists to different paths' );
 
   $t->run_throws_ok( 'Add', {archives => 'bogus', author => $auth},
                      qr/Some archives are missing/, 'Cannot add nonexistant archive' );
