@@ -1,6 +1,6 @@
-package Pinto::Role::Configurable;
-
 # ABSTRACT: Something that has a configuration
+
+package Pinto::Role::Configurable;
 
 use Moose::Role;
 
