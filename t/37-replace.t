@@ -1,4 +1,3 @@
-
 #!perl
 
 use strict;
@@ -24,7 +23,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
   $t->run_ok(Copy => {from_stack => 'init', to_stack => 'dev'});
 
   # TODO: replacing a pinned dist is not yet supported!
-  # $t->run_ok(Pin => {stack => 'init', targets => ['JOHN/Dist-1.tar.gz']});
+  # $t->run_ok(Pin => {stack => 'dev', targets => ['JOHN/Dist-1.tar.gz']});
 
   # Create a new "qa" stack
   $t->run_ok(New => {stack => 'qa'});
@@ -35,23 +34,28 @@ use Pinto::Tester::Util qw(make_dist_archive);
   # Put archive_2 on the qa stack
   $t->run_ok(Add => {archives => $archive_2, author => 'JOHN', stack => 'qa', norecurse => 1});
 
-  # archive_hotfixed has same version numbers as archive_1, but different file name
-  my $archive_hotfixed = make_dist_archive('Dist-Hotfix-1=PkgA~1,PkgB~1');
+  # archive_hotfixed has same packages/versions as archive_1, plus additional PkgC~1
+  my $archive_hotfixed = make_dist_archive('Dist-Hotfix-1=PkgA~1,PkgB~1,PkgC~1');
 
   # Now replace archive_1 with archive_hotfixed
   $t->run_ok(Replace => {target => 'JOHN/Dist-1.tar.gz', archive => $archive_hotfixed, author => 'JOHN'});
 
-  # 'init' stack should now have hotfixed versions of PkgA and PkgB
+  # 'init' stack should now have hotfixed versions of PkgA, PkgB, and PkgC
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgA~1/init');
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgB~1/init');
+  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgC~1/init');
 
-  # 'dev' stack should also have the hotfixed versions of PkgA and PkgB
+  # 'dev' stack should also have the hotfixed versions of PkgA, PkgB, and PkgC
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgA~1/dev');
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgB~1/dev');
+  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgC~1/init');
 
-  # but 'qa' stack should still point to the other versions
+  # but 'qa' stack should still point to the other versions of PkgA and PkgB
   $t->registration_ok('JOHN/Dist-2/PkgA~2/qa');
   $t->registration_ok('JOHN/Dist-2/PkgB~2/qa');
+
+  # and 'qa' stack should not have PkgC
+  $t->registration_not_ok('JOHN/Dist-Hotfix-1/PkgC~1/qa');
 
 }
 #------------------------------------------------------------------------------
