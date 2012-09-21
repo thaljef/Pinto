@@ -357,22 +357,32 @@ sub get_package {
 
 =method get_distribution( spec => $dist_spec )
 
+=method get_distribution( path => $dist_path )
+
 Returns the L<Pinto::Schema::Result::Distribution> with the given
-author ID and archive name.  If there is no distribution in the
-respoistory, returns nothing.
+author ID and archive name.  If given a L<Pinto::DistributionSpec>
+object, it will get the author ID and archive name from it instead.
+If given a distribution path like those from an 02packages file, it
+parses the author ID and archive name from that instead.  If there is
+no matching distribution in the respoistory, returns nothing.
 
 =cut
 
 sub get_distribution {
     my ($self, %args) = @_;
 
-    my $author  = $args{spec} ? $args{spec}->author  : $args{author};
-    my $archive = $args{spec} ? $args{spec}->archive : $args{archive};
+    if (my $spec = delete $args{spec}) {
+        $args{author}  = $spec->author;
+        $args{archive} = $spec->archive;
+    }
+    elsif (my $path = delete $args{path}) {
+        my ($author, $archive) = Pinto::Util::parse_dist_path($path);
+        $args{author}  = $author;
+        $args{archive} = $archive;
+    }
 
-    my $where = { author => $author, archive => $archive };
-    my $dist  = $self->db->select_distribution( $where );
+    return $self->db->select_distribution( \%args );
 
-    return $dist ? $dist : ();
 }
 
 #-------------------------------------------------------------------------------
@@ -486,11 +496,12 @@ sub pull {
     my ($self, %args) = @_;
 
     my $url = $args{url};
-    my ($host, $path, $author) = Pinto::Util::parse_dist_url($url);
+    my $path = $url->path;
 
-    throw "Distribution $path already exists"
-        if $self->get_distribution(path => $path);
+    my $existing = $self->get_distribution(path => $path);
+    throw "Distribution $existing already exists" if $existing;
 
+    my ($author, undef) = Pinto::Util::parse_dist_path($path);
     my $archive = $self->fetch_temporary(url => $url);
 
     my $dist = $self->add( archive   => $archive,
