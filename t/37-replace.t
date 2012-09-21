@@ -23,6 +23,9 @@ use Pinto::Tester::Util qw(make_dist_archive);
   # Copy the "init" stack to "dev".  Both now have the same PkgA and PkgB from archive_1
   $t->run_ok(Copy => {from_stack => 'init', to_stack => 'dev'});
 
+  # TODO: replacing a pinned dist is not yet supported!
+  # $t->run_ok(Pin => {stack => 'init', targets => ['JOHN/Dist-1.tar.gz']});
+
   # Create a new "qa" stack
   $t->run_ok(New => {stack => 'qa'});
 
