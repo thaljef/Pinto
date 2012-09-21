@@ -306,7 +306,7 @@ and properties.
 sub open_stack {
     my ($self, %args) = @_;
 
-    my $stack = $self->get_stack(%args, nocroak => 0);
+    my $stack = $args{stack} || $self->get_stack(%args, nocroak => 0);
     my $revision = $self->open_revision(stack => $stack);
 
     return $stack;
@@ -355,6 +355,8 @@ sub get_package {
 
 =method get_distribution( author => $author, archive => $archive )
 
+=method get_distribution( spec => $dist_spec )
+
 Returns the L<Pinto::Schema::Result::Distribution> with the given
 author ID and archive name.  If there is no distribution in the
 respoistory, returns nothing.
@@ -364,11 +366,13 @@ respoistory, returns nothing.
 sub get_distribution {
     my ($self, %args) = @_;
 
-    my $attrs = { prefetch => 'packages' };
-    my $where = { author => $args{author}, archive => $args{archive} };
-    my $dist  = $self->db->select_distributions( $where, $attrs )->first;
+    my $author  = $args{spec} ? $args{spec}->author  : $args{author};
+    my $archive = $args{spec} ? $args{spec}->archive : $args{archive};
 
-    return $dist;
+    my $where = { author => $author, archive => $archive };
+    my $dist  = $self->db->select_distribution( $where );
+
+    return $dist ? $dist : ();
 }
 
 #-------------------------------------------------------------------------------

@@ -65,6 +65,17 @@ sub select_distributions {
 
 #-------------------------------------------------------------------------------
 
+sub select_distribution {
+    my ($self, $where, $attrs) = @_;
+
+    $where ||= {};
+    $attrs ||= {prefetch => 'packages', key => 'author_archive_unique'};
+
+    return $self->schema->resultset('Distribution')->find($where, $attrs);
+}
+
+#-------------------------------------------------------------------------------
+
 sub select_packages {
     my ($self, $where, $attrs) = @_;
 

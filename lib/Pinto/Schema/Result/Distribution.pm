@@ -403,10 +403,19 @@ sub package {
 
 #------------------------------------------------------------------------------
 
-sub registered_packages {
-    my ($self, %args) = @_;
+sub registered_stacks {
+    my ($self) = @_;
 
-    # TODO...
+    my %stacks;
+
+    for my $pkg ($self->packages) {
+        for my $reg ($pkg->registrations) {
+            my $stack = $reg->stack;
+            $stacks{$stack->name} = $stack;
+        }
+    }
+
+    return values %stacks;
 }
 
 #------------------------------------------------------------------------------
