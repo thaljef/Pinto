@@ -51,7 +51,7 @@ has db => (
 
 has store => (
     is         => 'ro',
-    isa        => 'Pinto::Store::File',
+    isa        => 'Pinto::Store',
     lazy       => 1,
     default    => sub { Pinto::Store::File->new( config => $_[0]->config,
                                                  logger => $_[0]->logger ) },
@@ -460,9 +460,8 @@ sub add {
 
     my $dist = $self->db->create_distribution( $dist_struct );
     my $basedir = $self->config->authors_id_dir;
-    my $archive_in_repos = $dist->native_path( $basedir );
-    $self->fetch( from => $archive, to => $archive_in_repos );
-    $self->store->add_archive( $archive_in_repos );
+    my $destination = $dist->native_path( $basedir );
+    $self->store->add_archive( $archive => $destination );
 
     return $dist;
 }
