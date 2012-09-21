@@ -62,7 +62,7 @@ use Pinto::Tester::Util qw(make_dist_obj);
     );
 
     while ( my ($placeholder, $expected) = each %formats ) {
-        my $got = $dist->to_formatted_string("%$placeholder");
+        my $got = $dist->to_string("%$placeholder");
         is($got, $expected, "Placeholder: %$placeholder");
     }
 }
