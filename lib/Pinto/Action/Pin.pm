@@ -47,9 +47,8 @@ sub execute {
 
     my $stack = $self->repos->open_stack(name => $self->stack);
     $self->_execute($_, $stack) for $self->targets;
-    $self->result->changed if $stack->refresh->has_changed;
 
-    if ( $stack->has_changed and not $self->dryrun ) {
+    if ($stack->has_changed and not $self->dryrun) {
         my $message_primer = $stack->head_revision->change_details;
         my $message = $self->edit_message(primer => $message_primer);
         $stack->close(message => $message);
@@ -61,32 +60,10 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $target, $stack) = @_;
+    my ($self, $spec, $stack) = @_;
 
-    my $dist;
-    if ($target->isa('Pinto::PackageSpec')) {
-
-        my $pkg_name = $target->name;
-        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stack)
-            or throw "Package $pkg_name is not on stack $stack";
-
-        $dist = $pkg->distribution;
-    }
-    elsif ($target->isa('Pinto::DistributionSpec')) {
-
-        $dist = $self->repos->get_distribution( author => $target->author,
-                                                archive => $target->archive );
-
-        throw "Distribution $target does not exist" if not $dist;
-    }
-    else {
-
-        my $type = ref $target;
-        throw "Don't know how to pin target of type $type";
-    }
-
-    $self->notice("Pinning $dist on stack $stack");
-    $dist->pin(stack => $stack);
+    my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
+    $self->result->changed if $dist->pin(stack => $stack);
 
     return;
 }

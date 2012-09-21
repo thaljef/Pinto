@@ -62,32 +62,9 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _execute {
-    my ($self, $target, $stack) = @_;
+    my ($self, $spec, $stack) = @_;
 
-    my $dist;
-    if ($target->isa('Pinto::PackageSpec')) {
-
-        my $pkg_name = $target->name;
-        my $pkg = $self->repos->get_package(name => $pkg_name, stack => $stack)
-            or throw "Package $pkg_name is not registered on stack $stack";
-
-        $dist = $pkg->distribution;
-    }
-    elsif ($target->isa('Pinto::DistributionSpec')) {
-
-        $dist = $self->repos->get_distribution( author => $target->author,
-                                                archive => $target->archive );
-
-        throw "Distribution $target does not exist" if not $dist;
-    }
-    else {
-
-        my $type = ref $target;
-        throw "Don't know how to pin target of type $type";
-    }
-
-
-    $self->notice("Unpinning $dist from stack $stack");
+    my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
     $self->result->changed if $dist->unpin(stack => $stack);
 
     return;

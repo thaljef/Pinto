@@ -373,6 +373,36 @@ sub get_distribution {
 
 #-------------------------------------------------------------------------------
 
+sub get_distribution_by_spec {
+    my ($self, %args) = @_;
+
+    my $spec  = $args{spec};
+    my $stack = $args{stack};
+
+
+    if ($spec->isa('Pinto::PackageSpec')) {
+        my $pkg_name = $spec->name;
+        my $pkg = $self->get_package(name => $pkg_name, stack => $stack);
+        $self->fatal("Package $pkg_name is not on stack $stack") if not $pkg;
+
+        return $pkg->distribution;
+    }
+
+
+    if ($spec->isa('Pinto::DistributionSpec')) {
+        my $dist = $self->get_distribution(author => $spec->author, archive => $spec->archive);
+        $self->fatal("Distribution $spec does not exist") if not $dist;
+
+        return $dist;
+    }
+
+
+    my $type = ref $spec;
+    throw "Don't know how to resolve target of type $type";
+}
+
+#-------------------------------------------------------------------------------
+
 =method add( archive => $path, author => $id )
 
 =method add( archive => $path, author => $id, source => $url )

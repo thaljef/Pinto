@@ -254,6 +254,8 @@ sub pin {
     my $errors  = 0;
     my $did_pin = 0;
 
+    $self->notice("Pinning $self to stack $stack");
+
     for my $pkg ($self->packages) {
         my $registration = $pkg->registration(stack => $stack);
 
@@ -287,6 +289,8 @@ sub unpin {
     my $stack     = $args{stack};
     my $errors    = 0;
     my $did_unpin = 0;
+
+    $self->notice("Unpinning $self from stack $stack");
 
     for my $pkg ($self->packages) {
         my $registration = $pkg->registration(stack => $stack);
