@@ -3,7 +3,7 @@
 package Pinto::Action::List;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef HashRef Str Bool);
+use MooseX::Types::Moose qw(HashRef Str Bool);
 
 use Pinto::Types qw(Author StackName StackAll StackDefault);
 use Pinto::Constants qw($PINTO_STACK_NAME_ALL);

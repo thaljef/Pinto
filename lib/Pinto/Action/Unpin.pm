@@ -3,9 +3,8 @@
 package Pinto::Action::Unpin;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef);
 
-use Pinto::Types qw(Specs StackName);
+use Pinto::Types qw(Specs StackName StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -35,7 +34,7 @@ has targets => (
 
 has stack => (
     is        => 'ro',
-    isa       => Undef | StackName,
+    isa       => StackName | StackDefault,
     default   => undef,
     coerce    => 1,
 );

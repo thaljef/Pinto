@@ -3,9 +3,9 @@
 package Pinto::Action::Add;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef Bool Str);
+use MooseX::Types::Moose qw(Bool Str);
 
-use Pinto::Types qw(Author Files StackName);
+use Pinto::Types qw(Author Files StackName StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -44,7 +44,7 @@ has archives  => (
 
 has stack => (
     is       => 'ro',
-    isa      => StackName | Undef,
+    isa      => StackName | StackDefault,
     default  => undef,
     coerce   => 1,
 );

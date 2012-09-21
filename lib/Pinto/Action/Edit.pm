@@ -3,9 +3,9 @@
 package Pinto::Action::Edit;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef Str HashRef Bool);
+use MooseX::Types::Moose qw(Str HashRef Bool);
 
-use Pinto::Types qw(StackName);
+use Pinto::Types qw(StackName StackDefault);
 
 use namespace::autoclean;
 
@@ -21,7 +21,7 @@ extends qw( Pinto::Action );
 
 has stack => (
     is       => 'ro',
-    isa      => StackName | Undef,
+    isa      => StackName | StackDefault,
     default  => undef,
     coerce   => 1,
 );

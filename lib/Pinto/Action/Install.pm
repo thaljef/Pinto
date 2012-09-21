@@ -3,11 +3,11 @@
 package Pinto::Action::Install;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef Bool HashRef ArrayRef Maybe Str);
+use MooseX::Types::Moose qw(Bool HashRef ArrayRef Maybe Str);
 
 use File::Which qw(which);
 
-use Pinto::Types qw(StackName);
+use Pinto::Types qw(StackName StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -44,7 +44,7 @@ has cpanm_exe => (
 
 has stack   => (
     is        => 'ro',
-    isa       => StackName | Undef,
+    isa       => StackName | StackDefault,
     default   => undef,
     coerce    => 1,
 );

@@ -3,9 +3,9 @@
 package Pinto::Action::Pull;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef Bool);
+use MooseX::Types::Moose qw(Bool);
 
-use Pinto::Types qw(Specs StackName);
+use Pinto::Types qw(Specs StackName StackDefault);
 
 use namespace::autoclean;
 
@@ -34,7 +34,7 @@ has targets => (
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | Undef,
+    isa       => StackName | StackDefault,
     default   => undef,
     coerce    => 1,
 );

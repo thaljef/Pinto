@@ -3,9 +3,8 @@
 package Pinto::Action::Pin;
 
 use Moose;
-use MooseX::Types::Moose qw(Undef);
 
-use Pinto::Types qw(Specs StackName);
+use Pinto::Types qw(Specs StackName StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -26,7 +25,7 @@ with qw( Pinto::Role::Committable );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | Undef,
+    isa       => StackName | StackDefault,
     default   => undef,
     coerce    => 1
 );
