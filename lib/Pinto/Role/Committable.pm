@@ -6,8 +6,9 @@ use Moose::Role;
 use MooseX::Types::Moose qw(Bool Str);
 
 use Try::Tiny;
-use Term::EditorEdit;
 use IO::Interactive qw(is_interactive);
+
+use Pinto::CommitMessage;
 
 #------------------------------------------------------------------------------
 
@@ -29,7 +30,7 @@ has message => (
 
 #------------------------------------------------------------------------------
 
-requires qw( execute );
+requires qw( execute message_primer );
 
 #------------------------------------------------------------------------------
 
@@ -64,16 +65,14 @@ around execute => sub {
 sub edit_message {
     my ($self, %args) = @_;
 
+    my $stacks = $args{stacks} || [];
+    my $primer = $args{primer} || $self->message_primer || '';
+
     return $self->message if $self->has_message;
-    $self->fatal('Must supply a commit message') if not is_interactive;
+    return $primer if not is_interactive;
 
-    my $primer_header = "\n\n" . '-' x 79 . "\n\n";
-    my $primer = $primer_header . ($args{primer} || 'No details available');
-
-    my $message = Term::EditorEdit->edit(document => $primer);
-    $message =~ s/( \n+ -{79} \n .*)//smx;  # Strip primer
-
-    $self->fatal('Commit message is empty.  Aborting action') if $message !~ /\S+/;
+    my $message = Pinto::CommitMessage->new(stacks => $stacks, primer => $primer)->edit;
+    $self->fatal('Aborting due to empty commit message') if $message !~ /\S+/;
 
     return $message;
 }

@@ -46,12 +46,11 @@ sub execute {
     my $stack   = $self->repos->get_stack(name => $self->stack);
     my $revnum  = $self->_compute_target_revnum($stack);
 
-    $self->_execute($stack, $revnum);
+    $self->_revert($stack, $revnum);
     $self->result->changed if $stack->refresh->has_changed;
 
     if ($stack->has_changed and not $self->dryrun) {
-        my $message_primer = $stack->head_revision->change_details;
-        my $message = $self->edit_message(primer => $message_primer);
+        my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
         $self->repos->write_index(stack => $stack);
     }
@@ -83,7 +82,7 @@ sub _compute_target_revnum {
 
 #------------------------------------------------------------------------------
 
-sub _execute {
+sub _revert {
     my ($self, $stack, $revnum) = @_;
 
     $self->notice("Reverting stack $stack to revision $revnum");
@@ -100,6 +99,16 @@ sub _execute {
         if $previous_revision->md5 ne $new_head->compute_md5;
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_primer {
+    my ($self) = @_;
+
+    my $revnum = $self->revision;
+
+    return "Reverted to $revnum.";
 }
 
 #------------------------------------------------------------------------------

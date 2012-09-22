@@ -161,6 +161,18 @@ sub _install {
 
 #------------------------------------------------------------------------------
 
+sub message_primer {
+    my ($self) = @_;
+
+    my $targets  = join ', ', $self->targets;
+    my $pinned   = $self->pin       ? ' and pinned'            : '';
+    my $prereqs  = $self->norecurse ? ' without prerequisites' : '';
+
+    return "Pulled${pinned} ${targets}$prereqs.";
+}
+
+#------------------------------------------------------------------------------
+
 __PACKAGE__->meta->make_immutable;
 
 #-----------------------------------------------------------------------------

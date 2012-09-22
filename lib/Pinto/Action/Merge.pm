@@ -52,13 +52,23 @@ sub execute {
     $self->result->changed if $to_stack->refresh->has_changed;
 
     if ($to_stack->has_changed and not $self->dryrun) {
-        my $message_primer = $to_stack->head_revision->change_details;
-        my $message = $self->edit_message(primer => $message_primer);
+        my $message = $self->edit_message(stacks => [$to_stack]);
         $to_stack->close(message => $message);
         $self->repos->write_index(stack => $to_stack);
     }
 
     return $self->result;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_primer {
+    my ($self) = @_;
+
+    my $from_stack = $self->from_stack;
+    my $to_stack   = $self->to_stack;
+
+    return "Merged stack $from_stack into stack $to_stack.";
 }
 
 #------------------------------------------------------------------------------

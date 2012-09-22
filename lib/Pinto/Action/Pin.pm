@@ -45,11 +45,10 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->open_stack(name => $self->stack);
-    $self->_execute($_, $stack) for $self->targets;
+    $self->_pin($_, $stack) for $self->targets;
 
     if ($stack->has_changed and not $self->dryrun) {
-        my $message_primer = $stack->head_revision->change_details;
-        my $message = $self->edit_message(primer => $message_primer);
+        my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
     }
 
@@ -58,13 +57,23 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _execute {
+sub _pin {
     my ($self, $spec, $stack) = @_;
 
     my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
     $self->result->changed if $dist->pin(stack => $stack);
 
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_primer {
+    my ($self) = @_;
+
+    my $targets  = join ', ', $self->targets;
+
+    return "Pinned ${targets}.";
 }
 
 #------------------------------------------------------------------------------

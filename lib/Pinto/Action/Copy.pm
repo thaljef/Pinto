@@ -56,14 +56,23 @@ sub execute {
     my $description = $self->description || "copy of stack $orig";
     $copy->set_property(description => $description);
 
-    my $message_primer = $copy->head_revision->change_details;
-    my $message = $self->edit_message(primer => $message_primer);
+    my $message = $self->edit_message(stacks => [$copy]);
     $copy->close(message => $message);
 
     $self->repos->create_stack_filesystem(stack => $copy);
     $self->repos->write_index(stack => $copy);
 
     return $self->result->changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_primer {
+    my ($self) = @_;
+
+    my ($from, $to) = ($self->from_stack, $self->to_stack);
+
+    return "Copied stack $from to stack $to.";
 }
 
 #------------------------------------------------------------------------------

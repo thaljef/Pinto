@@ -90,8 +90,7 @@ sub execute {
     $self->result->changed if $stack->refresh->has_changed;
 
     if ($stack->has_changed and not $self->dryrun) {
-        my $message_primer = $stack->head_revision->change_details;
-        my $message = $self->edit_message(primer => $message_primer);
+        my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
         $self->repos->write_index(stack => $stack);
     }
@@ -116,6 +115,18 @@ sub _execute {
                                       stack => $stack ) unless $self->norecurse;
 
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_primer {
+    my ($self) = @_;
+
+    my $archives  = join ', ', map {$_->basename} $self->archives;
+    my $pinned    = $self->pin       ? ' and pinned'            : '';
+    my $prereqs   = $self->norecurse ? ' without prerequisites' : '';
+
+    return "Added${pinned} ${archives}$prereqs.";
 }
 
 #------------------------------------------------------------------------------
