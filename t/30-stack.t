@@ -90,13 +90,14 @@ my $t = Pinto::Tester->new;
 #------------------------------------------------------------------------------
 
 {
-  no warnings 'once';
-  # Cause commits to fail due to empty log message
-  local *Pinto::Action::edit_message = sub {return};
+  no warnings qw(once redefine);
+  # Cause actions to fail just before they touch the file system
+  local *Pinto::Action::New::edit_message = sub { die "action failed"};
+  local *Pinto::Action::Copy::edit_message = sub { die "action failed"};
 
   # Try creating a new stack
   $t->run_throws_ok('New' => {stack => 'foobar'},
-                             qr/Must supply a commit message/);
+                             qr/action failed/);
 
   # Stack directory should not exist because commit failed
   $t->path_not_exists_ok( [ qw(foobar) ] );
@@ -105,7 +106,7 @@ my $t = Pinto::Tester->new;
   # Try copying a stack
   $t->run_throws_ok('Copy' => {from_stack => 'init',
                                to_stack   => 'foobar'},
-                               qr/Must supply a commit message/);
+                               qr/action failed/);
 
   # Stack directory should not exist becasue commit failed
   $t->path_not_exists_ok( [ qw(foobar) ] );
