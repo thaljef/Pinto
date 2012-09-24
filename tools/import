@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Pinto;
+use Try::Tiny;
+use Path::Class;
+use File::Find::Rule;
+
+#------------------------------------------------------------------------------
+
+my ($cpan_dir, $pinto_dir) = @ARGV;
+my @archives = File::Find::Rule->file->name('*.tar.gz')->in("$cpan_dir/authors/id");
+
+#------------------------------------------------------------------------------
+
+open my $log_fh, '>', 'logfile.log' or die $_;
+
+#------------------------------------------------------------------------------
+
+for my $archive (@archives) {
+
+    next if $archive =~ /Acme-BadExample/;  # Hangs
+    next if $archive =~ /perl-5/;           # Don't want perls
+
+    my $pinto     = Pinto->new(root => $pinto_dir);
+    my $dist_path = file($archive)->relative($cpan_dir)->cleanup;
+    my $author    = (split '/', $dist_path)[4];
+
+    my $msg = "Importing $dist_path from CPAN";
+    print "$msg\n";
+
+    my %args = ( archives  => [$archive],
+                 author    => $author,
+                 message   => $msg,
+                 norecurse => 1 );
+
+    try   { $pinto->run(Add => %args) }
+    catch { s/(\n.*)//msg; print {$log_fh} "$archive: $_\n" };
+}
