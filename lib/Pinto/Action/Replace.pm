@@ -92,7 +92,7 @@ sub execute {
                                       author  => $self->author );
 
     my @registered_stacks = $old_dist->registered_stacks;
-    my @changed_stacks = grep {$self->_replace( $_, $new_dist )} @registered_stacks;
+    my @changed_stacks = grep {$self->_replace( $_, $old_dist, $new_dist )} @registered_stacks;
     return $self->result if not @changed_stacks;
 
     my $message = $self->edit_message(stacks => \@changed_stacks);
@@ -108,14 +108,18 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _replace {
-    my ($self, $stack, $dist) = @_;
+    my ($self, $stack, $old_dist, $new_dist) = @_;
 
     $self->repos->open_stack(stack => $stack);
 
-    $dist->register( stack => $stack );
-    $dist->pin( stack => $stack ) if $self->pin;
+    for my $package ($old_dist->packages) {
+        my $reg = $package->registration(stack => $stack) or next;
+        $reg->delete;
+    }
 
-    $self->repos->pull_prerequisites( dist  => $dist,
+    $new_dist->register( stack => $stack, pin => $self->pin );
+
+    $self->repos->pull_prerequisites( dist  => $new_dist,
                                       stack => $stack ) unless $self->norecurse;
 
     return $stack if $stack->refresh->has_changed;

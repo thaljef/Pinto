@@ -220,6 +220,7 @@ sub register {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
+    my $pin   = $args{pin};
     my $did_register = 0;
     my $errors       = 0;
 
@@ -234,7 +235,7 @@ sub register {
 
       if (not $incumbent) {
           $self->debug(sub {"Registering $pkg on stack $stack"} );
-          $pkg->register(stack => $stack);
+          $pkg->register(stack => $stack, pin => $pin);
           $did_register++;
           next;
       }

@@ -61,7 +61,7 @@ sub execute {
 
     my $stack = $self->repos->open_stack(name => $self->stack);
 
-    $self->_execute($_, $stack) for $self->targets;
+    $self->_pull($_, $stack) for $self->targets;
     $self->result->changed if $stack->refresh->has_changed;
 
     if ($stack->has_changed and not $self->dryrun) {
@@ -75,17 +75,15 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _execute {
+sub _pull {
     my ($self, $target, $stack) = @_;
 
     my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target,
-                                                       stack  => $stack );
-
-    $dist->pin( stack => $stack ) if $dist && $self->pin;
+                                                       stack  => $stack,
+                                                       pin    => $self->pin );
 
     if ($dist and not $self->norecurse) {
-        my @prereq_dists = $self->repos->pull_prerequisites( dist  => $dist,
-                                                             stack => $stack );
+        $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
     }
 
     return;

@@ -86,7 +86,7 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repos->open_stack(name => $self->stack);
-    $self->_execute($_, $stack) for $self->archives;
+    $self->_add($_, $stack) for $self->archives;
     $self->result->changed if $stack->refresh->has_changed;
 
     if ($stack->has_changed and not $self->dryrun) {
@@ -100,7 +100,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _execute {
+sub _add {
     my ($self, $archive, $stack) = @_;
 
     $self->notice("Adding distribution archive $archive");
@@ -108,8 +108,7 @@ sub _execute {
     my $dist  = $self->repos->add( archive   => $archive,
                                    author    => $self->author );
 
-    $dist->register( stack => $stack );
-    $dist->pin( stack => $stack ) if $self->pin;
+    $dist->register( stack => $stack, pin => $self->pin );
 
     $self->repos->pull_prerequisites( dist  => $dist,
                                       stack => $stack ) unless $self->norecurse;

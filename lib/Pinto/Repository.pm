@@ -543,12 +543,13 @@ sub get_or_pull {
 
     my $target = $args{target};
     my $stack  = $args{stack};
+    my $pin    = $args{pin};
 
     if ( $target->isa('Pinto::PackageSpec') ){
-        return $self->_pull_by_package_spec($target, $stack);
+        return $self->_pull_by_package_spec($target, $stack, $pin);
     }
     elsif ($target->isa('Pinto::DistributionSpec') ){
-        return $self->_pull_by_distribution_spec($target, $stack);
+        return $self->_pull_by_distribution_spec($target, $stack, $pin);
     }
     else {
         my $type = ref $target;
@@ -559,7 +560,7 @@ sub get_or_pull {
 #------------------------------------------------------------------------------
 
 sub _pull_by_package_spec {
-    my ($self, $pspec, $stack) = @_;
+    my ($self, $pspec, $stack, $pin) = @_;
 
     $self->info("Looking for package $pspec");
 
@@ -569,7 +570,7 @@ sub _pull_by_package_spec {
     if (defined $latest && ($latest->version >= $pkg_ver)) {
         my $got_dist = $latest->distribution;
         $self->debug( sub {"Already have package $pspec or newer as $latest"} );
-        my $did_register = $got_dist->register(stack => $stack);
+        my $did_register = $got_dist->register(stack => $stack, pin => $pin);
         return ($got_dist, 0);
     }
 
@@ -590,7 +591,7 @@ sub _pull_by_package_spec {
     $self->notice("Pulling distribution $dist_url");
     my $pulled_dist = $self->pull(url => $dist_url);
 
-    $pulled_dist->register( stack => $stack );
+    $pulled_dist->register( stack => $stack, pin => $pin );
 
     return ($pulled_dist, 1);
 }
@@ -598,7 +599,7 @@ sub _pull_by_package_spec {
 #------------------------------------------------------------------------------
 
 sub _pull_by_distribution_spec {
-    my ($self, $dspec, $stack) = @_;
+    my ($self, $dspec, $stack, $pin) = @_;
 
     $self->info("Looking for distribution $dspec");
 
@@ -607,7 +608,7 @@ sub _pull_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
-        my $did_register = $got_dist->register(stack => $stack);
+        my $did_register = $got_dist->register(stack => $stack, pin => $pin);
         return ($got_dist, 0);
     }
 
@@ -624,7 +625,7 @@ sub _pull_by_distribution_spec {
     $self->notice("Pulling distribution $dist_url");
     my $pulled_dist = $self->pull(url => $dist_url);
 
-    $pulled_dist->register( stack => $stack );
+    $pulled_dist->register(stack => $stack, pin => $pin);
 
     return ($pulled_dist, 1);
 }
