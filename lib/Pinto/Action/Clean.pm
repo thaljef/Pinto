@@ -22,7 +22,7 @@ extends qw( Pinto::Action );
 sub execute {
     my ($self) = @_;
 
-    $self->repos->clean_files;
+    $self->repos->clean_files(force => 1);
 
     return $self->result;
 }

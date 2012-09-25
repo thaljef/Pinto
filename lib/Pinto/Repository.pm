@@ -792,7 +792,9 @@ prematurely.
 =cut
 
 sub clean_files {
-    my ($self) = @_;
+    my ($self, %args) = @_;
+
+    return unless $args{force} or $self->store->made_changes;
 
     my $deleted  = 0;
     my $dists_rs = $self->db->select_distributions(undef, {prefetch => {}});
