@@ -50,7 +50,7 @@ sub _build_details {
     my $details = '';
     for my $stack ( @stacks ) {
         $details .= "STACK: $stack\n" if @stacks > 1;
-        $details .= $stack->head_revision->change_details;
+        $details .= $stack->head_revision->change_details || 'No details available';
         $details.= "\n\n";
     }
 
