@@ -42,7 +42,7 @@ while (my $archive = $rule->match) {
 
     my $now = localtime;
     my $msg = "Importing $dist_path from CPAN";
-    print "$now: $msg\n";
+    print "$counter: $now: $msg\n";
 
     my %args = ( archives  => [$archive],
                  author    => $author,
