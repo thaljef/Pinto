@@ -795,6 +795,9 @@ sub clean_files {
     my ($self) = @_;
 
     my $deleted  = 0;
+    my $dists_rs = $self->db->select_distributions(undef, {prefetch => {}});
+    my %known_dists = map { ($_->to_string => 1) } $dists_rs->all;
+
     my $callback = sub {
         return if not -f $_;
 
@@ -804,10 +807,7 @@ sub clean_files {
 
         return if $archive eq 'CHECKSUMS';
         return if $archive eq '01mailrc.txt.gz';
-
-        # TODO: Optimize by fetching all known distributions in one query.
-        # Then stash in hash keyed by path.  Delete any path not in hash.
-        return if $self->get_distribution(author => $author, archive => $archive);
+        return if exists $known_dists{"$author/$archive"};
 
         $self->notice("Removing orphaned archive at $path");
         $self->store->remove_archive($path);
