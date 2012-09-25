@@ -261,7 +261,7 @@ sub register {
 
       $incumbent->delete;
       $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
-      $pkg->register(stack => $stack);
+      $pkg->register(stack => $stack, pin => $pin);
       $did_register++;
     }
 

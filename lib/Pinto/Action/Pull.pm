@@ -62,9 +62,8 @@ sub execute {
     my $stack = $self->repos->open_stack(name => $self->stack);
 
     $self->_pull($_, $stack) for $self->targets;
-    $self->result->changed if $stack->refresh->has_changed;
 
-    if ($stack->has_changed and not $self->dryrun) {
+    if ($self->result->made_changes and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
         $self->repos->write_index(stack => $stack);
@@ -85,6 +84,8 @@ sub _pull {
     if ($dist and not $self->norecurse) {
         $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
     }
+
+    $self->result->changed if $did_pull;
 
     return;
 }

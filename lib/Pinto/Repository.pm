@@ -495,7 +495,7 @@ sub _validate_archive {
 
     my $basename = $archive->basename;
     if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
-        throw "Distribution $same_path already exists";
+        throw "A distribution already exists as $same_path";
     }
 
     my $md5 = Pinto::Util::md5($archive);
