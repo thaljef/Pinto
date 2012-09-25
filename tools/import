@@ -26,7 +26,7 @@ open my $log_fh, '>', 'logfile.log' or die $_;
 
 #------------------------------------------------------------------------------
 
-my $counter = 0;
+my $counter = 1;
 my $pinto   = Pinto->new(root => $pinto_dir);
 my $rule    = File::Find::Rule->file->name('*.tar.gz')->start("$cpan_dir/authors/id");
 
