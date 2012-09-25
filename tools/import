@@ -27,13 +27,13 @@ open my $log_fh, '>', 'logfile.log' or die $_;
 #------------------------------------------------------------------------------
 
 my $counter = 0;
-my $rule = File::Find::Rule->file->name('*.tar.gz')->start("$cpan_dir/authors/id");
+my $pinto   = Pinto->new(root => $pinto_dir);
+my $rule    = File::Find::Rule->file->name('*.tar.gz')->start("$cpan_dir/authors/id");
 
 while (my $archive = $rule->match) {
 
     last if defined($limit) and $counter > $limit;
 
-    my $pinto     = Pinto->new(root => $pinto_dir);
     my $dist_path = file($archive)->relative($cpan_dir)->cleanup;
     my $author    = (split '/', $dist_path)[4];
 
