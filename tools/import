@@ -10,8 +10,15 @@ use File::Find::Rule;
 
 #------------------------------------------------------------------------------
 
-my ($cpan_dir, $pinto_dir) = @ARGV;
-my $rule = File::Find::Rule->file->name('*.tar.gz')->start("$cpan_dir/authors/id");
+@ARGV >= 2 or die "Must specify CPAN_DIR and PINTO_DIR";
+
+my $cpan_dir = shift;
+-d $cpan_dir or die "$cpan_dir does not exit";
+
+my $pinto_dir = shift;
+-d $pinto_dir or die "$pinto_dir does not exist";
+
+my $limit = shift;
 
 #------------------------------------------------------------------------------
 
@@ -19,7 +26,12 @@ open my $log_fh, '>', 'logfile.log' or die $_;
 
 #------------------------------------------------------------------------------
 
+my $counter = 0;
+my $rule = File::Find::Rule->file->name('*.tar.gz')->start("$cpan_dir/authors/id");
+
 while (my $archive = $rule->match) {
+
+    last if defined($limit) and $counter > $limit;
 
     my $pinto     = Pinto->new(root => $pinto_dir);
     my $dist_path = file($archive)->relative($cpan_dir)->cleanup;
@@ -28,8 +40,9 @@ while (my $archive = $rule->match) {
     next if $dist_path->basename =~ /^Acme-BadExample/;          # Hangs
     next if $dist_path->basename =~ /^(syb|ora)?perl-?[\d\.]+/i; # Don't want
 
+    my $now = localtime;
     my $msg = "Importing $dist_path from CPAN";
-    print "$msg\n";
+    print "$now: $msg\n";
 
     my %args = ( archives  => [$archive],
                  author    => $author,
@@ -38,4 +51,6 @@ while (my $archive = $rule->match) {
 
     try   { $pinto->run(Add => %args) }
     catch { s/(\n.*)//msg; print {$log_fh} "$archive: $_\n" };
+
+   $counter++;
 }
