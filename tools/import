@@ -11,7 +11,7 @@ use File::Find::Rule;
 #------------------------------------------------------------------------------
 
 my ($cpan_dir, $pinto_dir) = @ARGV;
-my @archives = File::Find::Rule->file->name('*.tar.gz')->in("$cpan_dir/authors/id");
+my $rule = File::Find::Rule->file->name('*.tar.gz')->start("$cpan_dir/authors/id");
 
 #------------------------------------------------------------------------------
 
@@ -19,14 +19,14 @@ open my $log_fh, '>', 'logfile.log' or die $_;
 
 #------------------------------------------------------------------------------
 
-for my $archive (@archives) {
-
-    next if $archive =~ /Acme-BadExample/;  # Hangs
-    next if $archive =~ /perl-5/;           # Don't want perls
+while (my $archive = $rule->match) {
 
     my $pinto     = Pinto->new(root => $pinto_dir);
     my $dist_path = file($archive)->relative($cpan_dir)->cleanup;
     my $author    = (split '/', $dist_path)[4];
+
+    next if $dist_path->basename =~ /^Acme-BadExample/;          # Hangs
+    next if $dist_path->basename =~ /^(syb|ora)?perl-?[\d\.]+/i; # Don't want
 
     my $msg = "Importing $dist_path from CPAN";
     print "$msg\n";
