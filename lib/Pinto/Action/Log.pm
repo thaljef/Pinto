@@ -6,6 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Bool Int Undef);
 
 use Pinto::Types qw(StackName StackDefault);
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -50,7 +51,7 @@ sub execute {
     my $revnum = $self->revision;
     my @revisions = $stack->revision(number => $revnum);
 
-    $self->fatal("No such revision $revnum on stack $stack")
+    throw "No such revision $revnum on stack $stack"
       if !@revisions && defined $revnum;
 
     my $format = "%k\@%b | %j | %u\n\n%g\n";

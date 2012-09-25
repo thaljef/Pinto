@@ -6,6 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Bool);
 
 use Pinto::Types qw(Author DistSpec StackName StackDefault File);
+use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -68,11 +69,8 @@ sub BUILD {
 
     my $archive = $self->archive;
 
-    $self->fatal("Archive $archive does not exist")
-      if not -e $archive;
-
-    $self->fatal("Archive $archive is not readable")
-      if not -r $archive;
+    throw "Archive $archive does not exist"  if not -e $archive;
+    throw "Archive $archive is not readable" if not -r $archive;
 
     return $self;
 }
@@ -85,8 +83,7 @@ sub execute {
     my $target = $self->target;
     my $old_dist  = $self->repos->get_distribution( spec => $target );
 
-    $self->fatal("Distribution $target is not in the repository")
-      if not $old_dist;
+    throw "Distribution $target is not in the repository" if not $old_dist;
 
     my $new_dist = $self->repos->add( archive => $self->archive,
                                       author  => $self->author );

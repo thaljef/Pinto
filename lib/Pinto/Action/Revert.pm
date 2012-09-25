@@ -68,14 +68,11 @@ sub _compute_target_revnum {
     my $revnum  = $self->revision;
     $revnum     = ($headnum + $revnum) if $revnum < 0;
 
-    $self->fatal("Stack $stack is already at revision 0")
-      if $headnum == 0;
+    throw "Stack $stack is already at revision 0" if $headnum == 0;
 
-    $self->fatal("No such revision $revnum on stack $stack")
-      if $revnum > $headnum;
+    throw "No such revision $revnum on stack $stack" if $revnum > $headnum;
 
-    $self->fatal("Revision $revnum is the head of stack $stack")
-      if $revnum == $headnum;
+    throw "Revision $revnum is the head of stack $stack" if $revnum == $headnum;
 
     return $revnum;
 }

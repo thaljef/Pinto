@@ -9,6 +9,7 @@ use Try::Tiny;
 use IO::Interactive qw(is_interactive);
 
 use Pinto::CommitMessage;
+use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
@@ -72,7 +73,7 @@ sub edit_message {
     return $primer if not is_interactive;
 
     my $message = Pinto::CommitMessage->new(stacks => $stacks, primer => $primer)->edit;
-    $self->fatal('Aborting due to empty commit message') if $message !~ /\S+/;
+    throw 'Aborting due to empty commit message' if $message !~ /\S+/;
 
     return $message;
 }

@@ -211,7 +211,7 @@ sub _link_authors_dir {
     my $dump_authors_id_dir = $dump_authors_dir->subdir('id');
 
     my $ok = symlink $abs_repos_authors_id_dir, $dump_authors_id_dir;
-    $self->fatal("symlink failed: $!") if not $ok;
+    throw "symlink failed: $!" if not $ok;
 
     return $self;
 }
@@ -231,7 +231,7 @@ sub _create_dumpfile {
     my $cwd_guard = cwd_guard($dumpdir->parent->stringify);
     my $ok = not system @cmd;
 
-    $self->fatal("tar command failed: $!") if not $ok;
+    throw "tar command failed: $!" if not $ok;
 }
 
 

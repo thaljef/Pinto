@@ -409,7 +409,7 @@ sub get_distribution_by_spec {
     if ($spec->isa('Pinto::PackageSpec')) {
         my $pkg_name = $spec->name;
         my $pkg = $self->get_package(name => $pkg_name, stack => $stack);
-        $self->fatal("Package $pkg_name is not on stack $stack") if not $pkg;
+        throw "Package $pkg_name is not on stack $stack" if not $pkg;
 
         return $pkg->distribution;
     }
@@ -417,7 +417,7 @@ sub get_distribution_by_spec {
 
     if ($spec->isa('Pinto::DistributionSpec')) {
         my $dist = $self->get_distribution(author => $spec->author, archive => $spec->archive);
-        $self->fatal("Distribution $spec does not exist") if not $dist;
+        throw "Distribution $spec does not exist" if not $dist;
 
         return $dist;
     }

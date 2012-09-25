@@ -51,7 +51,7 @@ sub run {
     $self->repos->lock($lock_type);
 
     my $result = try   { $action->execute }
-                 catch { $self->repos->unlock; die $_ };
+                 catch { $self->repos->unlock; die $self->fatal($_) };
 
     $self->repos->unlock;
 
