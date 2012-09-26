@@ -28,7 +28,6 @@ with qw( Pinto::Role::Configurable
 sub add_archive {
     my ($self, $origin, $destination) = @_;
 
-    throw "$destination already exists" if     -e $destination;
     throw "$origin does not exist"      if not -e $origin;
     throw "$origin is not a file"       if not -f $origin;
 
