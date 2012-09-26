@@ -1,16 +1,32 @@
 {{$NEXT}}
 
+     Added the Replace action, which substitues one dist for another
+     on all stacks.  You'll need to upgrade App::Pinto to get the
+     corresponding 'replace' command.
+
+     Significantly improved performance, especially for large
+     repositories.  Pinto can now hold the *entire* CPAN (not just the
+     tip) and still perform reasonably well.
+
+     Changed the way prereqs are discovered.  We now trust the
+     dist's own META to tell us the prereqs, rather than configuring
+     the dist directly.  This is much faster and usually just
+     as accurate.  The only casualties are old dists that don't
+     have a META file, or ones that compute prereqs dynamically
+     during configuration.  So it ain't perfect, but it is
+     probably good enough.
+
 0.055     2012-09-20 13:33:57 America/Los_Angeles
 
      Interface Changes:
 
-     For the List action, the magic stack name is now '%'
-     instead of '@'.  This was changed to distinguish it
-     from revision strings that look like stack@1234.
+     For the List action, the magic stack name is now '%' instead of
+     '@'.  This was changed to distinguish it from revision strings
+     that look like stack@1234.
 
-     The username attribute is now attached to the Config, 
-     not the Action.  This makes it available to any object
-     that needs it (particularly when creating a Revision).
+     The username attribute is now attached to the Config, not the
+     Action.  This makes it available to any object that needs it
+     (particularly when creating a Revision).
 
 0.054     2012-09-19 22:02:57 America/Los_Angeles
 
