@@ -104,13 +104,11 @@ sub _add {
 
     $self->notice("Adding distribution archive $archive");
 
-    my $dist = $self->repos->add( archive   => $archive,
-                                  author    => $self->author );
+    my $dist = $self->repos->add(archive => $archive, author => $self->author);
 
-    $dist->register( stack => $stack, pin => $self->pin );
+    $dist->register(stack => $stack, pin => $self->pin);
 
-    $self->repos->pull_prerequisites( dist  => $dist,
-                                      stack => $stack ) unless $self->norecurse;
+    $self->repos->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
 
     return $self->result->changed;
 }

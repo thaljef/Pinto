@@ -41,8 +41,7 @@ around execute => sub {
     $self->repos->db->txn_begin;
 
     my $result = try   { $self->$orig(@args) }
-                 catch { $self->repos->db->txn_rollback;
-                         $self->repos->clean_files; die $_ };
+                 catch { $self->repos->db->txn_rollback; die $_ };
 
     if ($self->dryrun) {
         $self->notice('Dryrun -- rolling back database');

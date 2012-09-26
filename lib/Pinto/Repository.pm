@@ -538,18 +538,16 @@ sub pull {
 
 #------------------------------------------------------------------------------
 
-sub get_or_pull {
+sub find_or_pull {
     my ($self, %args) = @_;
 
     my $target = $args{target};
-    my $stack  = $args{stack};
-    my $pin    = $args{pin};
 
     if ( $target->isa('Pinto::PackageSpec') ){
-        return $self->_pull_by_package_spec($target, $stack, $pin);
+        return $self->_find_or_pull_by_package_spec($target);
     }
     elsif ($target->isa('Pinto::DistributionSpec') ){
-        return $self->_pull_by_distribution_spec($target, $stack, $pin);
+        return $self->_find_or_pull_by_distribution_spec($target);
     }
     else {
         my $type = ref $target;
@@ -559,8 +557,8 @@ sub get_or_pull {
 
 #------------------------------------------------------------------------------
 
-sub _pull_by_package_spec {
-    my ($self, $pspec, $stack, $pin) = @_;
+sub _find_or_pull_by_package_spec {
+    my ($self, $pspec) = @_;
 
     $self->info("Looking for package $pspec");
 
@@ -570,7 +568,6 @@ sub _pull_by_package_spec {
     if (defined $latest && ($latest->version >= $pkg_ver)) {
         my $got_dist = $latest->distribution;
         $self->debug( sub {"Already have package $pspec or newer as $latest"} );
-        my $did_register = $got_dist->register(stack => $stack, pin => $pin);
         return ($got_dist, 0);
     }
 
@@ -591,15 +588,13 @@ sub _pull_by_package_spec {
     $self->notice("Pulling distribution $dist_url");
     my $pulled_dist = $self->pull(url => $dist_url);
 
-    $pulled_dist->register( stack => $stack, pin => $pin );
-
     return ($pulled_dist, 1);
 }
 
 #------------------------------------------------------------------------------
 
-sub _pull_by_distribution_spec {
-    my ($self, $dspec, $stack, $pin) = @_;
+sub _find_or_pull_by_distribution_spec {
+    my ($self, $dspec) = @_;
 
     $self->info("Looking for distribution $dspec");
 
@@ -608,7 +603,6 @@ sub _pull_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
-        my $did_register = $got_dist->register(stack => $stack, pin => $pin);
         return ($got_dist, 0);
     }
 
@@ -624,8 +618,6 @@ sub _pull_by_distribution_spec {
 
     $self->notice("Pulling distribution $dist_url");
     my $pulled_dist = $self->pull(url => $dist_url);
-
-    $pulled_dist->register(stack => $stack, pin => $pin);
 
     return ($pulled_dist, 1);
 }
@@ -646,10 +638,12 @@ sub pull_prerequisites {
   PREREQ:
     while (my $prereq = shift @prereq_queue) {
 
-        my ($required_dist, $did_pull) = $self->get_or_pull( target => $prereq,
-                                                             stack  => $stack );
-        next PREREQ if not ($required_dist and $did_pull);
-        push @pulled, $required_dist if $did_pull;
+        my ($required_dist, $did_pull) = $self->find_or_pull(target => $prereq);
+        next PREREQ if not $required_dist;
+
+        my $did_register = $required_dist->register(stack => $stack);
+
+        push @pulled, $required_dist if $did_pull || $did_register;
 
         if ( $visited{$required_dist->path} ) {
             # We don't need to recurse into prereqs more than once
@@ -794,8 +788,6 @@ prematurely.
 sub clean_files {
     my ($self, %args) = @_;
 
-    return unless $args{force} or $self->store->made_changes;
-
     my $deleted  = 0;
     my $dists_rs = $self->db->select_distributions(undef, {prefetch => {}});
     my %known_dists = map { ($_->to_string => 1) } $dists_rs->all;
@@ -811,13 +803,13 @@ sub clean_files {
         return if $archive eq '01mailrc.txt.gz';
         return if exists $known_dists{"$author/$archive"};
 
-        $self->notice("Removing orphaned archive at $path");
+        $self->info("Removing orphaned archive at $path");
         $self->store->remove_archive($path);
         $deleted++;
     };
 
     my $authors_dir = $self->config->authors_dir;
-    $self->debug("Cleaning orphaned archives beneath $authors_dir");
+    $self->notice("Cleaning orphaned archives beneath $authors_dir");
     File::Find::find({no_chdir => 1, wanted => $callback}, $authors_dir);
 
     return $deleted;

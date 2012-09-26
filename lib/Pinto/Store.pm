@@ -3,7 +3,6 @@
 package Pinto::Store;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
 
 use Try::Tiny;
 use CPAN::Checksums;
@@ -24,23 +23,6 @@ with qw( Pinto::Role::Configurable
          Pinto::Role::FileFetcher );
 
 #------------------------------------------------------------------------------
-
-has made_changes => (
-    is      => 'ro',
-    isa     => Bool,
-    writer  => '_set_made_changes',
-    default => 0,
-);
-
-#------------------------------------------------------------------------------
-
-sub changed {
-    my ($self) = @_;
-    $self->_set_made_changes(1);
-    return $self;
-}
-
-#------------------------------------------------------------------------------
 # TODO: Use named arguments here...
 
 sub add_archive {
@@ -53,7 +35,7 @@ sub add_archive {
     $self->fetch(from => $origin, to => $destination);
     $self->update_checksums(directory => $destination->parent);
 
-    return $self->changed;
+    return $self;
 
 }
 
@@ -67,7 +49,7 @@ sub remove_archive {
 
     $self->update_checksums( directory => $archive_file->parent() );
 
-    return $self->changed;
+    return $self;
 }
 
 #------------------------------------------------------------------------------

@@ -77,15 +77,14 @@ sub execute {
 sub _pull {
     my ($self, $target, $stack) = @_;
 
-    my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target,
-                                                       stack  => $stack,
-                                                       pin    => $self->pin );
+    my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target);
+    my $did_register = $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;
 
     if ($dist and not $self->norecurse) {
-        $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
+        $did_pull += $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
     }
 
-    $self->result->changed if $did_pull;
+    $self->result->changed if $did_pull or $did_register;
 
     return;
 }
