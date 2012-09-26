@@ -96,6 +96,7 @@ sub provides {
     my ($self) = @_;
 
     my $archive = $self->archive;
+    $self->info("Extracting packages provided by archive $archive");
 
     my $provides =   try { $self->dm->package_versions }
                    catch { throw "Unable to extract packages from $archive: $_"    };
@@ -121,6 +122,7 @@ sub requires {
     my ($self) = @_;
 
     my $archive = $self->archive;
+    $self->info("Extracting packages required by archive $archive");
 
     my $prereqs_meta =   try { $self->dm->meta->prereqs }
                        catch { throw "Unable to extract prereqs from $archive: $_" };
