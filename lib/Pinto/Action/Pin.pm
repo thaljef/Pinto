@@ -47,7 +47,7 @@ sub execute {
     my $stack = $self->repos->open_stack(name => $self->stack);
     $self->_pin($_, $stack) for $self->targets;
 
-    if ($stack->has_changed and not $self->dryrun) {
+    if ($self->result->made_changes and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
     }
