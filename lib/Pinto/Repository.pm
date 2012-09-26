@@ -92,18 +92,6 @@ has locker  => (
                                             logger => $_[0]->logger ) },
 );
 
-=attr extractor
-
-=cut
-
-has extractor => (
-    is         => 'ro',
-    isa        => 'Pinto::PackageExtractor',
-    lazy       => 1,
-    default    => sub { Pinto::PackageExtractor->new( config => $_[0]->config,
-                                                      logger => $_[0]->logger ) },
-);
-
 #-------------------------------------------------------------------------------
 
 sub BUILD {
@@ -461,12 +449,14 @@ sub add {
                         md5      => Pinto::Util::md5($archive),
                         sha256   => Pinto::Util::sha256($archive) };
 
+    my $extractor = Pinto::PackageExtractor->new( logger  => $self->logger,
+                                                  archive => $archive );
     # Add provided packages...
-    my @provides = $self->extractor->provides( archive => $archive );
+    my @provides = $extractor->provides;
     $dist_struct->{packages} = \@provides;
 
     # Add required packages...
-    my @requires = $self->extractor->requires( archive => $archive );
+    my @requires = $extractor->requires;
     $dist_struct->{prerequisites} = \@requires;
 
     my $p = @provides;

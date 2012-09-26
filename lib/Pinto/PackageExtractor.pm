@@ -3,13 +3,14 @@
 package Pinto::PackageExtractor;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(HashRef Bool);
 
 use Try::Tiny;
-use Dist::Requires;
 use Dist::Metadata;
+use Module::CoreList;
 
 use Pinto::Exception qw(throw);
+use Pinto::Types qw(File Vers);
 
 use version;
 use namespace::autoclean;
@@ -19,36 +20,84 @@ use namespace::autoclean;
 # VERSION
 
 #-----------------------------------------------------------------------------
-# Attributes
 
-has lax => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
+with qw( Pinto::Role::Loggable );
+
+#-----------------------------------------------------------------------------
+
+has archive => (
+    is       => 'ro',
+    isa      => File,
+    required => 1,
+    coerce   => 1,
+);
+
+
+has target_perl_version => (
+    is         => 'ro',
+    isa        => Vers,
+    default    => sub { version->parse( $] ) },
+    coerce     => 1,
+    lazy       => 1,
+);
+
+
+has dm => (
+    is       => 'ro',
+    isa      => 'Dist::Metadata',
+    default  => sub { Dist::Metadata->new(file => $_[0]->archive->stringify) },
+    init_arg => undef,
+    lazy     => 1,
+);
+
+
+has prereq_filter => (
+    is         => 'ro',
+    isa        => HashRef,
+    builder    => '_build_prereq_filter',
+    lazy       => 1,
 );
 
 #-----------------------------------------------------------------------------
-# Roles
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
+sub BUILD {
+    my ($self) = @_;
+
+    # version.pm doesn't always strip trailing zeros
+    my $tpv = $self->target_perl_version->numify + 0;
+
+    throw "The target_perl_version ($tpv) cannot be greater than this perl ($])"
+        if $tpv > $];
+
+    throw "Unknown version of perl: $tpv"
+        if not exists $Module::CoreList::version{$tpv};  ## no critic (PackageVar)
+
+    return $self;
+}
 
 #-----------------------------------------------------------------------------
-# NB: Dist::Metadata uses CPAN::Meta, which silently normalizes all
-# invalid or undefined version numbers to zero.  I think I would
-# prefer if it just reported them as they are, and let me decide what
-# to do about the invalid ones.  At least, that was the idea with the
-# lax() option.  But I'm not sure it makes sense.
+
+sub _build_prereq_filter {
+    my ($self) = @_;
+
+    # version.pm doesn't always strip trailing zeros
+    my $tpv           = $self->target_perl_version->numify + 0;
+    my %core_packages = %{ $Module::CoreList::version{$tpv} };  ## no critic (PackageVar)
+
+    $_ = version->parse($_) for values %core_packages;
+
+    return \%core_packages;
+}
+
+
+#-----------------------------------------------------------------------------
 
 sub provides {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
-    # Must stringify, cuz D::M doesn't like Path::Class objects
-    my $archive = $args{archive}->stringify();
+    my $archive = $self->archive;
 
-    $self->info("Extracting packages from archive $archive");
-
-    my $provides =   try { Dist::Metadata->new(file => $archive)->package_versions }
+    my $provides =   try { $self->dm->package_versions }
                    catch { throw "Unable to extract packages from $archive: $_"    };
 
     my @provides;
@@ -58,64 +107,45 @@ sub provides {
         push @provides, {name => $pkg_name, version => $pkg_ver};
     }
 
-    @provides = $self->__common_sense_workaround($args{archive}->basename)
-      if @provides == 0 and $args{archive}->basename =~ m/^ common-sense /x;
+    @provides = $self->__common_sense_workaround($archive->basename)
+      if @provides == 0 and $archive->basename =~ m/^ common-sense /x;
 
     $self->warning("$archive provides no packages") if not @provides;
 
-    return $self->_versionize(@provides);
+    return @provides;
 }
 
 #-----------------------------------------------------------------------------
-# NB: Likewise, Dist::Requires uses Module::Build and MakeMaker to
-# discover the prerequisites.  And they might be doing weird stuff to
-# the version numbers when they try to produce a valid MYMETA files.
 
 sub requires {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
-    my $archive = $args{archive};
+    my $archive = $self->archive;
 
-    $self->info("Extracting prerequisites from archive $archive");
+    my $prereqs_meta =   try { $self->dm->meta->prereqs }
+                       catch { throw "Unable to extract prereqs from $archive: $_" };
 
-    my %prereqs =   try { Dist::Requires->new()->prerequisites(dist => $archive)    }
-                  catch { throw "Unable to extract prerequisites from $archive: $_" };
+    my %prereqs;
+    for my $phase ( qw( configure build test runtime ) ) {
+        my $p = $prereqs_meta->{$phase} || {};
+        %prereqs = ( %prereqs, %{ $p->{requires} || {} } );
+    }
+
 
     my @prereqs;
-    for my $pkg_name ( sort keys %prereqs ) {
+    for my $pkg_name (sort keys %prereqs) {
         my $pkg_ver = version->parse( $prereqs{$pkg_name} );
+
+        next if $pkg_name eq 'perl';
+
+        next if exists $self->prereq_filter->{$pkg_name}
+          and $self->prereq_filter->{$pkg_name} >= $pkg_ver;
+
         $self->debug("Archive $archive requires: $pkg_name-$pkg_ver");
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
     }
 
-    return $self->_versionize(@prereqs);
-}
-
-#-----------------------------------------------------------------------------
-
-sub _versionize {
-    my ($self, @pkg_specs) = @_;
-
-    my @versionized;
-    for my $pkg_spec_ref (@pkg_specs) {
-
-        my %pkg_spec = %{ $pkg_spec_ref };  # Making a copy
-        my $vname    = "$pkg_spec{name}-$pkg_spec{version}";
-        my $version  = eval { version->parse($pkg_spec{version}) };
-
-        if ( defined $version ) {
-            $pkg_spec{version} = $version;
-            push @versionized, \%pkg_spec;
-        }
-        elsif ( $self->lax() ) {
-            $self->warning("Package $vname has invalid version. Ignoring it");
-        }
-        else {
-            throw "Package $vname has invalid version: $@";
-        }
-    }
-
-    return @versionized;
+    return @prereqs;
 }
 
 #-----------------------------------------------------------------------------

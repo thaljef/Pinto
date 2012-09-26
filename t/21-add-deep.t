@@ -39,5 +39,25 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 }
 
 #-----------------------------------------------------------------------------
+# Adding an archive that depends on a perl
+
+{
+  my $archive = make_dist_archive("ME/Foo-0.01 = Foo~0.01 & perl~5.10.1");
+  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  $local->run_ok('Add', {archives => $archive, author => 'ME'});
+  $local->registration_ok('ME/Foo-0.01/Foo~0.01');
+}
+
+#-----------------------------------------------------------------------------
+# Adding an archive that depends on a core module
+
+{
+  my $archive = make_dist_archive("ME/Foo-0.01 = Foo~0.01 & Scalar::Util~1.13");
+  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  $local->run_ok('Add', {archives => $archive, author => 'ME'});
+  $local->registration_ok('ME/Foo-0.01/Foo~0.01');
+}
+
+#-----------------------------------------------------------------------------
 
 done_testing;
