@@ -95,11 +95,9 @@ sub execute {
                             : $self->repos->get_stack(name => $self->stack);
 
     do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
-    $self->result->changed if $stack->refresh->has_changed;
 
-    if ($self->pull and $stack->has_changed and not $self->dryrun) {
-        my $message_primer = $stack->head_revision->change_details;
-        my $message = $self->edit_message(primer => $message_primer);
+    if ($self->pull and $self->result->made_changes and not $self->dryrun) {
+        my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
         $self->repos->write_index(stack => $stack);
     }
@@ -116,17 +114,16 @@ sub _pull {
 
     if (-d $target or -f $target) {
         $self->info("Target $target is a file or directory.  Won't pull it");
-        return;
+        return $self;
     }
 
     my $target_spec = Pinto::SpecFactory->make_spec($target);
-    my ($dist, $did_pull) = $self->repos->get_or_pull( target => $target_spec,
-                                                       stack  => $stack );
+    my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target_spec);
 
-    $did_pull += $self->repos->pull_prerequisites( dist  => $dist,
-                                                   stack => $stack );
+    my $did_register = $dist ? $dist->register(stack => $stack) : undef;
+    $did_pull += $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
 
-    $self->result->changed if $did_pull;
+    $self->result->changed if $did_pull or $did_register;
 
     return $self;
 }
@@ -165,10 +162,7 @@ sub message_primer {
     my ($self) = @_;
 
     my $targets  = join ', ', $self->targets;
-    my $pinned   = $self->pin       ? ' and pinned'            : '';
-    my $prereqs  = $self->norecurse ? ' without prerequisites' : '';
-
-    return "Pulled${pinned} ${targets}$prereqs.";
+    return "Pulled ${targets}.";
 }
 
 #------------------------------------------------------------------------------
