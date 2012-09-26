@@ -313,12 +313,11 @@ sub compute_md5 {
     throw "Must bind revision to a stack before computing checksum"
       if not $self->stack;
 
-    my $md5 = Digest::MD5->new;
-    my $registrations_rs = $self->stack->registrations_rs;
+    my $attrs   = {select => [qw(package_name package_version distribution_path)] };
+    my $rs      = $self->stack->search_related_rs('registrations', {}, $attrs);
 
-    while (my $registration = $registrations_rs->next) {
-        $md5->add( $registration->to_string('%a/%D/%N') );
-    }
+    my $md5 = Digest::MD5->new;
+    $md5->add( join '/', @{$_} ) for $rs->cursor->all;
 
     return $md5->hexdigest;
 }
