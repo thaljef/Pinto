@@ -1,3 +1,5 @@
 ^profiles/.*
 ^nytprof
 sql/pinto.db$
+Pinto.sublime-project
+Pinto.sublime-workspace
