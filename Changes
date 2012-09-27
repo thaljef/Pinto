@@ -1,8 +1,18 @@
 {{$NEXT}}
 
+     Important:
+
+     This version of Pinto is not compatible with repositories that
+     were created with prior versions.  Please contact thaljef@cpan.org
+     if you need to migrate an old repository.
+
+     New Features:
+
      Added the Replace action, which substitues one dist for another
      on all stacks.  You'll need to upgrade App::Pinto to get the
      corresponding 'replace' command.
+
+     Other Changes:
 
      Significantly improved performance, especially for large
      repositories.  Pinto can now hold the *entire* CPAN (not just the
@@ -15,6 +25,12 @@
      have a META file, or ones that compute prereqs dynamically
      during configuration.  So it ain't perfect, but it is
      probably good enough.
+
+     Bug Fixes:
+
+     Pinto can now cope with distributions that contain no packages.
+     These are relatively rare but they do exist on CPAN, usualy
+     in the form of distributions that contain only scripts.
 
 0.055     2012-09-20 13:33:57 America/Los_Angeles
 
