@@ -45,12 +45,10 @@ with qw( Pinto::Role::Configurable
 sub run {
     my ($self, $action_name, @action_args) = @_;
 
-    my $action = $self->action_factory->create_action($action_name => @action_args);
-
+    my $action    = $self->action_factory->create_action($action_name => @action_args);
     my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
-    $self->repos->lock($lock_type);
 
-    my $result = try   { $action->execute }
+    my $result = try   { $self->repos->lock($lock_type); $action->execute }
                  catch { $self->repos->unlock; die $self->fatal($_) };
 
     $self->repos->unlock;
