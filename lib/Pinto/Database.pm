@@ -42,9 +42,8 @@ sub _build_schema {
     my $db_file = $self->config->db_file();
     my $dsn = "dbi:SQLite:$db_file";
 
-    my $schema;
-    try   { $schema = Pinto::Schema->connect($dsn) }
-    catch { throw "Database connection error: $_" };
+    my @args   = ($dsn, undef, undef, {on_connect_call => 'use_foreign_keys'});
+    my $schema = Pinto::Schema->connect(@args);
 
     # Install our logger into the schema
     $schema->logger($self->logger);
