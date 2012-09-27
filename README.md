@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.055
+version 0.056
 
 # SYNOPSIS
 
@@ -112,61 +112,6 @@ For now, the Pinto API is private and subject to radical change
 without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
 the ["SYNOPSIS"](#SYNOPSIS) are your public user interface.
-
-# SUPPORT
-
-## Perldoc
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Pinto
-
-## Websites
-
-The following websites have more information about this module, and may be of help to you. As always,
-in addition to those websites please use your favorite search engine to discover more resources.
-
-- Search CPAN
-
-The default CPAN search engine, useful to view POD in HTML format.
-
-[http://search.cpan.org/dist/Pinto](http://search.cpan.org/dist/Pinto)
-
-- CPAN Ratings
-
-The CPAN Ratings is a website that allows community ratings and reviews of Perl modules.
-
-[http://cpanratings.perl.org/d/Pinto](http://cpanratings.perl.org/d/Pinto)
-
-- CPAN Testers
-
-The CPAN Testers is a network of smokers who run automated tests on uploaded CPAN distributions.
-
-[http://www.cpantesters.org/distro/P/Pinto](http://www.cpantesters.org/distro/P/Pinto)
-
-- CPAN Testers Matrix
-
-The CPAN Testers Matrix is a website that provides a visual overview of the test results for a distribution on various Perls/platforms.
-
-[http://matrix.cpantesters.org/?dist=Pinto](http://matrix.cpantesters.org/?dist=Pinto)
-
-- CPAN Testers Dependencies
-
-The CPAN Testers Dependencies is a website that shows a chart of the test results of all dependencies for a distribution.
-
-[http://deps.cpantesters.org/?module=Pinto](http://deps.cpantesters.org/?module=Pinto)
-
-## Bugs / Feature Requests
-
-[https://github.com/thaljef/Pinto/issues](https://github.com/thaljef/Pinto/issues)
-
-## Source Code
-
-
-
-[https://github.com/thaljef/Pinto](https://github.com/thaljef/Pinto)
-
-    git clone git://github.com/thaljef/Pinto.git
 
 # AUTHOR
 
