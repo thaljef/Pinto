@@ -60,7 +60,7 @@ sub execute {
 sub _pin {
     my ($self, $spec, $stack) = @_;
 
-    my $dist = $self->repos->get_distribution_by_spec(spec => $spec);
+    my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
 
     $self->fatal("$spec does not exist in the repository") if not $dist;
 
