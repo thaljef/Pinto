@@ -61,7 +61,12 @@ sub execute {
 sub _unpin {
     my ($self, $spec, $stack) = @_;
 
-    my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
+    my $dist = $self->repos->get_distribution_by_spec(spec => $spec);
+
+    $self->fatal("$spec does not exist in the repository") if not $dist;
+
+    $self->notice("Unpinning distribution $dist from stack $stack");
+
     $self->result->changed if $dist->unpin(stack => $stack);
 
     return;
