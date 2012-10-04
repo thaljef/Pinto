@@ -68,7 +68,7 @@ sub parse_dist_path {
 sub isa_perl {
     my ($path_or_url) = @_;
 
-    return $path_or_url =~ m{ / perl-[\d.]+ \.tar \.gz $ }mx;
+    return $path_or_url =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
 }
 
 #-------------------------------------------------------------------------------
