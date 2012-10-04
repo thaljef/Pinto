@@ -57,11 +57,22 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 }
 
 #-----------------------------------------------------------------------------
-# Adding something that depends on perl (the perl prereq should be ignored)
+# Adding something that requires a perl (the perl prereq should be ignored)
 
 {
   my $t = Pinto::Tester->new;
   my $archive = make_dist_archive("Foo-1.0 = Foo~1.0 & perl~5.10");
+  $t->run_ok('Add', {archives => $archive, author => $auth});
+
+  $t->registration_ok( "$auth/Foo-1.0/Foo~1.0" );
+}
+
+#-----------------------------------------------------------------------------
+# Adding something that requires a core-only module (the prereq should be ignored)
+
+{
+  my $t = Pinto::Tester->new;
+  my $archive = make_dist_archive("Foo-1.0 = Foo~1.0 & IPC::Open3~1.0");
   $t->run_ok('Add', {archives => $archive, author => $auth});
 
   $t->registration_ok( "$auth/Foo-1.0/Foo~1.0" );

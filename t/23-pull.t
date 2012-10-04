@@ -76,6 +76,13 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
                          qr{Cannot find prerequisite JOHN/Nowhere-1.2.tar.gz});
 
 }
-#------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+{
+  # Pull a core-only module (should be ignored)
+  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  $local->run_ok(Pull => {targets => 'IPC::Open3'});
+
+}
+#------------------------------------------------------------------------------
 done_testing;
