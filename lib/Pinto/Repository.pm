@@ -572,7 +572,7 @@ sub _find_or_pull_by_package_spec {
     $self->debug("Found package $pspec or newer in $dist_url");
 
     if ( Pinto::Util::isa_perl($dist_url) ) {
-        $self->debug("Distribution $dist_url is a perl. Skipping it.");
+        $self->debug("Distribution $dist_url is a perl. Skipping it");
         return (undef, 0);
     }
 
@@ -603,7 +603,7 @@ sub _find_or_pull_by_distribution_spec {
     $self->debug("Found package $dspec at $dist_url");
 
     if ( Pinto::Util::isa_perl($dist_url) ) {
-        $self->debug("Distribution $dist_url is a perl. Skipping it.");
+        $self->debug("Distribution $dist_url is a perl. Skipping it");
         return (undef, 0);
     }
 

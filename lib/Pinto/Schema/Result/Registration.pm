@@ -276,7 +276,7 @@ sub _record_change {
     # during one of those past revisions.
 
     if ( my $change = $rs->find($hist) ) {
-        $self->debug("$change already applied to revision $revision. Skipping");
+        $self->debug("$change already applied to revision $revision. Skipping it");
     }
     else {
         my $verb = $event eq 'delete' ? 'deleted' : 'inserted';
