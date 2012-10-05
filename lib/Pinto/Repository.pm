@@ -305,9 +305,9 @@ sub open_stack {
 
 =method get_package( name => $pkg_name )
 
-Returns the latest version of L<Pinto:Schema::Result::Package> with
-the given C<$pkg_name>.  If there is no such package with that name in the
-repository, returns nothing.
+Returns a L<Pinto:Schema::Result::Package> representing the latest
+version of the package with the given C<$pkg_name>.  If there is no
+such package with that name in the repository, returns nothing.
 
 =method get_package( name => $pkg_name, stack => $stk_name )
 

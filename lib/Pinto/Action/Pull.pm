@@ -5,6 +5,8 @@ package Pinto::Action::Pull;
 use Moose;
 use MooseX::Types::Moose qw(Bool);
 
+use Module::CoreList;
+
 use Pinto::Types qw(Specs StackName StackDefault);
 
 use namespace::autoclean;
@@ -77,6 +79,11 @@ sub execute {
 sub _pull {
     my ($self, $target, $stack) = @_;
 
+    if ($target->isa('Pinto::PackageSpec') && $self->_is_core_module($target, $stack)) {
+        $self->debug("$target is part of the perl core.  Skipping it");
+        return;
+    }
+
     my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target);
     my $did_register = $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;
 
@@ -87,6 +94,20 @@ sub _pull {
     $self->result->changed if $did_pull or $did_register;
 
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _is_core_package {
+    my ($self, $pspec, $stack) = @_;
+
+    my $wanted_package = $pspec->name;
+    my $wanted_version = $pspec->version;
+
+    return if not exists $Module::CoreList::version{ $] }->{$wanted_package};
+
+    my $core_version = $Module::CoreList::version{ $] }->{$wanted_package};
+    return $core_version >= $wanted_version;
 }
 
 #------------------------------------------------------------------------------
