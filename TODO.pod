@@ -60,8 +60,6 @@
 
 =item Re-examine log levels for messages
 
-=item Should we throw() or just log->fatal()
-
 =item Should we have an heirarchy of exception classes
 
 =item Verify archive checksums during 'verify'
