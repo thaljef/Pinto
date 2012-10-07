@@ -102,7 +102,7 @@ sub select_registrations {
     my ($self, $where, $attrs) = @_;
 
     $attrs ||= {};
-    $attrs->{prefetch} ||= [ qw( package stack pin ) ];
+    $attrs->{prefetch} ||= [ qw( package stack ) ];
 
     return $self->schema->resultset('Registration')->search($where, $attrs);
 }
