@@ -79,7 +79,7 @@ sub execute {
 sub _pull {
     my ($self, $target, $stack) = @_;
 
-    if ($target->isa('Pinto::PackageSpec') && $self->_is_core_module($target, $stack)) {
+    if ($target->isa('Pinto::PackageSpec') && $self->_is_core_package($target, $stack)) {
         $self->debug("$target is part of the perl core.  Skipping it");
         return;
     }
