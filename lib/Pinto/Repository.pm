@@ -9,11 +9,11 @@ use File::Find;
 use Scalar::Util qw(blessed);
 
 use Pinto::Util;
+use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::IndexWriter;
-use Pinto::Store::File;
 use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(Dir);
@@ -53,8 +53,8 @@ has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
     lazy       => 1,
-    default    => sub { Pinto::Store::File->new( config => $_[0]->config,
-                                                 logger => $_[0]->logger ) },
+    default    => sub { Pinto::Store->new( config => $_[0]->config,
+                                           logger => $_[0]->logger ) },
 );
 
 =attr cache
