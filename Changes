@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.057     2012-10-07 12:28:37 America/Los_Angeles
+
      The Pull action will ignore requests for packages that are in the
      Perl core, unless you explicitly request a version of the package
      that is newer than the core.
