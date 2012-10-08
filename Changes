@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+     Added the Blame action, which reports who last modified each
+     package in the stack.  You'll need App::Pinto-0.052 to utilize
+     this action.
+
 0.057     2012-10-07 12:28:37 America/Los_Angeles
 
      The Pull action will ignore requests for packages that are in the
