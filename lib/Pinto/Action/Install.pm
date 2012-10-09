@@ -118,7 +118,7 @@ sub _pull {
     }
 
     my $target_spec = Pinto::SpecFactory->make_spec($target);
-    my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target_spec);
+    my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target_spec, stack => $stack);
 
     my $did_register = $dist ? $dist->register(stack => $stack) : undef;
     $did_pull += $self->repos->pull_prerequisites(dist => $dist, stack => $stack);

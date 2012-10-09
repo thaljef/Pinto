@@ -58,6 +58,44 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
   $local->registration_ok('ME/Foo-0.01/Foo~0.01');
 }
 
+#------------------------------------------------------------------------------
+{
+  my $local = Pinto::Tester->new;
+
+  my $foo1 = make_dist_archive('Foo-1 = Foo~1');
+  my $foo2 = make_dist_archive('Foo-2 = Foo~2');
+
+  $local->run_ok(Add => {author => 'ME', archives => $foo2});
+  $local->run_ok(Add => {author => 'ME', archives => $foo1});
+  
+  # Repository now contains both Foo~1 and Foo~2, but only the older Foo~1
+  # is actually on the stack (and it is pinned too)
+
+  $local->registration_ok('ME/Foo-1.tar.gz/Foo~1');
+  $local->registration_not_ok('ME/Foo-2.tar.gz/Foo~2');
+
+  # When add Bar-1, we the stack should still have Foo~1, even though the
+  # newer Foo~2 is in the repository.  Bar only requires Foo~1.
+
+  my $bar1 = make_dist_archive('Bar-1 = Bar~1 & Foo~1');
+  $local->run_ok(Add => {author => 'ME', archives => $bar1});
+
+  $local->registration_ok('ME/Foo-1.tar.gz/Foo~1');
+  $local->registration_ok('ME/Bar-1.tar.gz/Bar~1');
+
+  # Now add Bar-2, which requires newer Foo~2
+
+  my $bar2 = make_dist_archive('Bar-2 = Bar~2 & Foo~2');
+  $local->run_ok(Add => {author => 'ME', archives => $bar2});
+
+  # The stack should upgrade to Foo~2 to satisfy prereqs
+
+  $local->registration_ok('ME/Foo-2.tar.gz/Foo~2');
+  $local->registration_ok('ME/Bar-2.tar.gz/Bar~2');
+
+  $local->registration_not_ok('ME/Foo-1.tar.gz/Foo~1');
+  $local->registration_not_ok('ME/Bar-1.tar.gz/Bar~1');
+}
 #-----------------------------------------------------------------------------
 
 done_testing;
