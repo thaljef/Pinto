@@ -1,0 +1,14 @@
+---
+language: perl
+perl:
+  - 5.16
+  - 5.14
+  - 5.12
+  - 5.10
+before_script: 
+  - cpan App::cpanminus
+  - cpan Dist::Zilla
+  - cpanm installdeps
+  - dzil listdeps | cpanm
+  - dzil authordeps | cpanm
+script: dzil test
