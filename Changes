@@ -1,8 +1,20 @@
 {{$NEXT}}
 
+     New Features:
+
      Added the Blame action, which reports who last modified each
      package in the stack.  You'll need App::Pinto-0.052 to utilize
      this action.
+
+     Bug Fixes:
+
+     When pulling prereqs, Pinto would pull the latest version of the
+     package across the entire repository, rather than taking the version
+     that is already on the stack. If the package that
+     is on the stack does not exist or is too old, *then* you get the
+     latest version in the repository.  And if that does not exist or
+     is too old, *then* we get the latest version from an upstream
+     repository.
 
 0.057     2012-10-07 12:28:37 America/Los_Angeles
 
