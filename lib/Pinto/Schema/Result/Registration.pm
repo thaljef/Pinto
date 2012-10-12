@@ -191,6 +191,7 @@ use Pinto::Util;
 use Pinto::Exception qw(throw);
 
 use overload ( '""'     => 'to_string',
+               'cmp'    => 'string_compare',
                '<=>'    => 'compare',
                fallback => undef );
 
@@ -405,6 +406,22 @@ sub compare {
 
     return $reg_a->package <=> $reg_b->package;
 };
+
+#------------------------------------------------------------------------------
+
+sub string_compare {
+    my ($reg_a, $reg_b) = @_;
+
+    my $pkg = __PACKAGE__;
+      throw "Can only compare $pkg objects"
+        if not ( $reg_a->isa($pkg) && $reg_b->isa($pkg) );
+
+    return 0 if $reg_a->id == $reg_b->id;
+
+    return    ($reg_a->package->distribution->author cmp $reg_b->package->distribution->author)
+           || ($reg_a->package->distribution->vname  cmp $reg_b->package->distribution->vname)
+           || ($reg_a->package->vname                cmp $reg_b->package->vname);
+}
 
 #------------------------------------------------------------------------------
 
