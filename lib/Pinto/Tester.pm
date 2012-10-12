@@ -328,6 +328,8 @@ sub log_like {
 
     $name ||= 'Log output matches';
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     $self->pinto->logger->log_handler->contains_ok($rx, $name);
 
     return;
@@ -339,6 +341,8 @@ sub log_unlike {
     my ($self, $rx, $name) = @_;
 
     $name ||= 'Log output does not match';
+
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $self->pinto->logger->log_handler->does_not_contain_ok($rx, $name);
 
