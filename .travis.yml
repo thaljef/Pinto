@@ -13,5 +13,4 @@ install:
    - export RELEASE_TESTING=1 AUTOMATED_TESTING=1 AUTHOR_TESTING=1 HARNESS_OPTIONS=j10:c HARNESS_TIMER=1
    - dzil listdeps | grep -vP '[^\w:]' | cpanm --verbose
 script:
-   - echo -e "[github]\n  user = thaljef" > ~/.gitconfig
    - dzil smoke --release --author
