@@ -250,11 +250,25 @@ sub registration {
     my ($self, %args) = @_;
 
     my $pkg_name = ref $args{package} ? $args{package}->name : $args{package};
-    my $attrs = {key => 'stack_package_name_unique', prefetch => 'package'};
+    my $attrs = {key => 'stack_package_name_unique', prefetch => {package => 'distribution'}};
 
     return $self->find_related('registrations', {package_name => $pkg_name}, $attrs);
 }
 
+#------------------------------------------------------------------------------
+
+sub registered_distributions {
+    my ($self) = @_;
+
+    my %dists;
+    my $attrs = {prefetch => {package => 'distribution'}};
+
+    for my $reg ($self->registrations({}, $attrs)) {
+      $dists{$reg->package->distribution->to_string} = $reg->package->distribution;
+    }
+
+    return values %dists;
+}
 #------------------------------------------------------------------------------
 
 sub copy {
