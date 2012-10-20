@@ -27,7 +27,7 @@ with qw( Pinto::Role::PauseConfig Pinto::Role::Committable);
 has author => (
     is         => 'ro',
     isa        => Author,
-    default    => sub { uc($_[0]->pausecfg->{user}) || $_[0]->config->username },
+    default    => sub { uc($_[0]->pausecfg->{user} || '') || $_[0]->config->username },
     lazy       => 1,
 );
 
