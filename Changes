@@ -1,5 +1,29 @@
 {{$NEXT}}
 
+     Important:
+
+     This version of Pinto is not compatible with repositories that
+     were created with prior versions.  Please contact thaljef@cpan.org
+     if you need to migrate an old repository.
+
+     Interface Changes:
+
+     Stack names and property names are no longer forced to lowercase.
+     Instead, we preserve the original case when they are created.  But
+     subsequent comparisons or lookups are done irrespective of case.
+
+     Author IDs are no longer forced to uppercase.  However, the 
+     author ID in the canonical path for any distribution that you 
+     add will always be uppercase, which is consistent with PAUSE. 
+     When listing distributions/packages for a certain author, the
+     comparison is done irrespective of case.
+
+     Other Changes:
+
+     Made several schema optimizations to help support Stratopan, the
+     upcoming cloud-based service built on Pinto.  For a preview,
+     check out http://alpha.stratopan.com
+
 0.058     2012-10-11 22:47:23 America/Los_Angeles
 
      New Features:
