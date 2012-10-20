@@ -269,10 +269,15 @@ sub close {
 sub registration {
     my ($self, %args) = @_;
 
-    my $pkg_name = ref $args{package} ? $args{package}->name : $args{package};
-    my $attrs = {key => 'stack_package_name_unique', prefetch => {package => 'distribution'}};
+    my $pkg_name = ref $args{package} ? $args{package}->name
+                                      : $args{package};
 
-    return $self->find_related('registrations', {package_name => $pkg_name}, $attrs);
+    my $attrs = { key      => 'stack_package_name_unique',
+                  prefetch => {package => 'distribution'} };
+
+    my $where = {package_name => $pkg_name};
+
+    return $self->find_related(registrations => $where, $attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -280,9 +285,9 @@ sub registration {
 sub registered_distributions {
     my ($self) = @_;
 
-    my %dists;
-    my $attrs = {prefetch => {distribution => 'package'}};
+    my $attrs = {prefetch => {package => 'distribution'}};
 
+    my %dists;
     for my $reg ($self->registrations({}, $attrs)) {
       # TODO: maybe use 'DISTINCT'
       $dists{$reg->distribution} = $reg->distribution;
