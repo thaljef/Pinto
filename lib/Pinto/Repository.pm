@@ -16,6 +16,7 @@ use Pinto::IndexCache;
 use Pinto::IndexWriter;
 use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
+use Pinto::Util qw(itis);
 use Pinto::Types qw(Dir);
 
 use namespace::autoclean;
@@ -397,7 +398,7 @@ sub get_distribution_by_spec {
 
     my $spec  = $args{spec};
 
-    if ($spec->isa('Pinto::PackageSpec')) {
+    if ( itis($spec, 'Pinto::PackageSpec') ) {
         my $pkg_name = $spec->name;
         my $stack    = $args{stack} or throw "Must specify a stack";
         my $pkg      = $self->get_package(name => $pkg_name, stack => $stack);
@@ -407,7 +408,7 @@ sub get_distribution_by_spec {
     }
 
 
-    if ($spec->isa('Pinto::DistributionSpec')) {
+    if ( itis($spec, 'Pinto::DistributionSpec') ) {
         my $author  = $spec->author;
         my $archive = $spec->archive;
         my $dist = $self->get_distribution(spec => $spec);
@@ -540,10 +541,10 @@ sub find_or_pull {
     my $target = $args{target};
     my $stack  = $args{stack};
 
-    if ( $target->isa('Pinto::PackageSpec') ){
+    if ( itis($target, 'Pinto::PackageSpec') ){
         return $self->_find_or_pull_by_package_spec($target, $stack);
     }
-    elsif ($target->isa('Pinto::DistributionSpec') ){
+    elsif ( itis($target, 'Pinto::DistributionSpec') ){
         return $self->_find_or_pull_by_distribution_spec($target, $stack);
     }
     else {

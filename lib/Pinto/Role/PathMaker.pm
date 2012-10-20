@@ -7,6 +7,7 @@ use Moose::Role;
 use Path::Class;
 use Try::Tiny;
 
+use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -33,8 +34,7 @@ was actually made.  If the path already existed, returns false.
 sub mkpath {
     my ($self, $path) = @_;
 
-    $path = dir($path) if not eval {$path->isa('Path::Class')};
-
+    $path = dir($path) if not itis($path, 'Path::Class');
     throw "$path is not a Path::Class::Dir" if not $path->is_dir;
     throw "$path is an existing file" if -f $path;
 

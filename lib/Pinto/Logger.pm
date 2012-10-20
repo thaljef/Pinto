@@ -8,8 +8,8 @@ use MooseX::Types::Moose qw(Str);
 use DateTime;
 use Log::Dispatch;
 use Log::Dispatch::File;
-use Scalar::Util;
 
+use Pinto::Util qw(itis);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
 
@@ -94,7 +94,7 @@ sub add_output {
     my ($self, $output) = @_;
 
     my $base_class = 'Log::Dispatch::Output';
-    $output->isa($base_class) or throw "Argument is not a $base_class";
+    itis($output, $base_class) or throw "Argument is not a $base_class";
 
     $self->log_handler->add($output);
 
@@ -111,7 +111,7 @@ sub fatal {
     # then log the entire stack trace.  But if not, then just log the main
     # message (or the $message itself, if it is not a Pinto::Exception)
 
-    if (Scalar::Util::blessed($message) and $message->isa('Pinto::Exception')) {
+    if (itis($message, 'Pinto::Exception')) {
         my $is_debug_log = $self->log_handler->is_debug;
         $message = $is_debug_log ? $message->as_string : $message->message;
     }

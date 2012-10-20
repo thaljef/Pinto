@@ -7,6 +7,7 @@ use MooseX::Types::Moose qw(Bool);
 
 use Module::CoreList;
 
+use Pinto::Util qw(itis);
 use Pinto::Types qw(Specs StackName StackDefault);
 
 use namespace::autoclean;
@@ -78,7 +79,7 @@ sub execute {
 sub _pull {
     my ($self, $target, $stack) = @_;
 
-    if ($target->isa('Pinto::PackageSpec') && $self->_is_core_package($target, $stack)) {
+    if (itis($target, 'Pinto::PackageSpec') && $self->_is_core_package($target, $stack)) {
         $self->debug("$target is part of the perl core.  Skipping it");
         return;
     }
