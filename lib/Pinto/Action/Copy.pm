@@ -68,9 +68,10 @@ sub execute {
 sub message_primer {
     my ($self) = @_;
 
-    my ($from, $to) = ($self->from_stack, $self->to_stack);
+    my $orig = $self->repos->get_stack(name => $self->from_stack);
+    my $copy = $self->repos->get_stack(name => $self->to_stack);
 
-    return "Copied stack $from to stack $to.";
+    return "Copied stack $orig to stack $copy.";
 }
 
 #------------------------------------------------------------------------------

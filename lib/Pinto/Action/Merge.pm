@@ -63,10 +63,10 @@ sub execute {
 sub message_primer {
     my ($self) = @_;
 
-    my $from_stack = $self->from_stack;
-    my $to_stack   = $self->to_stack;
+    my $from = $self->repos->get_stack(name => $self->from_stack);
+    my $into = $self->repos->get_stack(name => $self->to_stack);
 
-    return "Merged stack $from_stack into stack $to_stack.";
+    return "Merged stack $from into stack $into.";
 }
 
 #------------------------------------------------------------------------------
