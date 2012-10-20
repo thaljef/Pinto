@@ -210,7 +210,7 @@ with 'Pinto::Role::Schema::Result';
 use Carp;
 use String::Format;
 
-use Pinto::Util;
+use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 
 use overload ( '""'     => 'to_string',
@@ -424,7 +424,7 @@ sub compare {
 
     my $pkg = __PACKAGE__;
     throw "Can only compare $pkg objects"
-        if not ( $reg_a->isa($pkg) && $reg_b->isa($pkg) );
+        if not ( itis($reg_a, $pkg) && itis($reg_b, $pkg) );
 
     return 0 if $reg_a->id == $reg_b->id;
 
@@ -437,8 +437,8 @@ sub string_compare {
     my ($reg_a, $reg_b) = @_;
 
     my $pkg = __PACKAGE__;
-      throw "Can only compare $pkg objects"
-        if not ( $reg_a->isa($pkg) && $reg_b->isa($pkg) );
+    throw "Can only compare $pkg objects"
+        if not ( itis($reg_a, $pkg) && itis($reg_b, $pkg) );
 
     return 0 if $reg_a->id == $reg_b->id;
 

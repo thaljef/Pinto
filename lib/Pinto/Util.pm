@@ -11,6 +11,7 @@ use Try::Tiny;
 use Path::Class;
 use Digest::MD5;
 use Digest::SHA;
+use Scalar::Util;
 use DateTime;
 use Readonly;
 
@@ -19,9 +20,15 @@ use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
+use base qw(Exporter);
+
 #-------------------------------------------------------------------------------
 
 # VERSION
+
+#-------------------------------------------------------------------------------
+
+our @EXPORT_OK = qw(itis mtime);
 
 #-------------------------------------------------------------------------------
 
@@ -40,6 +47,14 @@ sub author_dir {                                  ## no critic (ArgUnpacking)
     my @base =  @_;
 
     return dir(@base, substr($author, 0, 1), substr($author, 0, 2), $author);
+}
+
+#-------------------------------------------------------------------------------
+
+sub itis {
+    my ($var, $class) = @_;
+
+    return ref $var && Scalar::Util::blessed($var) && $var->isa($class);
 }
 
 #-------------------------------------------------------------------------------

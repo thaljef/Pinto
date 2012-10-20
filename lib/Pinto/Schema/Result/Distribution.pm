@@ -233,11 +233,12 @@ use Path::Class;
 use CPAN::DistnameInfo;
 use String::Format;
 
-use Pinto::Util;
+use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 use Pinto::DistributionSpec;
 
-use overload ( '""' => 'to_string' );
+use overload ( '""'  => 'to_string',
+               'cmp' => 'string_compare');
 
 #------------------------------------------------------------------------------
 
@@ -470,11 +471,9 @@ sub registered_stacks {
 
     my %stacks;
 
-    for my $pkg ($self->packages) {
-        for my $reg ($pkg->registrations) {
-            my $stack = $reg->stack;
-            $stacks{$stack->name} = $stack;
-        }
+    for my $reg ($self->registrations) {
+      my $stack = $reg->stack;
+      $stacks{$stack->name} = $stack;
     }
 
     return values %stacks;
@@ -502,6 +501,23 @@ sub as_spec {
     my ($self) = @_;
 
     return Pinto::DistributionSpec->new(path => $self->path);
+}
+
+#------------------------------------------------------------------------------
+
+sub string_compare {
+    my ($dist_a, $dist_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($dist_a, $pkg) && itis($dist_b, $pkg) );
+        
+    return 0 if $dist_a->id == $dist_b->id;
+
+    my $r =   ($dist_a->author_canonical cmp $dist_b->author_canonical)
+           || ($dist_a->archive          cmp $dist_b->archive);
+
+    return $r;
 }
 
 #------------------------------------------------------------------------------

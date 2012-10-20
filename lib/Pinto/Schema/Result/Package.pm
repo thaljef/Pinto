@@ -162,8 +162,13 @@ with 'Pinto::Role::Schema::Result';
 use Carp;
 use String::Format;
 
+use Pinto::Util qw(itis);
+use Pinto::Exception qw(throw);
+use Pinto::PackageSpec;
+
 use overload ( '""'     => 'to_string',
                '<=>'    => 'compare',
+               'cmp'    => 'string_compare',
                fallback => undef );
 
 #------------------------------------------------------------------------------
@@ -287,19 +292,37 @@ sub default_format {
 sub compare {
     my ($pkg_a, $pkg_b) = @_;
 
-    confess "Can only compare Pinto::Package objects"
-        if __PACKAGE__ ne ref $pkg_a || __PACKAGE__ ne ref $pkg_b;
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($pkg_a, $pkg) && itis($pkg_b, $pkg) );
 
-    return 0 if $pkg_a->id() == $pkg_b->id();
+    return 0 if $pkg_a->id == $pkg_b->id;
 
     confess "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
-        if $pkg_a->name() ne $pkg_b->name();
+        if $pkg_a->name ne $pkg_b->name;
 
-    my $r =   ( $pkg_a->version()             <=> $pkg_b->version()             )
-           || ( $pkg_a->distribution->mtime() <=> $pkg_b->distribution->mtime() );
+    my $r =   ( $pkg_a->version             <=> $pkg_b->version             )
+           || ( $pkg_a->distribution->mtime <=> $pkg_b->distribution->mtime );
 
     # No two non-identical packages can be considered equal!
     confess "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
+
+    return $r;
+};
+
+#-------------------------------------------------------------------------------
+
+sub string_compare {
+    my ($pkg_a, $pkg_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($pkg_a, $pkg) && itis($pkg_b, $pkg) );
+
+    return 0 if $pkg_a->id() == $pkg_b->id();
+
+    my $r =   ( $pkg_a->name    cmp $pkg_b->name    )
+           || ( $pkg_a->version <=> $pkg_b->version );
 
     return $r;
 };
