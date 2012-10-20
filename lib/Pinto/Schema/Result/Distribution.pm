@@ -472,8 +472,8 @@ sub registered_stacks {
     my %stacks;
 
     for my $reg ($self->registrations) {
-      my $stack = $reg->stack;
-      $stacks{$stack->name} = $stack;
+      # TODO: maybe use 'DISTICT'
+      $stacks{$reg->stack} = $reg->stack;
     }
 
     return values %stacks;

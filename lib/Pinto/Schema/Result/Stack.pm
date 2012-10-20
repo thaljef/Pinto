@@ -281,10 +281,11 @@ sub registered_distributions {
     my ($self) = @_;
 
     my %dists;
-    my $attrs = {prefetch => {package => 'distribution'}};
+    my $attrs = {prefetch => {distribution => 'package'}};
 
     for my $reg ($self->registrations({}, $attrs)) {
-      $dists{$reg->package->distribution->to_string} = $reg->package->distribution;
+      # TODO: maybe use 'DISTINCT'
+      $dists{$reg->distribution} = $reg->distribution;
     }
 
     return values %dists;
