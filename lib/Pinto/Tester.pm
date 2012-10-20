@@ -189,7 +189,7 @@ sub registration_ok {
     $self->tb->is_eq($pkg->version, $pkg_ver,  "Package has correct version");
 
     # Test distribution object...
-    my $dist = $pkg->distribution;
+    my $dist = $reg->distribution;
     $self->tb->is_eq($dist->path,  $dist_path, "Distribution has correct dist path");
 
     # Archive should be reachable through stack symlink (e.g. $stack/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)

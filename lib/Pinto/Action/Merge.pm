@@ -27,7 +27,6 @@ has from_stack => (
     is       => 'ro',
     isa      => StackName,
     required => 1,
-    coerce   => 1,
 );
 
 
@@ -35,7 +34,6 @@ has to_stack => (
     is       => 'ro',
     isa      => StackName,
     required => 1,
-    coerce   => 1,
 );
 
 #------------------------------------------------------------------------------

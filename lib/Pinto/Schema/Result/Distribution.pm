@@ -37,6 +37,11 @@ __PACKAGE__->table("distribution");
   data_type: 'text'
   is_nullable: 0
 
+=head2 author_canonical
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 archive
 
   data_type: 'text'
@@ -52,12 +57,12 @@ __PACKAGE__->table("distribution");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 md5
+=head2 sha256
 
   data_type: 'text'
   is_nullable: 0
 
-=head2 sha256
+=head2 md5
 
   data_type: 'text'
   is_nullable: 0
@@ -69,15 +74,17 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "author",
   { data_type => "text", is_nullable => 0 },
+  "author_canonical",
+  { data_type => "text", is_nullable => 0 },
   "archive",
   { data_type => "text", is_nullable => 0 },
   "source",
   { data_type => "text", is_nullable => 0 },
   "mtime",
   { data_type => "integer", is_nullable => 0 },
-  "md5",
-  { data_type => "text", is_nullable => 0 },
   "sha256",
+  { data_type => "text", is_nullable => 0 },
+  "md5",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -95,11 +102,11 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<author_archive_unique>
+=head2 C<author_canonical_archive_unique>
 
 =over 4
 
-=item * L</author>
+=item * L</author_canonical>
 
 =item * L</archive>
 
@@ -107,7 +114,10 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("author_archive_unique", ["author", "archive"]);
+__PACKAGE__->add_unique_constraint(
+  "author_canonical_archive_unique",
+  ["author_canonical", "archive"],
+);
 
 =head2 C<md5_unique>
 
@@ -165,6 +175,36 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 1 },
 );
 
+=head2 registration_changes
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::RegistrationChange>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registration_changes",
+  "Pinto::Schema::Result::RegistrationChange",
+  { "foreign.distribution" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
+=head2 registrations
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Registration>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registrations",
+  "Pinto::Schema::Result::Registration",
+  { "foreign.distribution" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 1 },
+);
+
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -179,8 +219,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-21 14:48:08
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lo9xjZQaCJQ7jdjcCKKygw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 20:13:59
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+TAXWVdLE3xvkBVryoeunQ
 
 #-------------------------------------------------------------------------------
 
@@ -210,6 +250,7 @@ sub FOREIGNBUILDARGS {
 
     $args ||= {};
     $args->{source} ||= 'LOCAL';
+    $args->{author_canonical} = uc $args->{author};
 
     return $args;
 }
@@ -365,9 +406,9 @@ has is_devel => (
 sub path {
     my ($self) = @_;
 
-    return join '/', substr($self->author, 0, 1),
-                     substr($self->author, 0, 2),
-                     $self->author,
+    return join '/', substr($self->author_canonical, 0, 1),
+                     substr($self->author_canonical, 0, 2),
+                     $self->author_canonical,
                      $self->archive;
 }
 
@@ -377,9 +418,9 @@ sub native_path {
     my ($self, @base) = @_;
 
     return Path::Class::file( @base,
-                              substr($self->author, 0, 1),
-                              substr($self->author, 0, 2),
-                              $self->author,
+                              substr($self->author_canonical, 0, 1),
+                              substr($self->author_canonical, 0, 2),
+                              $self->author_canonical,
                               $self->archive );
 }
 
@@ -479,6 +520,7 @@ sub to_string {
          's' => sub { $self->is_local()   ? 'l' : 'f'         },
          'S' => sub { $self->source()                         },
          'a' => sub { $self->author()                         },
+         'A' => sub { $self->author_canonical()               },
          'u' => sub { $self->url()                            },
          'c' => sub { $self->package_count()                  },
     );
@@ -492,7 +534,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%a/%f',
+    return '%A/%f',
 }
 
 #------------------------------------------------------------------------------

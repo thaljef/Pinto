@@ -24,7 +24,6 @@ has stack => (
     is        => 'ro',
     isa       => StackName | StackDefault,
     default   => undef,
-    coerce    => 1,
 );
 
 

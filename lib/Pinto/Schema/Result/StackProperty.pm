@@ -43,6 +43,11 @@ __PACKAGE__->table("stack_property");
   data_type: 'text'
   is_nullable: 0
 
+=head2 key_canonical
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 value
 
   data_type: 'text'
@@ -57,6 +62,8 @@ __PACKAGE__->add_columns(
   "stack",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "key",
+  { data_type => "text", is_nullable => 0 },
+  "key_canonical",
   { data_type => "text", is_nullable => 0 },
   "value",
   { data_type => "text", default_value => "", is_nullable => 1 },
@@ -75,6 +82,20 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
+
+=head2 C<stack_key_canonical_unique>
+
+=over 4
+
+=item * L</stack>
+
+=item * L</key_canonical>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("stack_key_canonical_unique", ["stack", "key_canonical"]);
 
 =head2 C<stack_key_unique>
 
@@ -104,7 +125,7 @@ __PACKAGE__->belongs_to(
   "stack",
   "Pinto::Schema::Result::Stack",
   { id => "stack" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -121,8 +142,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-13 09:44:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Hr2tDQcORrtek9hk9AtzVw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 19:06:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:m1Uj0OjnjQqw56mv+hPr6g
 
 #------------------------------------------------------------------------------
 
@@ -133,6 +154,18 @@ with 'Pinto::Role::Schema::Result';
 # VERSION
 
 #------------------------------------------------------------------------------
+
+sub FOREIGNBUILDARGS {
+  my ($class, $args) = @_;
+
+  $args ||= {};
+  $args->{key_canonical} = lc $args->{key};
+
+  return $args;
+}
+
+#------------------------------------------------------------------------------
+
 
 __PACKAGE__->meta->make_immutable;
 

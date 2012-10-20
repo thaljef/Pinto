@@ -56,7 +56,7 @@ my $t = Pinto::Tester->new;
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
 
-  is $qa_stack->head_revision->compute_md5, $dev_stack->head_revision->md5,
+  is $qa_stack->head_revision->compute_sha256, $dev_stack->head_revision->sha256,
     'Copied stack has same checksum';
 
   is $qa_stack->get_property('description'), 'copy of stack dev',
@@ -126,6 +126,12 @@ my $t = Pinto::Tester->new;
   $t->run_throws_ok('Copy', {from_stack => 'init',
                              to_stack   => 'dev'},
                              qr/Stack dev already exists/);
+
+
+   # Copy to a stack that already exists, but with different case
+  $t->run_throws_ok('Copy', {from_stack => 'init',
+                             to_stack   => 'DeV'},
+                             qr/Stack DeV already exists/);
 
 
   # Create stack with invalid name

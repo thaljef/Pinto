@@ -10,7 +10,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-my $auth    = 'ME';
+my $auth    = 'Me';
 my $pkg1    = 'Foo~0.01';
 my $pkg2    = 'Bar~0.01';
 my $dist    = 'Foo-Bar-0.01';
@@ -46,6 +46,10 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
   my $t = Pinto::Tester->new;
 
   $t->run_ok('Add', {archives => $archive, author => $auth});
+
+  $t->run_throws_ok( 'Add', {archives => $archive, author => uc $auth},
+                     qr/already exists/, 'Cannot add dist to same path twice' );
+
   $t->run_throws_ok( 'Add', {archives => $archive, author => $auth},
                      qr/already exists/, 'Cannot add dist to same path twice' );
 

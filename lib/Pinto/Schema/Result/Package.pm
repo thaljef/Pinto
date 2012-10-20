@@ -103,7 +103,7 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { id => "distribution" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head2 registration_changes
@@ -150,8 +150,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-17 14:51:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0Uhv4DkCpUuJH9XuRVRejg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 17:28:53
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IdF0zr75XRiWOqSuoqj9Xg
 
 #------------------------------------------------------------------------------
 
@@ -203,7 +203,9 @@ sub register {
     my $stack = $args{stack};
     my $pin   = $args{pin};
 
-    $self->create_related('registrations', {stack => $stack->id, is_pinned => $pin});
+    $self->create_related( registrations => {stack        => $stack,
+                                             distribution => $self->distribution, 
+                                             is_pinned    => $pin} );
 
     return $self;
 }
@@ -256,6 +258,7 @@ sub to_string {
          's' => sub { $self->distribution->is_local()   ? 'l' : 'f'   },
          'S' => sub { $self->distribution->source()                   },
          'a' => sub { $self->distribution->author()                   },
+         'A' => sub { $self->distribution->author_canonical()         },
          'd' => sub { $self->distribution->name()                     },
          'D' => sub { $self->distribution->vname()                    },
          'w' => sub { $self->distribution->version()                  },
@@ -276,7 +279,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%a/%D/%N';  # AUTHOR/DIST-VNAME/PKG-VNAME
+    return '%A/%D/%N';  # AUTHOR/DIST-VNAME/PKG-VNAME
 }
 
 #-------------------------------------------------------------------------------

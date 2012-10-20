@@ -69,7 +69,7 @@ sub select_distribution {
 
     $attrs ||= {};
     $attrs->{prefetch} ||= 'packages';
-    $attrs->{key}      ||= 'author_archive_unique';
+    $attrs->{key}      ||= 'author_canonical_archive_unique';
 
     return $self->schema->resultset('Distribution')->find($where, $attrs);
 }
@@ -132,7 +132,8 @@ sub select_stack {
     my ($self, $where, $attrs) = @_;
 
     $attrs ||= {};
-    $attrs->{key} = 'name_unique';
+    $attrs->{key} = 'name_canonical_unique';
+    $where->{name_canonical} ||= lc delete $where->{name};
 
     return $self->schema->resultset('Stack')->find( $where, $attrs );
 }

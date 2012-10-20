@@ -27,7 +27,6 @@ has stack => (
     is       => 'ro',
     isa      => StackName,
     required => 1,
-    coerce   => 1,
 );
 
 

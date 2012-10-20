@@ -44,6 +44,12 @@ __PACKAGE__->table("registration");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 distribution
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =head2 is_pinned
 
   data_type: 'integer'
@@ -72,6 +78,8 @@ __PACKAGE__->add_columns(
   "stack",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
   { data_type => "integer", is_nullable => 0 },
@@ -127,6 +135,21 @@ __PACKAGE__->add_unique_constraint("stack_package_unique", ["stack", "package"])
 
 =head1 RELATIONS
 
+=head2 distribution
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Distribution>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "distribution",
+  "Pinto::Schema::Result::Distribution",
+  { id => "distribution" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
 =head2 package
 
 Type: belongs_to
@@ -139,7 +162,7 @@ __PACKAGE__->belongs_to(
   "package",
   "Pinto::Schema::Result::Package",
   { id => "package" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head2 stack
@@ -154,7 +177,7 @@ __PACKAGE__->belongs_to(
   "stack",
   "Pinto::Schema::Result::Stack",
   { id => "stack" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -171,8 +194,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2012-09-14 13:53:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vVMTiTt58Vt2uqE5hPFjTA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 20:30:28
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:i+MzutuKn9wDz25eRwmUBw
 
 #------------------------------------------------------------------------------
 
@@ -230,7 +253,7 @@ sub insert {
     # Compute values for denormalized attributes...
     $self->package_name($self->package->name);
     $self->package_version($self->package->version->stringify);
-    $self->distribution_path($self->package->distribution->path);
+    $self->distribution_path($self->distribution->path);
 
     my $return = $self->next::method(@args);
 
@@ -262,10 +285,11 @@ sub _record_change {
     throw "Stack $stack is not open for revision"
       if $revision->is_committed;
 
-    my $hist = { event      => $event,
-                 package    => $self->package,
-                 is_pinned  => $self->is_pinned,
-                 revision   => $revision };
+    my $hist = { event        => $event,
+                 package      => $self->package,
+                 distribution => $self->distribution,
+                 is_pinned    => $self->is_pinned,
+                 revision     => $revision };
 
     # Update history....
     my $rs = $self->result_source->schema->resultset('RegistrationChange');
@@ -418,9 +442,9 @@ sub string_compare {
 
     return 0 if $reg_a->id == $reg_b->id;
 
-    return    ($reg_a->package->distribution->author cmp $reg_b->package->distribution->author)
-           || ($reg_a->package->distribution->vname  cmp $reg_b->package->distribution->vname)
-           || ($reg_a->package->vname                cmp $reg_b->package->vname);
+    return    ($reg_a->package->distribution->author_canonical cmp $reg_b->package->distribution->author_canonical)
+           || ($reg_a->package->distribution->vname            cmp $reg_b->package->distribution->vname)
+           || ($reg_a->package->vname                          cmp $reg_b->package->vname);
 }
 
 #------------------------------------------------------------------------------
@@ -442,6 +466,7 @@ sub to_string {
          s => sub { $self->package->distribution->is_local  ? 'l' : 'f'         },
          S => sub { $self->package->distribution->source                        },
          a => sub { $self->package->distribution->author                        },
+         A => sub { $self->package->distribution->author_canonical              },
          d => sub { $self->package->distribution->name                          },
          D => sub { $self->package->distribution->vname                         },
          w => sub { $self->package->distribution->version                       },
@@ -467,7 +492,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%a/%D/%N/%k';
+    return '%A/%D/%N/%k';
 }
 
 #------------------------------------------------------------------------------

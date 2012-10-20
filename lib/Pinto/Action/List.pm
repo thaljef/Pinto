@@ -24,7 +24,6 @@ has stack => (
     is        => 'ro',
     isa       => StackName | StackAll | StackDefault,
     default   => undef,
-    coerce    => 1,
 );
 
 
@@ -37,7 +36,6 @@ has pinned => (
 has author => (
     is     => 'ro',
     isa    => Author,
-    coerce => 1,
 );
 
 
@@ -85,7 +83,7 @@ sub _build_where {
     }
 
     if (my $author = $self->author) {
-        $where->{'distribution.author'} = $author;
+        $where->{'distribution.author_canonical'} = uc $author;
     }
 
     if (my $pinned = $self->pinned) {

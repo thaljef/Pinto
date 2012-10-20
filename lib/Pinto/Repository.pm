@@ -162,10 +162,11 @@ sub set_property {
 sub set_properties {
     my ($self, $props) = @_;
 
+    my $attrs  = {key => 'key_canonical_unique'};
     while (my ($key, $value) = each %{$props}) {
-        $key = Pinto::Util::normalize_property_name($key);
-        my $kv_pair = {key => $key, value => $value};
-        $self->db->repository_properties->update_or_create($kv_pair);
+        Pinto::Util::validate_property_name($key);
+        my $kv_pair = {key => $key, key_canonical => lc($key), value => $value};
+        $self->db->repository_properties->update_or_create($kv_pair, $attrs);
     }
 
     return $self;
@@ -347,7 +348,7 @@ sub get_package {
 
 =method get_distribution( path => $dist_path )
 
-=method get_distribution( md5 => $md5 )
+=method get_distribution( sha256 => $sha256 )
 
 Returns the L<Pinto::Schema::Result::Distribution> with the given
 author ID and archive name.  If given a L<Pinto::DistributionSpec>
@@ -362,21 +363,25 @@ sub get_distribution {
     my ($self, %args) = @_;
 
     my %where;
-    my %attrs = (key => 'author_archive_unique');
+    my %attrs = (key => 'author_canonical_archive_unique');
 
     if (my $spec = $args{spec}) {
-        $where{author}  = $spec->author;
-        $where{archive} = $spec->archive;
+        $where{author_canonical} = $spec->author_canonical;
+        $where{archive}          = $spec->archive;
     }
     elsif (my $path = $args{path}) {
-        my ($author, $archive) = Pinto::Util::parse_dist_path($path);
-        $where{author}  = $author;
-        $where{archive} = $archive;
+        my ($author, $archive)    = Pinto::Util::parse_dist_path($path);
+        $where{author_canonical}  = uc $author;
+        $where{archive}           = $archive;
+    }
+    elsif (my $sha256 = $args{sha256}){
+         $where{sha256} = $sha256;
+         $attrs{key} = 'sha256_unique';
     }
     elsif (my $md5 = $args{md5}){
          $where{md5} = $md5;
          $attrs{key} = 'md5_unique';
-     }
+    }
     else {
         %where = %args;
     }
@@ -405,7 +410,7 @@ sub get_distribution_by_spec {
     if ($spec->isa('Pinto::DistributionSpec')) {
         my $author  = $spec->author;
         my $archive = $spec->archive;
-        my $dist = $self->get_distribution(author => $author, archive => $archive);
+        my $dist = $self->get_distribution(spec => $spec);
         throw "Distribution $spec does not exist" if not $dist;
 
         return $dist;
@@ -485,13 +490,13 @@ sub _validate_archive {
     throw "Archive $archive is not readable" if not -r $archive;
 
     my $basename = $archive->basename;
-    if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
+    if (my $same_path = $self->get_distribution(author_canonical => uc($author), archive => $basename)) {
         throw "A distribution already exists as $same_path";
     }
 
-    my $md5 = Pinto::Util::md5($archive);
-    if (my $same_md5 = $self->get_distribution(md5 => $md5)) {
-        throw "Archive $archive is identical to $same_md5";
+    my $sha256 = Pinto::Util::sha256($archive);
+    if (my $same_sha = $self->get_distribution(sha256 => $sha256)) {
+        throw "Archive $archive is identical to $same_sha";
     }
 
     return;
@@ -598,8 +603,7 @@ sub _find_or_pull_by_distribution_spec {
 
     $self->info("Looking for distribution $dspec");
 
-    my $got_dist = $self->get_distribution( author  => $dspec->author,
-                                            archive => $dspec->archive );
+    my $got_dist = $self->get_distribution( spec => $dspec );
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
@@ -689,7 +693,7 @@ sub pull_prerequisites {
 sub create_stack {
     my ($self, %args) = @_;
 
-    $args{name} = Pinto::Util::normalize_stack_name($args{name});
+    Pinto::Util::validate_stack_name($args{name});
     $args{is_default} ||= 0;
 
     throw "Stack $args{name} already exists"

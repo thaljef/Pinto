@@ -14,6 +14,7 @@ use Digest::SHA;
 use DateTime;
 use Readonly;
 
+use Pinto::Constants qw($PINTO_STACK_NAME_REGEX $PINTO_PROPERTY_NAME_REGEX);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -124,40 +125,34 @@ sub sha256 {
 
 #-------------------------------------------------------------------------------
 
-=func normalize_property_name( $prop_name )
+=func validate_property_name( $prop_name )
 
-Normalizes the property name and returns it.  Throws an exception if
-the property name is invalid.  Currently, property names must be
-alphanumeric plus any of C<m/[._:-]/>.
+Throws an exception if the property name is invalid.  Currently, property names 
+must be alphanumeric plus any underscores or hyphens.
 
 =cut
 
-sub normalize_property_name {
+sub validate_property_name {
     my ($prop_name) = @_;
 
-    $prop_name = lc  $prop_name;
-    # TODO: make sure this regex matches the PropertykName type constraint
-    throw "Invalid property name $prop_name" if $prop_name =~ m{[^a-z0-9._:-]};
+    throw "Invalid property name $prop_name" if $prop_name !~ $PINTO_PROPERTY_NAME_REGEX;
 
     return $prop_name;
 }
 
 #-------------------------------------------------------------------------------
 
-=func normalize_stack_name( $stack_name )
+=func validate_stack_name( $stack_name )
 
-Normalizes the stack name and returns it.  Throws an exception if the
-stack name is invalid.  Currently, stack names must be alphanumeric
-plus any of C<m/[._:-]/>.
+Throws an exception if the stack name is invalid.  Currently, stack names must 
+be alphanumeric plus underscores or hyphens.
 
 =cut
 
-sub normalize_stack_name {
+sub validate_stack_name {
     my ($stack_name) = @_;
 
-    $stack_name = lc  $stack_name;
-    # TODO: make sure this regex matches the StackName type constraint
-    throw "Invalid stack name $stack_name" if $stack_name =~ m{[^a-z0-9._:-]};
+    throw "Invalid stack name $stack_name" if $stack_name !~ $PINTO_STACK_NAME_REGEX;
 
     return $stack_name;
 }
