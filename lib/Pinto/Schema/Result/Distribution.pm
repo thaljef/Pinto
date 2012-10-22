@@ -511,7 +511,7 @@ sub string_compare {
     my $pkg = __PACKAGE__;
     throw "Can only compare $pkg objects"
         if not ( itis($dist_a, $pkg) && itis($dist_b, $pkg) );
-        
+
     return 0 if $dist_a->id == $dist_b->id;
 
     my $r =   ($dist_a->author_canonical cmp $dist_b->author_canonical)
