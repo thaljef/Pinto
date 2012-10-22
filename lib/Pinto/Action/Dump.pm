@@ -105,7 +105,7 @@ sub _dump_manifest {
     $self->notice("Writing archive manifest");
     my $mani = [];
 
-    my $dists_rs = $self->repos->db->select_distributions;
+    my $dists_rs = $self->repo->db->select_distributions;
     while (my $dist = $dists_rs->next) {
         push @{ $mani }, $dist->path;
     }
@@ -131,13 +131,13 @@ sub _dump_changes {
     my $hist = [];
 
 
-    my $stack_rs = $self->repos->db->select_stacks;
+    my $stack_rs = $self->repo->db->select_stacks;
     while (my $stack = $stack_rs->next) {
 
         $self->info("Dumping revision history for stack $stack");
         my $stack_struct = {stack_name => $stack->name, revisions => []};
 
-        my $revision_rs = $self->repos->db->select_revisions;
+        my $revision_rs = $self->repo->db->select_revisions;
         while (my $revision = $revision_rs->next) {
 
             my $revision_struct = { message      => $revision->message,
@@ -179,7 +179,7 @@ sub _dump_distributions {
 
     my $distributions = [];
 
-    my $distributions_rs = $self->repos->db->select_distributions;
+    my $distributions_rs = $self->repo->db->select_distributions;
     while (my $dist = $distributions_rs->next) {
 
         my $dist_struct = { author  => $dist->author,
@@ -207,7 +207,7 @@ sub _link_authors_dir {
     my $dump_authors_dir = $dumpdir->subdir('authors');
     $self->mkpath( $dump_authors_dir );
 
-    my $abs_repos_authors_id_dir = $self->repos->config->authors_id_dir->absolute;
+    my $abs_repos_authors_id_dir = $self->repo->config->authors_id_dir->absolute;
     my $dump_authors_id_dir = $dump_authors_dir->subdir('id');
 
     my $ok = symlink $abs_repos_authors_id_dir, $dump_authors_id_dir;

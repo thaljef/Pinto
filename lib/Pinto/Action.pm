@@ -23,7 +23,7 @@ with qw( Pinto::Role::Configurable
 #------------------------------------------------------------------------------
 
 
-has repos => (
+has repo  => (
     is       => 'ro',
     isa      => 'Pinto::Repository',
     required => 1,

@@ -45,7 +45,7 @@ has detailed => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack(name => $self->stack);
 
     my $revnum = $self->revision;
     my @revisions = $stack->revision(number => $revnum);

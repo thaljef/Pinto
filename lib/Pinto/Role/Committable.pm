@@ -38,23 +38,23 @@ requires qw( execute message_primer );
 around execute => sub {
     my ($orig, $self, @args) = @_;
 
-    $self->repos->db->txn_begin;
+    $self->repo->db->txn_begin;
 
     my $result = try   { $self->$orig(@args) }
-                 catch { $self->repos->db->txn_rollback; die $_ };
+                 catch { $self->repo->db->txn_rollback; die $_ };
 
     if ($self->dryrun) {
         $self->notice('Dryrun -- rolling back database');
-        $self->repos->db->txn_rollback;
-        $self->repos->clean_files;
+        $self->repo->db->txn_rollback;
+        $self->repo->clean_files;
     }
     elsif (not $result->made_changes) {
         $self->notice('No changes were actually made');
-        $self->repos->db->txn_rollback;
+        $self->repo->db->txn_rollback;
     }
     else {
         $self->debug('Committing changes to database');
-        $self->repos->db->txn_commit;
+        $self->repo->db->txn_commit;
     }
 
     return $self->result;

@@ -29,9 +29,9 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack(name => $self->stack);
 
-    $self->repos->delete_stack_filesystem(stack => $stack);
+    $self->repo->delete_stack_filesystem(stack => $stack);
     $stack->delete;
 
     return $self->result->changed;

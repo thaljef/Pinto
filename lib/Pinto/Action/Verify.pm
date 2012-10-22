@@ -23,10 +23,10 @@ sub execute {
 
 
     # FIXME!
-    my $rs  = $self->repos->db->schema->resultset('Distribution')->search;
+    my $rs  = $self->repo->db->schema->resultset('Distribution')->search;
 
     while ( my $dist = $rs->next ) {
-        my $archive = $dist->archive( $self->repos->root_dir );
+        my $archive = $dist->archive( $self->repo->root_dir );
         $self->say("Missing distribution $archive") if not -e $archive;
     }
 

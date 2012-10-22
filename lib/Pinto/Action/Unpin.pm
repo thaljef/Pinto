@@ -43,7 +43,7 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->open_stack(name => $self->stack);
+    my $stack = $self->repo->open_stack(name => $self->stack);
 
     $self->_unpin($_, $stack) for $self->targets;
 
@@ -60,7 +60,7 @@ sub execute {
 sub _unpin {
     my ($self, $spec, $stack) = @_;
 
-    my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
+    my $dist = $self->repo->get_distribution_by_spec(spec => $spec, stack => $stack);
 
     throw "$spec does not exist in the repository" if not $dist;
 

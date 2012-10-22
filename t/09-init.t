@@ -36,7 +36,7 @@ is $pinto->config->sources,  'MySource', 'Got custom source';
 #------------------------------------------------------------------------------
 # Test repository props
 
-my $ver = $pinto->repos->get_property('pinto:schema_version');
+my $ver = $pinto->repo->get_property('pinto:schema_version');
 is $ver, $Pinto::Schema::SCHEMA_VERSION, 'Got pinto:schema_version prop';
 
 #------------------------------------------------------------------------------

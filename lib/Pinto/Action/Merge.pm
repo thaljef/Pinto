@@ -41,8 +41,8 @@ has to_stack => (
 sub execute {
     my ($self) = @_;
 
-    my $from_stack = $self->repos->get_stack(name => $self->from_stack);
-    my $to_stack   = $self->repos->open_stack(name => $self->to_stack);
+    my $from_stack = $self->repo->get_stack(name => $self->from_stack);
+    my $to_stack   = $self->repo->open_stack(name => $self->to_stack);
 
     $self->notice("Merging stack $from_stack into stack $to_stack");
 
@@ -52,7 +52,7 @@ sub execute {
     if ($to_stack->has_changed and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$to_stack]);
         $to_stack->close(message => $message);
-        $self->repos->write_index(stack => $to_stack);
+        $self->repo->write_index(stack => $to_stack);
     }
 
     return $self->result;
@@ -63,8 +63,8 @@ sub execute {
 sub message_primer {
     my ($self) = @_;
 
-    my $from = $self->repos->get_stack(name => $self->from_stack);
-    my $into = $self->repos->get_stack(name => $self->to_stack);
+    my $from = $self->repo->get_stack(name => $self->from_stack);
+    my $into = $self->repo->get_stack(name => $self->to_stack);
 
     return "Merged stack $from into stack $into.";
 }

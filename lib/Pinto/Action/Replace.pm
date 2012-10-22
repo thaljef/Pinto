@@ -80,11 +80,11 @@ sub execute {
     my ($self) = @_;
 
     my $target = $self->target;
-    my $old_dist  = $self->repos->get_distribution( spec => $target );
+    my $old_dist  = $self->repo->get_distribution( spec => $target );
 
     throw "Distribution $target is not in the repository" if not $old_dist;
 
-    my $new_dist = $self->repos->add( archive => $self->archive,
+    my $new_dist = $self->repo->add( archive => $self->archive,
                                       author  => $self->author );
 
     my @registered_stacks = $old_dist->registered_stacks;
@@ -95,7 +95,7 @@ sub execute {
 
     for my $stack (@changed_stacks) {
         $stack->close(message => $message);
-        $self->repos->write_index(stack => $stack);
+        $self->repo->write_index(stack => $stack);
     }
 
     return $self->result->changed;
@@ -106,7 +106,7 @@ sub execute {
 sub _replace {
     my ($self, $stack, $old_dist, $new_dist) = @_;
 
-    $self->repos->open_stack(stack => $stack);
+    $self->repo->open_stack(stack => $stack);
 
     for my $package ($old_dist->packages) {
         my $reg = $package->registration(stack => $stack) or next;
@@ -115,7 +115,7 @@ sub _replace {
 
     $new_dist->register( stack => $stack, pin => $self->pin );
 
-    $self->repos->pull_prerequisites( dist  => $new_dist,
+    $self->repo->pull_prerequisites( dist  => $new_dist,
                                       stack => $stack ) unless $self->norecurse;
 
     return $stack if $stack->refresh->has_changed;

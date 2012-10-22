@@ -169,11 +169,11 @@ sub registration_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack      = $self->pinto->repos->get_stack(name => $stack_name);
+    my $stack      = $self->pinto->repo->get_stack(name => $stack_name);
 
     my $where = { stack => $stack->id, package_name => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
-    my $reg = $self->pinto->repos->db->select_registration($where, $attrs);
+    my $reg = $self->pinto->repo->db->select_registration($where, $attrs);
 
     return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
         if not $reg;
@@ -219,10 +219,10 @@ sub registration_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack     = $self->pinto->repos->get_stack(name => $stack_name);
+    my $stack     = $self->pinto->repo->get_stack(name => $stack_name);
 
     my $where = {stack => $stack->id, package_name => $pkg_name, distribution_path => $dist_path};
-    my $reg = $self->pinto->repos->db->select_registration($where);
+    my $reg = $self->pinto->repo->db->select_registration($where);
 
     return $self->tb->ok(1, "Registration $reg_spec should not exist")
         if not $reg;
@@ -281,7 +281,7 @@ sub result_not_changed_ok {
 sub head_revision_number_is {
     my ($self, $revnum, $stack_name, $test_name) = @_;
 
-    my $stack       = $self->pinto->repos->get_stack(name => $stack_name);
+    my $stack       = $self->pinto->repo->get_stack(name => $stack_name);
     my $head_revnum = $stack->head_revision->number;
 
     $test_name ||= "Head revision number of stack $stack matches";
@@ -294,13 +294,13 @@ sub head_revision_number_is {
 sub repository_clean_ok {
     my ($self) = @_;
 
-    my @dists = $self->pinto->repos->db->select_distributions->all;
+    my @dists = $self->pinto->repo->db->select_distributions->all;
     $self->tb->is_eq(scalar @dists, 0, 'Database has no distributions');
 
-    my @pkgs = $self->pinto->repos->db->select_packages->all;
+    my @pkgs = $self->pinto->repo->db->select_packages->all;
     $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
 
-    my @stacks = $self->pinto->repos->db->select_stacks->all;
+    my @stacks = $self->pinto->repo->db->select_stacks->all;
     $self->tb->is_eq(scalar @stacks, 1, 'Database has only one stack');
     $self->tb->is_eq($stacks[0]->name, 'init',  'The stack is called "init"');
     $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
@@ -376,7 +376,7 @@ sub populate {
 sub clear_cache {
     my ($self) = @_;
 
-    $self->pinto->repos->clear_cache;
+    $self->pinto->repo->clear_cache;
 
     return $self;
 }

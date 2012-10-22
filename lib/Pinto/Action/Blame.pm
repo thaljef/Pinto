@@ -38,8 +38,8 @@ has revision => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
-    my $rcrs  = $self->repos->db->schema->resultset('RegistrationChange');
+    my $stack = $self->repo->get_stack(name => $self->stack);
+    my $rcrs  = $self->repo->db->schema->resultset('RegistrationChange');
 
     # STRATEGY: For each registration in the current head of the stack, find
     # the most recent registration change which inserted the package referenced

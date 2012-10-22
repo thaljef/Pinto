@@ -61,14 +61,14 @@ has norecurse => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->open_stack(name => $self->stack);
+    my $stack = $self->repo->open_stack(name => $self->stack);
 
     $self->_pull($_, $stack) for $self->targets;
 
     if ($self->result->made_changes and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
-        $self->repos->write_index(stack => $stack);
+        $self->repo->write_index(stack => $stack);
     }
 
     return $self->result;
@@ -84,11 +84,11 @@ sub _pull {
         return;
     }
 
-    my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target, stack => $stack);
+    my ($dist, $did_pull) = $self->repo->find_or_pull(target => $target, stack => $stack);
     my $did_register = $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;
 
     if ($dist and not $self->norecurse) {
-        $did_pull += $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
+        $did_pull += $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
     }
 
     $self->result->changed if $did_pull or $did_register;

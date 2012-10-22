@@ -111,7 +111,7 @@ sub execute {
     else{
         # Otherwise, list only the named stack, falling back to
         # the default stack if no stack was named at all.
-        my $stack = $self->repos->get_stack(name => $stk_name);
+        my $stack = $self->repo->get_stack(name => $stk_name);
         $where->{'stack.name'} = $stack->name;
         $format = $self->format;
     }
@@ -122,7 +122,7 @@ sub execute {
 
     ################################################################
 
-    my $rs = $self->repos->db->select_registrations($where, $attrs);
+    my $rs = $self->repo->db->select_registrations($where, $attrs);
 
     while( my $registration = $rs->next ) {
         $self->say($registration->to_string($format));

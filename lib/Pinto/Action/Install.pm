@@ -90,15 +90,15 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->pull ? $self->repos->open_stack(name => $self->stack)
-                            : $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->pull ? $self->repo->open_stack(name => $self->stack)
+                            : $self->repo->get_stack(name => $self->stack);
 
     do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
 
     if ($self->pull and $self->result->made_changes and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
-        $self->repos->write_index(stack => $stack);
+        $self->repo->write_index(stack => $stack);
     }
 
     $self->_install($stack, $self->targets);
@@ -117,10 +117,10 @@ sub _pull {
     }
 
     my $target_spec = Pinto::SpecFactory->make_spec($target);
-    my ($dist, $did_pull) = $self->repos->find_or_pull(target => $target_spec, stack => $stack);
+    my ($dist, $did_pull) = $self->repo->find_or_pull(target => $target_spec, stack => $stack);
 
     my $did_register = $dist ? $dist->register(stack => $stack) : undef;
-    $did_pull += $self->repos->pull_prerequisites(dist => $dist, stack => $stack);
+    $did_pull += $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
 
     $self->result->changed if $did_pull or $did_register;
 
@@ -135,7 +135,7 @@ sub _install {
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
     $opts->{'mirror-only'} = '';
-    $opts->{mirror} = 'file://' . $self->repos->root->absolute . "/$stack";
+    $opts->{mirror} = 'file://' . $self->repo->root->absolute . "/$stack";
 
     # Process other cpanm options
     my @cpanm_opts;

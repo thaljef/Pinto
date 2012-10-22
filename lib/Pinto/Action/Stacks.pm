@@ -29,7 +29,7 @@ sub execute {
     my ($self) = @_;
 
     my $attrs = { order_by => 'name' };
-    my @stacks = $self->repos->db->select_stacks(undef, $attrs)->all;
+    my @stacks = $self->repo->db->select_stacks(undef, $attrs)->all;
 
     for my $stack ( @stacks ) {
         $self->say($stack->to_string($self->format));

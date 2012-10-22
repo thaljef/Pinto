@@ -42,7 +42,7 @@ has revision => (
 sub execute {
     my ($self) = @_;
 
-    my $stack   = $self->repos->get_stack(name => $self->stack);
+    my $stack   = $self->repo->get_stack(name => $self->stack);
     my $revnum  = $self->_compute_target_revnum($stack);
 
     $self->_revert($stack, $revnum);
@@ -51,7 +51,7 @@ sub execute {
     if ($stack->has_changed and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
-        $self->repos->write_index(stack => $stack);
+        $self->repo->write_index(stack => $stack);
     }
 
     return $self->result;
@@ -83,7 +83,7 @@ sub _revert {
 
     $self->notice("Reverting stack $stack to revision $revnum");
 
-    my $new_head  = $self->repos->open_revision(stack => $stack);
+    my $new_head  = $self->repo->open_revision(stack => $stack);
     my $previous_revision = $new_head->previous_revision;
 
     while ($previous_revision->number > $revnum) {

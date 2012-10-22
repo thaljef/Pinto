@@ -44,7 +44,7 @@ has default => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack(name => $self->stack);
     $stack->mark_as_default if $self->default;
     $stack->set_properties($self->properties);
 

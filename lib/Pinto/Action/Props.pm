@@ -39,7 +39,7 @@ has format => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack(name => $self->stack);
 
     my $props = $stack->get_properties;
     while ( my ($prop, $value) = each %{$props} ) {

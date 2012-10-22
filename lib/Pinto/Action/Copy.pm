@@ -55,8 +55,8 @@ has description => (
 sub execute {
     my ($self) = @_;
 
-    my $orig = $self->repos->get_stack(name => $self->from_stack);
-    my $copy = $self->repos->copy_stack(from => $orig, to => $self->to_stack);
+    my $orig = $self->repo->get_stack(name => $self->from_stack);
+    my $copy = $self->repo->copy_stack(from => $orig, to => $self->to_stack);
 
     my $description = $self->description || "copy of stack $orig";
     $copy->set_property(description => $description);
@@ -66,8 +66,8 @@ sub execute {
 
     $copy->mark_as_default if $self->default;
 
-    $self->repos->create_stack_filesystem(stack => $copy);
-    $self->repos->write_index(stack => $copy);
+    $self->repo->create_stack_filesystem(stack => $copy);
+    $self->repo->write_index(stack => $copy);
 
     return $self->result->changed;
 }
@@ -77,8 +77,8 @@ sub execute {
 sub message_primer {
     my ($self) = @_;
 
-    my $orig = $self->repos->get_stack(name => $self->from_stack);
-    my $copy = $self->repos->get_stack(name => $self->to_stack);
+    my $orig = $self->repo->get_stack(name => $self->from_stack);
+    my $copy = $self->repo->get_stack(name => $self->to_stack);
 
     return "Copied stack $orig to stack $copy.";
 }

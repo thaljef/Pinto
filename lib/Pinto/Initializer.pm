@@ -159,14 +159,14 @@ sub _create_stack {
     my $stk_name  = Pinto::Util::validate_stack_name($args{name} || 'init');
     my $stk_description = $args{description} || 'the initial stack';
 
-    my $repos = Pinto::Repository->new(config => $self->config);
-    my $stack = $repos->create_stack(name => $stk_name, is_default => 1);
+    my $repo  = Pinto::Repository->new(config => $self->config);
+    my $stack = $repo->create_stack(name => $stk_name, is_default => 1);
 
     $stack->set_property(description => $stk_description);
     $stack->close(message => 'Created initial stack', committed_by => $ENV{USER});
 
-    $repos->create_stack_filesystem(stack => $stack);
-    $repos->write_index(stack => $stack);
+    $repo->create_stack_filesystem(stack => $stack);
+    $repo->write_index(stack => $stack);
 
     return;
 }

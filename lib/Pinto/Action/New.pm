@@ -48,15 +48,15 @@ has description => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->create_stack(name => $self->stack);
+    my $stack = $self->repo->create_stack(name => $self->stack);
     $stack->set_property(description => $self->description) if $self->has_description;
 
     $stack->close(message => $self->edit_message);
 
     $stack->mark_as_default if $self->default;
 
-    $self->repos->create_stack_filesystem(stack => $stack);
-    $self->repos->write_index(stack => $stack);
+    $self->repo->create_stack_filesystem(stack => $stack);
+    $self->repo->write_index(stack => $stack);
 
     return $self->result->changed;
 }

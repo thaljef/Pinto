@@ -43,7 +43,7 @@ has targets => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repos->open_stack(name => $self->stack);
+    my $stack = $self->repo->open_stack(name => $self->stack);
     $self->_pin($_, $stack) for $self->targets;
 
     if ($self->result->made_changes and not $self->dryrun) {
@@ -59,7 +59,7 @@ sub execute {
 sub _pin {
     my ($self, $spec, $stack) = @_;
 
-    my $dist = $self->repos->get_distribution_by_spec(spec => $spec, stack => $stack);
+    my $dist = $self->repo->get_distribution_by_spec(spec => $spec, stack => $stack);
 
     throw "$spec does not exist in the repository" if not $dist;
 

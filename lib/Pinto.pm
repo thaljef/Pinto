@@ -17,7 +17,7 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-has repos => (
+has repo  => (
     is         => 'ro',
     isa        => 'Pinto::Repository',
     lazy       => 1,
@@ -32,7 +32,7 @@ has action_factory => (
     lazy      => 1,
     default   => sub { Pinto::ActionFactory->new( config => $_[0]->config,
                                                   logger => $_[0]->logger,
-                                                  repos  => $_[0]->repos, ) },
+                                                  repo   => $_[0]->repo, ) },
 );
 
 #------------------------------------------------------------------------------
@@ -48,10 +48,10 @@ sub run {
     my $action    = $self->action_factory->create_action($action_name => @action_args);
     my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
 
-    my $result = try   { $self->repos->lock($lock_type); $action->execute }
-                 catch { $self->repos->unlock; die $self->fatal($_) };
+    my $result = try   { $self->repo->lock($lock_type); $action->execute }
+                 catch { $self->repo->unlock; die $self->fatal($_) };
 
-    $self->repos->unlock;
+    $self->repo->unlock;
 
     return $result;
 }
