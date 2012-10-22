@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+     New Features:
+
+     You can now set the default stack at the same time that you
+     create or copy a stack.
+
+     Other Changes:
+
+     The output of the Blame action now has the familiar format of the
+     List action, and records are sorted by package name.
+
 0.059     2012-10-20 00:52:34 America/Los_Angeles
 
      Important:
