@@ -116,21 +116,9 @@ sub execute {
         $format = $self->format;
     }
 
-    ##################################################################
-    # NOTE: The 'join' attribute on this next query should actually be
-    # a 'prefetch' but that stopped working in DBIx::Class-0.08198.
-    # See RT #78456 for discussion.  It seems to generate the right
-    # SQL, but it doesn't actually populate the related objects from
-    # the prefetched data.  Our other queries that use 'prefetch' seem
-    # to work fine, so I'm not sure why this one fails.
-    #
-    # In the meantime, I've discovered (by trial-and-error) that this
-    # version of the query seems to work, although it may require us
-    # to make extra trips to the database to get the related objects
-    # when we stringify the registration.
 
-    my $attrs = { order_by => [ qw(package_name package_version distribution_path) ],
-                  join     => ['stack', {package => 'distribution'}] };
+    my $attrs = {prefetch => ['stack', {package => 'distribution'}],
+                 order_by => [ qw(package.name) ] };
 
     ################################################################
 
