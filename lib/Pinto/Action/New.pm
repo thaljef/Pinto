@@ -3,7 +3,7 @@
 package Pinto::Action::New;
 
 use Moose;
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Str Bool);
 
 use Pinto::Types qw(StackName);
 
@@ -30,6 +30,13 @@ has stack => (
 );
 
 
+has default => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+
 has description => (
     is         => 'ro',
     isa        => Str,
@@ -45,6 +52,8 @@ sub execute {
     $stack->set_property(description => $self->description) if $self->has_description;
 
     $stack->close(message => $self->edit_message);
+
+    $stack->mark_as_default if $self->default;
 
     $self->repos->create_stack_filesystem(stack => $stack);
     $self->repos->write_index(stack => $stack);

@@ -1,9 +1,9 @@
-# ABSTRACT: An action to create a new stack by copying another
+# ABSTRACT: Create a new stack by copying another
 
 package Pinto::Action::Copy;
 
 use Moose;
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Str Bool);
 
 use Pinto::Types qw(StackName);
 
@@ -37,6 +37,13 @@ has to_stack => (
 );
 
 
+has default => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+
 has description => (
     is         => 'ro',
     isa        => Str,
@@ -56,6 +63,8 @@ sub execute {
 
     my $message = $self->edit_message(stacks => [$copy]);
     $copy->close(message => $message);
+
+    $copy->mark_as_default if $self->default;
 
     $self->repos->create_stack_filesystem(stack => $copy);
     $self->repos->write_index(stack => $copy);
