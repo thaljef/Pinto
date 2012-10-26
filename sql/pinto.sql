@@ -62,7 +62,7 @@ CREATE TABLE stack (
        id                 INTEGER PRIMARY KEY NOT NULL,
        name               TEXT                NOT NULL, /* MyStack */
        name_canonical     TEXT                NOT NULL, /* mystack */
-       is_default         INTEGER             NOT NULL, /* Boolean flag, indicates if this is the default stack in the repository */
+       is_default         BOOLEAN             NOT NULL, /* Boolean flag, indicates if this is the default stack in the repository */
        head_revision      INTEGER             NOT NULL, /* Points to the last revision when this stack changed */
        has_changed        INTEGER             NOT NULL, /* Not in use */
 
@@ -106,7 +106,7 @@ CREATE TABLE registration (
        stack                INTEGER             NOT NULL,
        package              INTEGER             NOT NULL, /* Points to the package with the package_name */
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
-       is_pinned            INTEGER             NOT NULL, /* Boolean, indicates if the package can be changed */
+       is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
        package_name         TEXT        NOT NULL,         /* Foo::Bar */
        package_version      TEXT        NOT NULL,         /* 1.0 */
        distribution_path    TEXT        NOT NULL,         /* AUTHOR/Foo-Bar-1.0.tar.gz */
@@ -136,7 +136,7 @@ CREATE TABLE registration_change (
        event        TEXT                NOT NULL, /* INSERT or DELETE */
        package      INTEGER             NOT NULL, /* Points to the package that was registered */
        distribution INTEGER             NOT NULL, /* Points to the distribution that contained the package */
-       is_pinned    INTEGER             NOT NULL, /* Boolean, indicates if the package can be changed */
+       is_pinned    BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
        revision     INTEGER             NOT NULL, /* Points to the revision in which this change ocurred */
 
        FOREIGN KEY(package)      REFERENCES package(id),
@@ -179,7 +179,7 @@ CREATE TABLE revision (
        id           INTEGER PRIMARY KEY NOT NULL,
        stack        INTEGER             DEFAULT NULL,  /* Points to the stack where the changes ocurred */
        number       INTEGER             NOT NULL,      /* Sequential revision number (1,2,3...N) */
-       is_committed INTEGER             NOT NULL,      /* Boolean, indicates if the revision has been committed yet */
+       is_committed BOOLEAN             NOT NULL,      /* Boolean, indicates if the revision has been committed yet */
        committed_on INTEGER             NOT NULL,      /* When the revision was committed (epoch seconds) */
        committed_by TEXT                NOT NULL,      /* User who committed the revision */
        message      TEXT                NOT NULL,      /* Log message for the revision */

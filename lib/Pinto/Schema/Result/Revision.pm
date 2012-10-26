@@ -46,7 +46,7 @@ __PACKAGE__->table("revision");
 
 =head2 is_committed
 
-  data_type: 'integer'
+  data_type: 'boolean'
   is_nullable: 0
 
 =head2 committed_on
@@ -85,7 +85,7 @@ __PACKAGE__->add_columns(
   "number",
   { data_type => "integer", is_nullable => 0 },
   "is_committed",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "boolean", is_nullable => 0 },
   "committed_on",
   { data_type => "integer", is_nullable => 0 },
   "committed_by",
@@ -190,8 +190,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 20:13:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:B2mX6SpJ7pGHqqoLlv5UUg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-25 20:35:40
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pdEMqaUVlpZmFgHEwSEFww
 
 #------------------------------------------------------------------------------
 
