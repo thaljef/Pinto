@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+     Interface Changes:
+
+     NONE
+
+     Interal API Changes:
+
+     Some query optimizations, to benefit alpha.stratopan.com
+
+     Stack and Revision objects are now sortable.
+
 0.060     2012-10-23 10:57:41 America/Los_Angeles
 
      New Features:
