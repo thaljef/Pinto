@@ -208,7 +208,8 @@ use Pinto::Exception qw(throw);
 use String::Format;
 use Digest::SHA;
 
-use overload ( '""'  => 'to_string' );
+use overload ( '""'  => 'to_string',
+               '<=>' => 'compare' );
 
 #------------------------------------------------------------------------------
 
@@ -341,6 +342,22 @@ sub change_details {
     my ($self) = @_;
 
     return join "\n", $self->registration_changes;
+}
+
+#------------------------------------------------------------------------------
+
+sub compare {
+    my ($rev_a, $rev_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($rev_a, $pkg) && itis($rev_b, $pkg) );
+
+    return 0 if $rev_a->id == $rev_b->id;
+
+    my $r = ($rev_a->number <=> $rev_b->number);
+
+    return $r;
 }
 
 #------------------------------------------------------------------------------

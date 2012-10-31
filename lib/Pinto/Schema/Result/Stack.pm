@@ -218,10 +218,11 @@ use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
 
-use Pinto::Util;
+use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 
-use overload ( '""' => 'to_string' );
+use overload ( '""'  => 'to_string',
+               'cmp' => 'string_compare' );
 
 #------------------------------------------------------------------------------
 
@@ -285,12 +286,13 @@ sub registration {
 sub registered_distributions {
     my ($self) = @_;
 
-    my $attrs = {prefetch => {package => 'distribution'}};
+    my $attrs = { prefetch => {distribution => 'packages'},
+                  order_by => [qw(distribution.author distribution.archive)] };
 
     my %dists;
     for my $reg ($self->registrations({}, $attrs)) {
       # TODO: maybe use 'DISTINCT'
-      $dists{$reg->distribution} = $reg->distribution;
+      $dists{$reg->distribution->id} = $reg->distribution;
     }
 
     return values %dists;
@@ -477,6 +479,39 @@ sub merge {
     throw "There were $conflicts conflicts.  Merge aborted" if $conflicts;
 
     return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub compare {
+    my ($stack_a, $stack_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($stack_a, $pkg) && itis($stack_b, $pkg) );
+
+    return 0 if $stack_a->id == $stack_b->id;
+
+    my $r = ($stack_a->head_revision <=> $stack_b->head_revision);
+
+    return $r;
+}
+
+#------------------------------------------------------------------------------
+
+sub string_compare {
+    my ($stack_a, $stack_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($stack_a, $pkg) && itis($stack_b, $pkg) );
+
+    return 0 if $stack_a->id == $stack_b->id;
+
+    my $r =   ($stack_a->name          cmp $stack_b->name)
+           || ($stack_a->head_revision <=> $stack_b->head_revision);
+
+    return $r;
 }
 
 #------------------------------------------------------------------------------
