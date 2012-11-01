@@ -286,16 +286,15 @@ sub registration {
 sub registered_distributions {
     my ($self) = @_;
 
-    my $attrs = { prefetch => {distribution => 'packages'} };
-
     my %dists;
-    for my $reg ($self->registrations({}, $attrs)) {
-      # TODO: maybe use 'DISTINCT'
+    for my $reg ($self->registrations({}, {prefetch => 'distribution'})) {
       $dists{$reg->distribution->id} = $reg->distribution;
     }
 
-    return sort {$a cmp $b} values %dists;
+    my @sorted = sort {$a cmp $b} values %dists;
+    return @sorted;
 }
+
 #------------------------------------------------------------------------------
 
 sub copy {
