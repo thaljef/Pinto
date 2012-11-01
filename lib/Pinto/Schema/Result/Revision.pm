@@ -355,7 +355,7 @@ sub compare {
 
     return 0 if $rev_a->id == $rev_b->id;
 
-    my $r = ($rev_a->number <=> $rev_b->number);
+    my $r = ($rev_a->committed_on <=> $rev_b->committed_on);
 
     return $r;
 }
