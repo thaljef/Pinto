@@ -286,8 +286,7 @@ sub registration {
 sub registered_distributions {
     my ($self) = @_;
 
-    my $attrs = { prefetch => {distribution => 'packages'},
-                  order_by => [qw(distribution.author distribution.archive)] };
+    my $attrs = { prefetch => {distribution => 'packages'} };
 
     my %dists;
     for my $reg ($self->registrations({}, $attrs)) {
@@ -295,7 +294,7 @@ sub registered_distributions {
       $dists{$reg->distribution->id} = $reg->distribution;
     }
 
-    return values %dists;
+    return sort {$a cmp $b} values %dists;
 }
 #------------------------------------------------------------------------------
 
