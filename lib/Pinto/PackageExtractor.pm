@@ -136,9 +136,9 @@ sub requires {
 
     my @prereqs;
     for my $pkg_name (sort keys %prereqs) {
-        my $pkg_ver = version->parse( $prereqs{$pkg_name} );
-
         next if $pkg_name eq 'perl';
+
+        my $pkg_ver = version->parse( $prereqs{$pkg_name} );
 
         next if exists $self->prereq_filter->{$pkg_name}
           and $self->prereq_filter->{$pkg_name} >= $pkg_ver;
