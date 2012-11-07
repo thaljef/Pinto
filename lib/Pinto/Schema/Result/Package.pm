@@ -45,12 +45,14 @@ __PACKAGE__->table("package");
 =head2 file
 
   data_type: 'text'
-  is_nullable: 0
+  default_value: null
+  is_nullable: 1
 
 =head2 sha256
 
   data_type: 'text'
-  is_nullable: 0
+  default_value: null
+  is_nullable: 1
 
 =head2 distribution
 
@@ -68,9 +70,9 @@ __PACKAGE__->add_columns(
   "version",
   { data_type => "text", is_nullable => 0 },
   "file",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "text", default_value => \"null", is_nullable => 1 },
   "sha256",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "text", default_value => \"null", is_nullable => 1 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
@@ -178,8 +180,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-02 12:36:29
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NiOr1RS5I13v1wsCSV7KgQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-06 23:40:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HLdUoAOIeN4Sxt7AN/0gKw
 
 #------------------------------------------------------------------------------
 

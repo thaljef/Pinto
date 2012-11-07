@@ -291,7 +291,7 @@ sub close {
       if $self->is_committed;
 
     throw "Must specify a message to close revision $self"
-       unless $args{message} or $self->messsage;
+       unless $args{message} or $self->message;
 
     throw "Must specify a username to close revision $self"
        unless $args{committed_by} or $self->committed_by;

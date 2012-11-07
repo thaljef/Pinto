@@ -44,8 +44,8 @@ CREATE TABLE package (
        id            INTEGER PRIMARY KEY NOT NULL,
        name          TEXT                NOT NULL, /* Foo::Bar */
        version       TEXT                NOT NULL, /* 1.2.3 */
-       file          TEXT                NOT NULL, /* Path within distro to file that contains the package */
-       sha256        TEXT                NOT NULL, /* SHA-256 digest of the file that contains the pacakge */
+       file          TEXT                DEFAULT NULL, /* Path within distro to file that contains the package */
+       sha256        TEXT                DEFAULT NULL, /* SHA-256 digest of the file that contains the pacakge */
        distribution  INTEGER             NOT NULL, /* The distribution that contains this package */
 
        FOREIGN KEY(distribution) REFERENCES distribution(id)
