@@ -5,7 +5,7 @@ package Pinto::Action::Edit;
 use Moose;
 use MooseX::Types::Moose qw(Str HashRef Bool);
 
-use Pinto::Types qw(StackName StackDefault);
+use Pinto::Types qw(StackName StackDefault StackObject);
 
 use namespace::autoclean;
 
@@ -21,7 +21,7 @@ extends qw( Pinto::Action );
 
 has stack => (
     is       => 'ro',
-    isa      => StackName | StackDefault,
+    isa      => StackName | StackDefault | StackObject,
     default  => undef,
 );
 
@@ -44,7 +44,7 @@ has default => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack($self->stack);
     $stack->mark_as_default if $self->default;
     $stack->set_properties($self->properties);
 

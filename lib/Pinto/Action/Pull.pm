@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool);
 use Module::CoreList;
 
 use Pinto::Util qw(itis);
-use Pinto::Types qw(Specs StackName StackDefault);
+use Pinto::Types qw(Specs StackName StackDefault StackObject);
 
 use namespace::autoclean;
 
@@ -37,7 +37,7 @@ has targets => (
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackDefault,
+    isa       => StackName | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -61,7 +61,7 @@ has norecurse => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->open_stack(name => $self->stack);
+    my $stack = $self->repo->open_stack($self->stack);
 
     $self->_pull($_, $stack) for $self->targets;
 

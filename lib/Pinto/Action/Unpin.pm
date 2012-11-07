@@ -4,7 +4,7 @@ package Pinto::Action::Unpin;
 
 use Moose;
 
-use Pinto::Types qw(Specs StackName StackDefault);
+use Pinto::Types qw(Specs StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -34,7 +34,7 @@ has targets => (
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackDefault,
+    isa       => StackName | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -43,7 +43,7 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->open_stack(name => $self->stack);
+    my $stack = $self->repo->open_stack($self->stack);
 
     $self->_unpin($_, $stack) for $self->targets;
 

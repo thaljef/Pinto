@@ -5,7 +5,7 @@ package Pinto::Action::List;
 use Moose;
 use MooseX::Types::Moose qw(HashRef Str Bool);
 
-use Pinto::Types qw(Author StackName StackAll StackDefault);
+use Pinto::Types qw(Author StackName StackAll StackDefault StackObject);
 use Pinto::Constants qw($PINTO_STACK_NAME_ALL);
 
 use namespace::autoclean;
@@ -22,7 +22,7 @@ extends qw( Pinto::Action );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackAll | StackDefault,
+    isa       => StackName | StackAll | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -111,7 +111,7 @@ sub execute {
     else{
         # Otherwise, list only the named stack, falling back to
         # the default stack if no stack was named at all.
-        my $stack = $self->repo->get_stack(name => $stk_name);
+        my $stack = $self->repo->get_stack($stk_name);
         $where->{'stack.name'} = $stack->name;
         $format = $self->format;
     }

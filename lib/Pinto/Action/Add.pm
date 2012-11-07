@@ -5,7 +5,7 @@ package Pinto::Action::Add;
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);
 
-use Pinto::Types qw(Author Files StackName StackDefault);
+use Pinto::Types qw(Author Files StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -43,7 +43,7 @@ has archives  => (
 
 has stack => (
     is       => 'ro',
-    isa      => StackName | StackDefault,
+    isa      => StackName | StackDefault | StackObject,
     default  => undef,
 );
 
@@ -83,7 +83,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->open_stack(name => $self->stack);
+    my $stack = $self->repo->open_stack($self->stack);
     $self->_add($_, $stack) for $self->archives;
 
     if ($self->result->made_changes and not $self->dryrun) {

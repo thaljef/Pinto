@@ -19,7 +19,7 @@ my $t = Pinto::Tester->new;
   # Create a new stack...
   my ($stk_name, $stk_desc) = ('dev', 'the development stack');
   $t->run_ok('New', {stack => $stk_name, description => $stk_desc});
-  my $stack = $t->pinto->repo->get_stack(name => $stk_name);
+  my $stack = $t->pinto->repo->get_stack($stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
   is $stack->get_property('description'), $stk_desc, 'Got correct stack description';
   my $old_mtime = $stack->head_revision->committed_on;
@@ -50,8 +50,8 @@ my $t = Pinto::Tester->new;
   $t->run_ok('Copy', {from_stack  => $dev_stk_name,
                       to_stack    => $qa_stk_name,});
 
-  my $dev_stack = $t->pinto->repo->get_stack(name => $dev_stk_name);
-  my $qa_stack = $t->pinto->repo->get_stack(name => $qa_stk_name);
+  my $dev_stack = $t->pinto->repo->get_stack($dev_stk_name);
+  my $qa_stack = $t->pinto->repo->get_stack($qa_stk_name);
 
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
@@ -72,7 +72,7 @@ my $t = Pinto::Tester->new;
   ok defined $init_stack, 'get_stack with no args returned a stack';
   ok $init_stack->is_default, 'init stack is the default stack';
 
-  my $dev_stack = $t->pinto->repo->get_stack(name => 'dev');
+  my $dev_stack = $t->pinto->repo->get_stack('dev');
   ok defined $dev_stack, 'got the dev stack';
 
 

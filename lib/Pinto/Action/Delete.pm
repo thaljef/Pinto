@@ -4,7 +4,7 @@ package Pinto::Action::Delete;
 
 use Moose;
 
-use Pinto::Types qw(StackName);
+use Pinto::Types qw(StackName StackObject);
 
 use namespace::autoclean;
 
@@ -20,7 +20,7 @@ extends qw( Pinto::Action );
 
 has stack => (
     is       => 'ro',
-    isa      => StackName,
+    isa      => StackName | StackObject,
     required => 1,
 );
 
@@ -29,7 +29,7 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack($self->stack);
 
     $self->repo->delete_stack_filesystem(stack => $stack);
     $stack->delete;

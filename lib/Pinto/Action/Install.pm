@@ -7,7 +7,7 @@ use MooseX::Types::Moose qw(Bool HashRef ArrayRef Maybe Str);
 
 use File::Which qw(which);
 
-use Pinto::Types qw(StackName StackDefault);
+use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -44,7 +44,7 @@ has cpanm_exe => (
 
 has stack   => (
     is        => 'ro',
-    isa       => StackName | StackDefault,
+    isa       => StackName | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -90,8 +90,8 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->pull ? $self->repo->open_stack(name => $self->stack)
-                            : $self->repo->get_stack(name => $self->stack);
+    my $stack = $self->pull ? $self->repo->open_stack($self->stack)
+                            : $self->repo->get_stack($self->stack);
 
     do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
 

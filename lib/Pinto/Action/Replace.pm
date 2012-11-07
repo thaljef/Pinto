@@ -5,7 +5,7 @@ package Pinto::Action::Replace;
 use Moose;
 use MooseX::Types::Moose qw(Bool);
 
-use Pinto::Types qw(Author DistSpec StackName StackDefault File);
+use Pinto::Types qw(Author DistSpec File);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -106,7 +106,7 @@ sub execute {
 sub _replace {
     my ($self, $stack, $old_dist, $new_dist) = @_;
 
-    $self->repo->open_stack(stack => $stack);
+    $self->repo->open_stack($stack);
 
     for my $package ($old_dist->packages) {
         my $reg = $package->registration(stack => $stack) or next;
@@ -116,7 +116,7 @@ sub _replace {
     $new_dist->register( stack => $stack, pin => $self->pin );
 
     $self->repo->pull_prerequisites( dist  => $new_dist,
-                                      stack => $stack ) unless $self->norecurse;
+                                     stack => $stack ) unless $self->norecurse;
 
     return $stack if $stack->refresh->has_changed;
 }

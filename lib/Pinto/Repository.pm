@@ -203,12 +203,15 @@ sub delete_properties {
 
 =method get_stack()
 
-=method get_stack( name => $stack_name )
+=method get_stack( $stack_name )
 
-=method get_stack( name => $stack_name, nocroak => 1 )
+=method get_stack( $stack_object )
+
+=method get_stack( $stack_name_or_object, nocroak => 1 )
 
 Returns the L<Pinto::Schema::Result::Stack> object with the given
-C<$stack_name>.  If there is no stack with such a name in the
+C<$stack_name>.  If the argument is a L<Pinto::Schema::Result::Stack>,
+then it just returns that.  If there is no stack with such a name in the
 repository, throws an exception.  If the C<nocroak> option is true,
 than an exception will not be thrown and undef will be returned.  If
 you do not specify a stack name (or it is undefined) then you'll get
@@ -221,20 +224,19 @@ stack that you can modify, use C<open_stack>.
 =cut
 
 sub get_stack {
-    my ($self, %args) = @_;
+    my ($self, $stack, %opts) = @_;
 
-    my $stk_name = $args{name};
-    return $stk_name if ref $stk_name;  # Is object (or struct) so just return
-    return $self->get_default_stack if not $stk_name;
+    return $stack if itis($stack, 'Pinto::Schema::Result::Stack');
+    return $self->get_default_stack if not $stack;
 
-    my $where = { name => $stk_name };
+    my $where = { name => $stack };
     my $attrs = { prefetch => 'head_revision' };
-    my $stack = $self->db->select_stack( $where, $attrs );
+    my $got_stack = $self->db->select_stack( $where, $attrs );
 
-    throw "Stack $stk_name does not exist"
-        unless $stack or $args{nocroak};
+    throw "Stack $stack does not exist"
+        unless $got_stack or $opts{nocroak};
 
-    return $stack;
+    return $got_stack;
 }
 
 #-------------------------------------------------------------------------------
@@ -270,7 +272,9 @@ sub get_default_stack {
 
 =method open_stack()
 
-=method open_stack( name => $stack_name )
+=method open_stack( $stack_name )
+
+=method open_stack( $stack_object )
 
 Returns the L<Pinto::Schema::Result::Stack> object with the given
 C<$stack_name> and sets the head revision of the stack to point to a
@@ -294,12 +298,12 @@ and properties.
 =cut
 
 sub open_stack {
-    my ($self, %args) = @_;
+    my ($self, $stack) = @_;
 
-    my $stack = $args{stack} || $self->get_stack(%args, nocroak => 0);
-    my $revision = $self->open_revision(stack => $stack);
+    my $got_stack = $self->get_stack($stack);
+    my $revision  = $self->open_revision(stack => $got_stack);
 
-    return $stack;
+    return $got_stack;
 }
 
 
@@ -327,7 +331,7 @@ sub get_package {
     my $stk_name = $args{stack};
 
     if ($stk_name) {
-        my $stack = $self->get_stack(name => $stk_name);
+        my $stack = $self->get_stack($stk_name);
         my $attrs = { prefetch => 'package' };
         my $where = { package_name => $pkg_name, stack => $stack->id };
         my $registration = $self->db->select_registration($where, $attrs);
@@ -698,7 +702,7 @@ sub create_stack {
     $args{is_default} ||= 0;
 
     throw "Stack $args{name} already exists"
-        if $self->get_stack(name => $args{name}, nocroak => 1);
+        if $self->get_stack($args{name}, nocroak => 1);
 
     my $revision = $self->open_revision;
     my $stack    = $self->db->create_stack( {%args, head_revision => $revision} );

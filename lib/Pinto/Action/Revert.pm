@@ -5,7 +5,7 @@ package Pinto::Action::Revert;
 use Moose;
 use MooseX::Types::Moose qw(Int);
 
-use Pinto::Types qw(StackName StackDefault);
+use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -26,7 +26,7 @@ with qw( Pinto::Role::Committable );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackDefault,
+    isa       => StackName | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -42,7 +42,7 @@ has revision => (
 sub execute {
     my ($self) = @_;
 
-    my $stack   = $self->repo->get_stack(name => $self->stack);
+    my $stack   = $self->repo->get_stack($self->stack);
     my $revnum  = $self->_compute_target_revnum($stack);
 
     $self->_revert($stack, $revnum);

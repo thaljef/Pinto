@@ -169,7 +169,7 @@ sub registration_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack      = $self->pinto->repo->get_stack(name => $stack_name);
+    my $stack      = $self->pinto->repo->get_stack($stack_name);
 
     my $where = { stack => $stack->id, package_name => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
@@ -219,7 +219,7 @@ sub registration_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack     = $self->pinto->repo->get_stack(name => $stack_name);
+    my $stack     = $self->pinto->repo->get_stack($stack_name);
 
     my $where = {stack => $stack->id, package_name => $pkg_name, distribution_path => $dist_path};
     my $reg = $self->pinto->repo->db->select_registration($where);
@@ -281,7 +281,7 @@ sub result_not_changed_ok {
 sub head_revision_number_is {
     my ($self, $revnum, $stack_name, $test_name) = @_;
 
-    my $stack       = $self->pinto->repo->get_stack(name => $stack_name);
+    my $stack       = $self->pinto->repo->get_stack($stack_name);
     my $head_revnum = $stack->head_revision->number;
 
     $test_name ||= "Head revision number of stack $stack matches";

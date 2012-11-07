@@ -69,11 +69,22 @@ my $t = Pinto::Tester->new;
 #------------------------------------------------------------------------------
 
 {
-	$t->run_ok(Fake => {message => 'my message'});
+	$t->run_ok(Fake => {message => ''});
 	my $stack = $t->pinto->repo->get_stack;
 	my $revision = $stack->head_revision;
 
 	is ($revision->number, 3, 'Next revision number');
+	is ($revision->message, 'my primer', 'Got primer when message is whitespace or empty');
+}
+
+#------------------------------------------------------------------------------
+
+{
+	$t->run_ok(Fake => {message => 'my message'});
+	my $stack = $t->pinto->repo->get_stack;
+	my $revision = $stack->head_revision;
+
+	is ($revision->number, 4, 'Next revision number');
 	is ($revision->message, 'my message', 'Got custom commit message when specified');
 }
 

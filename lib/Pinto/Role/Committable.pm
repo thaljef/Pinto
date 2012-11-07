@@ -26,6 +26,7 @@ has dryrun => (
 has message => (
     is        => 'ro',
     isa       => Str,
+    predicate => 'has_message',
 );
 
 has use_default_message => (
@@ -73,9 +74,10 @@ sub edit_message {
     my $stacks = $args{stacks} || [];
     my $primer = $args{primer} || $self->message_primer || '';
 
-    return $self->message if $self->message;
-    return $primer if $self->use_default_message;
-    return $primer if not is_interactive;
+    return $self->message if $self->has_message and $self->message =~ /\S+/;
+    return $primer        if $self->has_message and $self->message !~ /\S+/;
+    return $primer        if $self->use_default_message;
+    return $primer        if not is_interactive;
 
     my $message = Pinto::CommitMessage->new(stacks => $stacks, primer => $primer)->edit;
     throw 'Aborting due to empty commit message' if $message !~ /\S+/;

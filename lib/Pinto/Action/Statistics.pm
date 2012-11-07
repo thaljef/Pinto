@@ -4,7 +4,7 @@ package Pinto::Action::Statistics;
 
 use Moose;
 
-use Pinto::Types qw(StackName StackDefault);
+use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Statistics;
 
 use namespace::autoclean;
@@ -21,7 +21,7 @@ extends qw( Pinto::Action );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackDefault,
+    isa       => StackName | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -31,7 +31,7 @@ sub execute {
     my ($self) = @_;
 
     # FIXME!
-    my $stack = $self->repo->get_stack(name => $self->stack);
+    my $stack = $self->repo->get_stack($self->stack);
 
     my $stats = Pinto::Statistics->new(db    => $self->repo->db,
                                        stack => $stack->name);
