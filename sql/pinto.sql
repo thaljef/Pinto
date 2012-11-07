@@ -44,6 +44,8 @@ CREATE TABLE package (
        id            INTEGER PRIMARY KEY NOT NULL,
        name          TEXT                NOT NULL, /* Foo::Bar */
        version       TEXT                NOT NULL, /* 1.2.3 */
+       file          TEXT                DEFAULT NULL, /* Path within distro to file that contains the package */
+       sha256        TEXT                DEFAULT NULL, /* SHA-256 digest of the file that contains the pacakge */
        distribution  INTEGER             NOT NULL, /* The distribution that contains this package */
 
        FOREIGN KEY(distribution) REFERENCES distribution(id)
@@ -194,19 +196,20 @@ CREATE UNIQUE INDEX a ON distribution(author_canonical, archive);
 CREATE UNIQUE INDEX b ON distribution(md5);
 CREATE UNIQUE INDEX c ON distribution(sha256);
 CREATE UNIQUE INDEX d ON package(name, distribution);
-CREATE UNIQUE INDEX e ON stack(name);
-CREATE UNIQUE INDEX f ON stack(name_canonical);
-CREATE UNIQUE INDEX g ON stack(head_revision);
-CREATE UNIQUE INDEX h ON registration(stack, package_name);
-CREATE UNIQUE INDEX i ON registration(stack, package);
-CREATE UNIQUE INDEX j ON registration_change(event, package, revision);
-CREATE UNIQUE INDEX k ON revision(stack, number);
-CREATE UNIQUE INDEX l ON prerequisite(distribution, package_name);
-CREATE UNIQUE INDEX m ON stack_property(stack, key);
-CREATE UNIQUE INDEX n ON stack_property(stack, key_canonical);
-CREATE UNIQUE INDEX o ON repository_property(key);
-CREATE UNIQUE INDEX p ON repository_property(key_canonical);
+CREATE UNIQUE INDEX e ON package(file, distribution);
+CREATE UNIQUE INDEX f ON stack(name);
+CREATE UNIQUE INDEX g ON stack(name_canonical);
+CREATE UNIQUE INDEX h ON stack(head_revision);
+CREATE UNIQUE INDEX i ON registration(stack, package_name);
+CREATE UNIQUE INDEX j ON registration(stack, package);
+CREATE UNIQUE INDEX k ON registration_change(event, package, revision);
+CREATE UNIQUE INDEX l ON revision(stack, number);
+CREATE UNIQUE INDEX m ON prerequisite(distribution, package_name);
+CREATE UNIQUE INDEX n ON stack_property(stack, key);
+CREATE UNIQUE INDEX o ON stack_property(stack, key_canonical);
+CREATE UNIQUE INDEX p ON repository_property(key);
+CREATE UNIQUE INDEX q ON repository_property(key_canonical);
 
-CREATE        INDEX q ON registration(stack);
-CREATE        INDEX r ON package(name);
-CREATE        INDEX s ON distribution(author);
+CREATE        INDEX r ON registration(stack);
+CREATE        INDEX s ON package(name);
+CREATE        INDEX t ON distribution(author);

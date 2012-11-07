@@ -42,6 +42,18 @@ __PACKAGE__->table("package");
   data_type: 'text'
   is_nullable: 0
 
+=head2 file
+
+  data_type: 'text'
+  default_value: null
+  is_nullable: 1
+
+=head2 sha256
+
+  data_type: 'text'
+  default_value: null
+  is_nullable: 1
+
 =head2 distribution
 
   data_type: 'integer'
@@ -57,6 +69,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "version",
   { data_type => "text", is_nullable => 0 },
+  "file",
+  { data_type => "text", default_value => \"null", is_nullable => 1 },
+  "sha256",
+  { data_type => "text", default_value => \"null", is_nullable => 1 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
@@ -74,6 +90,20 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
+
+=head2 C<file_distribution_unique>
+
+=over 4
+
+=item * L</file>
+
+=item * L</distribution>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("file_distribution_unique", ["file", "distribution"]);
 
 =head2 C<name_distribution_unique>
 
@@ -150,8 +180,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 17:28:53
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IdF0zr75XRiWOqSuoqj9Xg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-06 23:40:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HLdUoAOIeN4Sxt7AN/0gKw
 
 #------------------------------------------------------------------------------
 
