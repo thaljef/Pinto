@@ -82,6 +82,8 @@
 
 =item Look for better ways to use Moose roles.
 
+=item Issue warning if META indicates that configuration is dynamic.
+
 =back
 
 =head1 QUESTIONABLE
