@@ -12,6 +12,7 @@ use MooseX::Aliases;
 use URI;
 
 use Pinto::Types qw(Dir File);
+use Pinto::Util qw(current_user);
 
 use namespace::autoclean;
 
@@ -34,7 +35,7 @@ has root       => (
 has username  => (
     is        => 'ro',
     isa       => Str,
-    default   => sub { return $ENV{USER} || $ENV{USERNAME} || $ENV{LOGNAME} },
+    default   => sub { return current_user },
 );
 
 
