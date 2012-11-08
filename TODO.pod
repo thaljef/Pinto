@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
+
 =item Contemplate API for getting/opening/committing stacks
 
 =item Heirarchy of exception classes
