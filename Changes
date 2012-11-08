@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.062     2012-11-08 10:52:02 America/Los_Angeles
+
      Interface Changes:
 
      * If the commit message for a Committable action is empty (but defined)
