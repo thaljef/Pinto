@@ -98,14 +98,18 @@ sub provides {
     my $archive = $self->archive;
     $self->info("Extracting packages provided by archive $archive");
 
-    my $provides =   try { $self->dm->package_versions }
-                   catch { throw "Unable to extract packages from $archive: $_"    };
+    my $mod_info =   try { $self->dm->module_info( {checksum => 'sha256'} )     }
+                   catch { throw "Unable to extract packages from $archive: $_" };
 
     my @provides;
-    for my $pkg_name ( sort keys %{ $provides } ) {
-        my $pkg_ver = version->parse( $provides->{$pkg_name} );
+    for my $pkg_name ( sort keys %{ $mod_info } ) {
+
+        my $info = $mod_info->{$pkg_name};
+        my $pkg_ver = version->parse( $info->{version} );
         $self->debug("Archive $archive provides: $pkg_name-$pkg_ver");
-        push @provides, {name => $pkg_name, version => $pkg_ver};
+
+        push @provides, { name => $pkg_name,     version => $pkg_ver, 
+                          file => $info->{file}, sha256  => $info->{sha256} };
     }
 
     @provides = $self->__common_sense_workaround($archive->basename)
