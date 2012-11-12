@@ -153,7 +153,7 @@ __PACKAGE__->has_many(
   "registration_changes",
   "Pinto::Schema::Result::RegistrationChange",
   { "foreign.revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 stack
@@ -171,7 +171,7 @@ __PACKAGE__->belongs_to(
   {
     is_deferrable => 0,
     join_type     => "LEFT",
-    on_delete     => "NO ACTION",
+    on_delete     => "CASCADE",
     on_update     => "NO ACTION",
   },
 );
@@ -190,8 +190,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-25 20:35:40
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pdEMqaUVlpZmFgHEwSEFww
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:50:21
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:o2TjxJl1rLE6Uae0Eic6Lg
 
 #------------------------------------------------------------------------------
 

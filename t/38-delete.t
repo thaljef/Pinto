@@ -28,7 +28,10 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
   # Delete the "init" stack.
   $t->run_ok(Delete => {stack => 'init'});
-  $t->registration_not_ok('JOHN/Dist-1/PkgA~1/init');
+  throws_ok { $t->pinto->repo->get_stack('init') } qr/does not exist/;
+  
+  # Check the filesystem
+  $t->path_not_exists_ok( [qw(init)] );
 
 }
 

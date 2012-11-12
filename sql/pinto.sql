@@ -30,7 +30,7 @@ CREATE TABLE distribution (
        source            TEXT                NOT NULL, /* http://cpan.perl.org/authors/id/B/BI/BIGJIM/Foo-Bar-1.0.tar.gz */
        mtime             INTEGER             NOT NULL, /* last-modified time of the archive file */
        sha256            TEXT                NOT NULL, /* SHA-256 digest of the archive file */
-       md5               TEXT                NOT NULL  /* MD5 digest of the archive file */
+       md5               TEXT                NOT NULL /* MD5 digest of the archive file */
 );
 
 /*
@@ -61,14 +61,14 @@ CREATE TABLE package (
 
 
 CREATE TABLE stack (
-       id                 INTEGER PRIMARY KEY NOT NULL,
-       name               TEXT                NOT NULL, /* MyStack */
-       name_canonical     TEXT                NOT NULL, /* mystack */
-       is_default         BOOLEAN             NOT NULL, /* Boolean flag, indicates if this is the default stack in the repository */
-       head_revision      INTEGER             NOT NULL, /* Points to the last revision when this stack changed */
-       has_changed        INTEGER             NOT NULL, /* Not in use */
+       id                   INTEGER PRIMARY KEY NOT NULL,
+       name                 TEXT                NOT NULL,     /* MyStack */
+       name_canonical       TEXT                NOT NULL,     /* mystack */
+       is_default           BOOLEAN             NOT NULL,     /* Boolean flag, indicates if this is the default stack in the repository */
+       head_revision        INTEGER             NOT NULL,     /* Points to the last revision when this stack changed */
+       has_changed          INTEGER             NOT NULL,     /* Not in use */
 
-       FOREIGN KEY(head_revision) REFERENCES revision(id)
+       FOREIGN KEY(head_revision)        REFERENCES revision(id)
 );
 
 
@@ -88,7 +88,7 @@ CREATE TABLE stack_property (
        key_canonical  TEXT                NOT NULL,   /* someattributename */
        value          TEXT                DEFAULT '', /* some-value */
 
-       FOREIGN KEY(stack)   REFERENCES stack(id)
+       FOREIGN KEY(stack)   REFERENCES stack(id) ON DELETE CASCADE
 );
 
 
@@ -109,11 +109,11 @@ CREATE TABLE registration (
        package              INTEGER             NOT NULL, /* Points to the package with the package_name */
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
        is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
-       package_name         TEXT        NOT NULL,         /* Foo::Bar */
-       package_version      TEXT        NOT NULL,         /* 1.0 */
-       distribution_path    TEXT        NOT NULL,         /* AUTHOR/Foo-Bar-1.0.tar.gz */
+       package_name         TEXT                NOT NULL, /* Foo::Bar */
+       package_version      TEXT                NOT NULL, /* 1.0 */
+       distribution_path    TEXT                NOT NULL, /* AUTHOR/Foo-Bar-1.0.tar.gz */
 
-       FOREIGN KEY(stack)        REFERENCES stack(id),
+       FOREIGN KEY(stack)        REFERENCES stack(id)         ON DELETE CASCADE,
        FOREIGN KEY(package)      REFERENCES package(id),
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
@@ -134,16 +134,16 @@ CREATE TABLE registration (
 */
 
 CREATE TABLE registration_change (
-       id           INTEGER PRIMARY KEY NOT NULL,
-       event        TEXT                NOT NULL, /* INSERT or DELETE */
-       package      INTEGER             NOT NULL, /* Points to the package that was registered */
-       distribution INTEGER             NOT NULL, /* Points to the distribution that contained the package */
-       is_pinned    BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
-       revision     INTEGER             NOT NULL, /* Points to the revision in which this change ocurred */
+       id            INTEGER PRIMARY KEY NOT NULL,
+       event         TEXT                NOT NULL, /* INSERT or DELETE */
+       package       INTEGER             NOT NULL, /* Points to the package that was registered */
+       distribution  INTEGER             NOT NULL, /* Points to the distribution that contained the package */
+       is_pinned     BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
+       revision      INTEGER             NOT NULL, /* Points to the revision in which this change ocurred */
 
        FOREIGN KEY(package)      REFERENCES package(id),
        FOREIGN KEY(distribution) REFERENCES distribution(id),
-       FOREIGN KEY(revision)     REFERENCES revision(id)    
+       FOREIGN KEY(revision)     REFERENCES revision(id)      ON DELETE CASCADE    
 );
 
 /*
@@ -187,7 +187,7 @@ CREATE TABLE revision (
        message      TEXT                NOT NULL,      /* Log message for the revision */
        sha256       TEXT                DEFAULT '',    /* Checksum that captures all the packages registered on this stack at this revision */
 
-       FOREIGN KEY(stack)  REFERENCES stack(id)
+       FOREIGN KEY(stack)  REFERENCES stack(id)  ON DELETE CASCADE
 );
 
 

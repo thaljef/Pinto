@@ -132,7 +132,7 @@ __PACKAGE__->has_many(
   "registration_changes",
   "Pinto::Schema::Result::RegistrationChange",
   { "foreign.package" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 registrations
@@ -147,7 +147,7 @@ __PACKAGE__->has_many(
   "registrations",
   "Pinto::Schema::Result::Registration",
   { "foreign.package" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -164,8 +164,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-10 21:45:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TLez8+eJBFcM/DXAEhnLwA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:50:21
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:By+ckGtS4cjL76RnJ+6T8A
 
 #------------------------------------------------------------------------------
 

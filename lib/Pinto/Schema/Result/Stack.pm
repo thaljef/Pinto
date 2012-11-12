@@ -139,7 +139,7 @@ __PACKAGE__->belongs_to(
   "head_revision",
   "Pinto::Schema::Result::Revision",
   { id => "head_revision" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 registrations
@@ -154,7 +154,7 @@ __PACKAGE__->has_many(
   "registrations",
   "Pinto::Schema::Result::Registration",
   { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 revisions
@@ -169,7 +169,7 @@ __PACKAGE__->has_many(
   "revisions",
   "Pinto::Schema::Result::Revision",
   { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 stack_properties
@@ -184,7 +184,7 @@ __PACKAGE__->has_many(
   "stack_properties",
   "Pinto::Schema::Result::StackProperty",
   { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 1 },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -201,8 +201,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-25 20:35:40
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZKEl+71n2p5Tjg3MRHulXw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:50:21
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:A9778V24lWaQPgjf0nAjDg
 
 #-------------------------------------------------------------------------------
 

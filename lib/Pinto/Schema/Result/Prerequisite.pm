@@ -123,8 +123,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-10-19 17:28:53
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QH+RDon4U7Fdokx8bLefBQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:48:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1QfmJh/TSCYFDwAt3J7NFw
 
 #------------------------------------------------------------------------------
 
