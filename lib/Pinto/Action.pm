@@ -4,11 +4,14 @@ package Pinto::Action;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use IO::Pipe;
 
 use Pinto::Result;
-use Pinto::Types qw(Io);
 use Pinto::Exception;
+use Pinto::Types qw(Io);
+use Pinto::Util qw(is_interactive);
 
+use autodie;
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -34,7 +37,8 @@ has out => (
     is      => 'ro',
     isa     => Io,
     coerce  => 1,
-    default => sub { [fileno(STDOUT), '>'] },
+    lazy    => 1,
+    builder => '_build_out',
 );
 
 
@@ -55,6 +59,21 @@ sub execute { throw 'Abstract method' }
 sub say {
     my ($self, $message) = @_;
     return print {$self->out} $message . "\n";
+}
+
+#------------------------------------------------------------------------------
+
+sub _build_out {
+    my ($self) = @_;
+
+    my $stdout = [fileno(STDOUT), '>'];
+    my $pager = $ENV{PINTO_PAGER} || $ENV{PAGER};
+
+    return $stdout if not is_interactive;
+    return $stdout if not $pager;
+
+    open my $pager_fh, q<|->, $pager;
+    return bless $pager_fh, 'IO::Handle'; # HACK!
 }
 
 #------------------------------------------------------------------------------
