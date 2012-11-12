@@ -297,6 +297,24 @@ sub registered_distributions {
 
 #------------------------------------------------------------------------------
 
+sub rename {
+    my ($self, $new_name) = @_;
+
+    my $new_name_canon = lc $new_name;
+
+    throw "Source and destination stacks are the same"
+      if $self->name_canonical eq $new_name_canon;
+
+    throw "Stack $new_name already exists"
+      if $self->result_source->resultset->find( {name_canonical => $new_name_canon} );
+
+    my $changes = {name => $new_name, name_canonical => $new_name_canon};
+
+    return $self->update($changes);
+}
+
+#------------------------------------------------------------------------------
+
 sub copy {
     my ($self, $changes) = @_;
 

@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+     New Features:
+
+     * Now has a Rename action, to change the name of an existing stack.
+       You'll need a newer App::Pinto to utilize this action (Schwern).
+
 0.062     2012-11-08 10:52:02 America/Los_Angeles
 
      Interface Changes:
