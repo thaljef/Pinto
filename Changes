@@ -1,9 +1,19 @@
 {{$NEXT}}
 
+     Important:
+
+     This version of Pinto is not compatible with repositories that
+     were created with prior versions.  Please contact thaljef@cpan.org
+     if you need to migrate an old repository.
+
      New Features:
 
      * Now has a Rename action, to change the name of an existing stack.
        You'll need a newer App::Pinto to utilize this action (Schwern).
+
+     Bug Fixes:
+
+     * The Delete action actually works now (Schwern, Holybit).
 
 0.062     2012-11-08 10:52:02 America/Los_Angeles
 
