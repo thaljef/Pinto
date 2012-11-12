@@ -11,7 +11,6 @@ use Pinto::Exception;
 use Pinto::Types qw(Io);
 use Pinto::Util qw(is_interactive);
 
-use autodie;
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -72,7 +71,9 @@ sub _build_out {
     return $stdout if not is_interactive;
     return $stdout if not $pager;
 
-    open my $pager_fh, q<|->, $pager;
+    open my $pager_fh, q<|->, $pager
+        or throw "Failed to open pipe to pager $pager: $!";
+
     return bless $pager_fh, 'IO::Handle'; # HACK!
 }
 
