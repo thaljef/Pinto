@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+     New Features:
+
+     If running in an interactive environment and the PINTO_PAGER or PAGER
+     environment variable is set, then Action output will be sent to it.
+     Log messages still go to STDERR and will not be sent to the pager.
+
 0.063     2012-11-12 11:58:29 America/Los_Angeles
 
      Important:
