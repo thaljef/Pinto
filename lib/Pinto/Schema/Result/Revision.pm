@@ -205,11 +205,21 @@ with 'Pinto::Role::Schema::Result';
 
 use Pinto::Exception qw(throw);
 
+use DateTime;
 use String::Format;
 use Digest::SHA;
 
+use Pinto::Util qw(itis);
+
 use overload ( '""'  => 'to_string',
-               '<=>' => 'compare' );
+               '<=>' => 'compare',
+               'cmp' => 'compare' );
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->inflate_column('committed_on' => {
+   inflate => sub { DateTime->from_epoch(epoch => $_[0]) }
+});
 
 #------------------------------------------------------------------------------
 
