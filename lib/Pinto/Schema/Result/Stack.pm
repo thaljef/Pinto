@@ -222,6 +222,7 @@ use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 
 use overload ( '""'  => 'to_string',
+               '<=>' => 'numeric_compare',
                'cmp' => 'string_compare' );
 
 #------------------------------------------------------------------------------
@@ -499,7 +500,7 @@ sub merge {
 
 #------------------------------------------------------------------------------
 
-sub compare {
+sub numeric_compare {
     my ($stack_a, $stack_b) = @_;
 
     my $pkg = __PACKAGE__;
@@ -524,8 +525,7 @@ sub string_compare {
 
     return 0 if $stack_a->id == $stack_b->id;
 
-    my $r =   ($stack_a->name          cmp $stack_b->name)
-           || ($stack_a->head_revision <=> $stack_b->head_revision);
+    my $r =   ($stack_a->name cmp $stack_b->name);
 
     return $r;
 }
