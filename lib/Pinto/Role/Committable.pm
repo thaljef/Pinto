@@ -9,7 +9,7 @@ use Try::Tiny;
 
 use Pinto::CommitMessage;
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(is_interactive);
+use Pinto::Util qw(is_interactive interpolate);
 
 #------------------------------------------------------------------------------
 
@@ -71,18 +71,20 @@ around execute => sub {
 sub edit_message {
     my ($self, %args) = @_;
 
+    my $stacks =  $args{stacks} || [];
+    my $title  =  $args{title}  || $self->message_title || '';
 
-    # TODO: trim leading and trailing whitespace from the 
-    # message and message_title attributes so they are
-    # consistent with the values we get back from the editor
-    
-    my $stacks = $args{stacks} || [];
-    my $title  = $args{title}  || $self->message_title || '';
+    return interpolate($self->message)
+        if $self->has_message and $self->message =~ /\S+/;
 
-    return $self->message if $self->has_message and $self->message =~ /\S+/;
-    return $title         if $self->has_message and $self->message !~ /\S+/;
-    return $title         if $self->use_default_message;
-    return $title         if not is_interactive;
+    return $title
+        if $self->has_message and $self->message !~ /\S+/;
+
+    return $title
+        if $self->use_default_message;
+
+    return $title
+        if not is_interactive;
 
     my $message = Pinto::CommitMessage->new(stacks => $stacks, title => $title)->edit;
     throw 'Aborting due to empty commit message' if $message !~ /\S+/;

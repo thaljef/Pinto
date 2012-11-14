@@ -64,8 +64,6 @@ sub edit {
 
     my $message = Term::EditorEdit->edit(document => $self->to_string);
     $message =~ s/^ [#] .* $//gmsx;  # Strip comments
-    $message =~ s/^ \s*  //x;        # Strip leading whitespace
-    $message =~ s/  \s* $//x;        # Strip trailing whitespace
 
     return $message;
 }

@@ -57,7 +57,10 @@ sub execute {
     for my $revision (reverse @revisions) {
         $self->say('-' x 79);
         $self->say($revision->to_string($format));
-        $self->say($revision->change_details) if $self->detailed;
+
+        if ($self->detailed) {
+            $self->say($_) for $revision->registration_changes;
+        }
     }
 
     return $self->result;

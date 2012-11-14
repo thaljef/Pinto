@@ -98,12 +98,12 @@ my $t = Pinto::Tester->new;
 #------------------------------------------------------------------------------
 
 {
-	$t->run_ok(Fake => {message => "my title\n\nmy body"});
+	$t->run_ok(Fake => {message => "  my title  \n\nmy body  "});
 	my $stack = $t->pinto->repo->get_stack;
 	my $revision = $stack->head_revision;
 
 	is ($revision->number, 5, 'Next revision number');
-	is ($revision->message, "my title\n\nmy body", 'Got custom commit message when specified');
+	is ($revision->message, "  my title  \n\nmy body  ", 'Got custom commit message when specified');
 	is ($revision->message_body, 'my body', 'Got message body');
 	is ($revision->message_title, 'my title', 'Got message title');
 }

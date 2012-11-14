@@ -209,7 +209,7 @@ use DateTime;
 use String::Format;
 use Digest::SHA;
 
-use Pinto::Util qw(itis);
+use Pinto::Util qw(itis trim);
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'compare',
@@ -348,21 +348,13 @@ sub undo {
 
 #------------------------------------------------------------------------------
 
-sub change_details {
-    my ($self) = @_;
-
-    return join "\n", $self->registration_changes;
-}
-
-#------------------------------------------------------------------------------
-
 sub message_title {
     my ($self, $max_chars) = @_;
 
     my $message = $self->message;
-    my $title = (split /\n/, $message)[0];
+    my $title = trim( (split /\n/, $message)[0] );
 
-    if ($max_chars) {
+    if ($max_chars and length $title > $max_chars) {
       $title = substr($title, 0, $max_chars - 3,) . '...';
     }
 
@@ -377,7 +369,7 @@ sub message_body {
     my $message = $self->message;
     my $body = ($message =~ m/^ [^\n]+ \n+ (.*)/xms) ? $1 : '';
 
-    return $body;
+    return trim($body);
 }
 
 #------------------------------------------------------------------------------
