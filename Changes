@@ -1,5 +1,23 @@
 {{$NEXT}}
 
+     Interface Changes:
+
+     * In commit messages, all lines starting with '#' are discarded.  Previously,
+       we figured out the start and end of the message based on other landmarks, 
+       but that isn't very reliable.
+
+     * Commit timestamps are now reported in the format that is right for your
+       locale.  However, they are reported in UTC, not the local timezone.  I
+       will fix this in the next release.
+
+     New Features:
+
+     * Commit messages are now parsed into separate title and body sections.
+       The message prompt will advise you to put the title on the first line,
+       followed by one blank line, followed by the body (just like with Git).  
+       We make some attempt to be lenient with the parsing, in case you don't 
+       follow the suggetion.
+
 0.064     2012-11-12 13:29:50 America/Los_Angeles
 
      New Features:
