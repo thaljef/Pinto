@@ -74,7 +74,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub message_primer {
+sub message_title {
     my ($self) = @_;
 
     my $orig = $self->repo->get_stack($self->from_stack);

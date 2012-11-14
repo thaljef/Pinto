@@ -356,6 +356,32 @@ sub change_details {
 
 #------------------------------------------------------------------------------
 
+sub message_title {
+    my ($self, $max_chars) = @_;
+
+    my $message = $self->message;
+    my $title = (split /\n/, $message)[0];
+
+    if ($max_chars) {
+      $title = substr($title, 0, $max_chars - 3,) . '...';
+    }
+
+    return $title;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_body {
+    my ($self) = @_;
+
+    my $message = $self->message;
+    my $body = ($message =~ m/^ [^\n]+ \n+ (.*)/xms) ? $1 : '';
+
+    return $body;
+}
+
+#------------------------------------------------------------------------------
+
 sub compare {
     my ($rev_a, $rev_b) = @_;
 
@@ -387,11 +413,7 @@ sub to_string {
            b => sub { $self->number                                        },
            g => sub { $self->message                                       },
            j => sub { $self->committed_by                                  },
-
-           # TODO: Use DateTime to format the commit date into pretty
-           # strings.  Should also use DBIC's own mechanism to inflate
-           # date values into objects for us.
-           u => sub { scalar localtime $self->committed_on                 },
+           u => sub { $self->committed_on->strftime('%c') . ' UTC'         },
 
     );
 

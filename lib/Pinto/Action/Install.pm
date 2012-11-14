@@ -157,7 +157,7 @@ sub _install {
 
 #------------------------------------------------------------------------------
 
-sub message_primer {
+sub message_title {
     my ($self) = @_;
 
     my $targets  = join ', ', $self->targets;

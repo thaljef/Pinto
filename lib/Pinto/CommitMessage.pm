@@ -6,7 +6,6 @@ use Moose;
 use MooseX::Types::Moose qw(ArrayRef Str);
 
 use Term::EditorEdit;
-use Text::Wrap qw(wrap);
 
 use overload ( q{""} => 'to_string' );
 
@@ -24,7 +23,7 @@ has stacks => (
 );
 
 
-has primer => (
+has title => (
     is      => 'ro',
     isa     => Str,
     default => '',
@@ -49,9 +48,10 @@ sub _build_details {
 
     my $details = '';
     for my $stack ( @stacks ) {
-        $details .= "STACK: $stack\n" if @stacks > 1;
-        $details .= $stack->head_revision->change_details || 'No details available';
-        $details.= "\n\n";
+        my @changes = $stack->head_revision->registration_changes;
+        $details .= "# STACK: $stack\n" if @stacks > 1;
+        $details .= "# $_\n" for (@changes ? @changes : '# No details available');
+        $details .= "#\n#\n";
     }
 
     return $details;
@@ -63,7 +63,9 @@ sub edit {
     my ($self) = @_;
 
     my $message = Term::EditorEdit->edit(document => $self->to_string);
-    $message =~ s/( \n+ -{60,} \n .*)//smx;  # Strip details
+    $message =~ s/^ [#] .* $//gmsx;  # Strip comments
+    $message =~ s/^ \s*  //x;        # Strip leading whitespace
+    $message =~ s/  \s* $//x;        # Strip trailing whitespace
 
     return $message;
 }
@@ -73,18 +75,21 @@ sub edit {
 sub to_string {
     my ($self) = @_;
 
-    local $Text::Wrap::columns = 80;
-    my $primer  = wrap(undef, undef, $self->primer);
+    my $title   = $self->title;
     my $details = $self->details;
 
     return <<END_MESSAGE;
-$primer
+$title
 
-------------------------------------------------------------------------------
-Please replace or edit the message above to describe the change.  It is more
-helpful to explain *why* the change happened, rather than *what* happened.
-Details of the change follow:
 
+#------------------------------------------------------------------------------
+# Please edit or ammend the message above to describe the change.  The message
+# should include a one-line title, followed by one blank line, followed by the
+# message body.  Any line that starts with "#" will be ignored.  To abort the
+# commit, delete the entire message above, save the file, and close the editor. 
+#
+# Change details follow:
+#
 $details
 END_MESSAGE
 }

@@ -123,7 +123,7 @@ sub _replace {
 
 #------------------------------------------------------------------------------
 
-sub message_primer {
+sub message_title {
     my ($self) = @_;
 
     my $target  = $self->target;

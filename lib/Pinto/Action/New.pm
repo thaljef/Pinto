@@ -63,7 +63,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub message_primer {
+sub message_title {
     my ($self) = @_;
 
     my $stack = $self->stack;

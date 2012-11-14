@@ -99,7 +99,7 @@ sub _revert {
 
 #------------------------------------------------------------------------------
 
-sub message_primer {
+sub message_title {
     my ($self) = @_;
 
     my $revnum = $self->revision;

@@ -536,12 +536,11 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                                     },
-           M => sub { $self->is_default                          ? '*' : ' '          },
-           j => sub { $self->head_revision->committed_by                              },
-           u => sub { $self->head_revision->committed_on                              },
-           U => sub { Pinto::Util::ls_time_format($self->head_revision->committed_on) },
-           e => sub { $self->get_property('description')                              },
+           k => sub { $self->name                                             },
+           M => sub { $self->is_default                          ? '*' : ' '  },
+           j => sub { $self->head_revision->committed_by                      },
+           u => sub { $self->head_revision->committed_on->strftime('%c')      },
+           e => sub { $self->get_property('description')                      },
     );
 
     $format ||= $self->default_format();

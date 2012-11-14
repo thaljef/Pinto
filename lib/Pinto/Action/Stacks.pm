@@ -20,7 +20,7 @@ extends 'Pinto::Action';
 has format => (
     is      => 'ro',
     isa     => Str,
-    default => "%M %-16k %-16j %U",
+    default => "%M %-16k %-16j %u",
 );
 
 #------------------------------------------------------------------------------
@@ -28,10 +28,7 @@ has format => (
 sub execute {
     my ($self) = @_;
 
-    my $attrs = { order_by => 'name' };
-    my @stacks = $self->repo->db->select_stacks(undef, $attrs)->all;
-
-    for my $stack ( @stacks ) {
+    for my $stack ( sort {$a cmp $b} $self->repo->get_all_stacks ) {
         $self->say($stack->to_string($self->format));
     }
 

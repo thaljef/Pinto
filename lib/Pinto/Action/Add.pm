@@ -113,7 +113,7 @@ sub _add {
 
 #------------------------------------------------------------------------------
 
-sub message_primer {
+sub message_title {
     my ($self) = @_;
 
     my $archives  = join ', ', map {$_->basename} $self->archives;

@@ -307,6 +307,21 @@ sub open_stack {
     return $got_stack;
 }
 
+#-------------------------------------------------------------------------------
+
+=method get_all_stacks()
+
+Returns a list of all the L<Pinto::Schema::Result::Stack> objects in the
+repository.  You can sort them as strings (by name) or numerically (by
+last modification time).
+
+=cut
+
+sub get_all_stacks {
+    my ($self) = @_;
+
+    return $self->db->select_stacks->all;
+}
 
 #-------------------------------------------------------------------------------
 

@@ -37,7 +37,7 @@ has use_default_message => (
 
 #------------------------------------------------------------------------------
 
-requires qw( execute message_primer );
+requires qw( execute message_title );
 
 #------------------------------------------------------------------------------
 
@@ -71,15 +71,20 @@ around execute => sub {
 sub edit_message {
     my ($self, %args) = @_;
 
+
+    # TODO: trim leading and trailing whitespace from the 
+    # message and message_title attributes so they are
+    # consistent with the values we get back from the editor
+    
     my $stacks = $args{stacks} || [];
-    my $primer = $args{primer} || $self->message_primer || '';
+    my $title  = $args{title}  || $self->message_title || '';
 
     return $self->message if $self->has_message and $self->message =~ /\S+/;
-    return $primer        if $self->has_message and $self->message !~ /\S+/;
-    return $primer        if $self->use_default_message;
-    return $primer        if not is_interactive;
+    return $title         if $self->has_message and $self->message !~ /\S+/;
+    return $title         if $self->use_default_message;
+    return $title         if not is_interactive;
 
-    my $message = Pinto::CommitMessage->new(stacks => $stacks, primer => $primer)->edit;
+    my $message = Pinto::CommitMessage->new(stacks => $stacks, title => $title)->edit;
     throw 'Aborting due to empty commit message' if $message !~ /\S+/;
 
     return $message;
