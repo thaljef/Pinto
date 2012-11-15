@@ -284,16 +284,61 @@ sub registration {
 
 #------------------------------------------------------------------------------
 
-sub registered_distributions {
+sub registered_distribution_ids {
     my ($self) = @_;
 
-    my %dists;
-    for my $reg ($self->registrations({}, {prefetch => 'distribution'})) {
-      $dists{$reg->distribution->id} = $reg->distribution;
-    }
+    my $attrs = { columns => 'distribution', distinct => 1 };
+    my $ids = $self->registrations->search({}, $attrs)->get_column('distribution');
 
-    my @sorted = sort {$a cmp $b} values %dists;
-    return @sorted;
+    return $ids->all;
+}
+
+#------------------------------------------------------------------------------
+
+sub registered_distributions {
+    my ($self, %args) = @_;
+
+    my $where = {};
+    $where->{archive} = {like => "%$args{matching}%"} if $args{matching};
+
+    my $attrs = { distinct => 1,
+                  order_by => [ qw(author archive) ] };
+
+    my $rs = $self->result_source->schema->resultset('Distribution');
+
+    return $rs->search(undef, $attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub registered_distributions_by_revision {
+    my ($self, %args) = @_;
+
+    my @dist_ids = $self->registered_distribution_ids;
+
+    my $where = { 'revision.stack' => $self->id, 
+                  'me.id'          => {-in => \@dist_ids} };
+
+    $where->{archive} = {like => "%$args{matching}%"} if $args{matching};
+
+    my $attrs = { distinct => 1,
+                  prefetch => 'packages',
+                  order_by => 'revision DESC',
+                  join     => {registration_changes => 'revision'} };
+
+    my $rs = $self->result_source->schema->resultset('Distribution');
+
+    return $rs->search($where, $attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub total_registered_distributions {
+    my ($self) = @_;
+
+    my $attrs = {columns => 'distribution', distinct => 1};
+
+    return $self->registrations({}, $attrs)->count;
 }
 
 #------------------------------------------------------------------------------
