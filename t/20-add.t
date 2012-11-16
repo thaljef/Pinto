@@ -3,10 +3,13 @@
 use strict;
 use warnings;
 
+use File::Copy;
+use Path::Class;
 use Test::More;
 
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
+use Pinto::Util qw(sha256);
 
 #------------------------------------------------------------------------------
 
@@ -101,7 +104,26 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 }
 
 #-----------------------------------------------------------------------------
-# Exceptions...
+# Adding identical dists with different names
+
+{
+
+  my $archive1 = make_dist_archive("Dist-1=A~1");
+  my $archive2 = file($archive1->dir, 'MY-' . $archive1->basename);
+  copy($archive1, $archive2) or die "Copy failed: $!";
+
+  is(sha256($archive1), sha256($archive2), 'Archives are identical');
+  isnt($archive1->basename, $archive2->basename, 'Archives have different names');
+
+  my $t = Pinto::Tester->new;
+  $t->run_ok('Add', {archives => $archive1, author => $auth});
+  $t->run_throws_ok('Add', {archives => $archive2, author => $auth}, 
+    qr/$archive2 is the same .* but with different name/);
+
+}
+
+#-----------------------------------------------------------------------------
+# Adding multiple dists to the same path
 
 {
   my $t = Pinto::Tester->new;
