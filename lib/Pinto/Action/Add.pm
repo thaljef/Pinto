@@ -103,9 +103,9 @@ sub _add {
 
     my $dist;
 
-    if (my $same_dist = $self->repo->get_distribution( sha256 => sha256($archive) )) {
-        $self->warning("Archive $archive is the same as $same_dist -- using $same_dist instead");
-        $dist = $same_dist;
+    if (my $dupe = $self->_check_for_duplicate($archive)) {
+        $self->warning("Archive $archive is the same as $dupe -- using $dupe instead");
+        $dist = $dupe;
     }
     else {
         $self->notice("Adding distribution archive $archive");
@@ -119,6 +119,20 @@ sub _add {
     $self->result->changed if $did_pull or $did_register;
     
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _check_for_duplicate {
+    my ($self, $archive) = @_;
+
+    my $sha256 = sha256($archive);
+    my $dupe = $self->repo->get_distribution(sha256 => $sha256);
+
+    return if not $dupe;
+    return $dupe if $archive->basename eq $dupe->archive;
+
+    throw "Archive $archive is the same as $dupe but with different name";
 }
 
 #------------------------------------------------------------------------------
