@@ -5,6 +5,7 @@ package Pinto::Action::Add;
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);
 
+use Pinto::Util qw(sha256);
 use Pinto::Types qw(Author Files StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
 
@@ -100,15 +101,24 @@ sub execute {
 sub _add {
     my ($self, $archive, $stack) = @_;
 
-    $self->notice("Adding distribution archive $archive");
+    my $dist;
 
-    my $dist = $self->repo->add(archive => $archive, author => $self->author);
+    if (my $same_dist = $self->repo->get_distribution( sha256 => sha256($archive) )) {
+        $self->warning("Archive $archive is the same as $same_dist -- using $same_dist instead");
+        $dist = $same_dist;
+    }
+    else {
+        $self->notice("Adding distribution archive $archive");
+        $dist = $self->repo->add(archive => $archive, author => $self->author);
+        $self->result->changed;
+    }
 
-    $dist->register(stack => $stack, pin => $self->pin);
+    my $did_register = $dist->register(stack => $stack, pin => $self->pin);
+    my $did_pull = $self->norecurse ? 0 : $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
 
-    $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
-
-    return $self->result->changed;
+    $self->result->changed if $did_pull or $did_register;
+    
+    return;
 }
 
 #------------------------------------------------------------------------------

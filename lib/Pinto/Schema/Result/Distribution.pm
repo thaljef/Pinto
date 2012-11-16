@@ -268,8 +268,9 @@ sub register {
 
     for my $pkg ($self->packages) {
 
-      if (defined $pkg->registrations_rs->find( {stack => $stack->id} ) ) {
+      if (my $reg = $pkg->registrations->find( {stack => $stack->id} ) ) {
           $self->debug( sub {"Package $pkg is already on stack $stack"} );
+          $reg->pin && $did_register++ if $pin and not $reg->is_pinned;
           next;
       }
 

@@ -40,21 +40,83 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 }
 
 #-----------------------------------------------------------------------------
+# Adding identical dist twice on same stack
+
+{
+
+  my $t = Pinto::Tester->new;
+  $t->run_ok('Add', {archives => $archive, author => $auth});
+  $t->registration_ok("$auth/$dist/$pkg1/init");
+  $t->registration_ok("$auth/$dist/$pkg2/init");
+
+  $t->run_ok('Add', {archives => $archive, author => $auth});
+  $t->registration_ok("$auth/$dist/$pkg1/init");
+  $t->registration_ok("$auth/$dist/$pkg2/init");
+
+  $t->log_like(qr/$archive is the same/, 'Got warning about identical dist');
+ 
+  # This time, with a pin
+  $t->run_ok('Add', {archives => $archive, author => $auth, pin => 1});
+  $t->registration_ok("$auth/$dist/$pkg1/init/+");
+  $t->registration_ok("$auth/$dist/$pkg2/init/+");
+
+}
+
+#-----------------------------------------------------------------------------
+# Adding identical dist twice on different stacks
+
+{
+
+  my $t = Pinto::Tester->new;
+  $t->run_ok('Add', {archives => $archive, author => $auth});
+  $t->registration_ok("$auth/$dist/$pkg1/init");
+  $t->registration_ok("$auth/$dist/$pkg2/init");
+
+  $t->run_ok('New', {stack => 'dev'});
+
+  $t->run_ok('Add', {archives => $archive, author => $auth, stack => 'dev'});
+  $t->registration_ok("$auth/$dist/$pkg1/dev");
+  $t->registration_ok("$auth/$dist/$pkg2/dev");
+
+  $t->log_like(qr/$archive is the same/, 'Got warning about identical dist');
+
+}
+
+#-----------------------------------------------------------------------------
+# Adding identical dist twice but with a pin the second time
+
+{
+
+  my $t = Pinto::Tester->new;
+  $t->run_ok('Add', {archives => $archive, author => $auth});
+  $t->registration_ok("$auth/$dist/$pkg1/init");
+  $t->registration_ok("$auth/$dist/$pkg2/init");
+
+  $t->run_ok('Add', {archives => $archive, author => $auth, pin => 1});
+  $t->registration_ok("$auth/$dist/$pkg1/init/+");
+  $t->registration_ok("$auth/$dist/$pkg2/init/+");
+
+  $t->log_like(qr/$archive is the same/, 'Got warning about identical dist');
+
+}
+
+#-----------------------------------------------------------------------------
 # Exceptions...
 
 {
   my $t = Pinto::Tester->new;
 
-  $t->run_ok('Add', {archives => $archive, author => $auth});
+  # Two different dists with identical names...
+  my $archive1 = make_dist_archive("Dist-1=A~1");
+  my $archive2 = make_dist_archive("Dist-1=B~2");
 
-  $t->run_throws_ok( 'Add', {archives => $archive, author => uc $auth},
+  $t->run_ok('Add', {archives => $archive1, author => $auth});
+
+  $t->run_throws_ok( 'Add', {archives => $archive2, author => uc $auth},
                      qr/already exists/, 'Cannot add dist to same path twice' );
 
-  $t->run_throws_ok( 'Add', {archives => $archive, author => $auth},
+  $t->run_throws_ok( 'Add', {archives => $archive2, author => $auth},
                      qr/already exists/, 'Cannot add dist to same path twice' );
-
-  $t->run_throws_ok( 'Add', {archives => $archive, author => 'JOE'},
-                     qr/is identical/, 'Cannot add identical dists to different paths' );
 
   $t->run_throws_ok( 'Add', {archives => 'bogus', author => $auth},
                      qr/Some archives are missing/, 'Cannot add nonexistant archive' );
