@@ -139,7 +139,7 @@ __PACKAGE__->belongs_to(
   "head_revision",
   "Pinto::Schema::Result::Revision",
   { id => "head_revision" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head2 registrations
@@ -201,8 +201,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:50:21
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:A9778V24lWaQPgjf0nAjDg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-15 21:11:33
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xnggND8biihrwXCK//jzlg
 
 #-------------------------------------------------------------------------------
 
