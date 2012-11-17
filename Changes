@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+     Interface Changes:
+
+     The Props and Edit actions are gone.  The new Config action will both set
+     and show configuration properties.  Marking the default stack is now
+     handled by the Default action.
+
 0.065     2012-11-14 09:55:54 America/Los_Angeles
 
      Interface Changes:
