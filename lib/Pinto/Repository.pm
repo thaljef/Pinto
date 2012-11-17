@@ -118,7 +118,7 @@ sub check_schema_version {
     my ($self) = @_;
 
     my $class_schema_version = $Pinto::Schema::SCHEMA_VERSION;
-    my $db_schema_version = $self->get_property('pinto:schema_version');
+    my $db_schema_version = $self->get_property('pinto-schema_version');
 
     throw "Could not find the version of this repository"
       if not defined $db_schema_version;
