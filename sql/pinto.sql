@@ -30,7 +30,7 @@ CREATE TABLE distribution (
        source            TEXT                NOT NULL, /* http://cpan.perl.org/authors/id/B/BI/BIGJIM/Foo-Bar-1.0.tar.gz */
        mtime             INTEGER             NOT NULL, /* last-modified time of the archive file */
        sha256            TEXT                NOT NULL, /* SHA-256 digest of the archive file */
-       md5               TEXT                NOT NULL /* MD5 digest of the archive file */
+       md5               TEXT                NOT NULL  /* MD5 digest of the archive file */
 );
 
 /*
