@@ -77,7 +77,7 @@ sub execute {
 sub message_title {
     my ($self) = @_;
 
-    my $orig = $self->repo->get_stack($self->from_stack);
+    my $orig = $self->repo->get_stack($self->from_stack)->head_revision;
     my $copy = $self->repo->get_stack($self->to_stack);
 
     return "Copied stack $orig to stack $copy.";
