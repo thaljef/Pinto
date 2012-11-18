@@ -2,9 +2,17 @@
 
      Interface Changes:
 
-     The Props and Edit actions are gone.  The new Config action will both set
-     and show configuration properties.  Marking the default stack is now
-     handled by the Default action.
+     * The Props and Edit actions are gone.  The new Config action will 
+       both set and show configuration properties.  Marking the default
+       stack is now handled by the Default action.  You'll need the 
+       latest version of App::Pinto to get command-line interfaces to 
+       these actions.
+
+     Other Improvements:
+
+     * Copying a stack is now much, much faster.  On my machine, copying
+       a stack with ~200 distributions went from 1 minute to 3 seconds.
+
 
 0.065     2012-11-14 09:55:54 America/Los_Angeles
 
