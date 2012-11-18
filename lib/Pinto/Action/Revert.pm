@@ -104,7 +104,7 @@ sub message_title {
 
     my $revnum = $self->revision;
 
-    return "Reverted to $revnum.";
+    return "Reverted to revision $revnum.";
 }
 
 #------------------------------------------------------------------------------
