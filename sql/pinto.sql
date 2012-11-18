@@ -211,4 +211,7 @@ CREATE UNIQUE INDEX p ON repository_property(key_canonical);
 
 CREATE        INDEX q ON registration(stack);
 CREATE        INDEX r ON package(name);
-CREATE        INDEX s ON distribution(author);
+CREATE        INDEX s ON package(sha256);
+CREATE        INDEX t ON package(file);
+CREATE        INDEX u ON distribution(author);
+CREATE        INDEX v ON prerequisite(package_name);

@@ -246,6 +246,16 @@ use overload ( '""'  => 'to_string',
 
 #------------------------------------------------------------------------------
 
+sub sqlt_deploy_hook {
+    my ($self, $sqlt_table) = @_;
+ 
+    $sqlt_table->add_index(name => 'distribution_idx_author', fields => ['author']);
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
 sub FOREIGNBUILDARGS {
     my ($class, $args) = @_;
 

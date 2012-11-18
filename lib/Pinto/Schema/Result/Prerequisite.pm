@@ -139,6 +139,16 @@ use Pinto::PackageSpec;
 # VERSION
 
 #------------------------------------------------------------------------------
+
+sub sqlt_deploy_hook {
+    my ($self, $sqlt_table) = @_;
+ 
+    $sqlt_table->add_index(name => 'prerequisite_idx_package_name', fields => ['package_name']);
+
+    return;
+}
+
+#------------------------------------------------------------------------------
 # NOTE: We often convert a Prerequsite to/from a PackageSpec object. They don't
 # use quite the same names for their attributes, so we shuffle them around here.
 

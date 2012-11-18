@@ -204,6 +204,17 @@ __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0
 
 __PACKAGE__->many_to_many( stacks => 'registration', 'stack' );
 
+#------------------------------------------------------------------------------
+
+sub sqlt_deploy_hook {
+    my ($self, $sqlt_table) = @_;
+ 
+    $sqlt_table->add_index(name => 'package_idx_name',   fields => ['name']);
+    $sqlt_table->add_index(name => 'package_idx_file',   fields => ['file']);
+    $sqlt_table->add_index(name => 'package_idx_sha256', fields => ['sha256']);
+
+    return;
+}
 
 #------------------------------------------------------------------------------
 
