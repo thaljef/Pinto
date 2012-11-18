@@ -407,11 +407,14 @@ sub copy_registrations {
     my $to_stack = $args{to};
     $self->info("Copying stack $self into stack $to_stack");
 
-    for my $registration ( $self->registrations ) {
-        my $pkg = $registration->package;
-        $self->debug( sub{"Copying package $pkg into stack $to_stack"} );
-        $registration->copy( { stack => $to_stack } );
-    }
+    my $where = {stack => $self->id};
+    my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
+    my $rs = $self->result_source->schema->resultset('Registration');
+
+    my @rows = $rs->search($where, $attrs)->all;
+    for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
+
+    $rs->populate(\@rows);
 
     return $self;
 }
