@@ -5,6 +5,7 @@ package Pinto::Action::Log;
 use Moose;
 use MooseX::Types::Moose qw(Bool Int Undef);
 
+use Pinto::Util qw(trim);
 use Pinto::Types qw(StackName StackDefault);
 use Pinto::Exception qw(throw);
 
@@ -53,13 +54,14 @@ sub execute {
     throw "No such revision $revnum on stack $stack"
       if !@revisions && defined $revnum;
 
-    my $format = "%k\@%b | %j | %u\n\n%g\n";
+    my $format = "%k\@%b | %j | %u\n\n%g";
     for my $revision (reverse @revisions) {
         $self->say('-' x 79);
-        $self->say($revision->to_string($format));
+        $self->say( trim( $revision->to_string($format) ) . "\n" );
 
         if ($self->detailed) {
-            $self->say($_) for $revision->registration_changes;
+            my @details = $revision->registration_changes;
+            $self->say($_) for (@details ? @details : 'No details available')
         }
     }
 
