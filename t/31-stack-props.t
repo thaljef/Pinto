@@ -41,6 +41,17 @@ my $t = Pinto::Tester->new;
   # Invalid property name..
   throws_ok { $new_stack->set_property('foo#bar' => 4) }
     qr{Invalid property name};
+
+  # Property names forced to lowercase...
+  $new_stack->set_property(SHOUTING => 4);
+  ok exists $new_stack->get_properties->{'shouting'},
+    'Get/Set property irrespective of case';
+
+  # Property names forced to lowercase...
+  $new_stack->delete_property('ShOuTiNg');
+  ok ! exists $new_stack->get_properties->{'shouting'},
+    'Delete property irrespective of case';
+
 }
 
 
