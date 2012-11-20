@@ -522,7 +522,7 @@ sub get_property {
 
     my %props = %{ $self->get_properties };
 
-    return @props{@prop_keys};
+    return @props{ map {lc} @prop_keys };
 }
 
 #-------------------------------------------------------------------------------
@@ -553,7 +553,7 @@ sub set_properties {
     my $props = $self->properties;
     while (my ($key, $value) = each %{$new_props}) {
         Pinto::Util::validate_property_name($key);
-        $props->{$key} = $value;
+        $props->{lc $key} = $value;
     }
 
     $self->update( {properties => $props} );
@@ -567,7 +567,7 @@ sub delete_property {
     my ($self, @prop_keys) = @_;
 
     my $props = $self->properties;
-    delete $props->{$_} for @prop_keys;
+    delete $props->{lc $_} for @prop_keys;
 
     $self->update({properties => $props});
 
