@@ -126,21 +126,6 @@ __PACKAGE__->add_unique_constraint("stack_number_unique", ["stack", "number"]);
 
 =head1 RELATIONS
 
-=head2 active_stack
-
-Type: might_have
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->might_have(
-  "active_stack",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.head_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 registration_changes
 
 Type: has_many
@@ -176,6 +161,51 @@ __PACKAGE__->belongs_to(
   },
 );
 
+=head2 stack_copied_from_revisions
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Stack>
+
+=cut
+
+__PACKAGE__->has_many(
+  "stack_copied_from_revisions",
+  "Pinto::Schema::Result::Stack",
+  { "foreign.copied_from_revision" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 stack_head_revision
+
+Type: might_have
+
+Related object: L<Pinto::Schema::Result::Stack>
+
+=cut
+
+__PACKAGE__->might_have(
+  "stack_head_revision",
+  "Pinto::Schema::Result::Stack",
+  { "foreign.head_revision" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 stack_merged_to_revisions
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Stack>
+
+=cut
+
+__PACKAGE__->has_many(
+  "stack_merged_to_revisions",
+  "Pinto::Schema::Result::Stack",
+  { "foreign.merged_to_revision" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -190,8 +220,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:50:21
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:o2TjxJl1rLE6Uae0Eic6Lg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-18 00:18:12
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RsJT12lE5k9K5Bq9mLma1Q
 
 #------------------------------------------------------------------------------
 

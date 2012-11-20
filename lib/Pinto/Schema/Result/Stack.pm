@@ -58,6 +58,26 @@ __PACKAGE__->table("stack");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 copied_from_revision
+
+  data_type: 'integer'
+  default_value: null
+  is_foreign_key: 1
+  is_nullable: 1
+
+=head2 merged_to_revision
+
+  data_type: 'integer'
+  default_value: null
+  is_foreign_key: 1
+  is_nullable: 1
+
+=head2 properties
+
+  data_type: 'text'
+  default_value: null
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -73,6 +93,22 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "has_changed",
   { data_type => "integer", is_nullable => 0 },
+  "copied_from_revision",
+  {
+    data_type      => "integer",
+    default_value  => \"null",
+    is_foreign_key => 1,
+    is_nullable    => 1,
+  },
+  "merged_to_revision",
+  {
+    data_type      => "integer",
+    default_value  => \"null",
+    is_foreign_key => 1,
+    is_nullable    => 1,
+  },
+  "properties",
+  { data_type => "text", default_value => \"null", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -127,6 +163,26 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
+=head2 copied_from_revision
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Revision>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "copied_from_revision",
+  "Pinto::Schema::Result::Revision",
+  { id => "copied_from_revision" },
+  {
+    is_deferrable => 0,
+    join_type     => "LEFT",
+    on_delete     => "NO ACTION",
+    on_update     => "NO ACTION",
+  },
+);
+
 =head2 head_revision
 
 Type: belongs_to
@@ -140,6 +196,26 @@ __PACKAGE__->belongs_to(
   "Pinto::Schema::Result::Revision",
   { id => "head_revision" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
+=head2 merged_to_revision
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Revision>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "merged_to_revision",
+  "Pinto::Schema::Result::Revision",
+  { id => "merged_to_revision" },
+  {
+    is_deferrable => 0,
+    join_type     => "LEFT",
+    on_delete     => "NO ACTION",
+    on_update     => "NO ACTION",
+  },
 );
 
 =head2 registrations
@@ -172,21 +248,6 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 stack_properties
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::StackProperty>
-
-=cut
-
-__PACKAGE__->has_many(
-  "stack_properties",
-  "Pinto::Schema::Result::StackProperty",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -201,8 +262,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-15 21:11:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:xnggND8biihrwXCK//jzlg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-19 22:28:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2Nwakg/6sgRukvUxCyrwkA
 
 #-------------------------------------------------------------------------------
 
@@ -214,9 +275,11 @@ with 'Pinto::Role::Schema::Result';
 
 #-------------------------------------------------------------------------------
 
+
 use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
+use JSON qw(encode_json decode_json);
 
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
@@ -224,6 +287,12 @@ use Pinto::Exception qw(throw);
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
                'cmp' => 'string_compare' );
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->inflate_column( 'properties' => { inflate => sub { decode_json($_[0] || '{}') },
+                                               deflate => sub { encode_json($_[0] || {}) } }
+);
 
 #------------------------------------------------------------------------------
 
@@ -381,22 +450,9 @@ sub copy_deeply {
     my ($self, $changes) = @_;
 
     my $copy = $self->copy($changes);
-    $self->copy_properties(to => $copy);
     $self->copy_registrations(to => $copy);
 
     return $copy;
-}
-
-#------------------------------------------------------------------------------
-
-sub copy_properties {
-    my ($self, %args) = @_;
-
-    my $to_stack = $args{to};
-    my $props = $self->get_properties;
-    $to_stack->set_properties($props);
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -465,6 +521,7 @@ sub get_property {
     my ($self, @prop_keys) = @_;
 
     my %props = %{ $self->get_properties };
+
     return @props{@prop_keys};
 }
 
@@ -473,30 +530,33 @@ sub get_property {
 sub get_properties {
     my ($self) = @_;
 
-    my @props = $self->search_related('stack_properties')->all;
+    my %props = %{ $self->properties };  # Making a copy!
 
-    return { map { $_->key => $_->value } @props };
+    return \%props;
 }
 
 #-------------------------------------------------------------------------------
 
 sub set_property {
-    my ($self, $prop_key, $value) = @_;
+    my ($self, $key, $value) = @_;
 
-    return $self->set_properties( {$prop_key => $value} );
+    $self->set_properties( {$key => $value} );
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
 
 sub set_properties {
-    my ($self, $props) = @_;
+    my ($self, $new_props) = @_;
 
-    my $attrs  = {key => 'stack_key_canonical_unique'};
-    while (my ($key, $value) = each %{$props}) {
+    my $props = $self->properties;
+    while (my ($key, $value) = each %{$new_props}) {
         Pinto::Util::validate_property_name($key);
-        my $kv_pair = {key => $key, key_canonical => lc($key), value => $value};
-        $self->update_or_create_related('stack_properties', $kv_pair, $attrs);
+        $props->{$key} = $value;
     }
+
+    $self->update( {properties => $props} );
 
     return $self;
 }
@@ -506,13 +566,10 @@ sub set_properties {
 sub delete_property {
     my ($self, @prop_keys) = @_;
 
-    my $attrs = {key => 'stack_key_canonical_unique'};
+    my $props = $self->properties;
+    delete $props->{$_} for @prop_keys;
 
-    for my $prop_key (@prop_keys) {
-          my $where = {key_canonical => lc $prop_key};
-          my $prop = $self->find_related('stack_properties', $where, $attrs);
-          $prop->delete if $prop;
-    }
+    $self->update({properties => $props});
 
     return $self;
 }
@@ -522,8 +579,7 @@ sub delete_property {
 sub delete_properties {
     my ($self) = @_;
 
-    my $props_rs = $self->search_related_rs('stack_properties');
-    $props_rs->delete;
+    self->update({properties => {}});
 
     return $self;
 }

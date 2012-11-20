@@ -67,29 +67,15 @@ CREATE TABLE stack (
        is_default           BOOLEAN             NOT NULL,     /* Boolean flag, indicates if this is the default stack in the repository */
        head_revision        INTEGER             NOT NULL,     /* Points to the last revision when this stack changed */
        has_changed          INTEGER             NOT NULL,     /* Not in use */
+       copied_from_revision INTEGER             DEFAULT NULL,
+       merged_to_revision   INTEGER             DEFAULT NULL,
+       properties           TEXT                DEFAULT NULL, /* Hash as JSON string */
 
-       FOREIGN KEY(head_revision)        REFERENCES revision(id)
+       FOREIGN KEY(head_revision)        REFERENCES revision(id),
+       FOREIGN KEY(copied_from_revision) REFERENCES revision(id),
+       FOREIGN KEY(merged_to_revision)   REFERENCES revision(id)
 );
 
-
-/*
-
-    Represents a key-value pair that defines an attribute of a stack.
-    The intention is to provide a way to extend stacks with addtional
-    attributes without having to change the schema (usually by adding
-    columns).  Each stack/key combination must be unqiue.
-
-*/
-
-CREATE TABLE stack_property (
-       id             INTEGER PRIMARY KEY NOT NULL,
-       stack          INTEGER             NOT NULL,   /* Points to the stack this attribute belongs to */
-       key            TEXT                NOT NULL,   /* SomeAttributeName */
-       key_canonical  TEXT                NOT NULL,   /* someattributename */
-       value          TEXT                DEFAULT '', /* some-value */
-
-       FOREIGN KEY(stack)   REFERENCES stack(id) ON DELETE CASCADE
-);
 
 
 /*
@@ -204,14 +190,12 @@ CREATE UNIQUE INDEX i ON registration(stack, package);
 CREATE UNIQUE INDEX j ON registration_change(event, package, revision);
 CREATE UNIQUE INDEX k ON revision(stack, number);
 CREATE UNIQUE INDEX l ON prerequisite(distribution, package_name);
-CREATE UNIQUE INDEX m ON stack_property(stack, key);
-CREATE UNIQUE INDEX n ON stack_property(stack, key_canonical);
-CREATE UNIQUE INDEX o ON repository_property(key);
-CREATE UNIQUE INDEX p ON repository_property(key_canonical);
+CREATE UNIQUE INDEX m ON repository_property(key);
+CREATE UNIQUE INDEX n ON repository_property(key_canonical);
 
-CREATE        INDEX q ON registration(stack);
-CREATE        INDEX r ON package(name);
-CREATE        INDEX s ON package(sha256);
-CREATE        INDEX t ON package(file);
-CREATE        INDEX u ON distribution(author);
-CREATE        INDEX v ON prerequisite(package_name);
+CREATE        INDEX o ON registration(stack);
+CREATE        INDEX p ON package(name);
+CREATE        INDEX q ON package(sha256);
+CREATE        INDEX r ON package(file);
+CREATE        INDEX s ON distribution(author);
+CREATE        INDEX t ON prerequisite(package_name);
