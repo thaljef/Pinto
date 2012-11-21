@@ -102,6 +102,14 @@ has db_file => (
 );
 
 
+has sql_dir   => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->db_dir->subdir('sql') },
+);
+
+
 has pinto_dir => (
     is        => 'ro',
     isa       => Dir,

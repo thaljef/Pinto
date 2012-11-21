@@ -24,10 +24,12 @@ __PACKAGE__->load_namespaces;
 #-------------------------------------------------------------------------------
 
 use Readonly;
+Readonly::Scalar our $SCHEMA_VERSION => 2;
+sub schema_version { return $SCHEMA_VERSION };
 
 #-------------------------------------------------------------------------------
 
-Readonly::Scalar our $SCHEMA_VERSION => 6;
+__PACKAGE__->load_components( qw(DeploymentHandler::VersionStorage::Standard::Component) );
 
 #-------------------------------------------------------------------------------
 

@@ -7,6 +7,8 @@ use Moose;
 use Try::Tiny;
 use Path::Class;
 
+use DBIx::Class::DeploymentHandler;
+
 use Pinto::Schema;
 use Pinto::Exception qw(throw);
 
@@ -24,7 +26,17 @@ has schema => (
    isa        => 'Pinto::Schema',
    handles    => [ qw(txn_begin txn_commit txn_rollback) ],
    init_arg   => undef,
-   lazy_build => 1,
+   builder    => '_build_schema',
+   lazy       => 1,
+);
+
+
+has deployer => (
+   is         => 'ro',
+   isa        => 'DBIx::Class::DeploymentHandler',
+   init_arg   => undef,
+   builder    => '_build_deployer',
+   lazy       => 1,
 );
 
 #-------------------------------------------------------------------------------
@@ -49,6 +61,18 @@ sub _build_schema {
     $schema->logger($self->logger);
 
     return $schema;
+}
+
+#-------------------------------------------------------------------------------
+
+sub _build_deployer {
+
+    my ($self) = @_;
+
+    return DBIx::Class::DeploymentHandler->new( schema              => $self->schema,
+                                                databases           => 'SQLite',
+                                                script_directory    => $self->config->sql_dir->stringify,
+                                                sql_translator_args => { add_drop_table => 0 } );
 }
 
 #-------------------------------------------------------------------------------
@@ -177,12 +201,10 @@ sub deploy {
 
     $self->mkpath( $self->config->db_dir() );
     $self->debug( 'Creating database at ' . $self->config->db_file );
-    $self->schema->deploy;
 
-    my $props = { key   => 'pinto-schema_version',
-                  value => $Pinto::Schema::SCHEMA_VERSION };
-
-    $self->schema->resultset('RepositoryProperty')->create($props);
+    local $ENV{DBIC_NO_VERSION_CHECK} = 1;
+    $self->deployer->prepare_install;
+    $self->deployer->install;
 
     return $self;
 }
