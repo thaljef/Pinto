@@ -34,10 +34,10 @@ is $pinto->config->log_level,   'debug',  'Got custom log_level';
 is $pinto->config->sources,  'MySource', 'Got custom source';
 
 #------------------------------------------------------------------------------
-# Test repository props
+# Test schema version
 
-my $ver = $pinto->repo->get_property('pinto-schema_version');
-is $ver, $Pinto::Schema::SCHEMA_VERSION, 'Got pinto:schema_version prop';
+my $schema_version = $pinto->repo->db->schema->schema_version;
+is($schema_version, $Pinto::Schema::SCHEMA_VERSION, 'Schema version matches');
 
 #------------------------------------------------------------------------------
 
