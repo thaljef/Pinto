@@ -55,8 +55,7 @@ sub execute {
         my $where = {'revisions.stack' => $stack->id, package => $pkg->id, event => 'insert'};
         my $last_insert = $rcrs->search($where, $attrs)->get_column('id')->max;
 
-        my $change = $rcrs->find({id => $last_insert}, $attrs);
-        $DB::single = 1;
+        my $change = $rcrs->find({id => $last_insert}, {});
         my $revno  = $change->kommit->revisions->find( {stack=>$stack} )->number;
         my $user   = $change->kommit->committed_by;
         my $regstr = $reg->to_string('%y %-40n %12v %p');
