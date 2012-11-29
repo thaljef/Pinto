@@ -91,9 +91,6 @@ sub _revert {
         $previous_revision = $previous_revision->previous_revision;
     }
 
-    throw "Checksum does not match for revision $revnum.  Aborting"
-        if $previous_revision->sha256 ne $new_head->compute_sha256;
-
     return $self;
 }
 

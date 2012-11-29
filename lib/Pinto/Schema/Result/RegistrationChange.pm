@@ -54,7 +54,7 @@ __PACKAGE__->table("registration_change");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 revision
+=head2 kommit
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -73,7 +73,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
   { data_type => "boolean", is_nullable => 0 },
-  "revision",
+  "kommit",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
@@ -91,7 +91,7 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<event_package_revision_unique>
+=head2 C<event_package_kommit_unique>
 
 =over 4
 
@@ -99,16 +99,13 @@ __PACKAGE__->set_primary_key("id");
 
 =item * L</package>
 
-=item * L</revision>
+=item * L</kommit>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "event_package_revision_unique",
-  ["event", "package", "revision"],
-);
+__PACKAGE__->add_unique_constraint("event_package_kommit_unique", ["event", "package", "kommit"]);
 
 =head1 RELATIONS
 
@@ -127,6 +124,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
+=head2 kommit
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Kommit>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "kommit",
+  "Pinto::Schema::Result::Kommit",
+  { id => "kommit" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
 =head2 package
 
 Type: belongs_to
@@ -140,21 +152,6 @@ __PACKAGE__->belongs_to(
   "Pinto::Schema::Result::Package",
   { id => "package" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
-);
-
-=head2 revision
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "revision",
-  "Pinto::Schema::Result::Revision",
-  { id => "revision" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -171,8 +168,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:48:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ju7Rbyewmn2EUaELpNV/MA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 20:04:40
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kmo/SA02RHJXkqT06vaLRg
 
 #-------------------------------------------------------------------------------
 

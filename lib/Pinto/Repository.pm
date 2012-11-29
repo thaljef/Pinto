@@ -724,10 +724,11 @@ sub rename_stack {
 sub copy_stack {
     my ($self, %args) = @_;
 
+    $DB::single = 1;
     my $from_stack    = $args{from};
     my $to_stack_name = $args{to};
 
-    my $revision = $self->open_revision;
+    my $revision = $self->open_revision(number => $from_stack->head_revision->number + 1);
     my $changes  = {head_revision => $revision, name => $to_stack_name};
     my $copy     = $from_stack->copy_deeply( $changes );
 
@@ -873,10 +874,13 @@ sub open_revision {
     $args{message}      ||= '';     # Message usually updated when we commmit
     $args{committed_by} ||= $self->config->username;
 
-    my $revision = $self->db->create_revision(\%args);
-    my $revnum = $revision->number;
+    my $stack    =  delete $args{stack};
+    my %number   = $args{number} ? (number => delete $args{number}) : ();
+    my $kommit   = $self->db->create_kommit(\%args);
+    my $revision = $self->db->create_revision({kommit => $kommit, stack => $stack, %number});
+    my $revnum   = $revision->number;
 
-    if (my $stack = $args{stack}) {
+    if ($stack) {
         $stack->update({head_revision => $revision});
         $self->debug("Opened new head revision $revnum on stack $stack");
     }

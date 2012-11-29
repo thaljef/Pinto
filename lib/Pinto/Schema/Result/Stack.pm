@@ -58,20 +58,6 @@ __PACKAGE__->table("stack");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 copied_from_revision
-
-  data_type: 'integer'
-  default_value: null
-  is_foreign_key: 1
-  is_nullable: 1
-
-=head2 merged_to_revision
-
-  data_type: 'integer'
-  default_value: null
-  is_foreign_key: 1
-  is_nullable: 1
-
 =head2 properties
 
   data_type: 'text'
@@ -93,20 +79,6 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "has_changed",
   { data_type => "integer", is_nullable => 0 },
-  "copied_from_revision",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
-  "merged_to_revision",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
   "properties",
   { data_type => "text", default_value => \"null", is_nullable => 1 },
 );
@@ -163,26 +135,6 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
-=head2 copied_from_revision
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "copied_from_revision",
-  "Pinto::Schema::Result::Revision",
-  { id => "copied_from_revision" },
-  {
-    is_deferrable => 0,
-    join_type     => "LEFT",
-    on_delete     => "NO ACTION",
-    on_update     => "NO ACTION",
-  },
-);
-
 =head2 head_revision
 
 Type: belongs_to
@@ -196,26 +148,6 @@ __PACKAGE__->belongs_to(
   "Pinto::Schema::Result::Revision",
   { id => "head_revision" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
-);
-
-=head2 merged_to_revision
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "merged_to_revision",
-  "Pinto::Schema::Result::Revision",
-  { id => "merged_to_revision" },
-  {
-    is_deferrable => 0,
-    join_type     => "LEFT",
-    on_delete     => "NO ACTION",
-    on_update     => "NO ACTION",
-  },
 );
 
 =head2 registrations
@@ -262,8 +194,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-19 22:28:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2Nwakg/6sgRukvUxCyrwkA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 20:27:01
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CyXidRXCZhUGQQ589OwpDg
 
 #-------------------------------------------------------------------------------
 
@@ -327,7 +259,7 @@ sub close {
     my ($self, @args) = @_;
 
     throw "Stack $self is not open for revision"
-      if $self->head_revision->is_committed;
+      if $self->head_revision->kommit->is_committed;
 
     $self->update( {has_changed => 0} );
     $self->head_revision->close(@args);
@@ -451,6 +383,7 @@ sub copy_deeply {
 
     my $copy = $self->copy($changes);
     $self->copy_registrations(to => $copy);
+    $self->copy_revisions(to => $copy);
 
     return $copy;
 }
@@ -461,11 +394,31 @@ sub copy_registrations {
     my ($self, %args) = @_;
 
     my $to_stack = $args{to};
-    $self->info("Copying stack $self into stack $to_stack");
+    $self->info("Copying registrations for stack $self into stack $to_stack");
 
     my $where = {stack => $self->id};
     my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
     my $rs = $self->result_source->schema->resultset('Registration');
+
+    my @rows = $rs->search($where, $attrs)->all;
+    for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
+
+    $rs->populate(\@rows);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub copy_revisions {
+    my ($self, %args) = @_;
+
+    my $to_stack = $args{to};
+    $self->info("Copying history for stack $self into stack $to_stack");
+
+    my $where = {stack => $self->id};
+    my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
+    my $rs = $self->result_source->schema->resultset('Revision');
 
     my @rows = $rs->search($where, $attrs)->all;
     for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
@@ -642,8 +595,8 @@ sub to_string {
     my %fspec = (
            k => sub { $self->name                                             },
            M => sub { $self->is_default                          ? '*' : ' '  },
-           j => sub { $self->head_revision->committed_by                      },
-           u => sub { $self->head_revision->committed_on->strftime('%c')      },
+           j => sub { $self->head_revision->kommit->committed_by                      },
+           u => sub { $self->head_revision->kommit->committed_on->strftime('%c')      },
            e => sub { $self->get_property('description')                      },
     );
 

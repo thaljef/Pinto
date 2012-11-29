@@ -50,10 +50,10 @@ my $t = Pinto::Tester->new;
 
 
 	is ($revision->number, 1, 'First commit (after creating stack) is revision 1');
-	is ($revision->committed_by, 'ME', 'Revision was committed by ME');
-	is ($revision->message, 'my title', 'Message is title only no commit message specified');
-	is ($revision->message_body, '', 'Message body is empty when no commit message specified');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->kommit->committed_by, 'ME', 'Revision was committed by ME');
+	is ($revision->kommit->message, 'my title', 'Message is title only no commit message specified');
+	is ($revision->kommit->message_body, '', 'Message body is empty when no commit message specified');
+	is ($revision->kommit->message_title, 'my title', 'Got message title');
 }
 
 #------------------------------------------------------------------------------
@@ -64,9 +64,9 @@ my $t = Pinto::Tester->new;
 	my $revision = $stack->head_revision;
 
 	is ($revision->number, 2, 'Next revision number');
-	is ($revision->message, 'my title', 'Message is title only when use_default_message');
-	is ($revision->message_body, '', 'Message body is empty when use_default_message');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->kommit->message, 'my title', 'Message is title only when use_default_message');
+	is ($revision->kommit->message_body, '', 'Message body is empty when use_default_message');
+	is ($revision->kommit->message_title, 'my title', 'Got message title');
 }
 
 #------------------------------------------------------------------------------
@@ -77,9 +77,9 @@ my $t = Pinto::Tester->new;
 	my $revision = $stack->head_revision;
 
 	is ($revision->number, 3, 'Next revision number');
-	is ($revision->message, 'my title', 'Message is title only when specified message was whitespace or empty');
-	is ($revision->message_body, '', 'Message body is empty when specified message was whitespace or empty');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->kommit->message, 'my title', 'Message is title only when specified message was whitespace or empty');
+	is ($revision->kommit->message_body, '', 'Message body is empty when specified message was whitespace or empty');
+	is ($revision->kommit->message_title, 'my title', 'Got message title');
 }
 
 #------------------------------------------------------------------------------
@@ -90,9 +90,9 @@ my $t = Pinto::Tester->new;
 	my $revision = $stack->head_revision;
 
 	is ($revision->number, 4, 'Next revision number');
-	is ($revision->message, 'my message', 'Got custom commit message when specified');
-	is ($revision->message_body, '', 'Message body is empty when specified message has title only');
-	is ($revision->message_title, 'my message', 'Got message title');
+	is ($revision->kommit->message, 'my message', 'Got custom commit message when specified');
+	is ($revision->kommit->message_body, '', 'Message body is empty when specified message has title only');
+	is ($revision->kommit->message_title, 'my message', 'Got message title');
 }
 
 #------------------------------------------------------------------------------
@@ -103,9 +103,9 @@ my $t = Pinto::Tester->new;
 	my $revision = $stack->head_revision;
 
 	is ($revision->number, 5, 'Next revision number');
-	is ($revision->message, "  my title  \n\nmy body  ", 'Got custom commit message when specified');
-	is ($revision->message_body, 'my body', 'Got message body');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->kommit->message, "  my title  \n\nmy body  ", 'Got custom commit message when specified');
+	is ($revision->kommit->message_body, 'my body', 'Got message body');
+	is ($revision->kommit->message_title, 'my title', 'Got message title');
 }
 
 #------------------------------------------------------------------------------

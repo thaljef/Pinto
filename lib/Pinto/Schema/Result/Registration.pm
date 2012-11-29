@@ -194,8 +194,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:48:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iEEI5iYjIWAxHOb5q68+Zw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 21:43:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gPE3JoQqjlxffQmO2upl1Q
 
 #------------------------------------------------------------------------------
 
@@ -283,13 +283,13 @@ sub _record_change {
     my $revision = $stack->head_revision;
 
     throw "Stack $stack is not open for revision"
-      if $revision->is_committed;
+      if $revision->kommit->is_committed;
 
     my $hist = { event        => $event,
                  package      => $self->package,
                  distribution => $self->distribution,
                  is_pinned    => $self->is_pinned,
-                 revision     => $revision };
+                 kommit       => $revision->kommit };
 
     # Update history....
     my $rs = $self->result_source->schema->resultset('RegistrationChange');

@@ -188,6 +188,14 @@ sub create_revision {
 
 #-------------------------------------------------------------------------------
 
+sub create_kommit {
+    my ($self, $attrs) = @_;
+
+    return $self->schema->resultset('Kommit')->create( $attrs );
+}
+
+#-------------------------------------------------------------------------------
+
 sub repository_properties {
     my ($self) = @_;
 

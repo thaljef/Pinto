@@ -39,36 +39,16 @@ __PACKAGE__->table("revision");
   is_foreign_key: 1
   is_nullable: 1
 
+=head2 kommit
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =head2 number
 
   data_type: 'integer'
   is_nullable: 0
-
-=head2 is_committed
-
-  data_type: 'boolean'
-  is_nullable: 0
-
-=head2 committed_on
-
-  data_type: 'integer'
-  is_nullable: 0
-
-=head2 committed_by
-
-  data_type: 'text'
-  is_nullable: 0
-
-=head2 message
-
-  data_type: 'text'
-  is_nullable: 0
-
-=head2 sha256
-
-  data_type: 'text'
-  default_value: (empty string)
-  is_nullable: 1
 
 =cut
 
@@ -82,18 +62,10 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable    => 1,
   },
+  "kommit",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "number",
   { data_type => "integer", is_nullable => 0 },
-  "is_committed",
-  { data_type => "boolean", is_nullable => 0 },
-  "committed_on",
-  { data_type => "integer", is_nullable => 0 },
-  "committed_by",
-  { data_type => "text", is_nullable => 0 },
-  "message",
-  { data_type => "text", is_nullable => 0 },
-  "sha256",
-  { data_type => "text", default_value => "", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -109,6 +81,20 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
+
+=head2 C<stack_kommit_unique>
+
+=over 4
+
+=item * L</stack>
+
+=item * L</kommit>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("stack_kommit_unique", ["stack", "kommit"]);
 
 =head2 C<stack_number_unique>
 
@@ -126,19 +112,34 @@ __PACKAGE__->add_unique_constraint("stack_number_unique", ["stack", "number"]);
 
 =head1 RELATIONS
 
-=head2 registration_changes
+=head2 active_stack
 
-Type: has_many
+Type: might_have
 
-Related object: L<Pinto::Schema::Result::RegistrationChange>
+Related object: L<Pinto::Schema::Result::Stack>
 
 =cut
 
-__PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.revision" => "self.id" },
+__PACKAGE__->might_have(
+  "active_stack",
+  "Pinto::Schema::Result::Stack",
+  { "foreign.head_revision" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 kommit
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Kommit>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "kommit",
+  "Pinto::Schema::Result::Kommit",
+  { id => "kommit" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head2 stack
@@ -161,51 +162,6 @@ __PACKAGE__->belongs_to(
   },
 );
 
-=head2 stack_copied_from_revisions
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->has_many(
-  "stack_copied_from_revisions",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.copied_from_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 stack_head_revision
-
-Type: might_have
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->might_have(
-  "stack_head_revision",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.head_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 stack_merged_to_revisions
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->has_many(
-  "stack_merged_to_revisions",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.merged_to_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -220,8 +176,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-18 00:18:12
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RsJT12lE5k9K5Bq9mLma1Q
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 21:56:11
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TorKLg7WfMDV9RRWmmzWLw
 
 #------------------------------------------------------------------------------
 
@@ -242,39 +198,18 @@ use Digest::SHA;
 use Pinto::Util qw(itis trim);
 
 use overload ( '""'  => 'to_string',
-               '<=>' => 'compare',
-               'cmp' => 'compare' );
-
-#------------------------------------------------------------------------------
-
-__PACKAGE__->inflate_column('committed_on' => {
-   inflate => sub { DateTime->from_epoch(epoch => $_[0]) }
-});
-
-#------------------------------------------------------------------------------
-
-sub FOREIGNBUILDARGS {
-  my ($class, $args) = @_;
-
-  # TODO: Should we really default these here or in the DB?
-
-  $args ||= {};
-  $args->{message}      ||= '';
-  $args->{committed_by} ||= '';
-  $args->{committed_on}   = 0;
-  $args->{is_committed}   = 0;
-
-  return $args;
-}
+               '<=>' => 'compare' );
 
 #------------------------------------------------------------------------------
 
 sub insert {
     my ($self) = @_;
 
-    my $new_revnum = $self->new_revision_number;
-    $self->number($new_revnum);
-
+    unless (defined $self->number) {
+      my $new_revnum = $self->new_revision_number;
+      $self->number($new_revnum);
+    }
+    
     return $self->next::method;
 }
 
@@ -328,40 +263,22 @@ sub close {
     my ($self, %args) = @_;
 
     throw "Revision $self is already closed"
-      if $self->is_committed;
+      if $self->kommit->is_committed;
 
     throw "Must specify a message to close revision $self"
        unless $args{message} or $self->message;
 
     throw "Must specify a username to close revision $self"
-       unless $args{committed_by} or $self->committed_by;
+       unless $args{committed_by} or $self->kommit->committed_by;
 
     throw "Must specify a stack to close revision $self"
        unless $args{stack} or $self->stack;
 
-    $self->update( { %args,
-                     committed_on => time,
-                     is_committed => 1,
-                     sha256       => $self->compute_sha256 } );
+    $self->kommit->update( {%args,
+                            committed_on => time,
+                            is_committed => 1} );
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub compute_sha256 {
-    my ($self) = @_;
-
-    throw "Must bind revision to a stack before computing checksum"
-      if not $self->stack;
-
-    my $attrs   = {select => [qw(package_name package_version distribution_path)] };
-    my $rs      = $self->stack->search_related_rs('registrations', {}, $attrs);
-
-    my $sha = Digest::SHA->new(256);
-    $sha->add( join '/', @{$_} ) for $rs->cursor->all;
-
-    return $sha->hexdigest;
 }
 
 #------------------------------------------------------------------------------
@@ -371,35 +288,9 @@ sub undo {
 
     $self->info("Undoing revision $self");
 
-    $_->undo(stack => $self->stack) for reverse $self->registration_changes;
+    $_->undo(stack => $self->stack) for reverse $self->kommit->registration_changes;
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self, $max_chars) = @_;
-
-    my $message = $self->message;
-    my $title = trim( (split /\n/, $message)[0] );
-
-    if ($max_chars and length $title > $max_chars) {
-      $title = substr($title, 0, $max_chars - 3,) . '...';
-    }
-
-    return $title;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_body {
-    my ($self) = @_;
-
-    my $message = $self->message;
-    my $body = ($message =~ m/^ [^\n]+ \n+ (.*)/xms) ? $1 : '';
-
-    return trim($body);
 }
 
 #------------------------------------------------------------------------------
@@ -430,12 +321,12 @@ sub to_string {
            # Stack.  There is a circular reference between Stacks and
            # Revisions, so one of them must come first.  Therefore, we
            # must be prepared for $self->stack to be undefined below.
-           k => sub { defined $self->stack ? $self->stack->name : '()'    },
+           k => sub { defined $self->stack ? $self->stack->name : '()'      },
 
-           b => sub { $self->number                                        },
-           g => sub { $self->message                                       },
-           j => sub { $self->committed_by                                  },
-           u => sub { $self->committed_on->strftime('%c') . ' UTC'         },
+           b => sub { $self->number                                         },
+           g => sub { $self->kommit->message                                },
+           j => sub { $self->kommit->committed_by                           },
+           u => sub { $self->kommit->committed_on->strftime('%c') . ' UTC'  },
 
     );
 
