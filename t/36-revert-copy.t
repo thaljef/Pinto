@@ -18,8 +18,11 @@ use Pinto::Tester;
   $t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1'); # Rev 1
   $t->populate('AUTHOR/Dist-2 = PkgA~2, PkgB~2'); # Rev 2
 
-  # Copy the 'init' stack to 'dev'
-  $t->run_ok(Copy => {from_stack => 'init', to_stack => 'dev'});
+  # Copy the 'init' stack to 'dev', and make it the default
+  $t->run_ok(Copy => {from_stack => 'init', to_stack => 'dev', default => 1});
+
+  # Now blow away the init stack.
+  $t->run_ok(Delete => {stack => 'init'});
 
   # Newer packages should be on the 'dev' stack 
   $t->registration_ok( 'AUTHOR/Dist-2/PkgA~2/dev' );
