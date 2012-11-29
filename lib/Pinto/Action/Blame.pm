@@ -51,13 +51,14 @@ sub execute {
 
     for my $reg ($stack->registrations({}, $attrs)) {
         my $pkg   = $reg->package;
-        my $attrs = {prefetch => 'revision'};
-        my $where = {'revision.stack' => $stack->id, package => $pkg->id, event => 'insert'};
+        my $attrs = {join => {kommit => 'revisions'}};
+        my $where = {'revisions.stack' => $stack->id, package => $pkg->id, event => 'insert'};
         my $last_insert = $rcrs->search($where, $attrs)->get_column('id')->max;
 
         my $change = $rcrs->find({id => $last_insert}, $attrs);
-        my $revno  = $change->revision->number;
-        my $user   = $change->revision->committed_by;
+        $DB::single = 1;
+        my $revno  = $change->kommit->revisions->find( {stack=>$stack} )->number;
+        my $user   = $change->kommit->committed_by;
         my $regstr = $reg->to_string('%y %-40n %12v %p');
 
         $self->say( sprintf('%4d %8s %s', $revno, $user, $regstr) );

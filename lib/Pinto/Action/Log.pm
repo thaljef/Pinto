@@ -60,7 +60,7 @@ sub execute {
         $self->say( trim( $revision->to_string($format) ) . "\n" );
 
         if ($self->detailed) {
-            my @details = $revision->registration_changes;
+            my @details = $revision->kommit->registration_changes;
             $self->say($_) for (@details ? @details : 'No details available')
         }
     }
