@@ -321,12 +321,12 @@ sub to_string {
            # Stack.  There is a circular reference between Stacks and
            # Revisions, so one of them must come first.  Therefore, we
            # must be prepared for $self->stack to be undefined below.
-           k => sub { defined $self->stack ? $self->stack->name : '()'      },
+           k => sub { defined $self->stack ? $self->stack->name : '()'   },
 
-           b => sub { $self->number                                         },
-           g => sub { $self->kommit->message                                },
-           j => sub { $self->kommit->committed_by                           },
-           u => sub { $self->kommit->committed_on->strftime('%c') . ' UTC'  },
+           b => sub { $self->number                                      },
+           g => sub { $self->kommit->message                             },
+           j => sub { $self->kommit->committed_by                        },
+           u => sub { $self->kommit->committed_on->strftime('%c')        },
 
     );
 

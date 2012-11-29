@@ -593,11 +593,11 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                             },
-           M => sub { $self->is_default                          ? '*' : ' '  },
-           j => sub { $self->head_revision->kommit->committed_by                      },
-           u => sub { $self->head_revision->kommit->committed_on->strftime('%c')      },
-           e => sub { $self->get_property('description')                      },
+           k => sub { $self->name                                                },
+           M => sub { $self->is_default                          ? '*' : ' '     },
+           j => sub { $self->head_revision->kommit->committed_by                 },
+           u => sub { $self->head_revision->kommit->committed_on->strftime('%c') },
+           e => sub { $self->get_property('description')                         },
     );
 
     $format ||= $self->default_format();

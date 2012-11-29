@@ -247,11 +247,8 @@ sub to_string {
          D => sub { $self->package->distribution->vname                             },
          w => sub { $self->package->distribution->version                           },
          u => sub { $self->package->distribution->url                               },
-         k => sub { $self->revision->stack->name                                    },
-         M => sub { $self->revision->stack->is_default          ? '*' : ' '         },
-         e => sub { $self->revision->stack->get_property('description')             },
-         j => sub { $self->revision->stack->head_revision->committed_by             },
-         u => sub { $self->revision->revision->committed_on                         },
+         j => sub { $self->kommit->committed_by                                     },
+         u => sub { $self->kommit->committed_on->strftime('%c')                     },
          y => sub { $self->is_pinned                            ? '+' : ' '         },
     );
 

@@ -218,10 +218,9 @@ sub to_string {
 
     my %fspec = (
 
-           b => sub { $self->number                                        },
-           g => sub { $self->message                                       },
-           j => sub { $self->committed_by                                  },
-           u => sub { $self->committed_on->strftime('%c') . ' UTC'         },
+           g => sub { $self->message                      },
+           j => sub { $self->committed_by                 },
+           u => sub { $self->committed_on->strftime('%c') },
 
     );
 
@@ -234,7 +233,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%b';
+    return '%g';
 }
 
 #------------------------------------------------------------------------------
