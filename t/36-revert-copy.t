@@ -23,7 +23,7 @@ use Pinto::Tester;
   $t->head_revision_number_is(2, 'dev');
 
   # Now blow away the init stack.
-  #$t->run_ok(Delete => {stack => 'init'});
+  $t->run_ok(Delete => {stack => 'init'});
 
   # Newer packages should be on the 'dev' stack 
   $t->registration_ok( 'AUTHOR/Dist-2/PkgA~2/dev' );

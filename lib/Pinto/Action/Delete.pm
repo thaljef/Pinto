@@ -29,7 +29,7 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
+    my $stack = $self->repo->open_stack($self->stack);
 
     $self->repo->delete_stack_filesystem(stack => $stack);
     $stack->delete;

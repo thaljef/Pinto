@@ -106,7 +106,7 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { id => "distribution" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -123,8 +123,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:48:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1QfmJh/TSCYFDwAt3J7NFw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:D0QsMZShrg9ZgENP03Qqlw
 
 #------------------------------------------------------------------------------
 

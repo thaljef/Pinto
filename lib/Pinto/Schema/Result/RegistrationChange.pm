@@ -121,7 +121,7 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { id => "distribution" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 kommit
@@ -136,7 +136,7 @@ __PACKAGE__->belongs_to(
   "kommit",
   "Pinto::Schema::Result::Kommit",
   { id => "kommit" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 package
@@ -151,7 +151,7 @@ __PACKAGE__->belongs_to(
   "package",
   "Pinto::Schema::Result::Package",
   { id => "package" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -168,8 +168,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 20:04:40
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kmo/SA02RHJXkqT06vaLRg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1uUYEp6nErawucdw8MU98w
 
 #-------------------------------------------------------------------------------
 
@@ -205,6 +205,7 @@ sub undo {
         my $attrs = { key => 'stack_package_unique' };
         my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
         throw "Found no registrations matching $self on stack $stack" if not defined $reg;
+        print "Deleting  $self\n";
 
         $reg->delete;
         $self->debug( sub {"Deleted $self"} );
@@ -212,6 +213,7 @@ sub undo {
     }
     elsif ($event eq 'delete') {
 
+        print "Restoring $self\n";
         $self->result_source->schema->resultset('Registration')->create($state);
         $self->debug( sub {"Restored $self"} );
 

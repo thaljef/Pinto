@@ -112,7 +112,7 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { id => "distribution" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 package
@@ -127,7 +127,7 @@ __PACKAGE__->belongs_to(
   "package",
   "Pinto::Schema::Result::Package",
   { id => "package" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 stack
@@ -159,8 +159,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-29 22:45:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/AXiat4y5ZqFU/WU+8hPZg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7Hn+psU1trsr3Ewqu4ggrg
 
 #------------------------------------------------------------------------------
 

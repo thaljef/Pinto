@@ -119,7 +119,7 @@ __PACKAGE__->belongs_to(
   "distribution",
   "Pinto::Schema::Result::Distribution",
   { id => "distribution" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 registration_changes
@@ -166,8 +166,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-15 21:11:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5isNLVmWQP07mXuht4IvMA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2PgkPZwtRO85TqED2PC9Ug
 
 #------------------------------------------------------------------------------
 

@@ -48,7 +48,7 @@ CREATE TABLE package (
        sha256        TEXT                DEFAULT NULL, /* SHA-256 digest of the module file */
        distribution  INTEGER             NOT NULL,     /* The distribution that contains this package */
 
-       FOREIGN KEY(distribution) REFERENCES distribution(id)
+       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
 );
 
 
@@ -86,9 +86,9 @@ CREATE TABLE registration (
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
        is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
 
-       FOREIGN KEY(stack)        REFERENCES stack(id),
-       FOREIGN KEY(package)      REFERENCES package(id),
-       FOREIGN KEY(distribution) REFERENCES distribution(id)
+       FOREIGN KEY(stack)        REFERENCES stack(id) ON DELETE CASCADE,
+       FOREIGN KEY(package)      REFERENCES package(id) ON DELETE CASCADE,
+       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
 );
 
 /*
@@ -109,9 +109,9 @@ CREATE TABLE registration_change (
        is_pinned     BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
        kommit        INTEGER             NOT NULL, /* Points to commit in which this change ocurred */
 
-       FOREIGN KEY(package)      REFERENCES package(id),
-       FOREIGN KEY(distribution) REFERENCES distribution(id),
-       FOREIGN KEY(kommit)       REFERENCES kommit(id)
+       FOREIGN KEY(package)      REFERENCES package(id) ON DELETE CASCADE,
+       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE,
+       FOREIGN KEY(kommit)       REFERENCES kommit(id) ON DELETE CASCADE
 );
 
 
@@ -148,7 +148,7 @@ CREATE TABLE revision (
        number       INTEGER             NOT NULL,  /* Sequential revision number (1,2,3...N) */
 
        FOREIGN KEY(stack)  REFERENCES stack(id) ON DELETE CASCADE,
-       FOREIGN KEY(kommit) REFERENCES kommit(id)
+       FOREIGN KEY(kommit) REFERENCES kommit(id) ON DELETE RESTRICT
 );
 
 /*
@@ -168,7 +168,7 @@ CREATE TABLE prerequisite (
        package_name    TEXT                NOT NULL, /* Foo::Bar */
        package_version TEXT                NOT NULL, /* 1.2.3 */
   
-       FOREIGN KEY(distribution)  REFERENCES distribution(id)
+       FOREIGN KEY(distribution)  REFERENCES distribution(id) ON DELETE CASCADE
 );
 
 /* Schema::Loader names the indexes for us */
