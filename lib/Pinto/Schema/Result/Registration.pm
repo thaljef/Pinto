@@ -235,46 +235,6 @@ sub update { throw 'Updates to '.  __PACKAGE__ . ' are not allowed'; }
 
 #------------------------------------------------------------------------------
 
-sub _record_change {
-  my ($self, $event) = @_;
-
-    my $stack    = $self->stack;
-    my $revision = $stack->head_revision;
-
-    throw "Stack $stack is not open for revision"
-      if $revision->kommit->is_committed;
-
-    my $hist = { event        => $event,
-                 package      => $self->package->id,
-                 distribution => $self->distribution->id,
-                 is_pinned    => $self->is_pinned,
-                 kommit       => $revision->kommit->id };
-
-    # Update history....
-    my $rs = $self->result_source->schema->resultset('RegistrationChange');
-
-    # Usually, a package is added OR removed only once during a single
-    # revision.  But during a Revert action, we unwind several past
-    # revisions inside of a new revision.  So it is possible that the
-    # same package could have been added AND removed several times
-    # during one of those past revisions.
-
-    if ( my $change = $rs->find($hist) ) {
-        $self->debug("$change already applied to revision $revision. Skipping it");
-    }
-    else {
-        my $verb = $event eq 'delete' ? 'deleted' : 'inserted';
-        $self->debug( sub{"$self $verb in history for revision $revision"} );
-        $rs->populate( [$hist] );
-    }
-
-    $stack->mark_as_changed;
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
 sub pin {
     my ($self) = @_;
 

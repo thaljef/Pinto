@@ -65,7 +65,6 @@ CREATE TABLE stack (
        name                 TEXT                NOT NULL,     /* MyStack */
        name_canonical       TEXT                NOT NULL,     /* mystack */
        is_default           BOOLEAN             NOT NULL,     /* Boolean flag, indicates if this is the default stack in the repository */
-       has_changed          INTEGER             NOT NULL,     /* Not in use */
        properties           TEXT                DEFAULT NULL  /* Hash as JSON string */
 );
 
@@ -148,7 +147,7 @@ CREATE TABLE revision (
        number       INTEGER             NOT NULL,  /* Sequential revision number (1,2,3...N) */
 
        FOREIGN KEY(stack)  REFERENCES stack(id) ON DELETE CASCADE,
-       FOREIGN KEY(kommit) REFERENCES kommit(id) ON DELETE RESTRICT
+       FOREIGN KEY(kommit) REFERENCES kommit(id) ON DELETE CASCADE
 );
 
 /*

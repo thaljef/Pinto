@@ -47,11 +47,6 @@ __PACKAGE__->table("stack");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 has_changed
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 properties
 
   data_type: 'text'
@@ -69,8 +64,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "is_default",
   { data_type => "boolean", is_nullable => 0 },
-  "has_changed",
-  { data_type => "integer", is_nullable => 0 },
   "properties",
   { data_type => "text", default_value => \"null", is_nullable => 1 },
 );
@@ -159,8 +152,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 01:11:49
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CvLbc7nuzCHtIQh66u27KQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 02:00:45
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:A4/R1I/jXMzCOHwltTTVrA
 
 #-------------------------------------------------------------------------------
 
@@ -197,8 +190,6 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
-  $args->{is_default}  ||= 0;
-  $args->{has_changed} ||= 0;
   $args->{name_canonical} = lc $args->{name};
 
   return $args;
@@ -226,7 +217,6 @@ sub close {
     throw "Stack $self is not open for revision"
       if $self->head_revision->kommit->is_committed;
 
-    $self->update( {has_changed => 0} );
     $self->head_revision->close(@args);
 
     return $self;
@@ -344,6 +334,7 @@ sub copy {
 sub copy_deeply {
     my ($self, $changes) = @_;
 
+    # TODO: wrapn in txn
     my $copy = $self->copy($changes);
     $self->copy_revisions(to => $copy);
     $self->copy_registrations(to => $copy);
@@ -401,6 +392,8 @@ sub mark_as_default {
         return 0;
     }
 
+    # TODO: wrap in txn
+
     $self->debug('Marking all stacks as non-default');
     my $rs = $self->result_source->resultset->search;
     $rs->update_all( {is_default => 0} );
@@ -409,16 +402,6 @@ sub mark_as_default {
     $self->update( {is_default => 1} );
 
     return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub mark_as_changed {
-    my ($self) = @_;
-
-    $self->update( {has_changed => 1} ) unless $self->has_changed;
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------

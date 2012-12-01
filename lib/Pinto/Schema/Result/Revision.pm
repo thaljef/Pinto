@@ -118,7 +118,7 @@ __PACKAGE__->belongs_to(
   "kommit",
   "Pinto::Schema::Result::Kommit",
   { id => "kommit" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 stack
@@ -150,8 +150,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 01:55:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SsuPJtvlo4RXOOB2XsJBkA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:49:12
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:N/Zrnn9ec46OmMTcTLJOWA
 
 #------------------------------------------------------------------------------
 
