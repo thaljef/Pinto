@@ -65,11 +65,8 @@ CREATE TABLE stack (
        name                 TEXT                NOT NULL,     /* MyStack */
        name_canonical       TEXT                NOT NULL,     /* mystack */
        is_default           BOOLEAN             NOT NULL,     /* Boolean flag, indicates if this is the default stack in the repository */
-       head_revision        INTEGER             NOT NULL,     /* Points to the last revision when this stack changed */
        has_changed          INTEGER             NOT NULL,     /* Not in use */
-       properties           TEXT                DEFAULT NULL, /* Hash as JSON string */
-
-       FOREIGN KEY(head_revision)        REFERENCES revision(id)
+       properties           TEXT                DEFAULT NULL  /* Hash as JSON string */
 );
 
 
@@ -78,12 +75,9 @@ CREATE TABLE stack (
 
     Join table, representing the relationship between a package and a
     stack.  A package may belong to many stacks, but each package name
-    in the stack must be unique.  This table has been denormalized to
-    include the package_name ensure that each package name in the
-    stack is unique.  It also includes the distribution and
-    distribution_path as an optimization, since these values are all
-    frequently used together to construct the 02packages.details file.
-    */
+    in the stack must be unique.  
+
+*/
 
 CREATE TABLE registration (
        id                   INTEGER PRIMARY KEY NOT NULL,
@@ -91,11 +85,8 @@ CREATE TABLE registration (
        package              INTEGER             NOT NULL, /* Points to the package with the package_name */
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
        is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
-       package_name         TEXT                NOT NULL, /* Foo::Bar */
-       package_version      TEXT                NOT NULL, /* 1.0 */
-       distribution_path    TEXT                NOT NULL, /* AUTHOR/Foo-Bar-1.0.tar.gz */
 
-       FOREIGN KEY(stack)        REFERENCES stack(id) ON DELETE CASCADE ,
+       FOREIGN KEY(stack)        REFERENCES stack(id),
        FOREIGN KEY(package)      REFERENCES package(id),
        FOREIGN KEY(distribution) REFERENCES distribution(id)
 );
@@ -106,12 +97,7 @@ CREATE TABLE registration (
    registration table can only be modified by insert or deleting
    records (updates are not permitted).  So this table makes a record
    of each addition or deleteion, and associates it with a revision.
-   A revision may include multiple insertions or deletions.  It only
-   records the essential columns of the registration table (namely,
-   the package, distribution, and is_pinned columns).  The other
-   denormalized columns of the registration table can be derived from
-   the vital essential columns.  The intent is to provide a way to
-   restore the registration table to any prior state.
+   A revision may include multiple insertions or deletions.
 
 */
 
@@ -141,9 +127,9 @@ CREATE TABLE registration_change (
 
 CREATE TABLE kommit (
        id           INTEGER PRIMARY KEY NOT NULL,
-       is_committed BOOLEAN             NOT NULL,      /* Boolean, indicates if the revision has been committed yet */
-       committed_on INTEGER             NOT NULL,      /* When the revision was committed (epoch seconds) */
-       committed_by TEXT                NOT NULL,      /* User who committed the revision */
+       is_committed BOOLEAN             NOT NULL,     /* Boolean, indicates if the revision has been committed yet */
+       committed_on INTEGER             NOT NULL,     /* When the revision was committed (epoch seconds) */
+       committed_by TEXT                NOT NULL,     /* User who committed the revision */
        message      TEXT                NOT NULL      /* Log message for the revision */
 );
 
@@ -157,7 +143,7 @@ CREATE TABLE kommit (
 
 CREATE TABLE revision (
        id           INTEGER PRIMARY KEY NOT NULL,
-       stack        INTEGER             DEFAULT NULL,  /* Points to the stack where the changes ocurred */
+       stack        INTEGER             NOT NULL,  /* Points to the stack where the changes ocurred */
        kommit       INTEGER             NOT NULL,  /* Points to the kommit that describes the changes */
        number       INTEGER             NOT NULL,  /* Sequential revision number (1,2,3...N) */
 
@@ -192,19 +178,17 @@ CREATE UNIQUE INDEX c ON distribution(sha256);
 CREATE UNIQUE INDEX d ON package(name, distribution);
 CREATE UNIQUE INDEX e ON stack(name);
 CREATE UNIQUE INDEX f ON stack(name_canonical);
-CREATE UNIQUE INDEX g ON stack(head_revision);
-CREATE UNIQUE INDEX h ON registration(stack, package_name);
-CREATE UNIQUE INDEX i ON registration(stack, package);
-CREATE UNIQUE INDEX j ON registration_change(event, package, kommit);
-CREATE UNIQUE INDEX k ON revision(stack, kommit);
-CREATE UNIQUE INDEX l ON revision(stack, number);
-CREATE UNIQUE INDEX m ON prerequisite(distribution, package_name);
-CREATE UNIQUE INDEX n ON repository_property(key);
-CREATE UNIQUE INDEX o ON repository_property(key_canonical);
+CREATE UNIQUE INDEX g ON registration(stack, package);
+CREATE UNIQUE INDEX h ON registration_change(event, package, kommit);
+CREATE UNIQUE INDEX i ON revision(stack, kommit);
+CREATE UNIQUE INDEX j ON revision(stack, number);
+CREATE UNIQUE INDEX k ON prerequisite(distribution, package_name);
+CREATE UNIQUE INDEX l ON repository_property(key);
+CREATE UNIQUE INDEX m ON repository_property(key_canonical);
 
-CREATE        INDEX p ON registration(stack);
-CREATE        INDEX q ON package(name);
-CREATE        INDEX r ON package(sha256);
-CREATE        INDEX s ON package(file);
-CREATE        INDEX t ON distribution(author);
-CREATE        INDEX u ON prerequisite(package_name);
+CREATE        INDEX n ON registration(stack);
+CREATE        INDEX o ON package(name);
+CREATE        INDEX p ON package(sha256);
+CREATE        INDEX q ON package(file);
+CREATE        INDEX r ON distribution(author);
+CREATE        INDEX s ON prerequisite(package_name);

@@ -85,11 +85,11 @@ sub execute {
     throw "Distribution $target is not in the repository" if not $old_dist;
 
     my $new_dist = $self->repo->add( archive => $self->archive,
-                                      author  => $self->author );
+                                      author => $self->author );
 
     my @registered_stacks = $old_dist->registered_stacks;
     my @changed_stacks = grep {$self->_replace( $_, $old_dist, $new_dist )} @registered_stacks;
-    return $self->result if not @changed_stacks;
+    return $self->result->changed if not @changed_stacks;
 
     my $message = $self->edit_message(stacks => \@changed_stacks);
 
@@ -115,10 +115,10 @@ sub _replace {
 
     $new_dist->register( stack => $stack, pin => $self->pin );
 
-    $self->repo->pull_prerequisites( dist  => $new_dist,
-                                     stack => $stack ) unless $self->norecurse;
+    my $did_pull = $self->repo->pull_prerequisites( dist  => $new_dist,
+                                                    stack => $stack ) unless $self->norecurse;
 
-    return $stack if $stack->refresh->has_changed;
+    return $did_pull ? $stack : ();
 }
 
 #------------------------------------------------------------------------------

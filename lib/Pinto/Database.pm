@@ -115,7 +115,7 @@ sub select_registration {
   my ($self, $where, $attrs) = @_;
 
   $attrs ||= {};
-  $attrs->{key} ||= 'stack_package_name_unique';
+  $attrs->{prefetch} ||= [ {package => 'distribution'}, 'stack' ];
 
   return $self->schema->resultset('Registration')->find($where, $attrs);
 }

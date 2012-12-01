@@ -36,7 +36,6 @@ use Pinto::Globals;
 
 #------------------------------------------------------------------------------
 
-local $Pinto::Globals::is_interactive = 0;
 local $Pinto::Globals::current_user = 'ME';
 
 my $t = Pinto::Tester->new;
@@ -49,7 +48,7 @@ my $t = Pinto::Tester->new;
 	my $revision = $stack->head_revision;
 
 
-	is ($revision->number, 1, 'First commit (after creating stack) is revision 1');
+	is ($revision->number, 1, 'First commit is revision 1');
 	is ($revision->kommit->committed_by, 'ME', 'Revision was committed by ME');
 	is ($revision->kommit->message, 'my title', 'Message is title only no commit message specified');
 	is ($revision->kommit->message_body, '', 'Message body is empty when no commit message specified');

@@ -235,9 +235,11 @@ sub register {
     my $stack = $args{stack};
     my $pin   = $args{pin};
 
-    $self->create_related( registrations => {stack        => $stack,
-                                             distribution => $self->distribution, 
-                                             is_pinned    => $pin} );
+    my $struct = { is_pinned    => $pin,
+                   stack        => $stack->id,
+                   distribution => $self->distribution->id };
+
+    $self->create_related( registrations => $struct );
 
     return $self;
 }
@@ -248,7 +250,7 @@ sub registration {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
-    my $where = {stack => $stack};
+    my $where = {stack => $stack->id};
     my $attrs = {key   => 'stack_package_unique'};
 
     return $self->find_related('registrations', $where, $attrs);

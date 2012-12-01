@@ -20,7 +20,7 @@ $cpan->populate( 'JOHN/DistA-1 = PkgA~1 & PkgB~1',
 #------------------------------------------------------------------------------
 
 my $local = Pinto::Tester->new(init_args => {sources => $cpan->stack_url});
-$local->head_revision_number_is(0);
+$local->head_revision_number_is(undef);
 
 # Suppose MyDist requires PkgA, which requires PkgB
 my $archive =  make_dist_archive('MyDist-1=MyPkg-1 & PkgA~1');

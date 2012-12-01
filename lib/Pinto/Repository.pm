@@ -210,8 +210,7 @@ sub get_stack {
     return $self->get_default_stack if not $stack;
 
     my $where = { name => $stack };
-    my $attrs = { prefetch => 'head_revision' };
-    my $got_stack = $self->db->select_stack( $where, $attrs );
+    my $got_stack = $self->db->select_stack( $where );
 
     throw "Stack $stack does not exist"
         unless $got_stack or $opts{nocroak};
@@ -240,8 +239,7 @@ sub get_default_stack {
     my ($self) = @_;
 
     my $where = {is_default => 1};
-    my $attrs = {prefetch => 'head_revision'};
-    my @stacks = $self->db->select_stacks( $where, $attrs )->all;
+    my @stacks = $self->db->select_stacks( $where )->all;
 
     throw "PANIC! There must be exactly one default stack" if @stacks != 1;
 
@@ -327,9 +325,8 @@ sub get_package {
 
     if ($stk_name) {
         my $stack = $self->get_stack($stk_name);
-        my $attrs = { prefetch => 'package' };
-        my $where = { package_name => $pkg_name, stack => $stack->id };
-        my $registration = $self->db->select_registration($where, $attrs);
+        my $where = { 'package.name' => $pkg_name, stack => $stack->id };
+        my $registration = $self->db->select_registration($where);
         return $registration ? $registration->package : ();
     }
     else {
@@ -699,12 +696,7 @@ sub create_stack {
     throw "Stack $args{name} already exists"
         if $self->get_stack($args{name}, nocroak => 1);
 
-    my $revision = $self->open_revision;
-    my $stack    = $self->db->create_stack( {%args, head_revision => $revision} );
-
-    $revision->update( {stack => $stack} );
-
-    return $stack;
+    return $self->db->create_stack( \%args);
 }
 
 #-------------------------------------------------------------------------------
@@ -724,17 +716,11 @@ sub rename_stack {
 sub copy_stack {
     my ($self, %args) = @_;
 
-    $DB::single = 1;
     my $from_stack    = $args{from};
     my $to_stack_name = $args{to};
 
-    my $revision = $self->open_revision(number => $from_stack->head_revision->number + 1);
-    my $changes  = {head_revision => $revision, name => $to_stack_name};
+    my $changes  = {name => $to_stack_name};
     my $copy     = $from_stack->copy_deeply( $changes );
-
-    $revision->update( {stack => $copy} );
-
-    $copy->refresh;  # Make sure $copy has reference to the new $revision
 
     return $copy;
 }
@@ -875,19 +861,12 @@ sub open_revision {
     $args{committed_by} ||= $self->config->username;
 
     my $stack    =  delete $args{stack};
-    my %number   = $args{number} ? (number => delete $args{number}) : ();
     my $kommit   = $self->db->create_kommit(\%args);
-    my $revision = $self->db->create_revision({kommit => $kommit, stack => $stack, %number});
+    my $revision = $self->db->create_revision({kommit => $kommit, stack => $stack});
     my $revnum   = $revision->number;
 
-    if ($stack) {
-        $stack->update({head_revision => $revision});
-        $self->debug("Opened new head revision $revnum on stack $stack");
-    }
-    else {
-        $self->debug("Opened new head revision $revnum but not bound to stack" );
-    }
-
+    $self->debug("Opened new head revision $revnum on stack $stack");
+    
     return $revision;
 }
 

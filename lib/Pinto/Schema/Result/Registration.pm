@@ -55,21 +55,6 @@ __PACKAGE__->table("registration");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 package_name
-
-  data_type: 'text'
-  is_nullable: 0
-
-=head2 package_version
-
-  data_type: 'text'
-  is_nullable: 0
-
-=head2 distribution_path
-
-  data_type: 'text'
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -83,12 +68,6 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
   { data_type => "boolean", is_nullable => 0 },
-  "package_name",
-  { data_type => "text", is_nullable => 0 },
-  "package_version",
-  { data_type => "text", is_nullable => 0 },
-  "distribution_path",
-  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -104,20 +83,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
-
-=head2 C<stack_package_name_unique>
-
-=over 4
-
-=item * L</stack>
-
-=item * L</package_name>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "package_name"]);
 
 =head2 C<stack_package_unique>
 
@@ -194,8 +159,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 21:43:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gPE3JoQqjlxffQmO2upl1Q
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-29 22:45:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/AXiat4y5ZqFU/WU+8hPZg
 
 #------------------------------------------------------------------------------
 
@@ -220,6 +185,39 @@ use overload ( '""'     => 'to_string',
 
 #-------------------------------------------------------------------------------
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+
+   for my $event (qw(insert delete)) {
+
+    # The name of the table that contains the incoming/outgoing
+    # record depends on whether we are inserting or deleting it.
+    my $tb       = ($event eq 'insert') ? 'new' : 'old';
+
+    # The last revision on the stack should be the head.
+    # TODO: assert that the revision is open before writing change
+    my $revision = qq{ SELECT MAX(revision.id) FROM revision WHERE stack = $tb.stack };
+    my $kommit   = qq{ SELECT kommit.id FROM kommit JOIN revision ON revision.kommit = kommit.id WHERE revision.id = ($revision) };
+
+    # If there is already a change record for this package 
+    # in this kommit,then just replace the existing one.
+    my $sql      = qq{ INSERT OR REPLACE INTO registration_change (event, package, distribution, is_pinned, kommit) };
+       $sql     .= qq{ VALUES ('$event', $tb.package, $tb.distribution, $tb.is_pinned, ($kommit)); };
+
+    $sqlt_table->schema->add_trigger(
+      name                => "after_${event}_registration",
+      table               => $sqlt_table,
+      perform_action_when => 'after',
+      database_events     => [$event],
+      action              => $sql,
+    );
+  }
+
+    return;
+ }
+
+#-------------------------------------------------------------------------------
+
 sub FOREIGNBUILDARGS {
     my ($class, $args) = @_;
 
@@ -228,51 +226,12 @@ sub FOREIGNBUILDARGS {
     $args ||= {};
     $args->{is_pinned} ||= 0;
 
-    # These attributes are derived from the related package object.  We've
-    # denormalized the table slightly to ensure data integrity and optimize
-    # the table for generating the index file (all the data is in one table).
-    # So you can't set these attributes directly.  Their values are computed
-    # down below during INSERT or UPDATE operations.
-
-    for my $attr ( qw(package_name package_version distribution_path) ){
-        throw "Attribute '$attr' cannot be set directly" if $args->{$attr};
-    }
-
     return $args;
 }
 
 #-------------------------------------------------------------------------------
 
 sub update { throw 'Updates to '.  __PACKAGE__ . ' are not allowed'; }
-
-#-------------------------------------------------------------------------------
-
-sub insert {
-    my ($self, @args) = @_;
-
-    # Compute values for denormalized attributes...
-    $self->package_name($self->package->name);
-    $self->package_version($self->package->version->stringify);
-    $self->distribution_path($self->distribution->path);
-
-    my $return = $self->next::method(@args);
-
-    $self->_record_change('insert');
-
-    return $return;
- }
-
-#-------------------------------------------------------------------------------
-
-sub delete {
-    my ($self, @args) = @_;
-
-    my $return = $self->next::method(@args);
-
-    $self->_record_change('delete');
-
-    return $return;
- }
 
 #------------------------------------------------------------------------------
 
@@ -286,10 +245,10 @@ sub _record_change {
       if $revision->kommit->is_committed;
 
     my $hist = { event        => $event,
-                 package      => $self->package,
-                 distribution => $self->distribution,
+                 package      => $self->package->id,
+                 distribution => $self->distribution->id,
                  is_pinned    => $self->is_pinned,
-                 kommit       => $revision->kommit };
+                 kommit       => $revision->kommit->id };
 
     # Update history....
     my $rs = $self->result_source->schema->resultset('RegistrationChange');
@@ -306,7 +265,7 @@ sub _record_change {
     else {
         my $verb = $event eq 'delete' ? 'deleted' : 'inserted';
         $self->debug( sub{"$self $verb in history for revision $revision"} );
-        $rs->create($hist);
+        $rs->populate( [$hist] );
     }
 
     $stack->mark_as_changed;
@@ -358,7 +317,7 @@ sub merge {
     if (not defined $to_reg) {
          $self->debug("Adding package $from_pkg to stack $to_stk");
          $self->copy( {stack => $to_stk} );
-         return 0;
+         return (0, 1);
      }
 
     # CASE 2:  The exact same package is in both the source
@@ -371,9 +330,9 @@ sub merge {
         if ($self->is_pinned and not $to_reg->is_pinned) {
             $self->debug("Adding pin to $to_reg");
             $to_reg->pin;
-            return 0;
+            return (0, 1);
         }
-        return 0;
+        return (0, 0);
     }
 
     # CASE 3:  The package in the target stack is newer than the
@@ -385,10 +344,10 @@ sub merge {
     if ($to_reg > $self) {
         if ( $self->is_pinned ) {
             $self->warning("$self is pinned to a version older than $to_reg");
-            return 1;
+            return (1, 0);
         }
         $self->debug("$to_reg is already newer than $self");
-        return 0;
+        return (0, 0);
     }
 
 
@@ -401,13 +360,13 @@ sub merge {
     if ($to_reg < $self) {
         if ( $to_reg->is_pinned ) {
             $self->warning("$to_reg is pinned to a version older than $self");
-            return 1;
+            return (1, 0);
         }
         my $from_pkg = $self->package;
         $self->info("Upgrading $to_reg to $from_pkg");
         $to_reg->delete;
         $self->copy( {stack => $to_reg->stack} );
-        return 0;
+        return (0, 1);
     }
 
     # CASE 5:  The above logic should cover all possible scenarios.

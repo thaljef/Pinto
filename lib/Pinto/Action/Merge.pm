@@ -46,10 +46,10 @@ sub execute {
 
     $self->notice("Merging stack $from_stack into stack $to_stack");
 
-    $from_stack->merge(to => $to_stack);
-    $self->result->changed if $to_stack->refresh->has_changed;
+    my $did_merge = $from_stack->merge(to => $to_stack);
+    $self->result->changed if $did_merge;
 
-    if ($to_stack->has_changed and not $self->dryrun) {
+    if ($did_merge and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$to_stack]);
         $to_stack->close(message => $message);
         $self->repo->write_index(stack => $to_stack);

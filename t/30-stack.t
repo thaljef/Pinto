@@ -22,22 +22,22 @@ my $t = Pinto::Tester->new;
   my $stack = $t->pinto->repo->get_stack($stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
   is $stack->get_property('description'), $stk_desc, 'Got correct stack description';
-  my $old_mtime = $stack->head_revision->kommit->committed_on;
-
-  sleep 2; # So the mtime changes.
 
   # Add to the stack...
   my $foo_and_bar_1 = make_dist_archive('FooAndBar-1 = Foo~1,Bar~1');
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1});
-  $t->registration_ok( 'ME/FooAndBar-1/Foo~1/dev/-' );
-  $t->registration_ok( 'ME/FooAndBar-1/Bar~1/dev/-' );
 
-  # Should not be on the init stack...
-  $t->registration_not_ok( 'ME/FooAndBar-1/Foo~1/init/-' );
-  $t->registration_not_ok( 'ME/FooAndBar-1/Bar~1/init/-' );
+  # Note the time of last kommit
+  my $old_mtime = $stack->head_revision->kommit->committed_on;
+
+  # time passes
+  sleep 2;
+
+  # Add more stuff to the stack...
+  my $foo_and_bar_2 = make_dist_archive('FooAndBar-2 = Foo~2,Bar~2');
+  $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_2});
 
   # Check that mtime was updated...
-  $stack->refresh; # Causes it to reload from DB
   cmp_ok $stack->head_revision->kommit->committed_on, '>', $old_mtime, 'Updated stack mtime';
 }
 
@@ -51,7 +51,7 @@ my $t = Pinto::Tester->new;
                       to_stack    => $qa_stk_name,});
 
   my $dev_stack = $t->pinto->repo->get_stack($dev_stk_name);
-  my $qa_stack = $t->pinto->repo->get_stack($qa_stk_name);
+  my $qa_stack  = $t->pinto->repo->get_stack($qa_stk_name);
 
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
@@ -59,8 +59,8 @@ my $t = Pinto::Tester->new;
   is $qa_stack->get_property('description'), 'copy of stack dev',
     'Copied stack has default description';
 
-  is $qa_stack->head_revision->number, $dev_stack->head_revision->number + 1,
-    'Copied stack head revision number is original head revision number + 1';
+  is $qa_stack->head_revision->number, $dev_stack->head_revision->number,
+    'Copied stack head revision number is original head revision number';
 }
 
 #------------------------------------------------------------------------------
@@ -88,32 +88,7 @@ my $t = Pinto::Tester->new;
 }
 
 #------------------------------------------------------------------------------
-
-{
-  no warnings qw(once redefine);
-  # Cause actions to fail just before they touch the file system
-  local *Pinto::Action::New::edit_message = sub { die "action failed"};
-  local *Pinto::Action::Copy::edit_message = sub { die "action failed"};
-
-  # Try creating a new stack
-  $t->run_throws_ok('New' => {stack => 'foobar'},
-                             qr/action failed/);
-
-  # Stack directory should not exist because commit failed
-  $t->path_not_exists_ok( [ qw(foobar) ] );
-
-
-  # Try copying a stack
-  $t->run_throws_ok('Copy' => {from_stack => 'init',
-                               to_stack   => 'foobar'},
-                               qr/action failed/);
-
-  # Stack directory should not exist becasue commit failed
-  $t->path_not_exists_ok( [ qw(foobar) ] );
-
-}
-
-#------------------------------------------------------------------------------
+# Exceptions...
 
 {
   # Copy from a stack that doesn't exist
@@ -154,7 +129,6 @@ my $t = Pinto::Tester->new;
                               to_stack   => undef},
                               qr/must be alphanumeric/);
 }
-
 
 #------------------------------------------------------------------------------
 

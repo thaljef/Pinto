@@ -47,12 +47,6 @@ __PACKAGE__->table("stack");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 head_revision
-
-  data_type: 'integer'
-  is_foreign_key: 1
-  is_nullable: 0
-
 =head2 has_changed
 
   data_type: 'integer'
@@ -75,8 +69,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "is_default",
   { data_type => "boolean", is_nullable => 0 },
-  "head_revision",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "has_changed",
   { data_type => "integer", is_nullable => 0 },
   "properties",
@@ -96,18 +88,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
-
-=head2 C<head_revision_unique>
-
-=over 4
-
-=item * L</head_revision>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("head_revision_unique", ["head_revision"]);
 
 =head2 C<name_canonical_unique>
 
@@ -134,21 +114,6 @@ __PACKAGE__->add_unique_constraint("name_canonical_unique", ["name_canonical"]);
 __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
-
-=head2 head_revision
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "head_revision",
-  "Pinto::Schema::Result::Revision",
-  { id => "head_revision" },
-  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
-);
 
 =head2 registrations
 
@@ -194,8 +159,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 20:27:01
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CyXidRXCZhUGQQ589OwpDg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 01:11:49
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CvLbc7nuzCHtIQh66u27KQ
 
 #-------------------------------------------------------------------------------
 
@@ -275,10 +240,8 @@ sub registration {
     my $pkg_name = ref $args{package} ? $args{package}->name
                                       : $args{package};
 
-    my $attrs = { key      => 'stack_package_name_unique',
-                  prefetch => {package => 'distribution'} };
-
-    my $where = {package_name => $pkg_name};
+    my $attrs = { prefetch => {package => 'distribution'} };
+    my $where = {'package.name' => $pkg_name};
 
     return $self->find_related(registrations => $where, $attrs);
 }
@@ -382,8 +345,8 @@ sub copy_deeply {
     my ($self, $changes) = @_;
 
     my $copy = $self->copy($changes);
-    $self->copy_registrations(to => $copy);
     $self->copy_revisions(to => $copy);
+    $self->copy_registrations(to => $copy);
 
     return $copy;
 }
@@ -456,6 +419,16 @@ sub mark_as_changed {
     $self->update( {has_changed => 1} ) unless $self->has_changed;
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub head_revision {
+    my ($self) = @_;
+
+    my $head_id = $self->revisions->get_column('id')->max;
+
+    return $self->find_related( revisions => {id => $head_id} );
 }
 
 #------------------------------------------------------------------------------
@@ -544,15 +517,17 @@ sub merge {
 
     my $to_stk = $args{to};
 
-    my $conflicts;
+    my ($conflicts, $did_merge);
     for my $reg ($self->registrations) {
         $self->info("Merging package $reg into stack $to_stk");
-        $conflicts += $reg->merge(%args);
+        my ($c, $m) = $reg->merge(%args);
+        $conflicts += $c;
+        $did_merge += $m;
     }
 
     throw "There were $conflicts conflicts.  Merge aborted" if $conflicts;
 
-    return 1;
+    return $did_merge;
 }
 
 #------------------------------------------------------------------------------

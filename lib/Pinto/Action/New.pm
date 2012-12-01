@@ -19,10 +19,6 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Committable );
-
-#------------------------------------------------------------------------------
-
 has stack => (
     is       => 'ro',
     isa      => StackName,
@@ -50,9 +46,6 @@ sub execute {
 
     my $stack = $self->repo->create_stack(name => $self->stack);
     $stack->set_property(description => $self->description) if $self->has_description;
-
-    $stack->close(message => $self->edit_message);
-
     $stack->mark_as_default if $self->default;
 
     $self->repo->create_stack_filesystem(stack => $stack);

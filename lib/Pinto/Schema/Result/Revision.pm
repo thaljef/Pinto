@@ -35,9 +35,8 @@ __PACKAGE__->table("revision");
 =head2 stack
 
   data_type: 'integer'
-  default_value: null
   is_foreign_key: 1
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 kommit
 
@@ -56,12 +55,7 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "stack",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "kommit",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "number",
@@ -112,21 +106,6 @@ __PACKAGE__->add_unique_constraint("stack_number_unique", ["stack", "number"]);
 
 =head1 RELATIONS
 
-=head2 active_stack
-
-Type: might_have
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->might_have(
-  "active_stack",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.head_revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 kommit
 
 Type: belongs_to
@@ -154,12 +133,7 @@ __PACKAGE__->belongs_to(
   "stack",
   "Pinto::Schema::Result::Stack",
   { id => "stack" },
-  {
-    is_deferrable => 0,
-    join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "NO ACTION",
-  },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -176,8 +150,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-28 21:56:11
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TorKLg7WfMDV9RRWmmzWLw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-30 01:55:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SsuPJtvlo4RXOOB2XsJBkA
 
 #------------------------------------------------------------------------------
 
@@ -227,9 +201,7 @@ sub new_revision_number {
     my $where = { stack => $self->stack->id };
     my $revision_rs = $self->result_source->resultset->search($where);
 
-    # Revision numbers are zero-based.  So just counting the number
-    # of revisions will give us the number for the next one.
-    return $revision_rs->count;
+    return $revision_rs->count + 1;
 }
 
 #------------------------------------------------------------------------------
@@ -288,7 +260,15 @@ sub undo {
 
     $self->info("Undoing revision $self");
 
-    $_->undo(stack => $self->stack) for reverse $self->kommit->registration_changes;
+    my $attrs = { prefetch => [qw(package distribution)],
+                  order_by => { -desc => 'me.id'} };
+
+    my @changes = $self->kommit->registration_changes(undef, $attrs);
+
+    #$DB::single = 1;
+
+    #printf "Undoing %s: %s\n", $self->to_string, $self->kommit->message_title;
+    $_->undo(stack => $self->stack) for @changes;
 
     return $self;
 }

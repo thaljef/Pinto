@@ -15,6 +15,7 @@ use Test::Exception;
 
 use Pinto;
 use Pinto::Util;
+use Pinto::Globals;
 use Pinto::Initializer;
 use Pinto::Tester::Util qw(make_dist_struct make_dist_archive parse_reg_spec);
 use Pinto::Types qw(Uri Dir);
@@ -26,6 +27,10 @@ use Pinto::Types qw(Uri Dir);
 #------------------------------------------------------------------------------
 
 extends qw(Test::Builder::Module);
+
+#------------------------------------------------------------------------------
+
+BEGIN { $Pinto::Globals::is_interactive = 0; }
 
 #------------------------------------------------------------------------------
 
@@ -139,6 +144,7 @@ sub run_ok {
     my ($self, $action_name, $args, $test_name) = @_;
 
     my $result = $self->pinto->run($action_name, %{ $args });
+    local $Pinto::Globals::is_interactive = 0;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     $self->result_ok($result, $test_name);
 
@@ -150,6 +156,7 @@ sub run_ok {
 sub run_throws_ok {
     my ($self, $action_name, $args, $error_regex, $test_name) = @_;
 
+    local $Pinto::Globals::is_interactive = 0;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $ok = throws_ok { $self->pinto->run($action_name, %{$args}) }
         $error_regex, $test_name;
@@ -171,17 +178,13 @@ sub registration_ok {
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
     my $stack      = $self->pinto->repo->get_stack($stack_name);
 
-    my $where = { stack => $stack->id, package_name => $pkg_name };
+    my $where = { stack => $stack->id, 'package.name' => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
     my $reg = $self->pinto->repo->db->select_registration($where, $attrs);
 
     return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
         if not $reg;
 
-    # Test registration object itself...
-    $self->tb->is_eq($reg->package_name,      $pkg_name,  'Registration has correct package name');
-    $self->tb->is_eq($reg->package_version,   $pkg_ver,   'Registration has correct package version');
-    $self->tb->is_eq($reg->distribution_path, $dist_path, 'Registration has correct dist path');
 
     # Test package object...
     my $pkg = $reg->package;
@@ -221,7 +224,7 @@ sub registration_not_ok {
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
     my $stack     = $self->pinto->repo->get_stack($stack_name);
 
-    my $where = {stack => $stack->id, package_name => $pkg_name, distribution_path => $dist_path};
+    my $where = {stack => $stack->id, 'package.name' => $pkg_name, 'distribution.author' => $author, 'distribution.archive' => $dist_archive};
     my $reg = $self->pinto->repo->db->select_registration($where);
 
     return $self->tb->ok(1, "Registration $reg_spec should not exist")
@@ -281,12 +284,19 @@ sub result_not_changed_ok {
 sub head_revision_number_is {
     my ($self, $revnum, $stack_name, $test_name) = @_;
 
-    my $stack       = $self->pinto->repo->get_stack($stack_name);
-    my $head_revnum = $stack->head_revision->number;
+    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $head  = $stack->head_revision;
 
     $test_name ||= "Head revision number of stack $stack matches";
 
-    return $self->tb->is_eq($head_revnum, $revnum, $test_name);
+    if (defined $head) {
+        my $head_revnum = $head->number;
+        return $self->tb->is_eq($head_revnum, $revnum, $test_name);
+    }
+    else {
+        return $self->tb->is_eq($head, $revnum, $test_name);
+    }
+
 }
 
 #------------------------------------------------------------------------------

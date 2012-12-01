@@ -46,15 +46,14 @@ sub execute {
     my $revnum  = $self->_compute_target_revnum($stack);
 
     $self->_revert($stack, $revnum);
-    $self->result->changed if $stack->refresh->has_changed;
 
-    if ($stack->has_changed and not $self->dryrun) {
+    if (not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
         $stack->close(message => $message);
         $self->repo->write_index(stack => $stack);
     }
 
-    return $self->result;
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------
@@ -62,12 +61,15 @@ sub execute {
 sub _compute_target_revnum {
     my ($self, $stack) = @_;
 
-    my $headnum = $stack->head_revision->number;
+    my $head = $stack->head_revision;
 
+    throw "Stack $stack has no revisions" if not defined $head;
+
+    my $headnum = $head->number;
     my $revnum  = $self->revision;
     $revnum     = ($headnum + $revnum) if $revnum < 0;
 
-    throw "Stack $stack is already at revision 0" if $headnum == 0;
+    throw "Cannot go beyond revision 0" if $revnum < 0;
 
     throw "No such revision $revnum on stack $stack" if $revnum > $headnum;
 
@@ -89,6 +91,8 @@ sub _revert {
     while ($previous_revision->number > $revnum) {
         $previous_revision->undo;
         $previous_revision = $previous_revision->previous_revision;
+        last if not defined $previous_revision;
+
     }
 
     return $self;

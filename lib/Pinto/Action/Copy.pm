@@ -19,10 +19,6 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Committable );
-
-#------------------------------------------------------------------------------
-
 has from_stack => (
     is       => 'ro',
     isa      => StackName | StackObject,
@@ -60,9 +56,6 @@ sub execute {
 
     my $description = $self->description || "copy of stack $orig";
     $copy->set_property(description => $description);
-
-    my $message = $self->edit_message(stacks => [$copy]);
-    $copy->close(message => $message);
 
     $copy->mark_as_default if $self->default;
 

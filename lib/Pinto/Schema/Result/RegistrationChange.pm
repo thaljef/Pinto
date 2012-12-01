@@ -194,27 +194,26 @@ sub undo {
 
     my $stack = $args{stack};
 
-    my $state = { stack        => $stack->id,
-                  package      => $self->package->id,
-                  distribution => $self->distribution->id,
+    my $state = { stack        => $stack,
+                  package      => $self->package,
+                  distribution => $self->distribution,
                   is_pinned    => $self->is_pinned };
 
     my $event = $self->event;
     if ($event eq 'insert') {
 
-        my $attrs = {key => 'stack_package_unique'};
+        my $attrs = { key => 'stack_package_unique' };
         my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
-        throw "Found no registrations matching $self on stack $stack" if not $reg;
+        throw "Found no registrations matching $self on stack $stack" if not defined $reg;
 
         $reg->delete;
-        $self->debug("Removed $reg");
+        $self->debug( sub {"Deleted $self"} );
 
     }
     elsif ($event eq 'delete') {
 
-        my $reg = $self->result_source->schema->resultset('Registration')->create($state);
-
-        $self->debug("Restored $reg");
+        $self->result_source->schema->resultset('Registration')->create($state);
+        $self->debug( sub {"Restored $self"} );
 
     }
     else {
@@ -262,7 +261,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%A%y %a/%f/%N';
+    return '%A %y %a/%f/%N';
 }
 
 #-------------------------------------------------------------------------------

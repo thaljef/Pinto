@@ -32,6 +32,7 @@ $local->registration_ok('FRED/DistB-1/PkgB~1');
 # Now, suppose that PkgA and PkgB both are upgraded on CPAN
 $cpan->populate( 'JOHN/DistA-2 = PkgA~2 & PkgB~2',
                  'FRED/DistB-2 = PkgB~2', );
+
 $local->clear_cache; # Make sure we get new index from CPAN
 
 # We would like to try and upgrade to PkgA-2.  So create a new stack
@@ -52,7 +53,7 @@ $local->run_ok('Pin', {targets => 'PkgB'});
 $local->registration_ok('FRED/DistB-1/PkgB~1/init/+');
 
 # Ooo! Super cool DistC-1 is released to CPAN
-$cpan->populate('MARK/DistC-1= PkgC~2 & PkgB~2');
+$cpan->populate('MARK/DistC-1 = PkgC~2 & PkgB~2');
 
 $local->clear_cache; # Make sure we get new index from CPAN
 
@@ -70,6 +71,7 @@ $local->registration_ok('FRED/DistB-1/PkgB~1/init/-');
 
 # Now we can bring over the work that was done on the xxx stack...
 $local->run_ok('Merge', {from_stack => 'xxx', to_stack => 'init'});
+$DB::single = 1;
 
 # And now the init stack should have all the latest and greatest...
 $local->registration_ok('JOHN/DistA-2/PkgA~2');

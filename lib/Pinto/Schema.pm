@@ -23,6 +23,10 @@ __PACKAGE__->load_namespaces;
 
 #-------------------------------------------------------------------------------
 
+use SQL::Translator::Schema::Trigger;
+
+#-------------------------------------------------------------------------------
+
 use Readonly;
 Readonly::Scalar our $SCHEMA_VERSION => 2;
 sub schema_version { return $SCHEMA_VERSION };

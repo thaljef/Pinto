@@ -11,6 +11,7 @@ use HTTP::Date qw(time2str);
 
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(File Io);
+use Pinto::Util qw(author_dir);
 
 use namespace::autoclean;
 
@@ -91,7 +92,8 @@ sub _write_records {
     my ($self, $fh, @records) = @_;
 
     for my $record ( @records ) {
-        my ($name, $version, $path) = @{ $record };
+        my ($name, $version, $author, $archive) = @{ $record };
+        my $path = author_dir($author) . '/' . $archive;
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
@@ -116,9 +118,12 @@ sub _get_index_records {
     # like one produced by PAUSE.  Also, this is about twice as fast
     # as using an iterator to read each record lazily.
 
-    my $attrs   = {select => [qw(package_name package_version distribution_path)] };
-    my $rs      = $stack->search_related_rs('registrations', {}, $attrs);
-    my @records =  sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
+    my @joins   = qw(package distribution);
+    my @selects = qw(package.name package.version distribution.author_canonical distribution.archive);
+
+    my $attrs   = {join => \@joins, select => \@selects};
+    my $rs      = $stack->search_related('registrations', {}, $attrs);
+    my @records = sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
 
     return @records;
 
