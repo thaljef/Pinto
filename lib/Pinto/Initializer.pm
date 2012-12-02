@@ -164,6 +164,7 @@ sub _create_stack {
     my $stack = $repo->create_stack(name => $stk_name, is_default => 1);
 
     $stack->set_property(description => $stk_description);
+    $stack->close(message => 'Created stack.');
 
     $repo->create_stack_filesystem(stack => $stack);
     $repo->write_index(stack => $stack);
