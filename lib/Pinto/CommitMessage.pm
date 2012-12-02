@@ -44,7 +44,7 @@ sub _build_details {
 
     my @stacks = $self->stacks;
 
-    return 'No details available' if not @stacks;
+    return 'No details available.' if not @stacks;
 
     my $details = '';
     for my $stack ( @stacks ) {
