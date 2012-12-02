@@ -178,8 +178,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 23:52:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rW0oK29FSyYHZ4HPIeFSmw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-02 01:22:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TMqHO2HuSXlSfQsAb5mlWg
 
 #-------------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ sub undo {
         throw "Found no registrations matching $self on stack $stack" if not defined $reg;
 
         $reg->delete;
-        $self->debug( sub {"Deleted $self"} );
+        $self->debug( sub {"Deleted  $self"} );
 
     }
     elsif ($event eq 'delete') {
