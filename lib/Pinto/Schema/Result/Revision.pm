@@ -265,9 +265,6 @@ sub undo {
 
     my @changes = $self->kommit->registration_changes(undef, $attrs);
 
-    $DB::single = 1;
-
-    printf ">>>>> Undoing %s: %s\n", $self->to_string, $self->kommit->message_title;
     $_->undo(stack => $self->stack) for @changes;
 
     return $self;

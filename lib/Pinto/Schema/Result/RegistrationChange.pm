@@ -205,7 +205,6 @@ sub undo {
         my $attrs = { key => 'stack_package_unique' };
         my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
         throw "Found no registrations matching $self on stack $stack" if not defined $reg;
-        print "Deleting  $self\n";
 
         $reg->delete;
         $self->debug( sub {"Deleted $self"} );
@@ -213,7 +212,6 @@ sub undo {
     }
     elsif ($event eq 'delete') {
 
-        print "Restoring $self\n";
         $self->result_source->schema->resultset('Registration')->create($state);
         $self->debug( sub {"Restored $self"} );
 
