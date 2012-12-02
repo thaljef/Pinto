@@ -81,7 +81,8 @@ CREATE TABLE stack (
 CREATE TABLE registration (
        id                   INTEGER PRIMARY KEY NOT NULL,
        stack                INTEGER             NOT NULL,
-       package              INTEGER             NOT NULL, /* Points to the package with the package_name */
+       package              INTEGER             NOT NULL, /* Points to the package */
+       package_name         TEXT                NOT NULL, /* Name of referenced the package.  Must be unique per stack */
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
        is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
 
@@ -104,6 +105,7 @@ CREATE TABLE registration_change (
        id            INTEGER PRIMARY KEY NOT NULL,
        event         TEXT                NOT NULL, /* INSERT or DELETE */
        package       INTEGER             NOT NULL, /* Points to the package that was registered */
+       package_name  TEXT                NOT NULL, /* Name of the referenced package.  Must be unique per kommit */
        distribution  INTEGER             NOT NULL, /* Points to the distribution that contained the package */
        is_pinned     BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
        kommit        INTEGER             NOT NULL, /* Points to commit in which this change ocurred */
@@ -178,16 +180,18 @@ CREATE UNIQUE INDEX d ON package(name, distribution);
 CREATE UNIQUE INDEX e ON stack(name);
 CREATE UNIQUE INDEX f ON stack(name_canonical);
 CREATE UNIQUE INDEX g ON registration(stack, package);
-CREATE UNIQUE INDEX h ON registration_change(event, package, kommit);
-CREATE UNIQUE INDEX i ON revision(stack, kommit);
-CREATE UNIQUE INDEX j ON revision(stack, number);
-CREATE UNIQUE INDEX k ON prerequisite(distribution, package_name);
-CREATE UNIQUE INDEX l ON repository_property(key);
-CREATE UNIQUE INDEX m ON repository_property(key_canonical);
+CREATE UNIQUE INDEX h ON registration(stack, package_name);
+CREATE UNIQUE INDEX i ON registration_change(event, package, kommit) ON CONFLICT REPLACE;
+CREATE UNIQUE INDEX j ON registration_change(event, package_name, kommit) ON CONFLICT REPLACE;
+CREATE UNIQUE INDEX k ON revision(stack, kommit);
+CREATE UNIQUE INDEX l ON revision(stack, number);
+CREATE UNIQUE INDEX m ON prerequisite(distribution, package_name);
+CREATE UNIQUE INDEX n ON repository_property(key);
+CREATE UNIQUE INDEX o ON repository_property(key_canonical);
 
-CREATE        INDEX n ON registration(stack);
-CREATE        INDEX o ON package(name);
-CREATE        INDEX p ON package(sha256);
-CREATE        INDEX q ON package(file);
-CREATE        INDEX r ON distribution(author);
-CREATE        INDEX s ON prerequisite(package_name);
+CREATE        INDEX p ON registration(stack);
+CREATE        INDEX q ON package(name);
+CREATE        INDEX r ON package(sha256);
+CREATE        INDEX s ON package(file);
+CREATE        INDEX t ON distribution(author);
+CREATE        INDEX u ON prerequisite(package_name);

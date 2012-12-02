@@ -44,6 +44,11 @@ __PACKAGE__->table("registration");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 package_name
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 distribution
 
   data_type: 'integer'
@@ -64,6 +69,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "package_name",
+  { data_type => "text", is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
@@ -83,6 +90,20 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
+
+=head2 C<stack_package_name_unique>
+
+=over 4
+
+=item * L</stack>
+
+=item * L</package_name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "package_name"]);
 
 =head2 C<stack_package_unique>
 
@@ -159,8 +180,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7Hn+psU1trsr3Ewqu4ggrg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 21:41:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5FuY4cqJpXjQRvLbAhQbXw
 
 #------------------------------------------------------------------------------
 
@@ -201,8 +222,8 @@ sub sqlt_deploy_hook {
 
     # If there is already a change record for this package 
     # in this kommit,then just replace the existing one.
-    my $sql      = qq{ INSERT OR REPLACE INTO registration_change (event, package, distribution, is_pinned, kommit) };
-       $sql     .= qq{ VALUES ('$event', $tb.package, $tb.distribution, $tb.is_pinned, ($kommit)); };
+    my $sql      = qq{ INSERT INTO registration_change (event, package, package_name, distribution, is_pinned, kommit) };
+       $sql     .= qq{ VALUES ('$event', $tb.package, $tb.package_name, $tb.distribution, $tb.is_pinned, ($kommit)); };
 
     $sqlt_table->schema->add_trigger(
       name                => "after_${event}_registration",

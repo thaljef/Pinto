@@ -235,8 +235,9 @@ sub register {
     my $stack = $args{stack};
     my $pin   = $args{pin};
 
-    my $struct = { is_pinned    => $pin,
-                   stack        => $stack->id,
+    my $struct = { stack        => $stack->id,
+                   is_pinned    => $pin,
+                   package_name => $self->name,
                    distribution => $self->distribution->id };
 
     $self->create_related( registrations => $struct );

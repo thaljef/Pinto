@@ -43,6 +43,11 @@ __PACKAGE__->table("registration_change");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 package_name
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 distribution
 
   data_type: 'integer'
@@ -69,6 +74,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "package_name",
+  { data_type => "text", is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
@@ -106,6 +113,25 @@ __PACKAGE__->set_primary_key("id");
 =cut
 
 __PACKAGE__->add_unique_constraint("event_package_kommit_unique", ["event", "package", "kommit"]);
+
+=head2 C<event_package_name_kommit_unique>
+
+=over 4
+
+=item * L</event>
+
+=item * L</package_name>
+
+=item * L</kommit>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "event_package_name_kommit_unique",
+  ["event", "package_name", "kommit"],
+);
 
 =head1 RELATIONS
 
@@ -168,8 +194,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1uUYEp6nErawucdw8MU98w
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 21:41:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nK2kWZttkJioOFfCt+6Jgw
 
 #-------------------------------------------------------------------------------
 
