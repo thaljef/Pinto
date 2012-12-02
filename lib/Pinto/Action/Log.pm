@@ -61,7 +61,7 @@ sub execute {
 
         if ($self->detailed) {
             my @details = $revision->kommit->registration_changes;
-            $self->say($_) for (@details ? @details : 'No details available')
+            $self->say($_) for (@details ? @details : 'No details available.')
         }
     }
 
