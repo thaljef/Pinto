@@ -98,22 +98,6 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<event_package_kommit_unique>
-
-=over 4
-
-=item * L</event>
-
-=item * L</package>
-
-=item * L</kommit>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("event_package_kommit_unique", ["event", "package", "kommit"]);
-
 =head2 C<event_package_name_kommit_unique>
 
 =over 4
@@ -194,8 +178,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 21:41:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nK2kWZttkJioOFfCt+6Jgw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 23:52:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rW0oK29FSyYHZ4HPIeFSmw
 
 #-------------------------------------------------------------------------------
 
@@ -222,6 +206,7 @@ sub undo {
 
     my $state = { stack        => $stack,
                   package      => $self->package,
+                  package_name => $self->package_name,
                   distribution => $self->distribution,
                   is_pinned    => $self->is_pinned };
 

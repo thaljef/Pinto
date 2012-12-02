@@ -222,7 +222,7 @@ sub sqlt_deploy_hook {
 
     # If there is already a change record for this package 
     # in this kommit,then just replace the existing one.
-    my $sql      = qq{ INSERT INTO registration_change (event, package, package_name, distribution, is_pinned, kommit) };
+    my $sql      = qq{ INSERT OR REPLACE INTO registration_change (event, package, package_name, distribution, is_pinned, kommit) };
        $sql     .= qq{ VALUES ('$event', $tb.package, $tb.package_name, $tb.distribution, $tb.is_pinned, ($kommit)); };
 
     $sqlt_table->schema->add_trigger(
@@ -412,10 +412,6 @@ sub to_string {
          w => sub { $self->package->distribution->version                             },
          u => sub { $self->package->distribution->url                                 },
          k => sub { $self->stack->name                                                },
-         M => sub { $self->stack->is_default                 ? '*' : ' '              },
-         e => sub { $self->stack->get_property('description')                         },
-         j => sub { $self->stack->head_revision->kommit->committed_by                 },
-         u => sub { $self->stack->head_revision->kommit->committed_on->strftime('%c') },
          y => sub { $self->is_pinned                        ? '+' : ' '               },
     );
 

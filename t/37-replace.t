@@ -39,7 +39,6 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
   # Now replace archive_1 with archive_hotfixed
   $t->run_ok(Replace => {target => 'JOHN/Dist-1.tar.gz', archive => $archive_hotfixed, author => 'JOHN'});
-  $DB::single = 1;
 
   # 'init' stack should now have hotfixed versions of PkgA and PkgB, plus PkgD
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgA~1/init');

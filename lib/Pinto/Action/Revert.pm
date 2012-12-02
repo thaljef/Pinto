@@ -37,15 +37,44 @@ has revision => (
     default  => -1,
 );
 
+
+has target_revision => (
+    is       => 'ro',
+    isa      => Int,
+    init_arg => undef,
+    builder  => '_build_target_revision',
+    lazy     => 1,
+);
+
+#------------------------------------------------------------------------------
+
+sub _build_target_revision {
+    my ($self) = @_;
+
+    my $stack     = $self->repo->get_stack($self->stack);
+
+    my $revnum    = $self->revision;
+    my $headnum   = $stack->head_revision->number;
+    my $target    = $revnum < 0 ? ($headnum + $revnum) : $revnum;
+
+    throw "Cannot go beyond revision 0" if $target < 0;
+
+    throw "Revision $target has not happend yet on stack $stack" if $target > $headnum;
+
+    throw "Revision $target is the head of stack $stack" if $target == $headnum;
+
+    return $target;
+}
+
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $stack   = $self->repo->get_stack($self->stack);
-    my $revnum  = $self->_compute_target_revnum($stack);
+    my $stack = $self->repo->get_stack($self->stack);
+    my $target = $self->target_revision;
 
-    $self->_revert($stack, $revnum);
+    $self->_revert($stack, $target);
 
     if (not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
@@ -58,41 +87,20 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _compute_target_revnum {
-    my ($self, $stack) = @_;
-
-    my $head = $stack->head_revision;
-
-    throw "Stack $stack has no revisions" if not defined $head;
-
-    my $headnum = $head->number;
-    my $revnum  = $self->revision;
-    $revnum     = ($headnum + $revnum) if $revnum < 0;
-
-    throw "Cannot go beyond revision 0" if $revnum < 0;
-
-    throw "No such revision $revnum on stack $stack" if $revnum > $headnum;
-
-    throw "Revision $revnum is the head of stack $stack" if $revnum == $headnum;
-
-    return $revnum;
-}
-
-#------------------------------------------------------------------------------
-
 sub _revert {
-    my ($self, $stack, $revnum) = @_;
+    my ($self, $stack, $target) = @_;
 
-    $self->notice("Reverting stack $stack to revision $revnum");
+    $self->notice("Reverting stack $stack to revision $target");
 
     my $new_head  = $self->repo->open_revision(stack => $stack);
     my $previous_revision = $new_head->previous_revision;
 
-    while ($previous_revision->number > $revnum) {
+    while ($previous_revision->number > $target) {
         $previous_revision->undo;
         $previous_revision = $previous_revision->previous_revision;
-        last if not defined $previous_revision;
 
+        # If our logic is right, then $previous_revision should always exist
+        throw "PANIC: Reached end of history" if not defined $previous_revision;
     }
 
     return $self;
@@ -103,7 +111,7 @@ sub _revert {
 sub message_title {
     my ($self) = @_;
 
-    my $revnum = $self->revision;
+    my $revnum = $self->target_revision;
 
     return "Reverted to revision $revnum.";
 }

@@ -211,6 +211,24 @@ before is_default => sub {
 
 #------------------------------------------------------------------------------
 
+after delete => sub {
+    my ($self) = @_;
+
+    # Kommits can be tied to multiple revisions (on different stacks) so they
+    # can't be deleted simply by cascading.  After the stack is deleted, all
+    # revisions that referenced the stack will be deleted by cascade.  Then
+    # we can clean up the Kommits by looking for those that are no longer
+    # referenced by any revision.  Once those Kommits are deleted, the
+    # RegistrationChanges referenced by those Kommits will also be deleted
+    # by cascade.
+
+    my $where = {'revisions.id' => undef};
+    my $attrs = {join => 'revisions'};
+    $self->result_source->schema->resultset('Kommit')->search($where, $attrs)->delete;
+};
+
+#------------------------------------------------------------------------------
+
 sub close {
     my ($self, @args) = @_;
 
@@ -551,11 +569,13 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                                },
-           M => sub { $self->is_default                          ? '*' : ' '     },
-           j => sub { $self->head_revision->kommit->committed_by                 },
-           u => sub { $self->head_revision->kommit->committed_on->strftime('%c') },
-           e => sub { $self->get_property('description')                         },
+           k => sub { $self->name                                                 },
+           M => sub { $self->is_default                          ? '*' : ' '      },
+           B => sub { $self->number                                               },
+           G => sub { $self->head_revision->kommit->message                       },
+           J => sub { $self->head_revision->kommit->committed_by                  },
+           U => sub { $self->head_revision->kommit->committed_on->strftime('%c')  },
+           e => sub { $self->get_property('description')                          },
     );
 
     $format ||= $self->default_format();

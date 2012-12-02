@@ -696,7 +696,9 @@ sub create_stack {
     throw "Stack $args{name} already exists"
         if $self->get_stack($args{name}, nocroak => 1);
 
-    return $self->db->create_stack( \%args);
+    my $stack = $self->db->create_stack( \%args);
+
+    return $self->open_stack($stack);
 }
 
 #-------------------------------------------------------------------------------

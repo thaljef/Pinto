@@ -201,7 +201,9 @@ sub new_revision_number {
     my $where = { stack => $self->stack->id };
     my $revision_rs = $self->result_source->resultset->search($where);
 
-    return $revision_rs->count + 1;
+    # Revision numbers are zero-based.  So just counting the number of
+    # revisions should give us the next revision number.
+    return $revision_rs->count;
 }
 
 #------------------------------------------------------------------------------

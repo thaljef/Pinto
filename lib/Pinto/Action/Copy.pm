@@ -19,6 +19,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Transactional );
+
+#------------------------------------------------------------------------------
+
 has from_stack => (
     is       => 'ro',
     isa      => StackName | StackObject,
@@ -63,17 +67,6 @@ sub execute {
     $self->repo->write_index(stack => $copy);
 
     return $self->result->changed;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $orig = $self->repo->get_stack($self->from_stack)->head_revision;
-    my $copy = $self->repo->get_stack($self->to_stack);
-
-    return "Copied stack $orig to stack $copy.";
 }
 
 #------------------------------------------------------------------------------

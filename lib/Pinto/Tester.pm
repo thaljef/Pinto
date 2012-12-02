@@ -289,14 +289,7 @@ sub head_revision_number_is {
 
     $test_name ||= "Head revision number of stack $stack matches";
 
-    if (defined $head) {
-        my $head_revnum = $head->number;
-        return $self->tb->is_eq($head_revnum, $revnum, $test_name);
-    }
-    else {
-        return $self->tb->is_eq($head, $revnum, $test_name);
-    }
-
+    return $self->tb->is_eq($head->number, $revnum, $test_name);
 }
 
 #------------------------------------------------------------------------------

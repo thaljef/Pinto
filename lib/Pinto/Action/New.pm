@@ -19,6 +19,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Transactional );
+
+#------------------------------------------------------------------------------
+
 has stack => (
     is       => 'ro',
     isa      => StackName,
@@ -48,20 +52,11 @@ sub execute {
     $stack->set_property(description => $self->description) if $self->has_description;
     $stack->mark_as_default if $self->default;
 
+    $stack->close(message => 'Created stack');
     $self->repo->create_stack_filesystem(stack => $stack);
     $self->repo->write_index(stack => $stack);
 
     return $self->result->changed;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $stack = $self->stack;
-
-    return "Created new stack $stack.";
 }
 
 #------------------------------------------------------------------------------

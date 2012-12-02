@@ -71,7 +71,6 @@ $local->registration_ok('FRED/DistB-1/PkgB~1/init/-');
 
 # Now we can bring over the work that was done on the xxx stack...
 $local->run_ok('Merge', {from_stack => 'xxx', to_stack => 'init'});
-$DB::single = 1;
 
 # And now the init stack should have all the latest and greatest...
 $local->registration_ok('JOHN/DistA-2/PkgA~2');

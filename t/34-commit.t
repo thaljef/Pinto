@@ -43,12 +43,21 @@ my $t = Pinto::Tester->new;
 #------------------------------------------------------------------------------
 
 {
+	my $stack = $t->pinto->repo->get_stack;
+	my $revision = $stack->head_revision;
+
+	is ($revision->number, 0, 'First revision is 0');
+}
+
+#------------------------------------------------------------------------------
+
+{
 	$t->run_ok(Fake => {});
 	my $stack = $t->pinto->repo->get_stack;
 	my $revision = $stack->head_revision;
 
 
-	is ($revision->number, 1, 'First commit is revision 1');
+	is ($revision->number, 1, 'First commit is revision 0');
 	is ($revision->kommit->committed_by, 'ME', 'Revision was committed by ME');
 	is ($revision->kommit->message, 'my title', 'Message is title only no commit message specified');
 	is ($revision->kommit->message_body, '', 'Message body is empty when no commit message specified');
