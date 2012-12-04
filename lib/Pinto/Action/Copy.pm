@@ -3,7 +3,7 @@
 package Pinto::Action::Copy;
 
 use Moose;
-use MooseX::Types::Moose qw(Str Bool);
+use MooseX::Types::Moose qw(Str Bool Undef);
 
 use Pinto::Types qw(StackName StackObject);
 
@@ -46,8 +46,7 @@ has default => (
 
 has description => (
     is         => 'ro',
-    isa        => Str,
-    predicate  => 'has_description',
+    isa        => Str | Undef,
 );
 
 #------------------------------------------------------------------------------
@@ -58,7 +57,7 @@ sub execute {
     my $orig = $self->repo->get_stack($self->from_stack);
     my $copy = $self->repo->copy_stack(from => $orig, to => $self->to_stack);
 
-    my $description = $self->description || "copy of stack $orig";
+    my $description = $self->description || "Copy of stack $orig.";
     $copy->set_property(description => $description);
 
     $copy->mark_as_default if $self->default;
