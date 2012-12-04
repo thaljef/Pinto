@@ -12,7 +12,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   my $archive =  make_dist_archive('Dist-1=PkgA~1');
 
   # Put archive on the init stack.
@@ -38,7 +38,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
 
   # Make sure "init" is the default
   ok($t->pinto->repo->get_stack('init')->is_default, 'init stack is default');

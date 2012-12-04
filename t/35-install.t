@@ -28,7 +28,7 @@ warn "You will see some messages from cpanm, don't be alarmed...\n";
 
 #------------------------------------------------------------------------------
 
-my $t = Pinto::Tester->new;
+my $t = Pinto::Tester->new_with_stack;
 $t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
 $t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
 $t->populate('MARK/DistC-1 = PkgC~1');

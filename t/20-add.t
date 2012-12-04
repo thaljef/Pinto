@@ -23,7 +23,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 # Adding a local dist...
 
 {
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {archives => $archive, author => $auth});
 
   $t->registration_ok("$auth/$dist/$pkg1/init");
@@ -34,7 +34,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 # Adding to alternative stack...
 
 {
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('New', {stack => 'dev'});
   $t->run_ok('Add', {archives => $archive, author => $auth, stack => 'dev'});
 
@@ -47,7 +47,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {archives => $archive, author => $auth});
   $t->registration_ok("$auth/$dist/$pkg1/init");
   $t->registration_ok("$auth/$dist/$pkg2/init");
@@ -70,7 +70,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {archives => $archive, author => $auth});
   $t->registration_ok("$auth/$dist/$pkg1/init");
   $t->registration_ok("$auth/$dist/$pkg2/init");
@@ -90,7 +90,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {archives => $archive, author => $auth});
   $t->registration_ok("$auth/$dist/$pkg1/init");
   $t->registration_ok("$auth/$dist/$pkg2/init");
@@ -115,7 +115,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
   is(sha256($archive1), sha256($archive2), 'Archives are identical');
   isnt($archive1->basename, $archive2->basename, 'Archives have different names');
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {archives => $archive1, author => $auth});
   $t->run_throws_ok('Add', {archives => $archive2, author => $auth}, 
     qr/$archive2 is the same .* but with different name/);
@@ -126,7 +126,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 # Adding multiple dists to the same path
 
 {
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
 
   # Two different dists with identical names...
   my $archive1 = make_dist_archive("Dist-1=A~1");
@@ -148,7 +148,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 # Adding something that requires a perl (the perl prereq should be ignored)
 
 {
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   my $archive = make_dist_archive("Foo-1.0 = Foo~1.0 & perl~5.10");
   $t->run_ok('Add', {archives => $archive, author => $auth});
 
@@ -159,7 +159,7 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
 # Adding something that requires a core-only module (the prereq should be ignored)
 
 {
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   my $archive = make_dist_archive("Foo-1.0 = Foo~1.0 & IPC::Open3~1.0");
   $t->run_ok('Add', {archives => $archive, author => $auth});
 

@@ -76,6 +76,21 @@ has tb => (
 );
 
 #------------------------------------------------------------------------------
+
+sub new_with_stack {
+    my ($class, @args) = @_;
+
+    # Arguments could be either hash or hash reference
+    my $args = ($args[0] && ref $args[0] eq 'HASH') ? $args[0] : {@args};
+
+    # Set the initial stack if not given one
+    $args->{init_args} ||= {};
+    $args->{init_args}->{stack} = 'init';
+
+    return $class->new($args);
+}
+
+#------------------------------------------------------------------------------
 # This force the repository to be constructed immediately.  Just
 # making the 'pinto' attribute non-lazy didn't work, probably due to
 # dependencies on other attributes.

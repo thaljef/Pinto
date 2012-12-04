@@ -12,7 +12,7 @@ use Pinto::Tester;
 
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
 
   # Add 2 versions of a dist;
   $t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1'); # Rev 1

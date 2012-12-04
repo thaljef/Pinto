@@ -13,13 +13,13 @@ use Pinto::Tester::Util qw(make_dist_archive);
 # This test follows RJBS' use case....
 #------------------------------------------------------------------------------
 
-my $cpan = Pinto::Tester->new;
+my $cpan = Pinto::Tester->new_with_stack;
 $cpan->populate( 'JOHN/DistA-1 = PkgA~1 & PkgB~1',
                  'FRED/DistB-1 = PkgB~1', );
 
 #------------------------------------------------------------------------------
 
-my $local = Pinto::Tester->new(init_args => {sources => $cpan->stack_url});
+my $local = Pinto::Tester->new_with_stack(init_args => {sources => $cpan->stack_url});
 
 # PkgA requires PkgB (above). MyDist requires both PkgA and PkgB...
 my $archive =  make_dist_archive('MyDist-1=MyPkg-1 & PkgA~1,PkgB~1');

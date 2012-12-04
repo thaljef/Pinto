@@ -12,7 +12,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
   my $archive =  make_dist_archive('Dist-1=PkgA~1');
 
   # Put archive on the init stack.
@@ -41,7 +41,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
 {
 
- my $t = Pinto::Tester->new;
+ my $t = Pinto::Tester->new_with_stack;
  $t->run_throws_ok(Rename => {from_stack => 'bogus', to_stack => 'whatever'},
     qr/does not exist/, 'Cannot rename non-existant stack');
 

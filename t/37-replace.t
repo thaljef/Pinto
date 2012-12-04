@@ -11,7 +11,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
 
   # archive_1 contains PkgA~1 and PkgB~1
   my $archive_1 =  make_dist_archive('Dist-1=PkgA~1,PkgB~1,PkgC~1');

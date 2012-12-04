@@ -10,7 +10,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-my $source = Pinto::Tester->new;
+my $source = Pinto::Tester->new_with_stack;
 $source->populate('JOHN/Baz-1.2 = Baz~1.2 & Nuts~2.3');
 $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
@@ -19,7 +19,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
 {
   my $archive = make_dist_archive("ME/Foo-Bar-0.01 = Foo~0.01,Bar~0.01 & Baz~1.2");
-  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  my $local = Pinto::Tester->new_with_stack(init_args => {sources => $source->stack_url});
   $local->run_ok('Add', {archives => $archive, author => 'ME'});
 
   $local->registration_ok('ME/Foo-Bar-0.01/Foo~0.01');
@@ -33,7 +33,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
 {
   my $archive = make_dist_archive("ME/Foo-Bar-0.01 = Foo~0.01,Bar~0.01 & Baz~2.4");
-  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  my $local = Pinto::Tester->new_with_stack(init_args => {sources => $source->stack_url});
   $local->run_throws_ok( 'Add', {archives => $archive, author => 'ME'},
                           qr/Cannot find prerequisite Baz~2.4/);
 }
@@ -43,7 +43,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
 {
   my $archive = make_dist_archive("ME/Foo-0.01 = Foo~0.01 & perl~5.10.1");
-  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  my $local = Pinto::Tester->new_with_stack(init_args => {sources => $source->stack_url});
   $local->run_ok('Add', {archives => $archive, author => 'ME'});
   $local->registration_ok('ME/Foo-0.01/Foo~0.01');
 }
@@ -53,14 +53,14 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
 {
   my $archive = make_dist_archive("ME/Foo-0.01 = Foo~0.01 & Scalar::Util~1.13");
-  my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
+  my $local = Pinto::Tester->new_with_stack(init_args => {sources => $source->stack_url});
   $local->run_ok('Add', {archives => $archive, author => 'ME'});
   $local->registration_ok('ME/Foo-0.01/Foo~0.01');
 }
 
 #------------------------------------------------------------------------------
 {
-  my $local = Pinto::Tester->new;
+  my $local = Pinto::Tester->new_with_stack;
 
   my $foo1 = make_dist_archive('Foo-1 = Foo~1');
   my $foo2 = make_dist_archive('Foo-2 = Foo~2');
