@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Note that a stack is a copy (maybe use stack props)
-
 =item Move repository configuration into the DB
 
 =item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
