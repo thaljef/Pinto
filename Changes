@@ -1,17 +1,53 @@
 {{$NEXT}}
 
+     Important:
+
+     This version of Pinto is not compatible with repositories that
+     were created with prior versions.  Please contact
+     thaljef@cpan.org if you need to migrate an old repository.
+     However, Pinto now uses DBIx::Class::DeploymentHandler to perform
+     schema migrations, so you'll be able to smoothly upgrade to
+     future versions of Pinto.
+
      Interface Changes:
 
-     * The Props and Edit actions are gone.  The new Config action will 
-       both set and show configuration properties.  Marking the default
-       stack is now handled by the Default action.  You'll need the 
-       latest version of App::Pinto to get command-line interfaces to 
-       these actions.
+     * The Props and Edit actions are gone.  The new Config action
+       will both set and show configuration properties.  Marking the
+       default stack is now handled by the Default action.  You'll
+       need the latest version of App::Pinto to get command-line
+       interfaces to these actions.
+
+     * You are no longer required to have a default stack.  If you
+       choose not to have a default stack, then all Actions will
+       require an explicit stack argument.
+
+     * I decided that there really isn't a suitable default name for
+       the initial stack.  So now you must specify the initial stack
+       name when you create the repository.  Otherwise, you'll get a
+       bare repository with no stacks.
+
+     * If you Add an archive that is identical to one that is already
+       in the repository (i.e. has the same SHA-256 hash and same base
+       file name) then Pinto simply re-registers the archive that it
+       already has on the target stack.  If archives are identical but
+       the file base names do not match, then an error will be thrown.
+
+     * When you copy a stack, its entire history is copied as well.
+       This means that you can view the logs and revert the copied
+       stack back to revisions that happened before the point of the
+       copy.
+
+     * Copying a stack is no longer a committable event, so it does
+       not require a log message.
+
 
      Other Improvements:
 
      * Copying a stack is now much, much faster.  On my machine, copying
        a stack with ~200 distributions went from 1 minute to 3 seconds.
+
+     * Reverting a stack is also much faster.  But if you revert over
+       several revisions, it can still be a pretty slow process.
 
 
 0.065     2012-11-14 09:55:54 America/Los_Angeles
