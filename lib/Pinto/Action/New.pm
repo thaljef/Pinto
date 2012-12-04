@@ -3,7 +3,7 @@
 package Pinto::Action::New;
 
 use Moose;
-use MooseX::Types::Moose qw(Str Bool);
+use MooseX::Types::Moose qw(Str Bool Undef);
 
 use Pinto::Types qw(StackName);
 
@@ -19,7 +19,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Transactional );
+with qw( Pinto::Role::Committable );
 
 #------------------------------------------------------------------------------
 
@@ -39,8 +39,7 @@ has default => (
 
 has description => (
     is         => 'ro',
-    isa        => Str,
-    predicate  => 'has_description',
+    isa        => Str | Undef,
 );
 
 #------------------------------------------------------------------------------
@@ -49,14 +48,24 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repo->create_stack(name => $self->stack);
-    $stack->set_property(description => $self->description) if $self->has_description;
+    $stack->set_property(description => $self->description) if $self->description;
     $stack->mark_as_default if $self->default;
 
-    $stack->close(message => 'Created stack.');
+    my $message = $self->edit_message(stacks => [$stack]);
+    $stack->close(message => $message);
+
     $self->repo->create_stack_filesystem(stack => $stack);
     $self->repo->write_index(stack => $stack);
 
     return $self->result->changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub message_title {
+    my ($self) = @_;
+
+    return 'Created stack.';
 }
 
 #------------------------------------------------------------------------------
