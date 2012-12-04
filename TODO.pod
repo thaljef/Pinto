@@ -18,6 +18,8 @@
 
 =item Create command to populate repository from current modules in @INC
 
+=item Create command to reindex a pkg/dist
+
 =item Create command to unregister a pkg/dist
 
 =item Create command to completely remove a dist
