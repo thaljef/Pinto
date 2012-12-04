@@ -352,10 +352,14 @@ sub copy {
 sub copy_deeply {
     my ($self, $changes) = @_;
 
-    # TODO: wrapn in txn
     my $copy = $self->copy($changes);
     $self->copy_revisions(to => $copy);
     $self->copy_registrations(to => $copy);
+
+    # Note when and where this stack was copied.  At the moment, we're
+    # not doing anything with this, but we might want to display it in
+    # the logs or do a --stop-on-copy feature similar to Subversion.
+    $copy->set_property('pinto-copied-from' => $self->head_revision->to_string);
 
     return $copy;
 }

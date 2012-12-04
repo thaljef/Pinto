@@ -56,11 +56,15 @@ my $t = Pinto::Tester->new_with_stack;
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
 
-  is $qa_stack->get_property('description'), 'copy of stack dev',
+  is $qa_stack->get_property('description'), 'Copy of stack dev.',
     'Copied stack has default description';
 
   is $qa_stack->head_revision->number, $dev_stack->head_revision->number,
     'Copied stack head revision number is original head revision number';
+
+  is $qa_stack->get_property('pinto-copied-from'), $dev_stack->head_revision->to_string,
+    'pinto-copied-from property matches head revision of original stack';
+
 }
 
 #------------------------------------------------------------------------------
