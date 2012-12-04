@@ -101,9 +101,6 @@ sub _build_pinto {
 
 #------------------------------------------------------------------------------
 
-# for backcompat
-sub reset_buffer { goto &reset_log }
-
 sub reset_log {
     my ($self) = @_;
 
