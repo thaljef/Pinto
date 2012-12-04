@@ -3,6 +3,7 @@
 package Pinto::Action::Default;
 
 use Moose;
+use MooseX::Types::Moose qw(Bool);
 
 use Pinto::Types qw(StackName StackObject);
 
@@ -25,7 +26,13 @@ with qw( Pinto::Role::Transactional );
 has stack => (
     is       => 'ro',
     isa      => StackName | StackObject,
-    default  => undef,
+);
+
+
+has none => (
+	is      => 'ro',
+	isa     => 'Bool',
+	default => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -33,10 +40,16 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack    = $self->repo->get_stack($self->stack);
-    my $did_mark = $stack->mark_as_default;
-
-    $self->result->changed if $did_mark;
+   	if ($self->none) {
+   		my $default_stack = $self->repo->get_stack;
+   		$default_stack->unmark_as_default;
+   		$self->result->changed;
+   	}
+   	else {
+    	my $stack    = $self->repo->get_stack($self->stack);
+    	my $did_mark = $stack->mark_as_default;
+	    $self->result->changed if $did_mark;
+	}
 
     return $self->result;
 }

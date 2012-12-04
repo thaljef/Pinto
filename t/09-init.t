@@ -4,40 +4,75 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Exception;
 
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------
-# Test default config
+# Test bare repository
 
-my $t = Pinto::Tester->new;
-my $pinto = $t->pinto;
+{
+	my $t = Pinto::Tester->new;
 
-$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
-$t->path_exists_ok( [qw(.pinto db pinto.db)] );
-$t->path_exists_ok( [qw(init modules 02packages.details.txt.gz)] );
-$t->path_exists_ok( [qw(init modules 03modlist.data.gz)] );
-$t->path_exists_ok( [qw(init authors 01mailrc.txt.gz)] );
+	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
+	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
+	$t->path_exists_ok( [qw(.pinto log)] );
 
-is $pinto->config->devel,    0, 'Got default devel';
-is $pinto->config->log_level,   'notice', 'Got default log_level';
-is $pinto->config->sources,  'http://cpan.perl.org', 'Got default sources';
+	throws_ok { $t->pinto->repo->get_stack } qr/default stack has not been set/,
+		'Bare repository has no stack';
+}
+
+#------------------------------------------------------------------------------
+# Test repository with a default stack
+
+{
+	my $config = {stack => 'dev'};
+	my $t = Pinto::Tester->new( init_args => $config );
+
+	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
+	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
+	$t->path_exists_ok( [qw(.pinto log)] );
+
+	$t->path_exists_ok( [qw(dev modules 02packages.details.txt.gz)] );
+	$t->path_exists_ok( [qw(dev modules 03modlist.data.gz)] );
+	$t->path_exists_ok( [qw(dev authors 01mailrc.txt.gz)] );
+
+	my $stack = $t->pinto->repo->get_stack;
+	is $stack->name, 'dev',   'Initial stack has the right name';
+	is $stack->is_default, 1, 'Initial stack is the default';
+}
+
+#------------------------------------------------------------------------------
+# Test repository created with a stack, but not default
+
+{
+	my $config = {stack => 'dev', nodefault => 1};
+	my $t = Pinto::Tester->new( init_args => $config );
+
+	my $stack = $t->pinto->repo->get_stack('dev');
+	is $stack->name, 'dev',   'Initial stack has the right name';
+	is $stack->is_default, 0, 'Initial stack is not the default';
+}
 
 #------------------------------------------------------------------------------
 # Test custom config
 
-my $config = {sources => 'MySource', log_level => 'debug'};
-$t = Pinto::Tester->new(init_args => $config);
-$pinto = $t->pinto;
+{
+	my $config = {sources => 'MySource', log_level => 'debug'};
+	my $t = Pinto::Tester->new(init_args => $config);
 
-is $pinto->config->log_level,   'debug',  'Got custom log_level';
-is $pinto->config->sources,  'MySource', 'Got custom source';
+	is $t->pinto->config->log_level,   'debug', 'Got custom log_level';
+	is $t->pinto->config->sources,  'MySource', 'Got custom source';
+}
 
 #------------------------------------------------------------------------------
 # Test schema version
 
-my $schema_version = $pinto->repo->db->schema->schema_version;
-is($schema_version, $Pinto::Schema::SCHEMA_VERSION, 'Schema version matches');
+{
+	my $t = Pinto::Tester->new;
+	my $schema_version = $t->pinto->repo->db->schema->schema_version;
+	is $schema_version, $Pinto::Schema::SCHEMA_VERSION, 'Schema version matches';
+}
 
 #------------------------------------------------------------------------------
 

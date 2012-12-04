@@ -78,7 +78,7 @@ sub init {
     $self->_write_mailrc;
 
     # Create the inital stack, if needed
-    $self->_create_stack(name => $args{stack}) unless $args{bare};
+    $self->_create_stack(%args) if $args{stack};
 
     # Log message for posterity
     $self->notice("Created new repository at directory $root_dir");
@@ -157,11 +157,11 @@ sub _create_db {
 sub _create_stack {
     my ($self, %args) = @_;
 
-    my $stk_name  = Pinto::Util::validate_stack_name($args{name} || 'init');
-    my $stk_description = $args{description} || 'the initial stack';
+    my $stk_name  = Pinto::Util::validate_stack_name($args{stack});
+    my $stk_description = $args{description} || 'The initial stack.';
 
     my $repo  = Pinto::Repository->new(config => $self->config);
-    my $stack = $repo->create_stack(name => $stk_name, is_default => 1);
+    my $stack = $repo->create_stack(name => $stk_name, is_default => !$args{nodefault});
 
     $stack->set_property(description => $stk_description);
     $stack->close(message => 'Created stack.');

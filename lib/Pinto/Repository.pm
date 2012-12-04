@@ -241,7 +241,11 @@ sub get_default_stack {
     my $where = {is_default => 1};
     my @stacks = $self->db->select_stacks( $where )->all;
 
-    throw "PANIC! There must be exactly one default stack" if @stacks != 1;
+    # Assert that there is no more than one default stack
+    throw "PANIC: There must be no more than one default stack" if @stacks > 1;
+
+    # Error if the default stack has been set
+    throw "The default stack has not been set" if @stacks == 0;
 
     return $stacks[0];
 }

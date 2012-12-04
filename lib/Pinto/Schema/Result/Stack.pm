@@ -416,8 +416,24 @@ sub mark_as_default {
     my $rs = $self->result_source->resultset->search;
     $rs->update_all( {is_default => 0} );
 
-    $self->warning("Marking stack $self as default");
+    $self->notice("Marking stack $self as default");
     $self->update( {is_default => 1} );
+
+    return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub unmark_as_default {
+    my ($self) = @_;
+
+    if (not $self->is_default) {
+        $self->warning("Stack $self is not the default");
+        return 0;
+    }
+
+    $self->notice("Un marking stack $self as default");
+    $self->update( {is_default => 0} );
 
     return 1;
 }
