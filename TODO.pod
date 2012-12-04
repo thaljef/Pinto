@@ -2,8 +2,6 @@
 
 =over 4
 
-=item Make New a committable Action again?
-
 =item Note that a stack is a copy (maybe use stack props)
 
 =item Move repository configuration into the DB
