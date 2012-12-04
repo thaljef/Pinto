@@ -168,7 +168,7 @@ sub _create_stack {
 
     $pinto->run(New => ( stack       => $stack_name,
                          default     => $stack_is_default,
-                         message     => 'Created stack',
+                         message     => 'Created stack.',
                          description => $stack_description, ));
 
     return;
