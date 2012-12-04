@@ -43,8 +43,9 @@
 
      Other Improvements:
 
-     * Copying a stack is now much, much faster.  On my machine, copying
-       a stack with ~200 distributions went from 1 minute to 3 seconds.
+     * Copying a stack is now much, much faster.  On my machine,
+       copying a stack with ~200 distributions went from 1 minute to 3
+       seconds.
 
      * Reverting a stack is also much faster.  But if you revert over
        several revisions, it can still be a pretty slow process.
@@ -54,42 +55,44 @@
 
      Interface Changes:
 
-     * In commit messages, all lines starting with '#' are discarded.  Previously,
-       we figured out the start and end of the message based on other landmarks, 
-       but that isn't very reliable.
+     * In commit messages, all lines starting with '#' are discarded.
+       Previously, we figured out the start and end of the message
+       based on other landmarks, but that isn't very reliable.
 
-     * Commit timestamps are now reported in the format that is right for your
-       locale.  However, they are reported in UTC, not the local timezone.  I
-       will fix this in the next release.
+     * Commit timestamps are now reported in the format that is right
+       for your locale.  However, they are reported in UTC, not the
+       local timezone.  I will fix this in the next release.
 
      New Features:
 
-     * Commit messages are now parsed into separate title and body sections.
-       The message prompt will advise you to put the title on the first line,
-       followed by one blank line, followed by the body (just like with Git).  
-       We make some attempt to be lenient with the parsing, in case you don't 
-       follow the suggetion.
+     * Commit messages are now parsed into separate title and body
+       sections.  The message prompt will advise you to put the title
+       on the first line, followed by one blank line, followed by the
+       body (just like with Git).  We make some attempt to be lenient
+       with the parsing, in case you don't follow the suggetion.
 
 0.064     2012-11-12 13:29:50 America/Los_Angeles
 
      New Features:
 
-     If running in an interactive environment and the PINTO_PAGER or PAGER
-     environment variable is set, then Action output will be sent to it.
-     Log messages still go to STDERR and will not be sent to the pager.
+     * If running in an interactive environment and the PINTO_PAGER or
+       PAGER environment variable is set, then Action output will be
+       sent to it.  Log messages still go to STDERR and will not be
+       sent to the pager.
 
 0.063     2012-11-12 11:58:29 America/Los_Angeles
 
      Important:
 
      This version of Pinto is not compatible with repositories that
-     were created with prior versions.  Please contact thaljef@cpan.org
-     if you need to migrate an old repository.
+     were created with prior versions.  Please contact
+     thaljef@cpan.org if you need to migrate an old repository.
 
      New Features:
 
-     * Now has a Rename action, to change the name of an existing stack.
-       You'll need a newer App::Pinto to utilize this action (Schwern).
+     * Now has a Rename action, to change the name of an existing
+       stack.  You'll need a newer App::Pinto to utilize this action
+       (Schwern).
 
      Bug Fixes:
 
@@ -99,8 +102,9 @@
 
      Interface Changes:
 
-     * If the commit message for a Committable action is empty (but defined)
-       then we automatically fall back to using the default message.
+     * If the commit message for a Committable action is empty (but
+       defined) then we automatically fall back to using the default
+       message.
 
      Interal API Changes:
 
@@ -120,21 +124,21 @@
 
      * Some query optimizations, to benefit alpha.stratopan.com
 
-     * Stack and Revision objects are now sortable.  In string context,
-       Stacks sort by name.  In numeric context, they sort by Revision.
-       Revisions sort chronologically.
+     * Stack and Revision objects are now sortable.  In string
+       context, Stacks sort by name.  In numeric context, they sort by
+       Revision.  Revisions sort chronologically.
 
 0.060     2012-10-23 10:57:41 America/Los_Angeles
 
      New Features:
 
-     You can now set the default stack at the same time that you
-     create or copy a stack.
+     * You can now set the default stack at the same time that you
+       create or copy a stack.
 
      Other Changes:
 
-     The output of the Blame action now has the familiar format of the
-     List action, and records are sorted by package name.
+     * The output of the Blame action now has the familiar format of
+       the List action, and records are sorted by package name.
 
 0.059     2012-10-20 00:52:34 America/Los_Angeles
 
@@ -146,48 +150,49 @@
 
      Interface Changes:
 
-     Stack names and property names are no longer forced to lowercase.
-     Instead, we preserve the original case when they are created.  But
-     subsequent comparisons or lookups are done irrespective of case.
+     * Stack names and property names are no longer forced to
+       lowercase.  Instead, we preserve the original case when they
+       are created.  But subsequent comparisons or lookups are done
+       irrespective of case.
 
-     Author IDs are no longer forced to uppercase.  However, the 
-     author ID in the canonical path for any distribution that you 
-     add will always be uppercase, which is consistent with PAUSE. 
-     When listing distributions/packages for a certain author, the
-     comparison is done irrespective of case.
+     * Author IDs are no longer forced to uppercase.  However, the
+       author ID in the canonical path for any distribution that you
+       add will always be uppercase, which is consistent with PAUSE.
+       When listing distributions/packages for a certain author, the
+       comparison is done irrespective of case.
 
      Other Changes:
 
-     Made several schema optimizations to help support Stratopan, the
-     upcoming cloud-based service built on Pinto.  For a preview,
-     check out http://alpha.stratopan.com
+     * Made several schema optimizations to help support Stratopan,
+       the upcoming cloud-based service built on Pinto.  For a
+       preview, check out http://alpha.stratopan.com
 
 0.058     2012-10-11 22:47:23 America/Los_Angeles
 
      New Features:
 
-     Added the Blame action, which reports who last modified each
-     package in the stack.  You'll need App::Pinto-0.052 to utilize
-     this action.
+     * Added the Blame action, which reports who last modified each
+       package in the stack.  You'll need App::Pinto-0.052 to utilize
+       this action.
 
      Bug Fixes:
 
-     When pulling prereqs, Pinto would pull the latest version of the
-     package across the entire repository, rather than taking the version
-     that is already on the stack. If the package that
-     is on the stack does not exist or is too old, *then* you get the
-     latest version in the repository.  And if that does not exist or
-     is too old, *then* we get the latest version from an upstream
-     repository.
+     * When pulling prereqs, Pinto would pull the latest version of
+       the package across the entire repository, rather than taking
+       the version that is already on the stack. If the package that
+       is on the stack does not exist or is too old, *then* you get
+       the latest version in the repository.  And if that does not
+       exist or is too old, *then* we get the latest version from an
+       upstream repository.
 
 0.057     2012-10-07 12:28:37 America/Los_Angeles
 
-     The Pull action will ignore requests for packages that are in the
-     Perl core, unless you explicitly request a version of the package
-     that is newer than the core.
+     * The Pull action will ignore requests for packages that are in
+       the Perl core, unless you explicitly request a version of the
+       package that is newer than the core.
 
-     Removed stray dependency on Pinto::Store::File.  That module
-     has been deprecated and no longer ships with Pinto (holybit).
+     * Removed stray dependency on Pinto::Store::File.  That module
+       has been deprecated and no longer ships with Pinto (holybit).
 
 0.056     2012-09-27 13:40:56 America/Los_Angeles
 
@@ -199,62 +204,62 @@
 
      New Features:
 
-     Added the Replace action, which substitues one dist for another
-     on all stacks.  You'll need to upgrade App::Pinto to get the
-     corresponding 'replace' command.
+     * Added the Replace action, which substitues one dist for another
+       on all stacks.  You'll need to upgrade App::Pinto to get the
+       corresponding 'replace' command.
 
      Other Changes:
 
-     Significantly improved performance, especially for large
-     repositories.  Pinto can now hold the *entire* CPAN (not just the
-     tip) and still perform reasonably well.
+     * Significantly improved performance, especially for large
+       repositories.  Pinto can now hold the *entire* CPAN (not just
+       the tip) and still perform reasonably well.
 
-     Changed the way prereqs are discovered.  We now trust the
-     dist's own META to tell us the prereqs, rather than configuring
-     the dist directly.  This is much faster and usually just
-     as accurate.  The only casualties are old dists that don't
-     have a META file, or ones that compute prereqs dynamically
-     during configuration.  So it ain't perfect, but it is
-     probably good enough.
+     * Changed the way prereqs are discovered.  We now trust the
+       dist's own META to tell us the prereqs, rather than configuring
+       the dist directly.  This is much faster and usually just as
+       accurate.  The only casualties are old dists that don't have a
+       META file, or ones that compute prereqs dynamically during
+       configuration.  So it ain't perfect, but it is probably good
+       enough.
 
      Bug Fixes:
 
-     Pinto can now cope with distributions that contain no packages.
-     These are relatively rare but they do exist on CPAN, usualy
-     in the form of distributions that contain only scripts.
+     * Pinto can now cope with distributions that contain no packages.
+       These are relatively rare but they do exist on CPAN, usualy in
+       the form of distributions that contain only scripts.
 
 0.055     2012-09-20 13:33:57 America/Los_Angeles
 
      Interface Changes:
 
-     For the List action, the magic stack name is now '%' instead of
-     '@'.  This was changed to distinguish it from revision strings
-     that look like stack@1234.
+     * For the List action, the magic stack name is now '%' instead of
+       '@'.  This was changed to distinguish it from revision strings
+       that look like stack@1234.
 
-     The username attribute is now attached to the Config, not the
-     Action.  This makes it available to any object that needs it
-     (particularly when creating a Revision).
+     * The username attribute is now attached to the Config, not the
+       Action.  This makes it available to any object that needs it
+       (particularly when creating a Revision).
 
 0.054     2012-09-19 22:02:57 America/Los_Angeles
 
-     Added a workaround so Pinto can cope with the nonsensical
-     common::sense module.
+     * Added a workaround so Pinto can cope with the nonsensical
+       common::sense module.
 
 0.053     2012-09-19 20:58:46 America/Los_Angeles
 
      Bug Fixes:
 
-     For all committable actions, a commit message is required only
-     if the action actually changed the state of the repository. A
-     commit message is never required for a dryrun action.
+     * For all committable actions, a commit message is required only
+       if the action actually changed the state of the repository. A
+       commit message is never required for a dryrun action.
 
      Other Changes:
 
-     Requires DBIx::Class-0.08200 or newer.  In certain earlier
-     versions, prefetching was broken.
+     * Requires DBIx::Class-0.08200 or newer.  In certain earlier
+       versions, prefetching was broken.
 
-     The Install action is now committable, but it only matters
-     when it is also pulling packages.
+     * The Install action is now committable, but it only matters
+       when it is also pulling packages.
 
 0.052     2012-09-18 16:15:38 America/Los_Angeles
 
@@ -269,44 +274,42 @@
 
      New Features:
 
-     Now supports a Revert action, which restores the stack to
-     a prior revision.  This is light-weight form of version control.
+     * Now supports a Revert action, which restores the stack to a
+       prior revision.  This is light-weight form of version control.
 
-     Now supports a Log action, which displays the history of
-     changes to a stack.
+     * Now supports a Log action, which displays the history of
+       changes to a stack.
 
-     Each action that changes the state of the repository now requires
-     a commit message.  You can pass this into the API, or it
-     will prompt for one via your editor.
+     * Each action that changes the state of the repository now
+       requires a commit message.  You can pass this into the API, or
+       it will prompt for one via your editor.
 
      Other Changes:
 
-     The Index action is no longer supported.  Now that each
-     stack has its own index file, I see no need to have this
-     Action.
+     * The Index action is no longer supported.  Now that each stack
+       has its own index file, I see no need to have this Action.
 
-     Orphaned archives are now automatically cleaned whenever
-     you do an Add or Pull action with dryrun enabled.
+     * Orphaned archives are now automatically cleaned whenever you do
+       an Add or Pull action with dryrun enabled.
 
-     Now requires Dist-Requires-0.008, which fixes some test
-     failures on some platforms.
+     * Now requires Dist-Requires-0.008, which fixes some test
+       failures on some platforms.
 
 0.051     2012-08-15 18:27:34 America/Los_Angeles
 
-     More hacking to workaround the broken prefetch feature
-     in DBIx::Class.  May result is slightly slower performance
-     now that we have to make more trips to the database.
+     * More hacking to workaround the broken prefetch feature in
+       DBIx::Class.  May result is slightly slower performance now
+       that we have to make more trips to the database.
 
-     Added the Clean action to remove orphaned archives
-     from the filesystem.  The Pull and Add actions now
-     automatically clean up if doing a dryrun.
+     * Added the Clean action to remove orphaned archives from the
+       filesystem.  The Pull and Add actions now automatically clean
+       up if doing a dryrun.
 
 0.050     2012-08-15 14:26:13 America/Los_Angeles
 
-     I've worked around the bug that required you to use a
-     development version of DBIx::Class (see previous release
-     notes below).  So now you don't have to manually install
-     anything.
+     * I've worked around the bug that required you to use a
+       development version of DBIx::Class (see previous release notes
+       below).  So now you don't have to manually install anything.
 
 0.048     2012-08-15 09:05:19 America/Los_Angeles
 
