@@ -2,13 +2,17 @@
 
 =over 4
 
+=item Make New a committable Action again?
+
+=item Note that a stack is a copy (maybe use stack props)
+
+=item Move repository configuration into the DB
+
 =item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
 
 =item Contemplate API for getting/opening/committing stacks
 
 =item Heirarchy of exception classes
-
-=item Move repository configuration into the DB
 
 =item Write more test cases for Stack operations
 
@@ -18,13 +22,13 @@
 
 =item Create command to populate repository from current modules in @INC
 
-=item Create command to dump repository to a file
-
-=item Create command to load repository from a dump
-
 =item Create command to unregister a pkg/dist
 
+=item Create command to completely remove a dist
+
 =item Create command to diff two stacks or revisions
+
+=item Create command to undo one or more specific revisions
 
 =item Refactor the Initializer class
 
@@ -76,8 +80,8 @@
 
 =item Optimize generation of CHECKSUMS files.
 
-=item Way to pin/unpin all packages in a stack
-
+=item Way to pin/unpin all packages in a stack (or maybe a command to "lock" at stack)
+ 
 =item Improve Perl::Critic compliance.
 
 =item Document, document, document.
@@ -114,8 +118,6 @@
 
 =item Mark stacks as merged after merge
 
-=item Mark stacks as deleted after delete
-
 =item Warn if an unmerged stack is being deleted
 
 =back
@@ -135,6 +137,8 @@
 =item ack: Do an ack command across all distributions
 
 =item look: Unpack archive in temp dir and launch shell there
+
+=item Mark stacks as deleted after delete
 
 =back
 
