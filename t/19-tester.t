@@ -34,7 +34,7 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 #-------------------------------------------------------------------------------
 
 {
-  my $t = Pinto::Tester->new;
+  my $t = Pinto::Tester->new_with_stack;
 
   $t->populate('AUTHOR/FooAndBar-1.2=Foo~1.2,Bar~0.0');
 
