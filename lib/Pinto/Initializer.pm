@@ -157,6 +157,8 @@ sub _create_db {
 sub _create_stack {
     my ($self, %args) = @_;
 
+    require Pinto;
+
     my $stack_name        = $args{stack};
     my $stack_is_default  = ! $args{nodefault};
     my $stack_description = $args{description} || 'The initial stack.';
@@ -166,6 +168,7 @@ sub _create_stack {
 
     $pinto->run(New => ( stack       => $stack_name,
                          default     => $stack_is_default,
+                         message     => 'Created stack',
                          description => $stack_description, ));
 
     return;
