@@ -10,7 +10,7 @@ use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 
-my $t = Pinto::Tester->new_with_stack;
+my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
 
@@ -30,7 +30,14 @@ my $t = Pinto::Tester->new_with_stack;
 
   # Copy stack...
   my $new_stack = $t->pinto->repo->copy_stack(from => $stack, to => 'qa');
-  is_deeply $new_stack->get_properties, $stack->get_properties,
+  my $new_props = $new_stack->get_properties;
+
+  # The copied stack will have an extra pinto-copied-from property
+  is_deeply delete $new_props->{'pinto-copied-from'}, 'test@0',
+    'Copied stack has additional pinto-copied-from property';
+
+  # All the other properties should be identical
+  is_deeply $new_props, $stack->get_properties,
     'Copied stack has same properties';
 
   # Delete a property...
