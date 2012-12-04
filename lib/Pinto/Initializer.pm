@@ -28,7 +28,7 @@ with qw( Pinto::Role::Configurable
 #------------------------------------------------------------------------------
 
 # TODO: Can we use proper Moose attributes here, rather than passing a big
-# hash of attributes to the init() method.  I seem to remember that I needed
+# hash of attributes to the init() method?  I seem to remember that I needed
 # to do this so I would have something to give to $config->write.  But I'm
 # not convinced this was the right solution.  It would probably be better
 # to just put all the config attributes into repository props anyway.
@@ -157,17 +157,16 @@ sub _create_db {
 sub _create_stack {
     my ($self, %args) = @_;
 
-    my $stk_name  = Pinto::Util::validate_stack_name($args{stack});
-    my $stk_description = $args{description} || 'The initial stack.';
+    my $stack_name        = $args{stack};
+    my $stack_is_default  = ! $args{nodefault};
+    my $stack_description = $args{description} || 'The initial stack.';
 
-    my $repo  = Pinto::Repository->new(config => $self->config);
-    my $stack = $repo->create_stack(name => $stk_name, is_default => !$args{nodefault});
+    my $root  = $self->config->root;
+    my $pinto = Pinto->new(root => $root);
 
-    $stack->set_property(description => $stk_description);
-    $stack->close(message => 'Created stack.');
-
-    $repo->create_stack_filesystem(stack => $stack);
-    $repo->write_index(stack => $stack);
+    $pinto->run(New => ( stack       => $stack_name,
+                         default     => $stack_is_default,
+                         description => $stack_description, ));
 
     return;
 }

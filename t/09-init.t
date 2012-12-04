@@ -40,18 +40,24 @@ use Pinto::Tester;
 	my $stack = $t->pinto->repo->get_stack;
 	is $stack->name, 'dev',   'Initial stack has the right name';
 	is $stack->is_default, 1, 'Initial stack is the default';
+
+	is $stack->get_property('description'), 'The initial stack.',
+          'Initial stack has the default description';
 }
 
 #------------------------------------------------------------------------------
-# Test repository created with a stack, but not default
+# Test repository created with a stack, but not default, and custom description
 
 {
-	my $config = {stack => 'dev', nodefault => 1};
+	my $config = {stack => 'dev', nodefault => 1, description => 'my stack'};
 	my $t = Pinto::Tester->new( init_args => $config );
 
 	my $stack = $t->pinto->repo->get_stack('dev');
 	is $stack->name, 'dev',   'Initial stack has the right name';
 	is $stack->is_default, 0, 'Initial stack is not the default';
+
+	is $stack->get_property('description'), 'my stack',
+          'Initial stack has custom description';
 }
 
 #------------------------------------------------------------------------------
