@@ -6,7 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Bool Str);
 
 use Pinto::Util qw(sha256);
-use Pinto::Types qw(Author Files StackName StackObject StackDefault);
+use Pinto::Types qw(Author FileList StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -34,7 +34,7 @@ has author => (
 
 
 has archives  => (
-    isa       => Files,
+    isa       => FileList,
     traits    => [ qw(Array) ],
     handles   => {archives => 'elements'},
     required  => 1,
