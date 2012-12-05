@@ -9,17 +9,36 @@
      schema migrations, so you'll be able to smoothly upgrade to
      future versions of Pinto.
 
-     Interface Changes:
+     New Actions:
 
-     * The Props and Edit actions are gone.  The new Config action
-       will both set and show configuration properties.  Marking the
-       default stack is now handled by the Default action.  You'll
-       need the latest version of App::Pinto to get command-line
-       interfaces to these actions.
+     * Kill: Deletes a stack.  This was originally done by the Delete
+       action, but that action has been repurposed (see next item).
+
+     * Delete: Permanently removes an archive from the repository and
+       removes any reference to it from history.  This action cannot
+       be undone.  Highly experimental!
+
+     * Deindex: Removes packages from a stack, but does not cause the
+       archive to be removed.
+
+     * Reindex: Adds packages from an existing archive to a stack.  At
+       present, this command does not recurse into prereqs, but it
+       might in the future.
+
+     * Config: Sets and shows configuration properties for either a
+       stack or the whole repository.  This action takes the place of
+       Props and Edit, which are now gone.
+
+     * Default: Sets or unsets the default stack.  This action takes
+       the place of the 'default' argument on the (now defunct) Edit
+       action.
+
+     Interface Changes:
 
      * You are no longer required to have a default stack.  If you
        choose not to have a default stack, then all Actions will
-       require an explicit stack argument.
+       require an explicit stack argument.  You can also delete the
+       default stack if you desire.
 
      * I decided that there really isn't a suitable default name for
        the initial stack.  So now you must specify the initial stack
