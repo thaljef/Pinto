@@ -1,6 +1,6 @@
-# ABSTRACT: Delete a stack
+# ABSTRACT: Permanently delete a stack
 
-package Pinto::Action::Delete;
+package Pinto::Action::Kill;
 
 use Moose;
 
