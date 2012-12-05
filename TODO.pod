@@ -2,6 +2,14 @@
 
 =over 4
 
+=item Test cases for Reindex, Deindex, Delete
+
+=item Rename columns in the kommit table
+
+=item Report timestamps in the local timezone
+
+=item Move more behavior into schema classes?
+
 =item Move repository configuration into the DB
 
 =item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
@@ -17,12 +25,6 @@
 =item Create a hook mechanism to do stuff before or after an Action
 
 =item Create command to populate repository from current modules in @INC
-
-=item Create command to reindex a pkg/dist
-
-=item Create command to unregister a pkg/dist
-
-=item Create command to completely remove a dist
 
 =item Create command to diff two stacks or revisions
 
