@@ -27,24 +27,11 @@ use Pinto::Tester::Util qw(make_dist_archive);
   ok($t->pinto->repo->get_stack('dev')->is_default, 'dev stack is default');
 
   # Delete the "init" stack.
-  $t->run_ok(Delete => {stack => 'init'});
+  $t->run_ok(Kill => {stack => 'init'});
   throws_ok { $t->pinto->repo->get_stack('init') } qr/does not exist/;
   
   # Check the filesystem
   $t->path_not_exists_ok( [qw(init)] );
-
-}
-
-#------------------------------------------------------------------------------
-{
-
-  my $t = Pinto::Tester->new_with_stack;
-
-  # Make sure "init" is the default
-  ok($t->pinto->repo->get_stack('init')->is_default, 'init stack is default');
-
-  # Try to delete the "init" stack.
-  throws_ok { $t->run_ok(Delete => {stack => 'init'}) } qr/cannot remove the default stack/;
 
 }
 
