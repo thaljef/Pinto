@@ -4,7 +4,7 @@ package Pinto::Action::Pin;
 
 use Moose;
 
-use Pinto::Types qw(Specs StackName StackDefault StackObject);
+use Pinto::Types qw(SpecList StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -31,7 +31,7 @@ has stack => (
 
 
 has targets => (
-    isa      => Specs,
+    isa      => SpecList,
     traits   => [ qw(Array) ],
     handles  => {targets => 'elements'},
     required => 1,
