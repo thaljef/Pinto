@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool);
 use Module::CoreList;
 
 use Pinto::Util qw(itis);
-use Pinto::Types qw(Specs StackName StackDefault StackObject);
+use Pinto::Types qw(SpecList StackName StackDefault StackObject);
 
 use namespace::autoclean;
 
@@ -27,7 +27,7 @@ with qw( Pinto::Role::Committable );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => Specs,
+    isa      => SpecList,
     traits   => [ qw(Array) ],
     handles  => {targets => 'elements'},
     required => 1,
