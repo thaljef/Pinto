@@ -484,6 +484,26 @@ sub add {
 
 #------------------------------------------------------------------------------
 
+sub delete {
+    my ($self, %args) = @_;
+
+    my $dist  = $args{dist};
+    my $force = $args{force};
+
+    throw "Cannot delete $dist because it has packages that are pinned"
+        if !$force && grep {$_->is_pinned} $dist->registrations;
+
+    $dist->delete;
+
+    my $basedir = $self->config->authors_id_dir;
+    my $path = $dist->native_path( $basedir );
+    $self->store->remove_archive( $path );
+
+    return $dist;
+}
+
+#------------------------------------------------------------------------------
+
 sub _validate_archive {
     my ($self, $author, $archive) = @_;
 
