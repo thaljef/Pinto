@@ -50,7 +50,7 @@ sub _build_details {
     for my $stack ( @stacks ) {
         my @changes = $stack->head_revision->kommit->registration_changes;
         $details .= "# STACK: $stack\n" if @stacks > 1;
-        $details .= "# $_\n" for (@changes ? @changes : '# No details available');
+        $details .= "# $_\n" for (@changes ? @changes : '# No details available.');
         $details .= "#\n#\n";
     }
 
@@ -86,7 +86,7 @@ $title
 # message body.  Any line that starts with "#" will be ignored.  To abort the
 # commit, delete the entire message above, save the file, and close the editor. 
 #
-# Change details follow:
+# Changes to be committed:
 #
 $details
 END_MESSAGE
