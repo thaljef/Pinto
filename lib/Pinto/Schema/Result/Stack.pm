@@ -197,13 +197,6 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-before delete => sub {
-    my ($self, @args) = @_;
-    throw 'You cannot remove the default stack' if $self->is_default;
-};
-
-#------------------------------------------------------------------------------
-
 before is_default => sub {
     my ($self, @args) = @_;
     throw 'You cannot directly set is_default.  Use mark_as_default' if @args;
