@@ -325,6 +325,37 @@ sub register {
 
 #------------------------------------------------------------------------------
 
+sub unregister {
+  my ($self, %args) = @_;
+
+  my $stack = $args{stack};
+  my $force = $args{force};
+  my $did_unregister = 0;
+  my $conflicts      = 0;
+
+  for my $pkg ($self->packages) {
+
+    my $reg = $pkg->registrations->find( {stack => $stack->id} );
+    $self->info( sub {"$pkg is not registered on stack $stack"}) && next if not $reg;
+
+    if ($reg->is_pinned and not $force ) {
+      $self->warning("Cannot unregister package $pkg because it is pinned to stack $stack");
+      $conflicts++;
+      next;
+    }
+
+    $self->debug( sub {"Unregistering on $pkg on stack $stack"} );
+    $did_unregister++;
+    $reg->delete;
+  }
+
+  throw "Unable to unregister distribution $self on stack $stack" if $conflicts;
+
+  return $did_unregister;
+}
+
+#------------------------------------------------------------------------------
+
 sub pin {
     my ($self, %args) = @_;
 
