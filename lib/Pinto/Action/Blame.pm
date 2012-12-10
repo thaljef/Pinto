@@ -57,7 +57,7 @@ sub execute {
 
         my $change = $rcrs->find({id => $last_insert}, {});
         my $revno  = $change->kommit->revisions->find( {stack=>$stack} )->number;
-        my $user   = $change->kommit->committed_by;
+        my $user   = $change->kommit->username;
         my $regstr = $reg->to_string('%y %-40n %12v %p');
 
         $self->say( sprintf('%4d %8s %s', $revno, $user, $regstr) );

@@ -58,7 +58,7 @@ my $t = Pinto::Tester->new_with_stack;
 
 
 	is ($revision->number, 1, 'First commit is revision 0');
-	is ($revision->kommit->committed_by, 'ME', 'Revision was committed by ME');
+	is ($revision->kommit->username, 'ME', 'Revision was committed by ME');
 	is ($revision->kommit->message, 'my title', 'Message is title only no commit message specified');
 	is ($revision->kommit->message_body, '', 'Message body is empty when no commit message specified');
 	is ($revision->kommit->message_title, 'my title', 'Got message title');

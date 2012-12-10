@@ -243,13 +243,13 @@ sub close {
        unless $args{message} or $self->message;
 
     throw "Must specify a username to close revision $self"
-       unless $args{committed_by} or $self->kommit->committed_by;
+       unless $args{username} or $self->kommit->username;
 
     throw "Must specify a stack to close revision $self"
        unless $args{stack} or $self->stack;
 
     $self->kommit->update( {%args,
-                            committed_on => time,
+                            timestamp => time,
                             is_committed => 1} );
 
     return $self;
@@ -283,7 +283,7 @@ sub compare {
 
     return 0 if $rev_a->id == $rev_b->id;
 
-    my $r = ($rev_a->committed_on <=> $rev_b->committed_on);
+    my $r = ($rev_a->timestamp <=> $rev_b->timestamp);
 
     return $r;
 }
@@ -304,8 +304,8 @@ sub to_string {
 
            b => sub { $self->number                                      },
            g => sub { $self->kommit->message                             },
-           j => sub { $self->kommit->committed_by                        },
-           u => sub { $self->kommit->committed_on->strftime('%c')        },
+           j => sub { $self->kommit->username                        },
+           u => sub { $self->kommit->timestamp->strftime('%c')        },
 
     );
 

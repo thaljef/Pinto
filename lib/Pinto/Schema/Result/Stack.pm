@@ -586,8 +586,8 @@ sub to_string {
            M => sub { $self->is_default                          ? '*' : ' '      },
            B => sub { $self->number                                               },
            G => sub { $self->head_revision->kommit->message                       },
-           J => sub { $self->head_revision->kommit->committed_by                  },
-           U => sub { $self->head_revision->kommit->committed_on->strftime('%c')  },
+           J => sub { $self->head_revision->kommit->username                  },
+           U => sub { $self->head_revision->kommit->timestamp->strftime('%c')  },
            e => sub { $self->get_property('description')                          },
     );
 

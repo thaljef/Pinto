@@ -129,8 +129,8 @@ CREATE TABLE registration_change (
 CREATE TABLE kommit (
        id           INTEGER PRIMARY KEY NOT NULL,
        is_committed BOOLEAN             NOT NULL,     /* Boolean, indicates if the revision has been committed yet */
-       committed_on INTEGER             NOT NULL,     /* When the revision was committed (epoch seconds) */
-       committed_by TEXT                NOT NULL,     /* User who committed the revision */
+       timestamp    INTEGER             NOT NULL,     /* When the revision was committed (epoch seconds) */
+       username     TEXT                NOT NULL,     /* User who committed the revision */
        message      TEXT                NOT NULL      /* Log message for the revision */
 );
 

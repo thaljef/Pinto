@@ -37,12 +37,12 @@ __PACKAGE__->table("kommit");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 committed_on
+=head2 timestamp
 
   data_type: 'integer'
   is_nullable: 0
 
-=head2 committed_by
+=head2 username
 
   data_type: 'text'
   is_nullable: 0
@@ -59,9 +59,9 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "is_committed",
   { data_type => "boolean", is_nullable => 0 },
-  "committed_on",
+  "timestamp",
   { data_type => "integer", is_nullable => 0 },
-  "committed_by",
+  "username",
   { data_type => "text", is_nullable => 0 },
   "message",
   { data_type => "text", is_nullable => 0 },
@@ -150,7 +150,7 @@ use overload ( '""'  => 'to_string',
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->inflate_column('committed_on' => {
+__PACKAGE__->inflate_column('timestamp' => {
    inflate => sub { DateTime->from_epoch(epoch => $_[0]) }
 });
 
@@ -163,8 +163,8 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{message}      ||= '';
-  $args->{committed_by} ||= '';
-  $args->{committed_on}   = 0;
+  $args->{username} ||= '';
+  $args->{timestamp}   = 0;
   $args->{is_committed}   = 0;
 
   return $args;
@@ -207,7 +207,7 @@ sub compare {
 
     return 0 if $kommit_a->id == $kommit_b->id;
 
-    my $r = ($kommit_a->committed_on <=> $kommit_b->committed_on);
+    my $r = ($kommit_a->timestamp <=> $kommit_b->timestamp);
 
     return $r;
 }
@@ -219,8 +219,8 @@ sub to_string {
     my %fspec = (
 
            g => sub { $self->message                      },
-           j => sub { $self->committed_by                 },
-           u => sub { $self->committed_on->strftime('%c') },
+           j => sub { $self->username                 },
+           u => sub { $self->timestamp->strftime('%c') },
 
     );
 

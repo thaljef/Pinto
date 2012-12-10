@@ -884,7 +884,7 @@ sub open_revision {
     my ($self, %args) = @_;
 
     $args{message}      ||= '';     # Message usually updated when we commmit
-    $args{committed_by} ||= $self->config->username;
+    $args{username} ||= $self->config->username;
 
     my $stack    =  delete $args{stack};
     my $kommit   = $self->db->create_kommit(\%args);
