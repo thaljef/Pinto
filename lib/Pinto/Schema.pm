@@ -33,7 +33,7 @@ sub schema_version { return $SCHEMA_VERSION };
 
 #-------------------------------------------------------------------------------
 
-__PACKAGE__->load_components( qw(DeploymentHandler::VersionStorage::Standard::Component) );
+__PACKAGE__->load_components( qw(Schema::Versioned) );
 
 #-------------------------------------------------------------------------------
 

@@ -30,15 +30,6 @@ has schema => (
    lazy       => 1,
 );
 
-
-has deployer => (
-   is         => 'ro',
-   isa        => 'DBIx::Class::DeploymentHandler',
-   init_arg   => undef,
-   builder    => '_build_deployer',
-   lazy       => 1,
-);
-
 #-------------------------------------------------------------------------------
 # Roles
 
@@ -61,18 +52,6 @@ sub _build_schema {
     $schema->logger($self->logger);
 
     return $schema;
-}
-
-#-------------------------------------------------------------------------------
-
-sub _build_deployer {
-
-    my ($self) = @_;
-
-    return DBIx::Class::DeploymentHandler->new( schema              => $self->schema,
-                                                databases           => 'SQLite',
-                                                script_directory    => $self->config->sql_dir->stringify,
-                                                sql_translator_args => { add_drop_table => 0 } );
 }
 
 #-------------------------------------------------------------------------------
@@ -211,8 +190,7 @@ sub deploy {
     $self->debug( 'Creating database at ' . $self->config->db_file );
 
     local $ENV{DBIC_NO_VERSION_CHECK} = 1;
-    $self->deployer->prepare_install;
-    $self->deployer->install;
+    $self->schema->deploy;
 
     return $self;
 }
