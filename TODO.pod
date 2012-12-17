@@ -4,8 +4,6 @@
 
 =item Test cases for Reindex, Deindex, Delete
 
-=item Report timestamps in the local timezone
-
 =item Move more behavior into schema classes?
 
 =item Move repository configuration into the DB

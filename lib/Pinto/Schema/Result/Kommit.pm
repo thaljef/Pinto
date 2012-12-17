@@ -141,6 +141,7 @@ with 'Pinto::Role::Schema::Result';
 use Pinto::Exception qw(throw);
 
 use DateTime;
+use DateTime::TimeZone;
 use String::Format;
 
 use Pinto::Util qw(itis trim);
@@ -150,8 +151,13 @@ use overload ( '""'  => 'to_string',
 
 #------------------------------------------------------------------------------
 
+# TODO: Make this a Pinto::Global
+my $tz = DateTime::TimeZone->new(name => 'local');
+
+#------------------------------------------------------------------------------
+
 __PACKAGE__->inflate_column('timestamp' => {
-   inflate => sub { DateTime->from_epoch(epoch => $_[0]) }
+   inflate => sub { DateTime->from_epoch(epoch => $_[0], time_zone => $tz) }
 });
 
 #------------------------------------------------------------------------------
@@ -163,9 +169,9 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{message}      ||= '';
-  $args->{username} ||= '';
-  $args->{timestamp}   = 0;
-  $args->{is_committed}   = 0;
+  $args->{username}     ||= '';
+  $args->{timestamp}    = 0;
+  $args->{is_committed} = 0;
 
   return $args;
 }
