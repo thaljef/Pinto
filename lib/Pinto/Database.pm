@@ -186,18 +186,60 @@ sub repository_properties {
 sub deploy {
     my ($self) = @_;
 
-    $self->mkpath( $self->config->db_dir() );
+    $self->mkpath( $self->config->db_dir );
     $self->debug( 'Creating database at ' . $self->config->db_file );
 
-    local $ENV{DBIC_NO_VERSION_CHECK} = 1;
     $self->schema->deploy;
+    $self->set_version;
 
     return $self;
 }
 
 #-------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+sub set_version {
+    my ($self, $version) = @_;
+
+    # NOTE: SQLite only permits integers for the user_version.
+    # The decimal portion of any float will be truncated.
+    $version ||= $self->schema->schema_version;
+
+    my $dbh = $self->schema->storage->dbh;
+
+    $dbh->do("PRAGMA user_version = $version");
+
+    return;
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_version {
+    my ($self) = @_;
+
+    my $dbh = $self->schema->storage->dbh;
+
+    my @version = $dbh->selectrow_array('PRAGMA user_version');
+
+    return $version[0];
+}
+
+#-------------------------------------------------------------------------------
+
+sub check_version {
+    my ($self) = @_;
+
+    my $schema_version = $self->schema->schema_version;
+    my $db_version     = $self->get_version;
+
+    throw "Database version ($db_version) and schema version ($schema_version) do not match"
+        if $db_version != $schema_version;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable;
 
 #-------------------------------------------------------------------------------
 

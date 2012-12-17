@@ -48,11 +48,19 @@ sub run {
     my $action    = $self->action_factory->create_action($action_name => @action_args);
     my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
 
-    my $result = try   { $self->repo->lock($lock_type); $action->execute }
-                 catch { $self->repo->unlock; die $self->fatal($_) };
-
-    $self->repo->unlock;
-
+    my $result = try { 
+        $self->repo->db->check_version;
+        $self->repo->lock($lock_type); 
+        $action->execute 
+    }
+    catch { 
+        $self->repo->unlock; 
+        die $self->fatal($_) 
+    }
+    finally {
+        $self->repo->unlock;
+    };
+    
     return $result;
 }
 

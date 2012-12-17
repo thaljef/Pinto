@@ -28,12 +28,8 @@ use SQL::Translator::Schema::Trigger;
 #-------------------------------------------------------------------------------
 
 use Readonly;
-Readonly::Scalar our $SCHEMA_VERSION => 2;
+Readonly::Scalar our $SCHEMA_VERSION => 1;
 sub schema_version { return $SCHEMA_VERSION };
-
-#-------------------------------------------------------------------------------
-
-__PACKAGE__->load_components( qw(Schema::Versioned) );
 
 #-------------------------------------------------------------------------------
 
