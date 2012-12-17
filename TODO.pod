@@ -4,8 +4,6 @@
 
 =item Test cases for Reindex, Deindex, Delete
 
-=item Rename columns in the kommit table
-
 =item Report timestamps in the local timezone
 
 =item Move more behavior into schema classes?
