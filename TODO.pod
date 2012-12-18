@@ -76,8 +76,6 @@
 
 =item Optimize generation of CHECKSUMS files.
 
-=item Way to pin/unpin all packages in a stack (or maybe a command to "lock" at stack)
- 
 =item Improve Perl::Critic compliance.
 
 =item Document, document, document.
@@ -93,8 +91,6 @@
 =over 4
 
 =item Give revisions properties
-
-=item Allow revisions to be tagged
 
 =item Try to ensure integrity of commits (what does this mean?)
 
