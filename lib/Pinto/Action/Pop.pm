@@ -1,6 +1,6 @@
-# ABSTRACT: Unregister packages from  a stack
+# ABSTRACT: Unregister packages from a stack
 
-package Pinto::Action::Deindex;
+package Pinto::Action::Pop;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
@@ -54,7 +54,7 @@ sub execute {
 
     my $stack = $self->repo->open_stack($self->stack);
 
-    $self->_deindex($_, $stack) for $self->targets;
+    $self->_pop($_, $stack) for $self->targets;
 
     if ($self->result->made_changes and not $self->dryrun) {
         my $message = $self->edit_message(stacks => [$stack]);
@@ -68,7 +68,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _deindex {
+sub _pop {
     my ($self, $target, $stack) = @_;
 
     my $dist  = $self->repo->get_distribution(spec => $target);
@@ -89,7 +89,7 @@ sub message_title {
     my $targets  = join ' ', $self->targets;
     my $force    = $self->force ? ' with force' : '';
 
-    return "Deindexed$force $targets.";
+    return "Popped$force $targets.";
 }
 
 #------------------------------------------------------------------------------
