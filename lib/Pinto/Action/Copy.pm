@@ -44,6 +44,13 @@ has default => (
 );
 
 
+has lock => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+
 has description => (
     is         => 'ro',
     isa        => Str | Undef,
@@ -61,6 +68,7 @@ sub execute {
     $copy->set_property(description => $description);
 
     $copy->mark_as_default if $self->default;
+    $copy->lock if $self->lock;
 
     $self->repo->create_stack_filesystem(stack => $copy);
     $self->repo->write_index(stack => $copy);
