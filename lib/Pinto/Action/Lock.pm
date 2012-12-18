@@ -1,9 +1,10 @@
-# ABSTRACT: List known stacks in the repository
+# ABSTRACT: Lock a stack to prevent future changes
 
-package Pinto::Action::Stacks;
+package Pinto::Action::Lock;
 
 use Moose;
-use MooseX::Types::Moose qw(Str);
+
+use Pinto::Types qw(StackName StackDefault StackObject);
 
 use namespace::autoclean;
 
@@ -13,14 +14,18 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-extends 'Pinto::Action';
+extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has format => (
-    is      => 'ro',
-    isa     => Str,
-    default => "%M %L %-16k %-16J %U",
+with qw( Pinto::Role::Transactional );
+
+#------------------------------------------------------------------------------
+
+has stack => (
+    is        => 'ro',
+    isa       => StackName | StackDefault | StackObject,
+    default   => undef,
 );
 
 #------------------------------------------------------------------------------
@@ -28,11 +33,9 @@ has format => (
 sub execute {
     my ($self) = @_;
 
-    for my $stack ( sort {$a cmp $b} $self->repo->get_all_stacks ) {
-        $self->say($stack->to_string($self->format));
-    }
+    my $did_lock = $self->repo->get_stack( $self->stack )->lock;
 
-    return $self->result;
+    return $did_lock ? $self->result->changed : $self->result;
 }
 
 #------------------------------------------------------------------------------

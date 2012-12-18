@@ -190,6 +190,7 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
+  $args->{properties} = '{}';
   $args->{name_canonical} = lc $args->{name};
 
   return $args;
@@ -546,6 +547,41 @@ sub merge {
 
 #------------------------------------------------------------------------------
 
+sub is_locked {
+    my ($self) = @_;
+
+    return $self->get_property('pinto-locked');
+}
+
+#------------------------------------------------------------------------------
+
+sub lock {
+    my ($self) = @_;
+
+    if ($self->is_locked) {
+      $self->warning("Stack $self is already locked");
+      return 0;
+    }
+
+    $self->set_property('pinto-locked' => 1);
+    return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub unlock {
+    my ($self) = @_;
+
+    if (not $self->is_locked) {
+      $self->warning("Stack $self is not locked");
+      return 0;
+    }
+
+    $self->delete_property('pinto-locked');
+    return 1;
+}
+#------------------------------------------------------------------------------
+
 sub numeric_compare {
     my ($stack_a, $stack_b) = @_;
 
@@ -584,10 +620,11 @@ sub to_string {
     my %fspec = (
            k => sub { $self->name                                                 },
            M => sub { $self->is_default                          ? '*' : ' '      },
+           L => sub { $self->is_locked                           ? 'X' : ' '      },
            B => sub { $self->number                                               },
            G => sub { $self->head_revision->kommit->message                       },
-           J => sub { $self->head_revision->kommit->username                  },
-           U => sub { $self->head_revision->kommit->timestamp->strftime('%c')  },
+           J => sub { $self->head_revision->kommit->username                      },
+           U => sub { $self->head_revision->kommit->timestamp->strftime('%c')     },
            e => sub { $self->get_property('description')                          },
     );
 

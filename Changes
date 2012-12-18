@@ -18,7 +18,7 @@
        removes any reference to it from history.  This action cannot
        be undone.  Highly experimental!
 
-     * Deindex: Removes packages from a stack, but does not cause the
+     * Pop: Removes packages from a stack, but does not cause the
        archive to be removed.
 
      * Reindex: Adds packages from an existing archive to a stack.  At
@@ -32,6 +32,15 @@
      * Default: Sets or unsets the default stack.  This action takes
        the place of the 'default' argument on the (now defunct) Edit
        action.
+
+     * Lock: Locks a stack to prevent future changes.  This is useful
+       for creating a read-only copy of stack (like a "tag").  Any
+       Action that modfies a the package registrations will fail if
+       called on a stack that is locked.
+
+     * Unlock: Unlocks a stack to allow future changes.  You might
+       want to use this to make hotfixes to a stack that has already
+       been locked and delployed.
 
      Interface Changes:
 

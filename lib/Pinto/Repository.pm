@@ -883,10 +883,12 @@ sub _symlink {
 sub open_revision {
     my ($self, %args) = @_;
 
-    $args{message}      ||= '';     # Message usually updated when we commmit
+    $args{message}  ||= '';     # Message usually updated when we commmit
     $args{username} ||= $self->config->username;
 
-    my $stack    =  delete $args{stack};
+    my $stack = delete $args{stack};
+    throw "Stack $stack is locked" if $stack->is_locked;
+
     my $kommit   = $self->db->create_kommit(\%args);
     my $revision = $self->db->create_revision({kommit => $kommit, stack => $stack});
     my $revnum   = $revision->number;
