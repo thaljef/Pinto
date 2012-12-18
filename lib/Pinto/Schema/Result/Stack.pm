@@ -563,6 +563,7 @@ sub lock {
       return 0;
     }
 
+    $self->notice("Locking stack $stack");
     $self->set_property('pinto-locked' => 1);
     return 1;
 }
@@ -577,6 +578,7 @@ sub unlock {
       return 0;
     }
 
+    $self->notice("Unlocking stack $stack");
     $self->delete_property('pinto-locked');
     return 1;
 }
