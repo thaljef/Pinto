@@ -36,5 +36,33 @@ use Pinto::Tester::Util qw(make_dist_archive);
 }
 
 #------------------------------------------------------------------------------
+{
+
+  my $t = Pinto::Tester->new_with_stack;
+
+  # Make init the default stack
+  $t->run_ok(Default => {stack => 'init'});
+
+  # Try killing locked stack
+  $t->run_ok(Lock => {});
+  $t->run_throws_ok(Kill => {stack => 'init'}, qr/is locked/);
+
+  # Is stack still there?
+  ok defined $t->pinto->repo->get_stack, 'Stack still exists in DB';
+
+  # Check the filesystem
+  $t->path_exists_ok( [qw(init)] );
+
+  # Try killing locked stack with force
+  $t->run_ok(Kill => {stack => 'init', force => 1});
+  
+  # Is stack still there?
+  ok not (defined $t->pinto->repo->get_stack('init', nocroak => 1)), 'Stack is gone from DB';
+
+  # Check the filesystem
+  $t->path_not_exists_ok( [qw(init)] );
+
+}
+#------------------------------------------------------------------------------
 
 done_testing;
