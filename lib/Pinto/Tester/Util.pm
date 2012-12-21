@@ -140,7 +140,7 @@ sub parse_reg_spec {
     $dist_archive .= '.tar.gz' unless $dist_archive =~ m{\.tar\.gz$}x;
 
     # Normalize the is_pinned flag
-    $is_pinned = ($is_pinned eq '+' ? 1 : 0) if defined $is_pinned;
+    $is_pinned = ($is_pinned eq '*' ? 1 : 0) if defined $is_pinned;
 
     # Parse package name/version
     my ($pkg_name, $pkg_version) = split m{~}x, $pkg;

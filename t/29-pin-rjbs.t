@@ -50,7 +50,7 @@ $local->registration_ok('FRED/DistB-2/PkgB~2/xxx');
 $local->run_ok('Pin', {targets => 'PkgB'});
 
 # Make sure PkgB-1 is now pinned on init stack
-$local->registration_ok('FRED/DistB-1/PkgB~1/init/+');
+$local->registration_ok('FRED/DistB-1/PkgB~1/init/*');
 
 # Ooo! Super cool DistC-1 is released to CPAN
 $cpan->populate('MARK/DistC-1 = PkgC~2 & PkgB~2');

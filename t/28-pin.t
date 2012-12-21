@@ -19,8 +19,8 @@ my $foo_and_bar = make_dist_archive('FooAndBar-1 = Foo~1,Bar~1');
 $t->run_ok('Add', {author => 'ME', archives => $foo_and_bar});
 $t->run_ok('Pin', {targets => 'Foo'});
 
-$t->registration_ok( 'ME/FooAndBar-1/Foo~1/init/+' );
-$t->registration_ok( 'ME/FooAndBar-1/Bar~1/init/+' );
+$t->registration_ok( 'ME/FooAndBar-1/Foo~1/init/*' );
+$t->registration_ok( 'ME/FooAndBar-1/Bar~1/init/*' );
 
 # Now try and add a newer dist with an overlapping package...
 my $bar_and_baz = make_dist_archive('BarAndBaz-2 = Bar~2,Baz~2');

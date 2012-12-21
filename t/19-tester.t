@@ -21,7 +21,7 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 
 {
   my ($author, $dist_archive, $pkg_name, $pkg_ver, $stack_name, $is_pinned)
-      = parse_reg_spec('AUTHOR/Foo-1.2/Foo~2.0/my_stack/+');
+      = parse_reg_spec('AUTHOR/Foo-1.2/Foo~2.0/my_stack/*');
 
   is $author,       'AUTHOR';
   is $dist_archive, 'Foo-1.2.tar.gz';

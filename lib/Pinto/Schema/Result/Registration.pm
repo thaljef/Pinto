@@ -412,7 +412,7 @@ sub to_string {
          w => sub { $self->package->distribution->version                             },
          u => sub { $self->package->distribution->url                                 },
          k => sub { $self->stack->name                                                },
-         y => sub { $self->is_pinned                        ? '+' : ' '               },
+         y => sub { $self->is_pinned                        ? '*' : ' '               },
     );
 
     # Some attributes are just undefined, usually because of

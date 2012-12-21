@@ -257,9 +257,9 @@ sub to_string {
          D => sub { $self->package->distribution->vname                             },
          w => sub { $self->package->distribution->version                           },
          u => sub { $self->package->distribution->url                               },
-         j => sub { $self->kommit->username                                     },
-         u => sub { $self->kommit->timestamp->strftime('%c')                     },
-         y => sub { $self->is_pinned                            ? '+' : ' '         },
+         j => sub { $self->kommit->username                                         },
+         u => sub { $self->kommit->timestamp->strftime('%c')                        },
+         y => sub { $self->is_pinned                            ? '*' : ' '         },
     );
 
     # Some attributes are just undefined, usually because of

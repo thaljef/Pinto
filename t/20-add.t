@@ -60,8 +60,8 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
  
   # This time, with a pin
   $t->run_ok('Add', {archives => $archive, author => $auth, pin => 1});
-  $t->registration_ok("$auth/$dist/$pkg1/init/+");
-  $t->registration_ok("$auth/$dist/$pkg2/init/+");
+  $t->registration_ok("$auth/$dist/$pkg1/init/*");
+  $t->registration_ok("$auth/$dist/$pkg2/init/*");
 
 }
 
@@ -96,8 +96,8 @@ my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
   $t->registration_ok("$auth/$dist/$pkg2/init");
 
   $t->run_ok('Add', {archives => $archive, author => $auth, pin => 1});
-  $t->registration_ok("$auth/$dist/$pkg1/init/+");
-  $t->registration_ok("$auth/$dist/$pkg2/init/+");
+  $t->registration_ok("$auth/$dist/$pkg1/init/*");
+  $t->registration_ok("$auth/$dist/$pkg2/init/*");
 
   $t->log_like(qr/$archive is the same/, 'Got warning about identical dist');
 

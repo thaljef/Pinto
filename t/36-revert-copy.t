@@ -34,8 +34,8 @@ use Pinto::Tester;
   $t->head_revision_number_is(3, 'dev');
 
   # Should now be pinned on stack 'dev'
-  $t->registration_ok( 'AUTHOR/Dist-2/PkgA~2/dev/+' );
-  $t->registration_ok( 'AUTHOR/Dist-2/PkgB~2/dev/+' );
+  $t->registration_ok( 'AUTHOR/Dist-2/PkgA~2/dev/*' );
+  $t->registration_ok( 'AUTHOR/Dist-2/PkgB~2/dev/*' );
 
   # Now go back to revision 2 (after the copy)
   $t->run_ok(Revert => {stack => 'dev', revision => 2}); # Rev 4

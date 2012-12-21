@@ -49,16 +49,16 @@ $local->run_ok(Pin => {targets => 'PkgA'});
 $local->head_revision_number_is(3);
 
 # PkgA should now be pinned, but not PkgB and PkgC
-$local->registration_ok('JOHN/DistA-2/PkgA~2//+');
-$local->registration_ok('FRED/DistB-1/PkgB~1//-');
-$local->registration_ok('MARC/DistC-1/PkgC~1//-');
+$local->registration_ok('JOHN/DistA-2/PkgA~2/init/*');
+$local->registration_ok('FRED/DistB-1/PkgB~1/init/-');
+$local->registration_ok('MARC/DistC-1/PkgC~1/init/-');
 
 # Oops! PkgA~2 breaks our app, so revert...
 $local->run_ok(Revert => {revision => -2});
 $local->head_revision_number_is(4);
 
 # PkgA should be at PkgA~1 and unpinned...
-$local->registration_ok('JOHN/DistA-1/PkgA~1//-');
+$local->registration_ok('JOHN/DistA-1/PkgA~1/init/-');
 
 # PkgB should still be at PkgB~1...
 $local->registration_ok('FRED/DistB-1/PkgB~1');
