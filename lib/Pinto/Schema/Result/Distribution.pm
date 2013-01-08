@@ -336,7 +336,7 @@ sub unregister {
   for my $pkg ($self->packages) {
 
     my $reg = $pkg->registrations->find( {stack => $stack->id} );
-    $self->info( sub {"$pkg is not registered on stack $stack"}) && next if not $reg;
+    next if not defined $reg;
 
     if ($reg->is_pinned and not $force ) {
       $self->warning("Cannot unregister package $pkg because it is pinned to stack $stack");
