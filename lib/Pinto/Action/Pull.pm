@@ -61,17 +61,13 @@ has norecurse => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->open_stack($self->stack);
-
+    my $stack = $self->repo->get_stack($self->stack)->open;
     $self->_pull($_, $stack) for $self->targets;
+    return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    if ($self->result->made_changes and not $self->dryrun) {
-        my $message = $self->edit_message(stacks => [$stack]);
-        $stack->close(message => $message);
-        $self->repo->write_index(stack => $stack);
-    }
-
-    return $self->result;
+    my $message = $self->edit_message(stacks => [$stack]);
+    $stack->close(message => $message);
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

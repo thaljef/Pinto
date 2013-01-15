@@ -7,18 +7,15 @@ use Moose;
 use Path::Class;
 use File::Find;
 use File::Copy qw(move);
-use Scalar::Util qw(blessed);
 
 use Pinto::Util;
 use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
-use Pinto::IndexWriter;
 use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis);
-use Pinto::Types qw(Dir);
 
 use namespace::autoclean;
 
@@ -45,7 +42,6 @@ has db => (
     default    => sub { Pinto::Database->new( config => $_[0]->config,
                                               logger => $_[0]->logger ) },
 );
-
 
 =attr store
 
@@ -106,6 +102,20 @@ sub BUILD {
         my $root_dir = $self->config->root_dir();
         throw "Directory $root_dir does not look like a Pinto repository";
     }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub check_version {
+    my ($self) = @_;
+
+    my $schema_version = $self->db->schema->schema_version;
+    my $db_version     = $self->db->schema->get_version;
+
+    throw "Database version ($db_version) and schema version ($schema_version) do not match"
+        if $db_version != $schema_version;
 
     return $self;
 }
@@ -210,7 +220,7 @@ sub get_stack {
     return $self->get_default_stack if not $stack;
 
     my $where = { name => $stack };
-    my $got_stack = $self->db->select_stack( $where );
+    my $got_stack = $self->db->schema->find_stack( $where );
 
     throw "Stack $stack does not exist"
         unless $got_stack or $opts{nocroak};
@@ -248,44 +258,6 @@ sub get_default_stack {
     throw "The default stack has not been set" if @stacks == 0;
 
     return $stacks[0];
-}
-
-#-------------------------------------------------------------------------------
-
-=method open_stack()
-
-=method open_stack( $stack_name )
-
-=method open_stack( $stack_object )
-
-Returns the L<Pinto::Schema::Result::Stack> object with the given
-C<$stack_name> and sets the head revision of the stack to point to a
-newly created L<Pinto::Schema::Result::Revision>.  You can them
-proceed to modify the registrations or properties associated with the
-stack.
-
-If you do not specify a stack name (or it is undefined) then you'll
-get whatever stack is currently marked as the default stack.  But if
-you do specify a name, then the stack must already exist or an
-exception will be thrown.
-
-This method also starts a transaction.  Calling C<commit> or
-C<rollback> on the stack will close the transaction.  If the stack
-object goes out of scope before you call close the transaction, it
-will automatically rollback.
-
-Use C<get_stack> instead if you just want to read the registrations
-and properties.
-
-=cut
-
-sub open_stack {
-    my ($self, $stack) = @_;
-
-    my $got_stack = $self->get_stack($stack);
-    my $revision  = $self->open_revision(stack => $got_stack);
-
-    return $got_stack;
 }
 
 #-------------------------------------------------------------------------------
@@ -466,15 +438,15 @@ sub add {
     my @requires = $extractor->requires;
     $dist_struct->{prerequisites} = \@requires;
 
-    my $p = @provides;
-    my $r = @requires;
+    my $p = scalar @provides;
+    my $r = scalar @requires;
     $self->info("Distribution $archive provides $p and requires $r packages");
 
     # Always update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
     # the repository will still be clean.
 
-    my $dist = $self->db->create_distribution( $dist_struct );
+    my $dist = $self->db->schema->create_distribution( $dist_struct );
     my $basedir = $self->config->authors_id_dir;
     my $destination = $dist->native_path( $basedir );
     $self->store->add_archive( $archive => $destination );
@@ -578,6 +550,7 @@ sub find_or_pull {
 sub _find_or_pull_by_package_spec {
     my ($self, $pspec, $stack) = @_;
 
+    $DB::single = 1;
     $self->info("Looking for package $pspec");
     my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
 
@@ -715,14 +688,15 @@ sub create_stack {
     my ($self, %args) = @_;
 
     Pinto::Util::validate_stack_name($args{name});
-    $args{is_default} ||= 0;
 
     throw "Stack $args{name} already exists"
         if $self->get_stack($args{name}, nocroak => 1);
 
-    my $stack = $self->db->create_stack( \%args);
+    my $stack = $self->db->schema->create_stack(\%args);
+    $self->create_stack_filesystem(stack => $stack);
+    $stack->write_index;
 
-    return $self->open_stack($stack);
+    return $stack;
 }
 
 #-------------------------------------------------------------------------------
@@ -748,22 +722,10 @@ sub copy_stack {
     my $changes  = {name => $to_stack_name};
     my $copy     = $from_stack->copy_deeply( $changes );
 
+    $self->create_stack_filesystem(stack => $copy);
+    $copy->write_index;
+
     return $copy;
-}
-
-#-------------------------------------------------------------------------------
-
-sub write_index {
-    my ($self, %args) = @_;
-
-    $args{stack} ||= $self->get_default_stack;
-    $args{logger} = $self->logger;
-    $args{config} = $self->config;
-
-    my $writer = Pinto::IndexWriter->new( %args );
-    $writer->write_index;
-
-    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -796,9 +758,11 @@ sub delete_stack_filesystem {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
-    my $stack_dir = $self->root_dir->subdir($stack->name);
+    throw "Stack $self is locked and cannot be deleted" if $stack->is_locked;
 
+    my $stack_dir = $self->root_dir->subdir($stack->name);
     $self->debug("Removing stack directory $stack_dir");
+
     $stack_dir->rmtree or throw "Failed to remove $stack_dir" if -e $stack_dir;
 
     return $self;
@@ -876,26 +840,6 @@ sub _symlink {
         or throw "symlink to $to from $from failed: $!";
 
     return $ok;
-}
-
-#-------------------------------------------------------------------------------
-
-sub open_revision {
-    my ($self, %args) = @_;
-
-    $args{message}  ||= '';     # Message usually updated when we commmit
-    $args{username} ||= $self->config->username;
-
-    my $stack = delete $args{stack};
-    throw "Stack $stack is locked" if $stack->is_locked;
-
-    my $kommit   = $self->db->create_kommit(\%args);
-    my $revision = $self->db->create_revision({kommit => $kommit, stack => $stack});
-    my $revnum   = $revision->number;
-
-    $self->debug("Opened new head revision $revnum on stack $stack");
-    
-    return $revision;
 }
 
 #-------------------------------------------------------------------------------

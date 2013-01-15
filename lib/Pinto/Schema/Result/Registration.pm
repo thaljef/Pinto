@@ -217,8 +217,7 @@ sub sqlt_deploy_hook {
 
     # The last revision on the stack should be the head.
     # TODO: assert that the revision is open before writing change
-    my $revision = qq{ SELECT MAX(revision.id) FROM revision WHERE stack = $tb.stack };
-    my $kommit   = qq{ SELECT kommit.id FROM kommit JOIN revision ON revision.kommit = kommit.id WHERE revision.id = ($revision) };
+    my $kommit = qq{ SELECT head FROM stack WHERE id = $tb.stack };
 
     # If there is already a change record for this package 
     # in this kommit,then just replace the existing one.

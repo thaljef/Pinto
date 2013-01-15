@@ -62,10 +62,13 @@ CREATE TABLE package (
 
 CREATE TABLE stack (
        id                   INTEGER PRIMARY KEY NOT NULL,
-       name                 TEXT                NOT NULL,     /* MyStack */
-       name_canonical       TEXT                NOT NULL,     /* mystack */
-       is_default           BOOLEAN             NOT NULL,     /* Boolean flag, indicates if this is the default stack in the repository */
-       properties           TEXT                DEFAULT NULL  /* Hash as JSON string */
+       name                 TEXT                NOT NULL,
+       name_canonical       TEXT                NOT NULL,
+       is_default           BOOLEAN             NOT NULL, 
+       properties           TEXT                DEFAULT NULL,
+       head                 INTEGER             DEFAULT NULL,
+
+       FOREIGN KEY(head) REFERENCES kommit(id)
 );
 
 
@@ -86,7 +89,7 @@ CREATE TABLE registration (
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
        is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
 
-       FOREIGN KEY(stack)        REFERENCES stack(id) ON DELETE CASCADE,
+       FOREIGN KEY(stack)        REFERENCES stack(id),
        FOREIGN KEY(package)      REFERENCES package(id) ON DELETE CASCADE,
        FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
 );
@@ -128,40 +131,23 @@ CREATE TABLE registration_change (
 
 CREATE TABLE kommit (
        id           INTEGER PRIMARY KEY NOT NULL,
-       is_committed BOOLEAN             NOT NULL,     /* Boolean, indicates if the revision has been committed yet */
-       timestamp    INTEGER             NOT NULL,     /* When the revision was committed (epoch seconds) */
+       sha256       TEXT                NOT NULL,
+       timestamp    REAL                NOT NULL,     /* When the revision was committed (epoch seconds) */
        username     TEXT                NOT NULL,     /* User who committed the revision */
        message      TEXT                NOT NULL      /* Log message for the revision */
 );
 
 
-/*
-
-    Join table.  Associates a kommit with one or more stacks.  When
-    a stack is copied, all of its revisions are also copied
-
-*/
-
-CREATE TABLE revision (
+CREATE TABLE kommit_graph (
        id           INTEGER PRIMARY KEY NOT NULL,
-       stack        INTEGER             NOT NULL,  /* Points to the stack where the changes ocurred */
-       kommit       INTEGER             NOT NULL,  /* Points to the kommit that describes the changes */
-       number       INTEGER             NOT NULL,  /* Sequential revision number (1,2,3...N) */
+       depth        INTEGER             NOT NULL,
+       ancestor     INTEGER             NOT NULL,
+       descendant   INTEGER             NOT NULL,
 
-       FOREIGN KEY(stack)  REFERENCES stack(id) ON DELETE CASCADE,
-       FOREIGN KEY(kommit) REFERENCES kommit(id) ON DELETE CASCADE
+       FOREIGN KEY(ancestor)    REFERENCES kommit(id) ON DELETE CASCADE,
+       FOREIGN KEY(descendant)  REFERENCES kommit(id) ON DELETE CASCADE
 );
 
-/*
-
-    Represents a prerequisite (i.e. dependency) for a distribution
-    archive.  Note that distribution archives depend only on a package
-    name & version, not a particular record in the package table.
-    Each package name that is required for a given distribution
-    archive must be unique.
-
-
-*/
 
 CREATE TABLE prerequisite (
        id              INTEGER PRIMARY KEY NOT NULL,
@@ -179,11 +165,10 @@ CREATE UNIQUE INDEX c ON distribution(sha256);
 CREATE UNIQUE INDEX d ON package(name, distribution);
 CREATE UNIQUE INDEX e ON stack(name);
 CREATE UNIQUE INDEX f ON stack(name_canonical);
-CREATE UNIQUE INDEX g ON registration(stack, package);
-CREATE UNIQUE INDEX h ON registration(stack, package_name);
-CREATE UNIQUE INDEX i ON registration_change(event, package_name, kommit);
-CREATE UNIQUE INDEX j ON revision(stack, kommit);
-CREATE UNIQUE INDEX k ON revision(stack, number);
+CREATE UNIQUE INDEX h ON registration(stack, package);
+CREATE UNIQUE INDEX i ON registration(stack, package_name);
+CREATE UNIQUE INDEX j ON registration_change(event, package_name, kommit);
+CREATE UNIQUE INDEX k ON kommit(sha256);
 CREATE UNIQUE INDEX l ON prerequisite(distribution, package_name);
 CREATE UNIQUE INDEX m ON repository_property(key);
 CREATE UNIQUE INDEX n ON repository_property(key_canonical);
@@ -193,4 +178,6 @@ CREATE        INDEX p ON package(name);
 CREATE        INDEX q ON package(sha256);
 CREATE        INDEX r ON package(file);
 CREATE        INDEX s ON distribution(author);
-CREATE        INDEX t ON prerequisite(package_name);
+CREATE        INDEX t ON kommit_graph(ancestor);
+CREATE        INDEX u ON kommit_graph(descendant);
+CREATE        INDEX v ON prerequisite(package_name);

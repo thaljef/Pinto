@@ -106,7 +106,7 @@ sub execute {
 sub _replace {
     my ($self, $stack, $old_dist, $new_dist) = @_;
 
-    $self->repo->open_stack($stack);
+    $stack->open;
 
     for my $package ($old_dist->packages) {
         my $reg = $package->registration(stack => $stack) or next;

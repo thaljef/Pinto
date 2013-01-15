@@ -28,7 +28,7 @@ my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1});
 
   # Note the time of last kommit
-  my $old_mtime = $stack->head_revision->kommit->timestamp;
+  my $old_mtime = $stack->refresh->head->timestamp;
 
   # time passes
   sleep 2;
@@ -38,7 +38,7 @@ my $t = Pinto::Tester->new_with_stack;
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_2});
 
   # Check that mtime was updated...
-  cmp_ok $stack->head_revision->kommit->timestamp, '>', $old_mtime, 'Updated stack mtime';
+  cmp_ok $stack->refresh->head->timestamp, '>', $old_mtime, 'Updated stack mtime';
 }
 
 #------------------------------------------------------------------------------
@@ -59,12 +59,8 @@ my $t = Pinto::Tester->new_with_stack;
   is $qa_stack->get_property('description'), 'Copy of stack dev.',
     'Copied stack has default description';
 
-  is $qa_stack->head_revision->number, $dev_stack->head_revision->number,
-    'Copied stack head revision number is original head revision number';
-
-  is $qa_stack->get_property('pinto-copied-from'), $dev_stack->head_revision->to_string,
-    'pinto-copied-from property matches head revision of original stack';
-
+  is $qa_stack->head, $dev_stack->head,
+    'Head of copied stack points to head of original stack';
 }
 
 #------------------------------------------------------------------------------

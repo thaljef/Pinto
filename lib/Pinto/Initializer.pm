@@ -146,6 +146,7 @@ END_MODLIST
 sub _create_db {
     my ($self) = @_;
 
+    $self->mkpath($self->config->db_dir);
     my $db = Pinto::Database->new( config => $self->config );
     $db->deploy;
 
@@ -168,8 +169,7 @@ sub _create_stack {
 
     $pinto->run(New => ( stack       => $stack_name,
                          default     => $stack_is_default,
-                         message     => 'Created stack.',
-                         description => $stack_description, ));
+                         description => $stack_description ) );
 
     return;
 }

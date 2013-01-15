@@ -48,19 +48,16 @@ sub execute {
 
     my $stack = $self->repo->get_stack($self->stack);
 
-    my $revnum = $self->revision;
-    my @revisions = $stack->revision(number => $revnum);
+    my $format = "%I | %j | %u | $stack\n\n%g";
+    for my $kommit ($stack->history) {
 
-    throw "No such revision $revnum on stack $stack"
-      if !@revisions && defined $revnum;
+        last if $kommit->is_root_kommit;
 
-    my $format = "%k\@%b | %j | %u\n\n%g";
-    for my $revision (reverse @revisions) {
         $self->say('-' x 79);
-        $self->say( trim( $revision->to_string($format) ) . "\n" );
+        $self->say( trim( $kommit->to_string($format) ) . "\n" );
 
         if ($self->detailed) {
-            my @details = $revision->kommit->registration_changes;
+            my @details = $kommit->registration_changes;
             $self->say($_) for (@details ? @details : 'No details available.')
         }
     }

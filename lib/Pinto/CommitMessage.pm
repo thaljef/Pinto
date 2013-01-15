@@ -48,7 +48,7 @@ sub _build_details {
 
     my $details = '';
     for my $stack ( @stacks ) {
-        my @changes = $stack->head_revision->kommit->registration_changes;
+        my @changes = $stack->head->registration_changes;
         $details .= "# STACK: $stack\n" if @stacks > 1;
         $details .= "# $_\n" for (@changes ? @changes : '# No details available.');
         $details .= "#\n#\n";

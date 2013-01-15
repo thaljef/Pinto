@@ -70,9 +70,6 @@ sub execute {
     $copy->mark_as_default if $self->default;
     $copy->lock if $self->lock;
 
-    $self->repo->create_stack_filesystem(stack => $copy);
-    $self->repo->write_index(stack => $copy);
-
     return $self->result->changed;
 }
 

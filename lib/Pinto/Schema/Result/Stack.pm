@@ -53,6 +53,13 @@ __PACKAGE__->table("stack");
   default_value: null
   is_nullable: 1
 
+=head2 head
+
+  data_type: 'integer'
+  default_value: null
+  is_foreign_key: 1
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -66,6 +73,13 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 0 },
   "properties",
   { data_type => "text", default_value => \"null", is_nullable => 1 },
+  "head",
+  {
+    data_type      => "integer",
+    default_value  => \"null",
+    is_foreign_key => 1,
+    is_nullable    => 1,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -108,6 +122,26 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 =head1 RELATIONS
 
+=head2 head
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Kommit>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "head",
+  "Pinto::Schema::Result::Kommit",
+  { id => "head" },
+  {
+    is_deferrable => 0,
+    join_type     => "LEFT",
+    on_delete     => "NO ACTION",
+    on_update     => "NO ACTION",
+  },
+);
+
 =head2 registrations
 
 Type: has_many
@@ -119,21 +153,6 @@ Related object: L<Pinto::Schema::Result::Registration>
 __PACKAGE__->has_many(
   "registrations",
   "Pinto::Schema::Result::Registration",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 revisions
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Revision>
-
-=cut
-
-__PACKAGE__->has_many(
-  "revisions",
-  "Pinto::Schema::Result::Revision",
   { "foreign.stack" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -152,8 +171,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 02:00:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:A4/R1I/jXMzCOHwltTTVrA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-08 14:22:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DHQJRHZJL+1jGe7Xp3IiPg
 
 #-------------------------------------------------------------------------------
 
@@ -173,6 +192,7 @@ use JSON qw(encode_json decode_json);
 
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
+use Pinto::IndexWriter;
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
@@ -190,7 +210,8 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
-  $args->{properties} = '{}';
+  $args->{is_default} ||= 0;
+  $args->{properties}   = '{}';
   $args->{name_canonical} = lc $args->{name};
 
   return $args;
@@ -205,31 +226,65 @@ before is_default => sub {
 
 #------------------------------------------------------------------------------
 
-after delete => sub {
-    my ($self) = @_;
+sub open {
+    my ($self, %args) = @_;
 
-    # Kommits can be tied to multiple revisions (on different stacks) so they
-    # can't be deleted simply by cascading.  After the stack is deleted, all
-    # revisions that referenced the stack will be deleted by cascade.  Then
-    # we can clean up the Kommits by looking for those that are no longer
-    # referenced by any revision.  Once those Kommits are deleted, the
-    # RegistrationChanges referenced by those Kommits will also be deleted
-    # by cascade.
+    $args{message}  ||= '';     # Message usually updated when we commmit
+    $args{username} ||= $self->config->username;
 
-    my $where = {'revisions.id' => undef};
-    my $attrs = {join => 'revisions'};
-    $self->result_source->schema->resultset('Kommit')->search($where, $attrs)->delete;
-};
+    throw "Stack $self is locked and cannot be modified" if $self->is_locked;
+
+    my $parent = $self->has_head ? $self->head : $self->result_source->schema->get_root_kommit;
+    my $kommit = $self->result_source->schema->create_kommit(\%args);
+
+    $kommit->add_parent($parent);
+    $self->set_head($kommit);
+
+    $self->debug("Opened new head $kommit on stack $self");
+    
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
 sub close {
-    my ($self, @args) = @_;
+    my ($self, %args) = @_;
 
-    throw "Stack $self is not open for revision"
-      if $self->head_revision->kommit->is_committed;
+    $self->head->finalize( %args );
+    $self->write_index if $self->has_changed;
 
-    $self->head_revision->close(@args);
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub delete {
+  my ($self) = @_;
+
+  throw "Stack $self is locked and cannot be deleted" if $self->is_locked;
+
+  # There is a circular ref between stacks and registration_changes via
+  # the registration_changes and the head kommit.  So deleting a stack 
+  # will violate referential integrity To get around this, we must delete 
+  # the registrations *before* deleting the stack itself.  If we let the 
+  # database cascade deletes for us, the registrations would be deleted 
+  # *after* the stack.
+
+  $self->open;
+  $self->registrations->delete;
+  return $self->next::method;
+
+}
+
+#------------------------------------------------------------------------------
+
+sub write_index {
+    my ($self) = @_;
+
+    my $writer = Pinto::IndexWriter->new( stack => $self,
+                                          logger => $self->logger,
+                                          config => $self->config );
+    $writer->write_index;
 
     return $self;
 }
@@ -347,13 +402,7 @@ sub copy_deeply {
     my ($self, $changes) = @_;
 
     my $copy = $self->copy($changes);
-    $self->copy_revisions(to => $copy);
     $self->copy_registrations(to => $copy);
-
-    # Note when and where this stack was copied.  At the moment, we're
-    # not doing anything with this, but we might want to display it in
-    # the logs or do a --stop-on-copy feature similar to Subversion.
-    $copy->set_property('pinto-copied-from' => $self->head_revision->to_string);
 
     return $copy;
 }
@@ -369,26 +418,6 @@ sub copy_registrations {
     my $where = {stack => $self->id};
     my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
     my $rs = $self->result_source->schema->resultset('Registration');
-
-    my @rows = $rs->search($where, $attrs)->all;
-    for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
-
-    $rs->populate(\@rows);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub copy_revisions {
-    my ($self, %args) = @_;
-
-    my $to_stack = $args{to};
-    $self->info("Copying history for stack $self into stack $to_stack");
-
-    my $where = {stack => $self->id};
-    my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
-    my $rs = $self->result_source->schema->resultset('Revision');
 
     my @rows = $rs->search($where, $attrs)->all;
     for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
@@ -434,26 +463,6 @@ sub unmark_as_default {
     $self->update( {is_default => 0} );
 
     return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub head_revision {
-    my ($self) = @_;
-
-    my $head_id = $self->revisions->get_column('id')->max;
-
-    return $self->find_related( revisions => {id => $head_id} );
-}
-
-#------------------------------------------------------------------------------
-
-sub revision {
-    my ($self, %args) = @_;
-
-    return $self->revisions if not defined $args{number};
-
-    return $self->find_related( revisions => {number => $args{number}} );
 }
 
 #------------------------------------------------------------------------------
@@ -525,26 +534,6 @@ sub delete_properties {
     return $self;
 }
 
-#-------------------------------------------------------------------------------
-
-sub merge {
-    my ($self, %args) = @_;
-
-    my $to_stk = $args{to};
-
-    my ($conflicts, $did_merge);
-    for my $reg ($self->registrations) {
-        $self->info("Merging package $reg into stack $to_stk");
-        my ($c, $m) = $reg->merge(%args);
-        $conflicts += $c;
-        $did_merge += $m;
-    }
-
-    throw "There were $conflicts conflicts.  Merge aborted" if $conflicts;
-
-    return $did_merge;
-}
-
 #------------------------------------------------------------------------------
 
 sub is_locked {
@@ -582,6 +571,53 @@ sub unlock {
     $self->delete_property('pinto-locked');
     return 1;
 }
+
+#------------------------------------------------------------------------------
+
+sub has_head {
+    my ($self) = @_;
+
+    return defined $self->head;
+}
+
+#------------------------------------------------------------------------------
+
+sub set_head {
+  my ($self, $new_head) = @_;
+
+  $self->update( {head => $new_head} );
+
+  return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub has_changed {
+    my ($self) = @_;
+
+    return $self->head->registration_changes->count > 0;
+}
+
+#------------------------------------------------------------------------------
+
+sub has_not_changed {
+    my ($self) = @_;
+
+    return ! $self->has_changed;
+}
+
+#------------------------------------------------------------------------------
+
+sub history {
+    my ($self) = @_;
+
+    # TODO: this return an iterator, so we don't have to slurp the entire
+    # history into memory.  To do this, we need an option to tell ancestors()
+    # whether or not to include $self in the results.
+
+    return ($self->head, $self->head->ancestors);
+}
+
 #------------------------------------------------------------------------------
 
 sub numeric_compare {
@@ -620,14 +656,13 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                                 },
-           M => sub { $self->is_default                          ? '*' : ' '      },
-           L => sub { $self->is_locked                           ? 'X' : ' '      },
-           B => sub { $self->number                                               },
-           G => sub { $self->head_revision->kommit->message                       },
-           J => sub { $self->head_revision->kommit->username                      },
-           U => sub { $self->head_revision->kommit->timestamp->strftime('%c')     },
-           e => sub { $self->get_property('description')                          },
+           k => sub { $self->name                                                      },
+           M => sub { $self->is_default                                    ? '*' : ' ' },
+           L => sub { $self->is_locked                                     ? 'X' : ' ' },
+           G => sub { $self->has_head ? $self->head->message                     : ''  },
+           J => sub { $self->has_head ? $self->head->username                    : ''  },
+           U => sub { $self->has_head ? $self->head->timestamp->strftime('%c')   : ''  },
+           e => sub { $self->get_property('description')                               },
     );
 
     $format ||= $self->default_format();

@@ -49,9 +49,9 @@ sub run {
     my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
 
     my $result = try { 
-        $self->repo->db->check_version;
+        $self->repo->check_version;
         $self->repo->lock($lock_type); 
-        $action->execute 
+        $action->execute;
     }
     catch { 
         $self->repo->unlock; 

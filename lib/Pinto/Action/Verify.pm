@@ -21,11 +21,9 @@ extends qw( Pinto::Action );
 sub execute {
     my ($self) = @_;
 
+    my $dist_rs = $self->repo->schema->select_distributions;
 
-    # FIXME!
-    my $rs  = $self->repo->db->schema->resultset('Distribution')->search;
-
-    while ( my $dist = $rs->next ) {
+    while ( my $dist = $dist_rs->next ) {
         my $archive = $dist->archive( $self->repo->root_dir );
         $self->say("Missing distribution $archive") if not -e $archive;
     }

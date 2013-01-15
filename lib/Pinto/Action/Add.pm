@@ -84,16 +84,13 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->open_stack($self->stack);
+    my $stack = $self->repo->get_stack($self->stack)->open;
     $self->_add($_, $stack) for $self->archives;
+    return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    if ($self->result->made_changes and not $self->dryrun) {
-        my $message = $self->edit_message(stacks => [$stack]);
-        $stack->close(message => $message);
-        $self->repo->write_index(stack => $stack);
-    }
-
-    return $self->result;
+    my $message = $self->edit_message(stacks => [$stack]);
+    $stack->close(message => $message);
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------
@@ -110,13 +107,10 @@ sub _add {
     else {
         $self->notice("Adding distribution archive $archive");
         $dist = $self->repo->add(archive => $archive, author => $self->author);
-        $self->result->changed;
     }
 
-    my $did_register = $dist->register(stack => $stack, pin => $self->pin);
-    my $did_pull = $self->norecurse ? 0 : $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
-
-    $self->result->changed if $did_pull or $did_register;
+    $dist->register(stack => $stack, pin => $self->pin);
+    $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
     
     return;
 }

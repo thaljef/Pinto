@@ -19,7 +19,7 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Committable );
+with qw( Pinto::Role::Transactional );
 
 #------------------------------------------------------------------------------
 
@@ -51,21 +51,7 @@ sub execute {
     $stack->set_property(description => $self->description) if $self->description;
     $stack->mark_as_default if $self->default;
 
-    my $message = $self->edit_message(stacks => [$stack]);
-    $stack->close(message => $message);
-
-    $self->repo->create_stack_filesystem(stack => $stack);
-    $self->repo->write_index(stack => $stack);
-
     return $self->result->changed;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    return 'Created stack.';
 }
 
 #------------------------------------------------------------------------------

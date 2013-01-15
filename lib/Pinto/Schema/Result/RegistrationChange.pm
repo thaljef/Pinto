@@ -218,17 +218,55 @@ sub undo {
         throw "Found no registrations matching $self on stack $stack" if not defined $reg;
 
         $reg->delete;
-        $self->debug( sub {"Deleted  $self"} );
+        $self->debug( sub {$self->to_string('D %y %a/%f/%N')} );
 
     }
     elsif ($event eq 'delete') {
 
         $self->result_source->schema->resultset('Registration')->create($state);
-        $self->debug( sub {"Restored $self"} );
+        $self->debug( sub {$self->to_string('A %y %a/%f/%N')} );
 
     }
     else {
       throw "Don't know how to undo event $event";
+    }
+
+    return $self;
+
+}
+
+#-------------------------------------------------------------------------------
+
+sub redo {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+
+    my $state = { stack        => $stack,
+                  package      => $self->package,
+                  package_name => $self->package_name,
+                  distribution => $self->distribution,
+                  is_pinned    => $self->is_pinned };
+
+    my $event = $self->event;
+    if ($event eq 'insert') {
+
+        $self->result_source->schema->resultset('Registration')->create($state);
+        $self->debug( sub {"$self"} );
+
+    }
+    elsif ($event eq 'delete') {
+
+        my $attrs = { key => 'stack_package_unique' };
+        my $reg = $self->result_source->schema->resultset('Registration')->find($state, $attrs);
+        throw "Found no registrations matching $self on stack $stack" if not defined $reg;
+
+        $reg->delete;
+        $self->debug( sub {"$self"} );
+
+    }
+    else {
+      throw "Don't know how to redo event $event";
     }
 
     return $self;

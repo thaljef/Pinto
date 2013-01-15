@@ -19,10 +19,10 @@ requires qw( execute repo );
 around execute => sub {
     my ($orig, $self, @args) = @_;
 
-    $self->repo->db->txn_begin;
+    $self->repo->db->schema->txn_begin;
 
-    my $result = try   { $self->$orig(@args); $self->repo->db->txn_commit;}
-                 catch { $self->repo->db->txn_rollback; die $_ };
+    my $result = try   { $self->$orig(@args); $self->repo->db->schema->txn_commit;}
+                 catch { $self->repo->db->schema->txn_rollback; die $_ };
 
     return $self->result;
 };
