@@ -11,7 +11,6 @@ use HTTP::Date qw(time2str);
 
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(File Io);
-use Pinto::Util qw(author_dir);
 
 use namespace::autoclean;
 
@@ -93,7 +92,7 @@ sub _write_records {
 
     for my $record ( @records ) {
         my ($name, $version, $author, $archive) = @{ $record };
-        my $path = author_dir($author) . '/' . $archive;
+        my $path = join '/', substr($author, 0, 1), substr($author, 0, 2), $author, $archive;
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
@@ -122,7 +121,7 @@ sub _get_index_records {
     my @selects = qw(package.name package.version distribution.author_canonical distribution.archive);
 
     my $attrs   = {join => \@joins, select => \@selects};
-    my $rs      = $stack->search_related('registrations', {}, $attrs);
+    my $rs      = $stack->head->search_related('registrations', {}, $attrs);
     my @records = sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
 
     return @records;

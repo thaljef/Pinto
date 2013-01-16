@@ -4,11 +4,7 @@ package Pinto::Database;
 
 use Moose;
 
-use Try::Tiny;
-use Path::Class;
-
 use Pinto::Schema;
-use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
 
@@ -102,7 +98,7 @@ sub select_registration {
   my ($self, $where, $attrs) = @_;
 
   $attrs ||= {};
-  $attrs->{prefetch} ||= [ {package => 'distribution'}, 'stack' ];
+  $attrs->{prefetch} ||= [ {package => 'distribution'}, 'kommit' ];
 
   return $self->schema->registration_rs->find($where, $attrs);
 }
@@ -113,7 +109,7 @@ sub select_registrations {
     my ($self, $where, $attrs) = @_;
 
     $attrs ||= {};
-    $attrs->{prefetch} ||= [ qw( package stack ) ];
+    $attrs->{prefetch} ||= [ qw( package kommit ) ];
 
     return $self->schema->registration_rs->search($where, $attrs);
 }

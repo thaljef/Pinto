@@ -81,7 +81,7 @@ sub _pull {
     }
 
     my ($dist, $did_pull) = $self->repo->find_or_pull(target => $target, stack => $stack);
-    my $did_register = $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;
+    my $did_register = defined $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;
 
     if ($dist and not $self->norecurse) {
         $did_pull += $self->repo->pull_prerequisites(dist => $dist, stack => $stack);

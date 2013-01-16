@@ -300,8 +300,8 @@ sub get_package {
     my $stk_name = $args{stack};
 
     if ($stk_name) {
-        my $stack = $self->get_stack($stk_name);
-        my $where = { 'package.name' => $pkg_name, stack => $stack->id };
+        my $kommit = $self->get_stack($stk_name)->head;
+        my $where  = { 'package.name' => $pkg_name, kommit => $kommit->id };
         my $registration = $self->db->select_registration($where);
         return $registration ? $registration->package : ();
     }
@@ -692,7 +692,8 @@ sub create_stack {
     throw "Stack $args{name} already exists"
         if $self->get_stack($args{name}, nocroak => 1);
 
-    my $stack = $self->db->schema->create_stack(\%args);
+    my $root  = $self->db->schema->get_root_kommit;
+    my $stack = $self->db->schema->create_stack( {%args, head => $root} );
     $self->create_stack_filesystem(stack => $stack);
     $stack->write_index;
 
@@ -720,7 +721,7 @@ sub copy_stack {
     my $to_stack_name = $args{to};
 
     my $changes  = {name => $to_stack_name};
-    my $copy     = $from_stack->copy_deeply( $changes );
+    my $copy     = $from_stack->copy( $changes );
 
     $self->create_stack_filesystem(stack => $copy);
     $copy->write_index;

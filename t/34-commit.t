@@ -43,8 +43,9 @@ my $t = Pinto::Tester->new_with_stack;
 #------------------------------------------------------------------------------
 
 {
-	my $stack  = $t->pinto->repo->get_stack;
-	is ($stack->head, undef, 'New stack has no head');
+	my $stack = $t->pinto->repo->get_stack;
+	my $root  = $t->pinto->repo->db->schema->get_root_kommit;
+	is ($stack->head, $root, 'New stack root as head');
 }
 
 #------------------------------------------------------------------------------

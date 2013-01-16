@@ -32,7 +32,7 @@ __PACKAGE__->table("registration");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 stack
+=head2 kommit
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -65,7 +65,7 @@ __PACKAGE__->table("registration");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "stack",
+  "kommit",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -91,11 +91,11 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<stack_package_name_unique>
+=head2 C<kommit_package_name_unique>
 
 =over 4
 
-=item * L</stack>
+=item * L</kommit>
 
 =item * L</package_name>
 
@@ -103,13 +103,13 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "package_name"]);
+__PACKAGE__->add_unique_constraint("kommit_package_name_unique", ["kommit", "package_name"]);
 
-=head2 C<stack_package_unique>
+=head2 C<kommit_package_unique>
 
 =over 4
 
-=item * L</stack>
+=item * L</kommit>
 
 =item * L</package>
 
@@ -117,7 +117,7 @@ __PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "packa
 
 =cut
 
-__PACKAGE__->add_unique_constraint("stack_package_unique", ["stack", "package"]);
+__PACKAGE__->add_unique_constraint("kommit_package_unique", ["kommit", "package"]);
 
 =head1 RELATIONS
 
@@ -136,6 +136,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
+=head2 kommit
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Kommit>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "kommit",
+  "Pinto::Schema::Result::Kommit",
+  { id => "kommit" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
+);
+
 =head2 package
 
 Type: belongs_to
@@ -148,21 +163,6 @@ __PACKAGE__->belongs_to(
   "package",
   "Pinto::Schema::Result::Package",
   { id => "package" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
-);
-
-=head2 stack
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Stack>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "stack",
-  "Pinto::Schema::Result::Stack",
-  { id => "stack" },
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
@@ -180,8 +180,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 21:41:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5FuY4cqJpXjQRvLbAhQbXw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DxFExkfsdaHPxi5a56ghbQ
 
 #------------------------------------------------------------------------------
 
@@ -207,34 +207,12 @@ use overload ( '""'     => 'to_string',
 #-------------------------------------------------------------------------------
 
 sub sqlt_deploy_hook {
-   my ($self, $sqlt_table) = @_;
-
-   for my $event (qw(insert delete)) {
-
-    # The name of the table that contains the incoming/outgoing
-    # record depends on whether we are inserting or deleting it.
-    my $tb       = ($event eq 'insert') ? 'new' : 'old';
-
-    # The last revision on the stack should be the head.
-    # TODO: assert that the revision is open before writing change
-    my $kommit = qq{ SELECT head FROM stack WHERE id = $tb.stack };
-
-    # If there is already a change record for this package 
-    # in this kommit,then just replace the existing one.
-    my $sql      = qq{ INSERT OR REPLACE INTO registration_change (event, package, package_name, distribution, is_pinned, kommit) };
-       $sql     .= qq{ VALUES ('$event', $tb.package, $tb.package_name, $tb.distribution, $tb.is_pinned, ($kommit)); };
-
-    $sqlt_table->schema->add_trigger(
-      name                => "after_${event}_registration",
-      table               => $sqlt_table,
-      perform_action_when => 'after',
-      database_events     => [$event],
-      action              => $sql,
-    );
-  }
+    my ($self, $sqlt_table) = @_;
+ 
+    $sqlt_table->add_index(name => 'registration_idx_kommit', fields => ['kommit']);
 
     return;
- }
+}
 
 #-------------------------------------------------------------------------------
 
@@ -251,18 +229,11 @@ sub FOREIGNBUILDARGS {
 
 #-------------------------------------------------------------------------------
 
-sub update { throw 'Updates to '.  __PACKAGE__ . ' are not allowed'; }
-
-#------------------------------------------------------------------------------
-
 sub pin {
     my ($self) = @_;
 
     throw "$self is already pinned" if $self->is_pinned;
-
-    $self->delete;
-    $self->is_pinned(1);
-    $self->insert;
+    $self->update({is_pinned => 1});
 
     return $self;
 }
@@ -273,10 +244,7 @@ sub unpin {
     my ($self) = @_;
 
     throw "$self is not pinned" if not $self->is_pinned;
-
-    $self->delete;
-    $self->is_pinned(0);
-    $self->insert;
+    $self->update({is_pinned => 0});
 
     return $self;
 }
@@ -395,12 +363,12 @@ sub to_string {
     # warn __PACKAGE__ . " stringified from $file at line $line";
 
     my %fspec = (
-         n => sub { $self->package->name                                              },
-         N => sub { $self->package->vname                                             },
+         p => sub { $self->package->name                                              },
+         P => sub { $self->package->vname                                             },
          v => sub { $self->package->version                                           },
          m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'               },
-         p => sub { $self->package->distribution->path                                },
-         P => sub { $self->package->distribution->native_path                         },
+         h => sub { $self->package->distribution->path                                },
+         H => sub { $self->package->distribution->native_path                         },
          f => sub { $self->package->distribution->archive                             },
          s => sub { $self->package->distribution->is_local  ? 'l' : 'f'               },
          S => sub { $self->package->distribution->source                              },
@@ -408,9 +376,10 @@ sub to_string {
          A => sub { $self->package->distribution->author_canonical                    },
          d => sub { $self->package->distribution->name                                },
          D => sub { $self->package->distribution->vname                               },
-         w => sub { $self->package->distribution->version                             },
+         V => sub { $self->package->distribution->version                             },
          u => sub { $self->package->distribution->url                                 },
-         k => sub { $self->stack->name                                                },
+         i => sub { $self->kommit->sha256_short                                       },
+         I => sub { $self->kommit->sha256                                             },
          y => sub { $self->is_pinned                        ? '*' : ' '               },
     );
 
@@ -427,7 +396,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%A/%D/%N/%k';
+    return '%A/%D/%P/%i'; # AUTHOR/DIST_VNAME/PKG_VNAME/KOMMIT
 }
 
 #------------------------------------------------------------------------------

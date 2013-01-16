@@ -175,21 +175,6 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registration_changes
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::RegistrationChange>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.distribution" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 registrations
 
 Type: has_many
@@ -219,8 +204,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-11-12 10:50:21
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ANnPDZEqb47L28lc94IxxA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YdITkwXm0FkFY12GrPDPNg
 
 #-------------------------------------------------------------------------------
 
@@ -271,22 +256,17 @@ sub FOREIGNBUILDARGS {
 sub register {
     my ($self, %args) = @_;
 
-    my $stack = $args{stack};
-    my $pin   = $args{pin};
+    my $stack  = $args{stack};
+    my $pin    = $args{pin};
+    my $kommit = $stack->head;
     my $did_register = 0;
     my $errors       = 0;
 
     for my $pkg ($self->packages) {
 
-      if (my $reg = $pkg->registrations->find( {stack => $stack->id} ) ) {
-          $self->debug( sub {"Package $pkg is already on stack $stack"} );
-          $reg->pin && $did_register++ if $pin and not $reg->is_pinned;
-          next;
-      }
+      my $incumbent = $stack->registration(package => $pkg);
 
-      my $incumbent = $stack->registration(package => $pkg->name);
-
-      if (not $incumbent) {
+      if (not defined $incumbent) {
           $self->debug(sub {"Registering $pkg on stack $stack"} );
           $pkg->register(stack => $stack, pin => $pin);
           $did_register++;
@@ -296,10 +276,11 @@ sub register {
       my $incumbent_pkg = $incumbent->package;
 
       if ( $incumbent_pkg == $pkg ) {
-        # TODO: should this be an exception?
-        $self->warning("Package $pkg is already on stack $stack");
+        $self->debug( sub {"Package $pkg is already on stack $stack"} );
+        $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
         next;
       }
+
 
       if ( $incumbent->is_pinned ) {
         my $pkg_name = $pkg->name;
@@ -307,7 +288,6 @@ sub register {
         $errors++;
         next;
       }
-
 
       my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
                                                          : ('notice',  'Upgrading');
@@ -328,28 +308,28 @@ sub register {
 sub unregister {
   my ($self, %args) = @_;
 
-  my $stack = $args{stack};
-  my $force = $args{force};
+  my $stack  = $args{stack};
+  my $force  = $args{force};
+  my $kommit = $stack->head;
   my $did_unregister = 0;
   my $conflicts      = 0;
 
-  for my $pkg ($self->packages) {
-
-    my $reg = $pkg->registrations->find( {stack => $stack->id} );
-    next if not defined $reg;
+  my $rs = $self->registrations( {kommit => $kommit->id} );
+  for my $reg ($rs->all) {
 
     if ($reg->is_pinned and not $force ) {
+      my $pkg = $reg->package;
       $self->warning("Cannot unregister package $pkg because it is pinned to stack $stack");
       $conflicts++;
       next;
     }
 
-    $self->debug( sub {"Unregistering on $pkg on stack $stack"} );
     $did_unregister++;
-    $reg->delete;
   }
 
   throw "Unable to unregister distribution $self on stack $stack" if $conflicts;
+
+  $rs->delete;
 
   return $did_unregister;
 }
@@ -360,32 +340,13 @@ sub pin {
     my ($self, %args) = @_;
 
     my $stack   = $args{stack};
-    my $errors  = 0;
-    my $did_pin = 0;
+    my $kommit  = $stack->head;
 
-    for my $pkg ($self->packages) {
-        my $registration = $pkg->registration(stack => $stack);
+    my $rs = $self->registrations( {kommit => $kommit->id} );
+    $rs->update({is_pinned => 1});
+    return 1;
 
-        if (not $registration) {
-            $self->error("Package $pkg is not registered on stack $stack");
-            $errors++;
-            next;
-        }
-
-
-        if ($registration->is_pinned) {
-            $self->warning("Package $pkg is already pinned on stack $stack");
-            next;
-        }
-
-        $registration->pin;
-        $did_pin++;
-    }
-
-    throw "Unable to pin distribution $self to stack $stack" if $errors;
-
-    return $did_pin;
-
+    # TODO: Return flag to indicate if a pin happened?
 }
 
 #------------------------------------------------------------------------------
@@ -394,31 +355,13 @@ sub unpin {
     my ($self, %args) = @_;
 
     my $stack     = $args{stack};
-    my $errors    = 0;
-    my $did_unpin = 0;
+    my $kommit    = $stack->head;
+ 
+    my $rs = $self->registrations( {kommit => $kommit->id} );
+    $rs->update({is_pinned => 0});
+    return 1;
 
-    for my $pkg ($self->packages) {
-        my $registration = $pkg->registration(stack => $stack);
-
-        if (not $registration) {
-            $self->error("Package $pkg is not registered on stack $stack");
-            $errors++;
-            next;
-        }
-
-
-        if (not $registration->is_pinned) {
-            $self->warning("Package $pkg is not pinned on stack $stack");
-            next;
-        }
-
-        $registration->unpin;
-        $did_unpin++;
-    }
-
-    throw "Unable to unpin distribution $self to stack $stack" if $errors;
-
-    return $did_unpin;
+    # TODO: Return flag to indicate if a unpin happened?
 }
 
 #------------------------------------------------------------------------------
@@ -570,10 +513,10 @@ sub to_string {
     my %fspec = (
          'd' => sub { $self->name()                           },
          'D' => sub { $self->vname()                          },
-         'w' => sub { $self->version()                        },
+         'V' => sub { $self->version()                        },
          'm' => sub { $self->is_devel()   ? 'd' : 'r'         },
-         'p' => sub { $self->path()                           },
-         'P' => sub { $self->native_path()                    },
+         'h' => sub { $self->path()                           },
+         'H' => sub { $self->native_path()                    },
          'f' => sub { $self->archive()                        },
          's' => sub { $self->is_local()   ? 'l' : 'f'         },
          'S' => sub { $self->source()                         },
@@ -592,7 +535,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%A/%f',
+    return '%A/%f', # AUTHOR/Dist-Name-1.0.tar.gz
 }
 
 #------------------------------------------------------------------------------

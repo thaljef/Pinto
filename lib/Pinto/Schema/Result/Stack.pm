@@ -142,21 +142,6 @@ __PACKAGE__->belongs_to(
   },
 );
 
-=head2 registrations
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Registration>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registrations",
-  "Pinto::Schema::Result::Registration",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -171,8 +156,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-08 14:22:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DHQJRHZJL+1jGe7Xp3IiPg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FEJM4i0PRFeUUqP7kgFi+w
 
 #-------------------------------------------------------------------------------
 
@@ -229,18 +214,19 @@ before is_default => sub {
 sub open {
     my ($self, %args) = @_;
 
-    $args{message}  ||= '';     # Message usually updated when we commmit
+    $args{message}  ||= ''; # is this necessary?
     $args{username} ||= $self->config->username;
 
     throw "Stack $self is locked and cannot be modified" if $self->is_locked;
 
-    my $parent = $self->has_head ? $self->head : $self->result_source->schema->get_root_kommit;
-    my $kommit = $self->result_source->schema->create_kommit(\%args);
 
-    $kommit->add_parent($parent);
-    $self->set_head($kommit);
+    my $new_head = $self->result_source->schema->create_kommit(\%args);
+    $new_head->add_parent($self->head);
 
-    $self->debug("Opened new head $kommit on stack $self");
+    $self->copy_registrations(kommit => $new_head);
+    $self->set_head(kommit => $new_head);
+
+    $self->debug("Opened new head kommit on stack $self");
     
     return $self;
 }
@@ -263,17 +249,7 @@ sub delete {
 
   throw "Stack $self is locked and cannot be deleted" if $self->is_locked;
 
-  # There is a circular ref between stacks and registration_changes via
-  # the registration_changes and the head kommit.  So deleting a stack 
-  # will violate referential integrity To get around this, we must delete 
-  # the registrations *before* deleting the stack itself.  If we let the 
-  # database cascade deletes for us, the registrations would be deleted 
-  # *after* the stack.
-
-  $self->open;
-  $self->registrations->delete;
   return $self->next::method;
-
 }
 
 #------------------------------------------------------------------------------
@@ -281,7 +257,7 @@ sub delete {
 sub write_index {
     my ($self) = @_;
 
-    my $writer = Pinto::IndexWriter->new( stack => $self,
+    my $writer = Pinto::IndexWriter->new( stack  => $self,
                                           logger => $self->logger,
                                           config => $self->config );
     $writer->write_index;
@@ -297,69 +273,10 @@ sub registration {
     my $pkg_name = ref $args{package} ? $args{package}->name
                                       : $args{package};
 
-    my $attrs = { prefetch => {package => 'distribution'} };
+    my $attrs = { prefetch => 'package' };
     my $where = {'package.name' => $pkg_name};
 
-    return $self->find_related(registrations => $where, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
-sub registered_distribution_ids {
-    my ($self) = @_;
-
-    my $attrs = { columns => 'distribution', distinct => 1 };
-    my $ids = $self->registrations->search({}, $attrs)->get_column('distribution');
-
-    return $ids->all;
-}
-
-#------------------------------------------------------------------------------
-
-sub registered_distributions {
-    my ($self, %args) = @_;
-
-    my $where = {};
-    $where->{archive} = {like => "%$args{matching}%"} if $args{matching};
-
-    my $attrs = { distinct => 1,
-                  order_by => [ qw(author archive) ] };
-
-    my $rs = $self->result_source->schema->resultset('Distribution');
-
-    return $rs->search(undef, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
-sub registered_distributions_by_revision {
-    my ($self, %args) = @_;
-
-    my @dist_ids = $self->registered_distribution_ids;
-
-    my $where = { 'revision.stack' => $self->id, 
-                  'me.id'          => {-in => \@dist_ids} };
-
-    $where->{archive} = {like => "%$args{matching}%"} if $args{matching};
-
-    my $attrs = { distinct => 1,
-                  prefetch => 'packages',
-                  order_by => 'revision DESC',
-                  join     => {registration_changes => 'revision'} };
-
-    my $rs = $self->result_source->schema->resultset('Distribution');
-
-    return $rs->search($where, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
-sub total_registered_distributions {
-    my ($self) = @_;
-
-    my $attrs = {columns => 'distribution', distinct => 1};
-
-    return $self->registrations({}, $attrs)->count;
+    return $self->head->find_related(registrations => $where, $attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -398,31 +315,22 @@ sub copy {
 
 #------------------------------------------------------------------------------
 
-sub copy_deeply {
-    my ($self, $changes) = @_;
-
-    my $copy = $self->copy($changes);
-    $self->copy_registrations(to => $copy);
-
-    return $copy;
-}
-
-#------------------------------------------------------------------------------
-
 sub copy_registrations {
     my ($self, %args) = @_;
 
-    my $to_stack = $args{to};
-    $self->info("Copying registrations for stack $self into stack $to_stack");
+    my $new_head    = $args{kommit};
+    my $new_head_id = $new_head->id;
 
-    my $where = {stack => $self->id};
-    my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
-    my $rs = $self->result_source->schema->resultset('Registration');
+    my $old_head    = $self->head;
+    my $old_head_id = $old_head->id;
 
-    my @rows = $rs->search($where, $attrs)->all;
-    for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
+    my $sql = "INSERT INTO registration (kommit, package, package_name, distribution, is_pinned) "
+            . "SELECT '$new_head_id', package, package_name, distribution, is_pinned FROM registration "
+            . "WHERE kommit = '$old_head_id' ";
 
-    $rs->populate(\@rows);
+    $self->debug("Copying registrations from stack $self at $old_head");
+    my $dbh = $self->result_source->schema->storage->dbh;
+    $dbh->do($sql);
 
     return $self;
 }
@@ -436,8 +344,6 @@ sub mark_as_default {
         $self->warning("Stack $self is already the default");
         return 0;
     }
-
-    # TODO: wrap in txn
 
     $self->debug('Marking all stacks as non-default');
     my $rs = $self->result_source->resultset->search;
@@ -574,17 +480,10 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
-sub has_head {
-    my ($self) = @_;
-
-    return defined $self->head;
-}
-
-#------------------------------------------------------------------------------
-
 sub set_head {
-  my ($self, $new_head) = @_;
+  my ($self, %args) = @_;
 
+  my $new_head = $args{kommit};
   $self->update( {head => $new_head} );
 
   return $self;
@@ -594,16 +493,14 @@ sub set_head {
 
 sub has_changed {
     my ($self) = @_;
-
-    return $self->head->registration_changes->count > 0;
+    return 1;
 }
 
 #------------------------------------------------------------------------------
 
 sub has_not_changed {
     my ($self) = @_;
-
-    return ! $self->has_changed;
+    return 0;
 }
 
 #------------------------------------------------------------------------------
@@ -656,13 +553,15 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                                      },
-           M => sub { $self->is_default                                    ? '*' : ' ' },
-           L => sub { $self->is_locked                                     ? 'X' : ' ' },
-           G => sub { $self->has_head ? $self->head->message                     : ''  },
-           J => sub { $self->has_head ? $self->head->username                    : ''  },
-           U => sub { $self->has_head ? $self->head->timestamp->strftime('%c')   : ''  },
-           e => sub { $self->get_property('description')                               },
+           k => sub { $self->name                                    },
+           M => sub { $self->is_default                  ? '*' : ' ' },
+           L => sub { $self->is_locked                   ? '!' : ' ' },
+           i => sub { $self->head->sha256_short                      },
+           I => sub { $self->head->sha256                            },
+           G => sub { $self->head->message                           },
+           J => sub { $self->head->username                          },
+           U => sub { $self->head->timestamp->strftime('%c')         },
+           e => sub { $self->get_property('description')             },
     );
 
     $format ||= $self->default_format();

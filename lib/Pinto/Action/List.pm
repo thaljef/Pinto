@@ -6,7 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(HashRef Str Bool);
 
 use Pinto::Types qw(Author StackName StackAll StackDefault StackObject);
-use Pinto::Constants qw($PINTO_STACK_NAME_ALL);
+use Pinto::Util qw(is_stack_all);
 
 use namespace::autoclean;
 
@@ -54,7 +54,7 @@ has distributions => (
 has format => (
     is        => 'ro',
     isa       => Str,
-    default   => "%m%s%y %-40n %12v  %a/%f",
+    default   => "%m%s%y %-40p %12v  %A/%f",
     predicate => 'has_format',
     lazy      => 1,
 );
@@ -100,32 +100,46 @@ sub execute {
 
     my $where    = $self->where;
     my $stk_name = $self->stack;
-    my $format;
 
-    if (defined $stk_name and $stk_name eq $PINTO_STACK_NAME_ALL) {
-        # If listing all stacks, then include the stack name
-        # in the listing, unless a custom format has been given
-        $format = $self->has_format ? $self->format
-                                    : "%m%s%y %-12k %-40n %12v  %p";
+    my @stacks =   is_stack_all($stk_name)
+                 ? $self->repo->get_all_stacks
+                 : $self->repo->get_stack($stk_name);
+
+    my $attrs = { prefetch => {package => 'distribution'} };
+
+    ##########################################################################
+
+    if (scalar @stacks == 1) {
+
+        # In the common case where we are only listing one stack, we can iterate
+        # through the registrations rather than slurping them all into memory.
+
+        $attrs->{order_by} = [ qw(package.name) ];
+        my $format = $self->format;
+        my $rs = $stacks[0]->head->registrations($where, $attrs);
+        while( my $registration = $rs->next ) {
+            $self->say($registration->to_string($format));
+        }
     }
-    else{
-        # Otherwise, list only the named stack, falling back to
-        # the default stack if no stack was named at all.
-        my $stack = $self->repo->get_stack($stk_name);
-        $where->{'stack.name'} = $stack->name;
-        $format = $self->format;
-    }
+    else {
 
+        # In the uncommon case where we are listing multiple stacks, we must
+        # slurp the registrations for all stacks into memory and then sort
+        # them by stack.
 
-    my $attrs = {prefetch => ['stack', {package => 'distribution'}],
-                 order_by => [ qw(package.name) ] };
+        my @tuples = map { my $stack = $_; 
+                           map {[$stack => $_]} $stack->head->registrations($where, $attrs) } @stacks;
 
-    ################################################################
-
-    my $rs = $self->repo->db->select_registrations($where, $attrs);
-
-    while( my $registration = $rs->next ) {
-        $self->say($registration->to_string($format));
+        my @sorted = sort {    $a->[1]->package_name cmp $b->[1]->package_name 
+                            || $a->[0]->name cmp $a->[0]->name } @tuples;
+        
+        for (@sorted) {
+            my $stack        = $_->[0];
+            my $registration = $_->[1];
+            my $format = $self->has_format ? $self->format : "%m%s%y %-12k %-40p %12v  %A/%f";
+            $format = $stack->to_string($format); # Expands the stack-related placeholders
+            $self->say($registration->to_string($format));
+        }               
     }
 
     return $self->result;

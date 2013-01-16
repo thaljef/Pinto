@@ -59,7 +59,7 @@ sub _pin {
 
     my $dist = $self->repo->get_distribution_by_spec(spec => $spec, stack => $stack);
 
-    throw "$spec does not exist in the repository" if not $dist;
+    throw "$spec does not exist in the repository" if not defined $dist;
 
     $self->notice("Pinning distribution $dist to stack $stack");
 

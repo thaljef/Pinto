@@ -83,50 +83,16 @@ CREATE TABLE stack (
 
 CREATE TABLE registration (
        id                   INTEGER PRIMARY KEY NOT NULL,
-       stack                INTEGER             NOT NULL,
+       kommit               INTEGER             NOT NULL,
        package              INTEGER             NOT NULL, /* Points to the package */
        package_name         TEXT                NOT NULL, /* Name of referenced the package.  Must be unique per stack */
        distribution         INTEGER             NOT NULL, /* Points to the distribution that contains the package */
        is_pinned            BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
 
-       FOREIGN KEY(stack)        REFERENCES stack(id),
+       FOREIGN KEY(kommit)       REFERENCES kommit(id),
        FOREIGN KEY(package)      REFERENCES package(id) ON DELETE CASCADE,
        FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
 );
-
-/*
-
-   Audit table, representing a change to the registration table.  The
-   registration table can only be modified by insert or deleting
-   records (updates are not permitted).  So this table makes a record
-   of each addition or deleteion, and associates it with a revision.
-   A revision may include multiple insertions or deletions.
-
-*/
-
-CREATE TABLE registration_change (
-       id            INTEGER PRIMARY KEY NOT NULL,
-       event         TEXT                NOT NULL, /* INSERT or DELETE */
-       package       INTEGER             NOT NULL, /* Points to the package that was registered */
-       package_name  TEXT                NOT NULL, /* Name of the referenced package.  Must be unique per kommit */
-       distribution  INTEGER             NOT NULL, /* Points to the distribution that contained the package */
-       is_pinned     BOOLEAN             NOT NULL, /* Boolean, indicates if the package can be changed */
-       kommit        INTEGER             NOT NULL, /* Points to commit in which this change ocurred */
-
-       FOREIGN KEY(package)      REFERENCES package(id) ON DELETE CASCADE,
-       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE,
-       FOREIGN KEY(kommit)       REFERENCES kommit(id) ON DELETE CASCADE
-);
-
-
-/*
-
-    Represents a set of changes (i.e. a set of records in the
-    registration_changes table).  Each revision is associated with
-    exactly one stack, and has a sequential revision number for that
-    stack (i.e. the first revision in any stack is numbered "1").  
-
-*/
 
 
 CREATE TABLE kommit (
@@ -165,15 +131,14 @@ CREATE UNIQUE INDEX c ON distribution(sha256);
 CREATE UNIQUE INDEX d ON package(name, distribution);
 CREATE UNIQUE INDEX e ON stack(name);
 CREATE UNIQUE INDEX f ON stack(name_canonical);
-CREATE UNIQUE INDEX h ON registration(stack, package);
-CREATE UNIQUE INDEX i ON registration(stack, package_name);
-CREATE UNIQUE INDEX j ON registration_change(event, package_name, kommit);
+CREATE UNIQUE INDEX h ON registration(kommit, package);
+CREATE UNIQUE INDEX i ON registration(kommit, package_name);
 CREATE UNIQUE INDEX k ON kommit(sha256);
 CREATE UNIQUE INDEX l ON prerequisite(distribution, package_name);
 CREATE UNIQUE INDEX m ON repository_property(key);
 CREATE UNIQUE INDEX n ON repository_property(key_canonical);
 
-CREATE        INDEX o ON registration(stack);
+CREATE        INDEX o ON registration(kommit);
 CREATE        INDEX p ON package(name);
 CREATE        INDEX q ON package(sha256);
 CREATE        INDEX r ON package(file);

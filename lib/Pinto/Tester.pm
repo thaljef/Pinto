@@ -188,9 +188,9 @@ sub registration_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack      = $self->pinto->repo->get_stack($stack_name);
+    my $kommit     = $self->pinto->repo->get_stack($stack_name)->head;
 
-    my $where = { stack => $stack->id, 'package.name' => $pkg_name };
+    my $where = { kommit => $kommit->id, 'package.name' => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
     my $reg = $self->pinto->repo->db->select_registration($where, $attrs);
 
@@ -234,9 +234,9 @@ sub registration_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack     = $self->pinto->repo->get_stack($stack_name);
+    my $kommit    = $self->pinto->repo->get_stack($stack_name)->head;
 
-    my $where = {stack => $stack->id, 'package.name' => $pkg_name, 'distribution.author' => $author, 'distribution.archive' => $dist_archive};
+    my $where = {kommit => $kommit->id, 'package.name' => $pkg_name, 'distribution.author' => $author, 'distribution.archive' => $dist_archive};
     my $reg = $self->pinto->repo->db->select_registration($where);
 
     return $self->tb->ok(1, "Registration $reg_spec should not exist")

@@ -125,17 +125,17 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registration_changes
+=head2 registrations
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::RegistrationChange>
+Related object: L<Pinto::Schema::Result::Registration>
 
 =cut
 
 __PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
+  "registrations",
+  "Pinto::Schema::Result::Registration",
   { "foreign.kommit" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -169,8 +169,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-13 22:05:21
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ce17NA9CW76Mz+yBlNdyfQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8vfVnt64+WYCvBY4OZ//kg
 
 #------------------------------------------------------------------------------
 
@@ -193,7 +193,7 @@ use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis trim current_time);
 
 use overload ( '""'  => 'to_string',
-               '<=>' => 'compare',
+               '<=>' => 'numeric_compare',
                'eq'  => 'equals' );
 
 #------------------------------------------------------------------------------
@@ -213,10 +213,10 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
+  $args->{sha256}       ||= '';
   $args->{message}      ||= '';
   $args->{username}     ||= '';
   $args->{timestamp}    ||=  0;
-  $args->{sha256}       ||= '';
 
   return $args;
 }
@@ -228,7 +228,7 @@ sub insert {
 
   $self->next::method;
 
-  $self->create_related(kommit_graph_ancestors => { descendant => $self->id, 
+  $self->create_related(kommit_graph_ancestors => { descendant => $self, 
                                                     depth      => 0 });
 
   return $self;
@@ -249,7 +249,6 @@ sub finalize {
       $self->username( $args{username} );
     }
 
-    $DB::single = 1;
     $self->timestamp( current_time );
     $self->sha256( $self->compute_digest );
 
@@ -292,23 +291,10 @@ sub sha256_short {
 
 #------------------------------------------------------------------------------
 
-sub redo {
-    my ($self, %args) = @_;
-
-    my $stack = $args{stack};
-    for my $change ($self->registration_changes) {
-        $change->redo(stack => $stack);
-    }
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub compute_digest {
     my ($self) = @_;
 
-    my $string = join '|', $self->registration_changes,
+    my $string = join '|', $self->registrations->get_column('package'),
                            $self->timestamp->hires_epoch,
                            $self->username,
                            $self->message;
@@ -317,34 +303,6 @@ sub compute_digest {
     $sha->add($string);
 
     return $sha->hexdigest;
-}
-
-#------------------------------------------------------------------------------
-
-sub compare {
-    my ($kommit_a, $kommit_b) = @_;
-
-    my $pkg = __PACKAGE__;
-    throw "Can only compare $pkg objects"
-        if not ( itis($kommit_a, $pkg) && itis($kommit_b, $pkg) );
-
-    return 0 if $kommit_a->id == $kommit_b->id;
-
-    my $r = ($kommit_a->timestamp <=> $kommit_b->timestamp);
-
-    return $r;
-}
-
-#------------------------------------------------------------------------------
-
-sub equals {
-    my ($kommit_a, $kommit_b) = @_;
-
-    my $pkg = __PACKAGE__;
-    throw "Can only compare $pkg objects"
-        if not ( itis($kommit_a, $pkg) && itis($kommit_b, $pkg) );
-
-    return $kommit_a->id == $kommit_b->id;
 }
 
 #------------------------------------------------------------------------------
@@ -438,6 +396,34 @@ sub is_root_kommit {
 
   # TODO: use the root's digest to test for identity
   return $self->id == 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub numeric_compare {
+    my ($kommit_a, $kommit_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($kommit_a, $pkg) && itis($kommit_b, $pkg) );
+
+    return 0 if $kommit_a->id == $kommit_b->id;
+
+    my $r = ($kommit_a->timestamp <=> $kommit_b->timestamp);
+
+    return $r;
+}
+
+#------------------------------------------------------------------------------
+
+sub equals {
+    my ($kommit_a, $kommit_b) = @_;
+
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($kommit_a, $pkg) && itis($kommit_b, $pkg) );
+
+    return $kommit_a->id == $kommit_b->id;
 }
 
 #------------------------------------------------------------------------------

@@ -122,21 +122,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
-=head2 registration_changes
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::RegistrationChange>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.package" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 registrations
 
 Type: has_many
@@ -166,8 +151,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2PgkPZwtRO85TqED2PC9Ug
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/rRYWzEYdApKIkZCeZlZSg
 
 #------------------------------------------------------------------------------
 
@@ -183,7 +168,7 @@ use Pinto::Exception qw(throw);
 use Pinto::PackageSpec;
 
 use overload ( '""'     => 'to_string',
-               '<=>'    => 'compare',
+               '<=>'    => 'numeric_compare',
                'cmp'    => 'string_compare',
                fallback => undef );
 
@@ -202,7 +187,7 @@ __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
-__PACKAGE__->many_to_many( stacks => 'registration', 'stack' );
+__PACKAGE__->many_to_many( kommits => 'registration', 'kommit' );
 
 #------------------------------------------------------------------------------
 
@@ -235,10 +220,14 @@ sub register {
     my $stack = $args{stack};
     my $pin   = $args{pin};
 
-    my $struct = { stack        => $stack->id,
+    # HACK: poke inside the object to get our own dist id.
+    # This avoids having to requery the DB for the whole object.
+    my $dist_id = $self->{_column_data}->{distribution};
+
+    my $struct = { kommit       => $stack->head,
                    is_pinned    => $pin,
                    package_name => $self->name,
-                   distribution => $self->distribution->id };
+                   distribution => $dist_id };
 
     $self->create_related( registrations => $struct );
 
@@ -251,8 +240,8 @@ sub registration {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
-    my $where = {stack => $stack->id};
-    my $attrs = {key   => 'stack_package_unique'};
+    my $where = {kommit => $stack->head->id};
+    my $attrs = {key    => 'kommit_package_unique'};
 
     return $self->find_related('registrations', $where, $attrs);
 }
@@ -283,12 +272,12 @@ sub to_string {
     # warn __PACKAGE__ . " stringified from $file at line $line";
 
     my %fspec = (
-         'n' => sub { $self->name()                                   },
-         'N' => sub { $self->vname()                                  },
+         'p' => sub { $self->name()                                   },
+         'P' => sub { $self->vname()                                  },
          'v' => sub { $self->version->stringify()                     },
          'm' => sub { $self->distribution->is_devel()   ? 'd' : 'r'   },
-         'p' => sub { $self->distribution->path()                     },
-         'P' => sub { $self->distribution->native_path()              },
+         'h' => sub { $self->distribution->path()                     },
+         'H' => sub { $self->distribution->native_path()              },
          'f' => sub { $self->distribution->archive                    },
          's' => sub { $self->distribution->is_local()   ? 'l' : 'f'   },
          'S' => sub { $self->distribution->source()                   },
@@ -296,7 +285,7 @@ sub to_string {
          'A' => sub { $self->distribution->author_canonical()         },
          'd' => sub { $self->distribution->name()                     },
          'D' => sub { $self->distribution->vname()                    },
-         'w' => sub { $self->distribution->version()                  },
+         'V' => sub { $self->distribution->version()                  },
          'u' => sub { $self->distribution->url()                      },
     );
 
@@ -314,12 +303,12 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%A/%D/%N';  # AUTHOR/DIST-VNAME/PKG-VNAME
+    return '%A/%D/%P';  # AUTHOR/DIST_VNAME/PKG_VNAME
 }
 
 #-------------------------------------------------------------------------------
 
-sub compare {
+sub numeric_compare {
     my ($pkg_a, $pkg_b) = @_;
 
     my $pkg = __PACKAGE__;
