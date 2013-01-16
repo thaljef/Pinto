@@ -219,7 +219,6 @@ sub open {
 
     throw "Stack $self is locked and cannot be modified" if $self->is_locked;
 
-
     my $new_head = $self->result_source->schema->create_kommit(\%args);
     $new_head->add_parent($self->head);
 
