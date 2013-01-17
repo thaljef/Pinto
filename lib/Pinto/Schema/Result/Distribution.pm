@@ -262,6 +262,10 @@ sub register {
     my $did_register = 0;
     my $errors       = 0;
 
+    # TODO: This process makes a of trips to the database.  You could
+    # optimize this by fetching all the incumbents at once, checking
+    # for pins, and then bulk-insert the new registrations.
+    
     for my $pkg ($self->packages) {
 
       my $incumbent = $stack->registration(package => $pkg);
