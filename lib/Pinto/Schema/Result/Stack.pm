@@ -236,7 +236,6 @@ sub close {
     my ($self, %args) = @_;
 
     $self->head->finalize( %args );
-    $self->write_index if $self->has_changed;
 
     return $self;
 }

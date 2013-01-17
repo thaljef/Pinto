@@ -66,7 +66,7 @@ sub execute {
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
-    $stack->close(message => $message);
+    $stack->close(message => $message)->write_index;
     return $self->result->changed;
 }
 
