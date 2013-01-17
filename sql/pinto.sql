@@ -131,8 +131,22 @@ CREATE UNIQUE INDEX c ON distribution(sha256);
 CREATE UNIQUE INDEX d ON package(name, distribution);
 CREATE UNIQUE INDEX e ON stack(name);
 CREATE UNIQUE INDEX f ON stack(name_canonical);
+
+/*********************************************************
+
+These next two indexes ensure data integrity (i.e. a package 
+appears only once in each kommit), but they make the databse 
+very big and slow when there are a lot of kommits.  For now,
+I'm going to leave them in (for safety).  We can always
+drop them later when Pinto has proven itself reliable.
+
+*********************************************************/
+
 CREATE UNIQUE INDEX h ON registration(kommit, package);
 CREATE UNIQUE INDEX i ON registration(kommit, package_name);
+
+
+
 CREATE UNIQUE INDEX k ON kommit(sha256);
 CREATE UNIQUE INDEX l ON prerequisite(distribution, package_name);
 CREATE UNIQUE INDEX m ON repository_property(key);
