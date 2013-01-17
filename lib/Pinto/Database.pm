@@ -44,7 +44,15 @@ sub _build_schema {
     my $xtra    = {on_connect_call => 'use_foreign_keys'};
     my @args    = ($dsn, undef, undef, $xtra);
     
-    return $schema->connect(@args);
+    my $schema_connected = $schema->connect(@args);
+
+    # EXPERIMENTAL: Disabling synchronous FS writes makes things
+    # much, much faster.  But this exposes us to possible data
+    # loss if the OS crashes or power is lost.  We should be ok
+    # if the app crashes though, which is far more likely.
+    $schema_connected->storage->dbh->do('PRAGMA synchronous=OFF');
+
+    return $schema_connected;
 }
 
 #-------------------------------------------------------------------------------
