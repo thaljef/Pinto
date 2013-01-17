@@ -225,7 +225,7 @@ sub open {
     $self->copy_registrations(kommit => $new_head);
     $self->set_head(kommit => $new_head);
 
-    $self->debug("Opened new head kommit on stack $self");
+    $self->debug( sub {"Opened new head kommit on stack $self"} );
     
     return $self;
 }
@@ -326,7 +326,7 @@ sub copy_registrations {
             . "SELECT '$new_head_id', package, package_name, distribution, is_pinned FROM registration "
             . "WHERE kommit = '$old_head_id' ";
 
-    $self->debug("Copying registrations from stack $self at $old_head");
+    $self->debug( sub {"Copying registrations from stack $self at $old_head"} );
     my $dbh = $self->result_source->schema->storage->dbh;
     $dbh->do($sql);
 
