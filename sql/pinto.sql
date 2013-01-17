@@ -124,39 +124,51 @@ CREATE TABLE prerequisite (
        FOREIGN KEY(distribution)  REFERENCES distribution(id) ON DELETE CASCADE
 );
 
-/* Schema::Loader names the indexes for us */
+/***********************************************************
+
+Schema::Loader names the indexes for us when it generates
+schema classes for us.  So I've just chosen arbitrary names
+
+***********************************************************/
+
 CREATE UNIQUE INDEX a ON distribution(author_canonical, archive);
 CREATE UNIQUE INDEX b ON distribution(md5);
 CREATE UNIQUE INDEX c ON distribution(sha256);
 CREATE UNIQUE INDEX d ON package(name, distribution);
 CREATE UNIQUE INDEX e ON stack(name);
 CREATE UNIQUE INDEX f ON stack(name_canonical);
+CREATE UNIQUE INDEX g ON kommit(sha256);
+CREATE UNIQUE INDEX h ON prerequisite(distribution, package_name);
+CREATE UNIQUE INDEX i ON repository_property(key);
+CREATE UNIQUE INDEX j ON repository_property(key_canonical);
 
 /*********************************************************
 
-These next two indexes ensure data integrity (i.e. a package 
-appears only once in each kommit), but they make the databse 
-very big and slow when there are a lot of kommits.  For now,
-I'm going to leave them in (for safety).  We can always
-drop them later when Pinto has proven itself reliable.
+These next two indexes are mostly just ensure data integrity 
+(i.e. a package appears only once in each kommit) and they
+may help improve performance during merging and pulling. But
+also make the databse very big and slow when there are a lot 
+of kommits.  For now, I'm going to leave them in (for safety).  
+We can always drop them later when Pinto has proven itself.
 
 *********************************************************/
 
-CREATE UNIQUE INDEX h ON registration(kommit, package);
-CREATE UNIQUE INDEX i ON registration(kommit, package_name);
+CREATE UNIQUE INDEX k ON registration(kommit, package);
+CREATE UNIQUE INDEX l ON registration(kommit, package_name);
 
+/**********************************************************
 
+The following indexes are here just for reference.  The
+Schema::Loader actually creates most of these indxes for
+us based on the foreign key relations that it sees above.
 
-CREATE UNIQUE INDEX k ON kommit(sha256);
-CREATE UNIQUE INDEX l ON prerequisite(distribution, package_name);
-CREATE UNIQUE INDEX m ON repository_property(key);
-CREATE UNIQUE INDEX n ON repository_property(key_canonical);
+**********************************************************/
 
-CREATE        INDEX o ON registration(kommit);
-CREATE        INDEX p ON package(name);
-CREATE        INDEX q ON package(sha256);
-CREATE        INDEX r ON package(file);
-CREATE        INDEX s ON distribution(author);
-CREATE        INDEX t ON kommit_graph(ancestor);
-CREATE        INDEX u ON kommit_graph(descendant);
-CREATE        INDEX v ON prerequisite(package_name);
+CREATE        INDEX m ON registration(kommit);
+CREATE        INDEX n ON package(name);
+CREATE        INDEX o ON package(sha256);
+CREATE        INDEX p ON package(file);
+CREATE        INDEX q ON distribution(author);
+CREATE        INDEX r ON kommit_graph(ancestor);
+CREATE        INDEX s ON kommit_graph(descendant);
+CREATE        INDEX t ON prerequisite(package_name);
