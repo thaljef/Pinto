@@ -5,6 +5,7 @@ use warnings;
 
 use Pinto;
 use Pinto::Initializer;
+use Pinto::DistributionSpec;
 
 use File::Temp;
 use List::Util qw(sum);
@@ -29,11 +30,15 @@ my $iters   = $opt->iterations;
 #-----------------------------------------------------------------------------
 
 Pinto::Initializer->new(root => "$root")->init(stack => 'master') unless -e $root;
+my $pinto = Pinto->new(root => "$root");
 
 #-----------------------------------------------------------------------------
 
-my $pinto = Pinto->new(root => "$root");
-$pinto->run(Pull => (targets => \@targets, message => 'pulled'));
+for my $target (@targets) {
+	my $spec = Pinto::DistributionSpec->new($target);
+	next if $pinto->repo->get_distribution(spec => $spec);
+	$pinto->run(Pull => (targets => $target, message => "pulled $target"));
+}
 
 #-----------------------------------------------------------------------------
 
