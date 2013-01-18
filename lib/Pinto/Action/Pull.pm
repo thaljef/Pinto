@@ -73,14 +73,18 @@ sub execute {
     my @targets = $self->targets;
 
     while (my $target = shift @targets) {
+
         try   {
             $self->repo->db->schema->storage->svp_begin; 
             $self->_pull($target, $stack) 
         }
         catch {
             die $_ unless $self->nofail && @targets;
-            $self->error($_->message);
+
             $self->repo->db->schema->storage->svp_rollback;
+
+            $self->error("$_");
+            $self->error("$target failed...continuing anyway");
         }
         finally {
             my ($error) = @_;

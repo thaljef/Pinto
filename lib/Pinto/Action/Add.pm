@@ -97,14 +97,18 @@ sub execute {
     my @archives = $self->archives;
 
     while (my $archive = shift @archives) {
+
         try   {
             $self->repo->db->schema->storage->svp_begin; 
-            $self->_add($archive, $stack) 
+            $self->_add($archive, $stack);
         }
         catch {
             die $_ unless $self->nofail && @archives; 
-            $self->error("Continuing despite error with $archive: $_");
+
             $self->repo->db->schema->storage->svp_rollback;
+
+            $self->error("$_");
+            $self->error("$archive failed...continuing anyway");
         }
         finally {
             my ($error) = @_;
@@ -123,11 +127,10 @@ sub execute {
 
 sub _add {
     my ($self, $archive, $stack) = @_;
-
-    my $dist;
     
     $self->notice("Adding $archive");
 
+    my $dist;
     if (my $dupe = $self->_check_for_duplicate($archive)) {
         $self->warning("Archive $archive is the same as $dupe -- using $dupe instead");
         $dist = $dupe;
