@@ -7,6 +7,10 @@ use Test::More (tests => 3);
 
 use Pinto::Util;
 use Path::Class;
+#-------------------------------------------------------------------------------
+
+# TODO: Pinto::Util has moved into the Pinto-Common distribution.  These
+# tests probably need to be moved over there, if they already aren't.
 
 #-------------------------------------------------------------------------------
 
