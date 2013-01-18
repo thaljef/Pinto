@@ -33,17 +33,17 @@ $dist = make_dist_obj(author => 'AUTHOR', archive => 'Foo-2.0-TRIAL.tar.gz', sou
 $pkg  = make_pkg_obj(name => 'Foo', distribution => $dist, version => 1.2);
 
 my %formats = (
-    'n' => 'Foo',
-    'N' => 'Foo~1.2',
+    'p' => 'Foo',
+    'P' => 'Foo~1.2',
     'v' => '1.2',
     'm' => 'd',
-    'p' => 'A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz',
+    'h' => 'A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz',
     's' => 'f',
     'S' => 'http://remote',
     'a' => 'AUTHOR',
     'd' => 'Foo',
     'D' => 'Foo-2.0-TRIAL',
-    'w' => '2.0-TRIAL',
+    'V' => '2.0-TRIAL',
     'u' => 'http://remote/authors/id/A/AU/AUTHOR/Foo-2.0-TRIAL.tar.gz',
 );
 

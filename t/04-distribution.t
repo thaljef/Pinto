@@ -51,13 +51,13 @@ use Pinto::Tester::Util qw(make_dist_obj);
 
     my %formats = (
         'm' => 'r',
-        'p' => 'A/AU/AUTHOR/Foo-2.0.tar.gz',
+        'h' => 'A/AU/AUTHOR/Foo-2.0.tar.gz',
         's' => 'l',
         'S' => 'LOCAL',
         'a' => 'AUTHOR',
         'd' => 'Foo',
         'D' => 'Foo-2.0',
-        'w' => '2.0',
+        'V' => '2.0',
         'u' => 'UNKNOWN',
     );
 
