@@ -37,13 +37,6 @@ has revision => (
 );
 
 
-has detailed => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
-);
-
-
 has format => (
     is      => 'ro',
     isa     => Str,
@@ -63,17 +56,15 @@ has nocolor => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
+    # Print the head
+    my head = $self->repo->get_stack($self->stack)->head;
+    $self->say( trim( $head->to_string($self->format) ) ) . "\n";
 
-    for my $kommit ($stack->history) {
-
+    # Print all ancestors
+    my $rs = $head->ancestors;
+    while (my $kommit = $rs->next) {
         last if $kommit->is_root_kommit;
         $self->say( trim( $kommit->to_string($self->format) ) . "\n" );
-
-        if ($self->detailed) {
-            my @details = $kommit->registration_changes;
-            $self->say($_) for (@details ? @details : 'No details available.')
-        }
     }
 
     return $self->result;
