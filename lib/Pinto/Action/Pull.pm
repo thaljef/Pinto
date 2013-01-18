@@ -5,6 +5,7 @@ package Pinto::Action::Pull;
 use Moose;
 use MooseX::Types::Moose qw(Bool);
 
+use Try::Tiny;
 use Module::CoreList;
 
 use Pinto::Util qw(itis);
@@ -55,14 +56,38 @@ has norecurse => (
     default   => 0,
 );
 
+
+has nofail => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
 #------------------------------------------------------------------------------
 
 
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->open;
-    $self->_pull($_, $stack) for $self->targets;
+    my $stack   = $self->repo->get_stack($self->stack)->open;
+    my @targets = $self->targets;
+
+    while (my $target = shift @targets) {
+        try   {
+            $self->repo->db->schema->storage->svp_begin; 
+            $self->_pull($target, $stack) 
+        }
+        catch {
+            die $_ unless $self->nofail && @targets;
+            $self->error($_->message);
+            $self->repo->db->schema->storage->svp_rollback;
+        }
+        finally {
+            my ($error) = @_;
+            $self->repo->db->schema->storage->svp_release unless $error;
+        };
+    }
+
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
@@ -79,6 +104,8 @@ sub _pull {
         $self->debug("$target is part of the perl core.  Skipping it");
         return;
     }
+
+    $self->notice("Pulling $target");
 
     my ($dist, $did_pull) = $self->repo->find_or_pull(target => $target, stack => $stack);
     my $did_register = defined $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;

@@ -5,6 +5,8 @@ package Pinto::Action::Add;
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);
 
+use Try::Tiny;
+
 use Pinto::Util qw(sha256);
 use Pinto::Types qw(Author FileList StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
@@ -62,6 +64,13 @@ has norecurse => (
     default   => 0,
 );
 
+
+has nofail => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
 #------------------------------------------------------------------------------
 
 sub BUILD {
@@ -84,8 +93,25 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->open;
-    $self->_add($_, $stack) for $self->archives;
+    my $stack    = $self->repo->get_stack($self->stack)->open;
+    my @archives = $self->archives;
+
+    while (my $archive = shift @archives) {
+        try   {
+            $self->repo->db->schema->storage->svp_begin; 
+            $self->_add($archive, $stack) 
+        }
+        catch {
+            die $_ unless $self->nofail && @archives; 
+            $self->error("Continuing despite error with $archive: $_");
+            $self->repo->db->schema->storage->svp_rollback;
+        }
+        finally {
+            my ($error) = @_;
+            $self->repo->db->schema->storage->svp_release unless $error;
+        };
+    }
+
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
@@ -99,6 +125,8 @@ sub _add {
     my ($self, $archive, $stack) = @_;
 
     my $dist;
+    
+    $self->notice("Adding $archive");
 
     if (my $dupe = $self->_check_for_duplicate($archive)) {
         $self->warning("Archive $archive is the same as $dupe -- using $dupe instead");
