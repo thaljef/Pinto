@@ -84,8 +84,8 @@ sub execute {
 sub _build_format {
     my ($self) = @_;
 
-    my ($yellow, $reset) = $self->nocolor ? ('', '') 
-                                          : (color('bold yellow'), color('reset'));
+    my $yellow = $self->nocolor ? '' : color('bold yellow');
+    my $reset  = $self->nocolor ? '' : color('reset');
 
     return <<"END_FORMAT";
 ${yellow}commit %I${reset}
