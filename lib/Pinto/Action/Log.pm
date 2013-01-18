@@ -3,7 +3,9 @@
 package Pinto::Action::Log;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool Int Undef);
+use MooseX::Types::Moose qw(Bool Int Undef Str);
+
+use Term::ANSIColor;
 
 use Pinto::Util qw(trim);
 use Pinto::Types qw(StackName StackDefault);
@@ -41,6 +43,21 @@ has detailed => (
     default   => 0,
 );
 
+
+has format => (
+    is      => 'ro',
+    isa     => Str,
+    builder => '_build_format',
+    lazy    => 1,
+);
+
+
+has nocolor => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
 #------------------------------------------------------------------------------
 
 sub execute {
@@ -48,13 +65,10 @@ sub execute {
 
     my $stack = $self->repo->get_stack($self->stack);
 
-    my $format = "%I | %j | %u | $stack\n\n%g";
     for my $kommit ($stack->history) {
 
         last if $kommit->is_root_kommit;
-
-        $self->say('-' x 79);
-        $self->say( trim( $kommit->to_string($format) ) . "\n" );
+        $self->say( trim( $kommit->to_string($self->format) ) . "\n" );
 
         if ($self->detailed) {
             my @details = $kommit->registration_changes;
@@ -63,6 +77,24 @@ sub execute {
     }
 
     return $self->result;
+}
+
+#------------------------------------------------------------------------------
+
+sub _build_format {
+    my ($self) = @_;
+
+    my ($yellow, $reset) = $self->nocolor ? ('', '') 
+                                          : (color('bold yellow'), color('reset'));
+
+    return <<"END_FORMAT";
+${yellow}commit %I${reset}
+Date:   %u
+Author: %j 
+
+%g
+END_FORMAT
+
 }
 
 #------------------------------------------------------------------------------
