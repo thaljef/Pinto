@@ -2,15 +2,27 @@
 
 =over 4
 
-=item Test cases for Reindex, Deindex, Delete
+=item Decide how to check for changes in stack (checksum? object attribute? table column?)
 
-=item Move more behavior into schema classes?
+=item Finish FastForward merge (note this is not a committable action)
+
+=item Implement a reset command to move head (also not committable)
+
+=item Implement a diff class.
+
+=item Decide how to do commit digests.
+
+=item Make locks into a column in the stack table
+
+=item Add asserts to prevent modifying a finalized commit
+
+=item Add asserts to ensure a commit is finalized
+
+=item Put username back into the log file
+
+=item Test cases for Pop, Reindex, Delete
 
 =item Move repository configuration into the DB
-
-=item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
-
-=item Contemplate API for getting/opening/committing stacks
 
 =item Heirarchy of exception classes
 
@@ -35,6 +47,10 @@
 =over 4
 
 =item Improve locking mechanism (one lock per stack, maybe in db).
+
+=item Enable locks on all stacks.
+
+=item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
 
 =item Consider pinning at dist level, not pkg
 
@@ -63,6 +79,8 @@
 =item Prettier stack listing and stack prop listing
 
 =item Verify archive checksums during 'verify'
+
+=item VACUUM and ANALYZE db during "clean"
 
 =item Standardize API, using named parameters except where it makes sense not to.
 
