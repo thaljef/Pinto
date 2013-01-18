@@ -55,8 +55,7 @@ sub run {
     }
     catch { 
         $self->repo->unlock; 
-        $self->error($_->message);
-        die "Aborted\n" 
+        $self->fatal($_);
     }
     finally {
         $self->repo->unlock;
