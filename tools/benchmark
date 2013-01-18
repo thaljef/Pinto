@@ -48,10 +48,11 @@ for my $i (1..$iters) {
 	DB::enable_profile() if $i == $iters && defined $Devel::NYTProf::VERSION;
 
 	my $start = time;
-	$pinto->run(Pin     => (targets => \@targets, message => 'pin'))     if $ops{pin};
-	$pinto->run(Unpin   => (targets => \@targets, message => 'unpin'))   if $ops{unpin};
-	$pinto->run(Pop     => (targets => \@targets, message => 'pop'))     if $ops{pop};
-	$pinto->run(Reindex => (targets => \@targets, message => 'reindex')) if $ops{reindex};
+	my $pinto2 = Pinto->new(root => "$root");
+	$pinto2->run(Pin     => (targets => \@targets, message => 'pin'))     if $ops{pin};
+	$pinto2->run(Unpin   => (targets => \@targets, message => 'unpin'))   if $ops{unpin};
+	$pinto2->run(Pop     => (targets => \@targets, message => 'pop'))     if $ops{pop};
+	$pinto2->run(Reindex => (targets => \@targets, message => 'reindex')) if $ops{reindex};
 	my $elapsed = time - $start;
 
 	print "$elapsed seconds\n";
