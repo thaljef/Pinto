@@ -211,13 +211,34 @@ before is_default => sub {
 
 #------------------------------------------------------------------------------
 
+sub advance {
+    my ($self, %args) = @_;
+
+    $args{message}  ||= ''; # is this necessary?
+    $args{username} ||= $self->config->username;
+
+    $self->check_lock;
+
+    my $new_head = $self->result_source->schema->create_kommit(\%args);
+    $new_head->add_parent($self->head);
+    
+    $self->set_head(kommit => $new_head);
+
+    $self->debug( sub {"Advanced head kommit on stack $self"} );
+    
+    return $self;
+
+}
+
+#------------------------------------------------------------------------------
+
 sub open {
     my ($self, %args) = @_;
 
     $args{message}  ||= ''; # is this necessary?
     $args{username} ||= $self->config->username;
 
-    throw "Stack $self is locked and cannot be modified" if $self->is_locked;
+    $self->check_lock;
 
     my $new_head = $self->result_source->schema->create_kommit(\%args);
     $new_head->add_parent($self->head);
@@ -243,11 +264,11 @@ sub close {
 #------------------------------------------------------------------------------
 
 sub delete {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  throw "Stack $self is locked and cannot be deleted" if $self->is_locked;
+    $self->check_lock;
 
-  return $self->next::method;
+    return $self->next::method;
 }
 
 #------------------------------------------------------------------------------
@@ -474,6 +495,17 @@ sub unlock {
     $self->notice("Unlocking stack $self");
     $self->delete_property('pinto-locked');
     return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub check_lock {
+    my ($self) = @_;
+
+    throw "Stack $self is locked and cannot be modified or deleted" 
+      if $self->is_locked;
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
