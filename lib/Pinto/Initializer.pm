@@ -64,6 +64,10 @@ sub init {
     my $cache_dir = $self->config->cache_dir();
     $self->mkpath($cache_dir);
 
+    # Create log dir
+    my $log_dir = $self->config->log_dir();
+    $self->mkpath($log_dir);
+
     # Set up database
     $self->_create_db();
 
