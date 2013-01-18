@@ -347,10 +347,10 @@ sub pin {
     my $kommit  = $stack->head;
 
     my $rs = $self->registrations( {kommit => $kommit->id, is_pinned => 0} );
+    throw "Distribution $self is not on stack $stack or is already pinned" unless $rs->count;
     $rs->update({is_pinned => 1});
-    return 1;
 
-    # TODO: Return flag to indicate if a pin happened?
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -362,10 +362,10 @@ sub unpin {
     my $kommit    = $stack->head;
  
     my $rs = $self->registrations( {kommit => $kommit->id, is_pinned => 1} );
+    throw "Distribution $self is not on stack $stack or is not pinned" unless $rs->count;
     $rs->update({is_pinned => 0});
-    return 1;
 
-    # TODO: Return flag to indicate if a unpin happened?
+    return $self;
 }
 
 #------------------------------------------------------------------------------
