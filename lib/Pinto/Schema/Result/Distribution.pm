@@ -346,7 +346,7 @@ sub pin {
     my $stack   = $args{stack};
     my $kommit  = $stack->head;
 
-    my $rs = $self->registrations( {kommit => $kommit->id} );
+    my $rs = $self->registrations( {kommit => $kommit->id, is_pinned => 0} );
     $rs->update({is_pinned => 1});
     return 1;
 
@@ -361,7 +361,7 @@ sub unpin {
     my $stack     = $args{stack};
     my $kommit    = $stack->head;
  
-    my $rs = $self->registrations( {kommit => $kommit->id} );
+    my $rs = $self->registrations( {kommit => $kommit->id, is_pinned => 1} );
     $rs->update({is_pinned => 0});
     return 1;
 
