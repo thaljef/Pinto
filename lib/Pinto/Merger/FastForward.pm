@@ -24,7 +24,7 @@ sub merge {
 	my $new_head   = $self->from_stack->head;
 
 	$self->info("Head of $to_stack is now $new_head");
-	$to_stack->set_head( $new_head );
+	$to_stack->set_head( kommit => $new_head );
 	$to_stack->write_index;
 
 	return;
