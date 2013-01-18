@@ -356,6 +356,7 @@ sub get_distribution {
          $attrs{key} = 'md5_unique';
     }
     else {
+        %attrs = ();
         %where = %args;
     }
 
