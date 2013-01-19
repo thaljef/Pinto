@@ -110,6 +110,14 @@ has sql_dir   => (
 );
 
 
+has vcs_dir   => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->pinto_dir->subdir('vcs') },
+);
+
+
 has pinto_dir => (
     is        => 'ro',
     isa       => Dir,

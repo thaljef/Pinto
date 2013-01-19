@@ -9,7 +9,7 @@ use autodie;
 use PerlIO::gzip;
 use Path::Class;
 
-
+use Pinto::VCS;
 use Pinto::Database;
 use Pinto::Repository;
 use Pinto::Util qw(current_user);
@@ -70,6 +70,9 @@ sub init {
 
     # Set up database
     $self->_create_db();
+
+    # Set up version control
+    $self->_create_vcs;
 
     # Write modlist
     $self->_write_modlist();
@@ -153,6 +156,18 @@ sub _create_db {
     $self->mkpath($self->config->db_dir);
     my $db = Pinto::Database->new( config => $self->config );
     $db->deploy;
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _create_vcs {
+    my ($self) = @_;
+
+    $self->mkpath($self->config->vcs_dir);
+    my $vcs = Pinto::VCS->new( config => $self->config );
+    $vcs->initialize;
 
     return;
 }

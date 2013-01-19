@@ -8,6 +8,7 @@ use Path::Class;
 use File::Find;
 use File::Copy qw(move);
 
+use Pinto::VCS;
 use Pinto::Util;
 use Pinto::Store;
 use Pinto::Locker;
@@ -53,6 +54,18 @@ has store => (
     lazy       => 1,
     default    => sub { Pinto::Store->new( config => $_[0]->config,
                                            logger => $_[0]->logger ) },
+);
+
+=attr vcs
+
+=cut
+
+has vcs => (
+    is         => 'ro',
+    isa        => 'Pinto::VCS',
+    lazy       => 1,
+    default    => sub { Pinto::VCS->new( config => $_[0]->config,
+                                         logger => $_[0]->logger ) },
 );
 
 =attr cache
