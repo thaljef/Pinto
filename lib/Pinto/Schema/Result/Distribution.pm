@@ -175,21 +175,6 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registrations
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Registration>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registrations",
-  "Pinto::Schema::Result::Registration",
-  { "foreign.distribution" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -204,8 +189,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YdITkwXm0FkFY12GrPDPNg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-19 17:14:53
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:z7OmVe7355Z4wFSBCfQRWA
 
 #-------------------------------------------------------------------------------
 

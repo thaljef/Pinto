@@ -47,18 +47,10 @@ __PACKAGE__->table("stack");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 properties
+=head2 is_locked
 
-  data_type: 'text'
-  default_value: null
-  is_nullable: 1
-
-=head2 head
-
-  data_type: 'integer'
-  default_value: null
-  is_foreign_key: 1
-  is_nullable: 1
+  data_type: 'boolean'
+  is_nullable: 0
 
 =cut
 
@@ -71,15 +63,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "is_default",
   { data_type => "boolean", is_nullable => 0 },
-  "properties",
-  { data_type => "text", default_value => \"null", is_nullable => 1 },
-  "head",
-  {
-    data_type      => "integer",
-    default_value  => \"null",
-    is_foreign_key => 1,
-    is_nullable    => 1,
-  },
+  "is_locked",
+  { data_type => "boolean", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -120,28 +105,6 @@ __PACKAGE__->add_unique_constraint("name_canonical_unique", ["name_canonical"]);
 
 __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
-=head1 RELATIONS
-
-=head2 head
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Kommit>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "head",
-  "Pinto::Schema::Result::Kommit",
-  { id => "head" },
-  {
-    is_deferrable => 0,
-    join_type     => "LEFT",
-    on_delete     => "NO ACTION",
-    on_update     => "NO ACTION",
-  },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -156,8 +119,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-14 21:11:02
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FEJM4i0PRFeUUqP7kgFi+w
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-19 17:14:53
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yVcK4+Khm/GqGDWNFsvZAw
 
 #-------------------------------------------------------------------------------
 
@@ -182,12 +145,6 @@ use Pinto::IndexWriter;
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
                'cmp' => 'string_compare' );
-
-#------------------------------------------------------------------------------
-
-__PACKAGE__->inflate_column( 'properties' => { inflate => sub { decode_json($_[0] || '{}') },
-                                               deflate => sub { encode_json($_[0] || {}) } }
-);
 
 #------------------------------------------------------------------------------
 
