@@ -27,14 +27,14 @@ CREATE TABLE package (
        distribution  INTEGER             NOT NULL,
 
        FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
-
+);
 
 CREATE TABLE stack (
        id                   INTEGER PRIMARY KEY NOT NULL,
        name                 TEXT                NOT NULL,
        name_canonical       TEXT                NOT NULL,
        is_default           BOOLEAN             NOT NULL,
-       is_locked            BOOLEAN             NOT NULL, 
+       is_locked            BOOLEAN             NOT NULL 
 );
 
 
