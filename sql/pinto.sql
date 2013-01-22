@@ -34,7 +34,11 @@ CREATE TABLE stack (
        name                 TEXT                NOT NULL,
        name_canonical       TEXT                NOT NULL,
        is_default           BOOLEAN             NOT NULL,
-       is_locked            BOOLEAN             NOT NULL 
+       is_locked            BOOLEAN             NOT NULL,
+       last_commit_id       TEXT                DEFAUlT '',
+       last_commit_message  TEXT                DEFAULT '',
+       last_committed_by    TEXT                DEFAULT '',
+       last_committed_on    INTEGER             DEFAULT 0
 );
 
 

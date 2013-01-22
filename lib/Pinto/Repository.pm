@@ -41,7 +41,8 @@ has db => (
     isa        => 'Pinto::Database',
     lazy       => 1,
     default    => sub { Pinto::Database->new( config => $_[0]->config,
-                                              logger => $_[0]->logger ) },
+                                              logger => $_[0]->logger,
+                                              repo   => $_[0] ) },
 );
 
 =attr store
@@ -108,7 +109,7 @@ has locker  => (
 sub BUILD {
     my ($self) = @_;
 
-    unless (    -e $self->config->db_file
+    unless (    -e $self->config->db_dir
              && -e $self->config->modules_dir
              && -e $self->config->authors_dir ) {
 
@@ -706,22 +707,7 @@ sub create_stack {
     throw "Stack $args{name} already exists"
         if $self->get_stack($args{name}, nocroak => 1);
 
-    my $root  = $self->db->schema->get_root_kommit;
-    my $stack = $self->db->schema->create_stack( {%args, head => $root} );
-    $self->create_stack_filesystem(stack => $stack);
-    $stack->write_index;
-
-    return $stack;
-}
-
-#-------------------------------------------------------------------------------
-
-sub rename_stack {
-    my ($self, %args) = @_;
-
-    my $stack = $self->get_stack( $args{from} )->rename( $args{to} );
-
-    $self->rename_stack_filesystem(%args);
+    my $stack = $self->db->schema->create_stack( \%args );
 
     return $stack;
 }
@@ -741,30 +727,6 @@ sub copy_stack {
     $copy->write_index;
 
     return $copy;
-}
-
-#-------------------------------------------------------------------------------
-
-sub create_stack_filesystem {
-    my ($self, %args) = @_;
-
-    my $stack = $args{stack};
-
-    my $stack_dir = $self->root_dir->subdir($stack->name);
-    $stack_dir->mkpath;
-
-    my $stack_modules_dir = $stack_dir->subdir('modules');
-    $stack_modules_dir->mkpath;
-
-    my $stack_authors_dir  = $stack_dir->subdir('authors');
-    my $shared_authors_dir = $self->config->authors_dir->relative($stack_dir);
-    _symlink($shared_authors_dir, $stack_authors_dir);
-
-    my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
-    my $shared_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
-    _symlink($shared_modlist_file, $stack_modlist_file);
-
-    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -799,6 +761,21 @@ sub rename_stack_filesystem {
 
     $self->debug("Renaming $from_stack_dir to $to_stack_dir");
     move($from_stack_dir, $to_stack_dir) or throw "Rename failed: $!";
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub create_stack_vcs_branch {
+    my ($self, %args) = @_;
+
+    my $from = $args{from_stack}->name;
+    my $to   = $args{to_stack}->name;
+    my $vcs = $self->vcs;
+
+    $vcs->branch($from, $to);
+    $vcs->checkout($to);
 
     return $self;
 }
@@ -841,20 +818,6 @@ sub clean_files {
     File::Find::find({no_chdir => 1, wanted => $callback}, $authors_dir);
 
     return $deleted;
-}
-
-#-------------------------------------------------------------------------------
-
-sub _symlink {
-    my ($to, $from) = @_;
-
-    # TODO: symlink is not supported on windows.  Consider using Win32::API
-    # as a workaround.  But from what I've read, it requires admin rights :(
-
-    my $ok = symlink $to, $from
-        or throw "symlink to $to from $from failed: $!";
-
-    return $ok;
 }
 
 #-------------------------------------------------------------------------------

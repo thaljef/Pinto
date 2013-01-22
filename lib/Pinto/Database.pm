@@ -23,6 +23,13 @@ has schema => (
    lazy       => 1,
 );
 
+
+has repo => (
+   is         => 'ro',
+   isa        => 'Pinto::Repository',
+   required   => 1,
+);
+
 #-------------------------------------------------------------------------------
 # Roles
 
@@ -37,22 +44,22 @@ sub _build_schema {
     my ($self) = @_;
 
     my $schema = Pinto::Schema->new( config => $self->config,
-                                     logger => $self->logger );
+                                     logger => $self->logger,
+                                     repo   => $self->repo, );
 
     my $db_file = $self->config->db_file;
     my $dsn     = "dbi:SQLite:$db_file";
     my $xtra    = {on_connect_call => 'use_foreign_keys'};
     my @args    = ($dsn, undef, undef, $xtra);
-    
-    my $schema_connected = $schema->connect(@args);
 
-    # EXPERIMENTAL: Disabling synchronous FS writes makes things
-    # much, much faster.  But this exposes us to possible data
-    # loss if the OS crashes or power is lost.  We should be ok
-    # if the app crashes though, which is far more likely.
-    $schema_connected->storage->dbh->do('PRAGMA synchronous=OFF');
+    my $connected = $schema->connect(@args);
 
-    return $schema_connected;
+    # Inject attributes thru back door
+    $connected->logger($self->logger);
+    $connected->config($self->config);
+    $connected->repo($self->repo);
+
+    return $connected;
 }
 
 #-------------------------------------------------------------------------------

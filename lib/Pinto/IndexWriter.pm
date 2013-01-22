@@ -51,7 +51,7 @@ sub write_index {
     $self->info("Writing index for stack $stack at $index_file");
     open my $handle, ">:gzip", $index_file or throw "Cannot open $index_file: $!";
 
-    my @records = $self->_get_index_records($stack);
+    my @records =();#self->_get_index_records($stack);
     my $count = @records;
 
     $self->_write_header($handle, $index_file, $count);

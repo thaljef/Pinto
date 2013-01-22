@@ -51,6 +51,8 @@ sub execute {
     $stack->set_property(description => $self->description) if $self->description;
     $stack->mark_as_default if $self->default;
 
+    $stack->close(message => 'Initial commit', orphan => 1);
+
     return $self->result->changed;
 }
 

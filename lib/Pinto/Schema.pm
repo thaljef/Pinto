@@ -33,16 +33,28 @@ Readonly::Scalar our $SCHEMA_VERSION => 1;
 sub schema_version { return $SCHEMA_VERSION };
 
 #-------------------------------------------------------------------------------
+# TODO: Make these 'SetOnce'.
 
-with qw( Pinto::Role::Configurable
-	     Pinto::Role::Loggable );
+has config => (
+    is      => 'rw',
+    isa     => 'Pinto::Config',
+    handles => [ qw() ],
+    default => sub { $_[0]->result_source->schema->config }, 
+);
 
-#-------------------------------------------------------------------------------
+has logger => (
+    is      => 'rw',
+    isa     => 'Pinto::Logger',
+    handles => [ qw() ],
+    default => sub { $_[0]->result_source->schema->logger }, 
+);
 
-sub BUILDARGS { 
-	my $class = shift;
-	return scalar @_ == 1 ? { %{ $_[0] } } : { @_ };
-}
+has repo => (
+    is      => 'rw',
+    isa     => 'Pinto::Repository',
+    handles => [ qw() ],
+    default => sub { $_[0]->result_source->schema->repo }, 
+);
 
 #-------------------------------------------------------------------------------
 
@@ -51,7 +63,6 @@ sub deploy {
 
     $self->next::method;
     $self->set_version;
-    $self->set_root_kommit;
 
     return $self;
 }
@@ -82,36 +93,6 @@ sub get_version {
 
     return $version[0];
 }
-
-#-------------------------------------------------------------------------------
-
-sub set_root_kommit {
-    my ($self) = @_;
-
-    my $attrs = { sha256   => $self->root_kommit_sha, 
-    	          username => 'pinto', 
-    	          message  => 'root kommit' };
-
-    return $self->create_kommit($attrs);   
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_root_kommit {
-    my ($self) = @_;
-
-    my $where = {sha256 => $self->root_kommit_sha};
-    my $attrs = {key => 'sha256_unique'};
-
-    my $kommit = $self->find_kommit($where, $attrs)
-        or throw "PANIC: No root kommit was found";
-
-    return $kommit;
-}
-
-#-------------------------------------------------------------------------------
-
-sub root_kommit_sha { return '0' x 32 }
 
 #-------------------------------------------------------------------------------
 

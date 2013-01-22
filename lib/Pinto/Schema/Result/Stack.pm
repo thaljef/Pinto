@@ -52,6 +52,30 @@ __PACKAGE__->table("stack");
   data_type: 'boolean'
   is_nullable: 0
 
+=head2 last_commit_id
+
+  data_type: 'text'
+  default_value: (empty string)
+  is_nullable: 1
+
+=head2 last_commit_message
+
+  data_type: 'text'
+  default_value: (empty string)
+  is_nullable: 1
+
+=head2 last_committed_by
+
+  data_type: 'text'
+  default_value: (empty string)
+  is_nullable: 1
+
+=head2 last_committed_on
+
+  data_type: 'integer'
+  default_value: 0
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -65,6 +89,14 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 0 },
   "is_locked",
   { data_type => "boolean", is_nullable => 0 },
+  "last_commit_id",
+  { data_type => "text", default_value => "", is_nullable => 1 },
+  "last_commit_message",
+  { data_type => "text", default_value => "", is_nullable => 1 },
+  "last_committed_by",
+  { data_type => "text", default_value => "", is_nullable => 1 },
+  "last_committed_on",
+  { data_type => "integer", default_value => 0, is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -119,8 +151,8 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-19 17:14:53
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yVcK4+Khm/GqGDWNFsvZAw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-22 12:32:37
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3jX/WzKf5XGRwMMNtAGaFA
 
 #-------------------------------------------------------------------------------
 
@@ -136,15 +168,79 @@ with 'Pinto::Role::Schema::Result';
 use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
+use File::Copy ();
 use JSON qw(encode_json decode_json);
 
-use Pinto::Util qw(itis);
+use Pinto::Util qw(itis mksymlink current_time);
+use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
-use Pinto::IndexWriter;
+use Pinto::StackIndex;
+use Pinto::StackProps;
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
                'cmp' => 'string_compare' );
+
+#------------------------------------------------------------------------------
+
+has stack_dir => (
+  is          => 'ro',
+  isa         => Dir,
+  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name ) },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has modules_dir => (
+  is          => 'ro',
+  isa         => Dir,
+  default     => sub { $_[0]->stack_dir->subdir( 'modules' ) },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has authors_dir => (
+  is          => 'ro',
+  isa         => Dir,
+  default     => sub { $_[0]->stack_dir->subdir( 'authors' ) },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+has index_file => (
+  is          => 'ro',
+  isa         => File,
+  default     => sub { $_[0]->stack_dir->file('stack.index.txt') },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has props_file => (
+  is          => 'ro',
+  isa         => File,
+  default     => sub { $_[0]->stack_dir->file('stack.props.txt') },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has index => (
+  is       => 'ro',
+  isa      => 'Pinto::StackIndex',
+  default  => sub { Pinto::StackIndex->new(file => $_[0]->index_file) },
+  lazy     => 1,
+);
+
+
+has props => (
+  is       => 'ro',
+  isa      => 'Pinto::StackProps',
+  default  => sub { Pinto::StackProps->new(file => $_[0]->props_file) },
+  lazy     => 1,
+);
 
 #------------------------------------------------------------------------------
 
@@ -153,7 +249,7 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{is_default} ||= 0;
-  $args->{properties}   = '{}';
+  $args->{is_locked}  ||= 0;
   $args->{name_canonical} = lc $args->{name};
 
   return $args;
@@ -161,50 +257,32 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-before is_default => sub {
-    my ($self, @args) = @_;
-    throw 'You cannot directly set is_default.  Use mark_as_default' if @args;
-};
+sub BUILD {
+  my ($self) = @_;
 
-#------------------------------------------------------------------------------
+  my $stack_dir = $self->stack_dir;
+  $stack_dir->mkpath;
 
-sub advance {
-    my ($self, %args) = @_;
+  my $stack_modules_dir = $self->modules_dir;
+  $stack_modules_dir->mkpath;
 
-    $args{message}  ||= ''; # is this necessary?
-    $args{username} ||= $self->config->username;
+  my $stack_authors_dir  = $self->authors_dir;
+  my $shared_authors_dir = $self->config->authors_dir->relative($stack_dir);
+  mksymlink($stack_authors_dir => $shared_authors_dir);
 
-    $self->check_lock;
-
-    my $new_head = $self->result_source->schema->create_kommit(\%args);
-    $new_head->add_parent($self->head);
-    
-    $self->set_head(kommit => $new_head);
-
-    $self->debug( sub {"Advanced head kommit on stack $self"} );
-    
-    return $self;
-
+  my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
+  my $shared_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
+  mksymlink($stack_modlist_file => $shared_modlist_file);
 }
 
 #------------------------------------------------------------------------------
 
 sub open {
-    my ($self, %args) = @_;
-
-    $args{message}  ||= ''; # is this necessary?
-    $args{username} ||= $self->config->username;
+    my ($self) = @_;
 
     $self->check_lock;
+    $self->repo->vcs->checkout($self->name);
 
-    my $new_head = $self->result_source->schema->create_kommit(\%args);
-    $new_head->add_parent($self->head);
-
-    $self->copy_registrations(kommit => $new_head);
-    $self->set_head(kommit => $new_head);
-
-    $self->debug( sub {"Opened new head kommit on stack $self"} );
-    
     return $self;
 }
 
@@ -213,9 +291,42 @@ sub open {
 sub close {
     my ($self, %args) = @_;
 
-    $self->head->finalize( %args );
+    $self->index->write;
+    my $index_file_basename = $self->index_file->basename;
+    my $vcs_index_file = $self->repo->config->vcs_dir->file($index_file_basename);
+    File::Copy::copy($self->index_file, $vcs_index_file); # TODO: die!
+    $self->repo->vcs->add($index_file_basename);
+
+    $self->props->write;
+    my $props_file_basename = $self->props_file->basename;
+    my $vcs_props_file = $self->repo->config->vcs_dir->file($props_file_basename);
+    File::Copy::copy($self->props_file, $vcs_props_file); # TODO: die!
+    $self->repo->vcs->add($props_file_basename);
+
+    my $commit_id = $self->repo->vcs->commit( %args );
+
+    $self->update( { last_commit_id      => $commit_id,
+                     last_commit_message => $args{message},
+                     last_committed_by   => $args{username},
+                     last_committed_on   => current_time });
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub copy {
+    my ($self, $changes) = @_;
+
+    my $new_stack = $changes->{name};
+    my $new_stack_canon = $changes->{name_canonical} = lc $new_stack;
+
+    throw "Stack $new_stack already exists"
+      if $self->result_source->resultset->find( {name_canonical => $new_stack_canon} );
+
+    $changes->{is_default} = 0; # Never duplicate the default flag
+
+    return $self->next::method($changes);
 }
 
 #------------------------------------------------------------------------------
@@ -224,35 +335,10 @@ sub delete {
     my ($self) = @_;
 
     $self->check_lock;
+    $self->stack_dir->rmtree or throw $!;
+    $self->repo->vcs->delete_branch(branch => $self->name);
 
     return $self->next::method;
-}
-
-#------------------------------------------------------------------------------
-
-sub write_index {
-    my ($self) = @_;
-
-    my $writer = Pinto::IndexWriter->new( stack  => $self,
-                                          logger => $self->logger,
-                                          config => $self->config );
-    $writer->write_index;
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub registration {
-    my ($self, %args) = @_;
-
-    my $pkg_name = ref $args{package} ? $args{package}->name
-                                      : $args{package};
-
-    my $attrs = { prefetch => 'package' };
-    my $where = {'package.name' => $pkg_name};
-
-    return $self->head->find_related(registrations => $where, $attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -275,38 +361,111 @@ sub rename {
 
 #------------------------------------------------------------------------------
 
-sub copy {
-    my ($self, $changes) = @_;
+sub get_property {
+    my ($self, @prop_keys) = @_;
 
-    my $new_stack = $changes->{name};
-    my $new_stack_canon = $changes->{name_canonical} = lc $new_stack;
+    my %props = %{ $self->get_properties };
 
-    throw "Stack $new_stack already exists"
-      if $self->result_source->resultset->find( {name_canonical => $new_stack_canon} );
+    return @props{ map {lc} @prop_keys };
+}
 
-    $changes->{is_default} = 0; # Never duplicate the default flag
+#-------------------------------------------------------------------------------
 
-    return $self->next::method($changes);
+sub get_properties {
+    my ($self) = @_;
+
+    my %props = %{ $self->properties };  # Making a copy!
+
+    return \%props;
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_property {
+    my ($self, $key, $value) = @_;
+
+    $self->set_properties( {$key => $value} );
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_properties {
+    my ($self, $new_props) = @_;
+
+    my $props = {}; #$self->properties;
+    while (my ($key, $value) = each %{$new_props}) {
+        Pinto::Util::validate_property_name($key);
+        $props->{lc $key} = $value;
+    }
+
+    #$self->update( {properties => $props} );
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_property {
+    my ($self, @prop_keys) = @_;
+
+    my $props = $self->properties;
+    delete $props->{lc $_} for @prop_keys;
+
+    $self->update({properties => $props});
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_properties {
+    my ($self) = @_;
+
+    self->update({properties => {}});
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
 
-sub copy_registrations {
-    my ($self, %args) = @_;
+sub lock {
+    my ($self) = @_;
 
-    my $new_head    = $args{kommit};
-    my $new_head_id = $new_head->id;
+    if ($self->is_locked) {
+      $self->warning("Stack $self is already locked");
+      return $self;
+    }
 
-    my $old_head    = $self->head;
-    my $old_head_id = $old_head->id;
+    $self->notice("Locking stack $self");
+    $self->update( {is_locked => 1} );
+    return 1;
+}
 
-    my $sql = "INSERT INTO registration (kommit, package, package_name, distribution, is_pinned) "
-            . "SELECT '$new_head_id', package, package_name, distribution, is_pinned FROM registration "
-            . "WHERE kommit = '$old_head_id' ";
+#------------------------------------------------------------------------------
 
-    $self->debug( sub {"Copying registrations from stack $self at $old_head"} );
-    my $dbh = $self->result_source->schema->storage->dbh;
-    $dbh->do($sql);
+sub unlock {
+    my ($self) = @_;
+
+    if (not $self->is_locked) {
+      $self->warning("Stack $self is not locked");
+      return $self;
+    }
+
+    $self->notice("Unlocking stack $self");
+    $self->udpate( {is_locked => 0} );
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub check_lock {
+    my ($self) = @_;
+
+    throw "Stack $self is locked and cannot be modified or deleted" 
+      if $self->is_locked;
 
     return $self;
 }
@@ -349,157 +508,30 @@ sub unmark_as_default {
 
 #------------------------------------------------------------------------------
 
-sub get_property {
-    my ($self, @prop_keys) = @_;
-
-    my %props = %{ $self->get_properties };
-
-    return @props{ map {lc} @prop_keys };
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_properties {
-    my ($self) = @_;
-
-    my %props = %{ $self->properties };  # Making a copy!
-
-    return \%props;
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_property {
-    my ($self, $key, $value) = @_;
-
-    $self->set_properties( {$key => $value} );
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_properties {
-    my ($self, $new_props) = @_;
-
-    my $props = $self->properties;
-    while (my ($key, $value) = each %{$new_props}) {
-        Pinto::Util::validate_property_name($key);
-        $props->{lc $key} = $value;
-    }
-
-    $self->update( {properties => $props} );
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_property {
-    my ($self, @prop_keys) = @_;
-
-    my $props = $self->properties;
-    delete $props->{lc $_} for @prop_keys;
-
-    $self->update({properties => $props});
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_properties {
-    my ($self) = @_;
-
-    self->update({properties => {}});
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub is_locked {
-    my ($self) = @_;
-
-    return $self->get_property('pinto-locked');
-}
-
-#------------------------------------------------------------------------------
-
-sub lock {
-    my ($self) = @_;
-
-    if ($self->is_locked) {
-      $self->warning("Stack $self is already locked");
-      return 0;
-    }
-
-    $self->notice("Locking stack $self");
-    $self->set_property('pinto-locked' => 1);
-    return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub unlock {
-    my ($self) = @_;
-
-    if (not $self->is_locked) {
-      $self->warning("Stack $self is not locked");
-      return 0;
-    }
-
-    $self->notice("Unlocking stack $self");
-    $self->delete_property('pinto-locked');
-    return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub check_lock {
-    my ($self) = @_;
-
-    throw "Stack $self is locked and cannot be modified or deleted" 
-      if $self->is_locked;
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub set_head {
-  my ($self, %args) = @_;
-
-  my $new_head = $args{kommit};
-  $self->update( {head => $new_head} );
-
-  return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub has_changed {
     my ($self) = @_;
-    return 1;
+
+    for my $file ($self->index_file, $self->props_file) {
+      return 1 if $self->repo->vcs->status(file => $file->basename);
+    }
+
+    return 0;
 }
 
 #------------------------------------------------------------------------------
 
 sub has_not_changed {
     my ($self) = @_;
-    return 0;
+
+    return ! $self->has_changed;
 }
 
 #------------------------------------------------------------------------------
 
-sub history {
-    my ($self) = @_;
+sub last_commit_id_prefix {
+  my ($self) = @_;
 
-    # TODO: this return an iterator, so we don't have to slurp the entire
-    # history into memory.  To do this, we need an option to tell ancestors()
-    # whether or not to include $self in the results.
-
-    return ($self->head, $self->head->ancestors);
+  return substr $self->last_commit_id, 0, 7;
 }
 
 #------------------------------------------------------------------------------
@@ -543,11 +575,11 @@ sub to_string {
            k => sub { $self->name                                    },
            M => sub { $self->is_default                  ? '*' : ' ' },
            L => sub { $self->is_locked                   ? '!' : ' ' },
-           i => sub { $self->head->sha256_short                      },
-           I => sub { $self->head->sha256                            },
-           G => sub { $self->head->message                           },
-           J => sub { $self->head->username                          },
-           U => sub { $self->head->timestamp->strftime('%c')         },
+           I => sub { $self->last_commit_id                          },
+           i => sub { $self->last_commit_id_prefix                   },
+           G => sub { $self->last_commit_message                     },
+           J => sub { $self->last_committed_by                       },
+           U => sub { $self->last_committed_on->strftime('%c')       },
            e => sub { $self->get_property('description')             },
     );
 

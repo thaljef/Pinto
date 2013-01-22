@@ -5,6 +5,7 @@ package Pinto::VCS;
 use Moose;
 
 use Git::Raw;
+use File::Touch ();
 
 use Pinto::Types qw(Dir);
 use Pinto::Exception qw(throw);
@@ -30,7 +31,7 @@ has vcs_dir => (
 );
 
 
-has vcs_repo => (
+has git     => (
     is      => 'ro',
     isa     => 'Git::Raw::Repository',
     default => sub { Git::Raw::Repository->open($_[0]->vcs_dir) },
@@ -46,6 +47,8 @@ sub initialize {
 
     throw "VCS is already initialized" if -e $vcs_dir->subdir('.git');
 
+    $vcs_dir->mkpath;
+
     Git::Raw::Repository->init($vcs_dir, 0);
 
     return $self;
@@ -54,24 +57,78 @@ sub initialize {
 #-------------------------------------------------------------------------------
 
 sub branch {
-    # Create new branch
+    my ($self, $from, $to) = @_;
+
+    my $target = $self->git->lookup($from)
+        or throw "Target $from does not exist in version control";
+
+    $self->git->checkout($target);
+    $self->git->branch($to, $self->repo->head);
+
+    return $self;
 }
 
+#-------------------------------------------------------------------------------
+
 sub checkout {
-    # Change to branch or commit
+    my ($self, $branch_name) = @_;
+
+    my $branch = Git::Raw::Branch->lookup($self->git, $branch_name, 1);
+    $self->git->checkout($branch, {});
+
+    return $self;
 }
+
+#-------------------------------------------------------------------------------
+
+sub touch {
+    my ($self, $file) = @_;
+
+    # TODO: mksubdirs if needed
+    my $path = $self->config->vcs_dir->file($file);
+    File::Touch::touch( $path->stringify ) or die $!;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
 
 sub log {
     # Return revision history
 }
 
+#-------------------------------------------------------------------------------
+
 sub add {
-    # Add file to be committed
+    my ($self, $file) = @_;
+
+    # TODO: mksubdirs if needed
+    my $index = $self->git-> index;
+    $index->add($file);
+    $index->write;
+
+    return $self;
 }
 
+#-------------------------------------------------------------------------------
+
 sub commit {
-    # Commit files that have been added
+    my ($self, %args) = @_;
+
+    my $user    = $args{username} || $self->config->username;
+    my $message = $args{message};
+    my $orphan  = $args{orphan};
+
+    my $tree_id = $self->git->index->write_tree;
+    my $tree    = $self->git->lookup($tree_id);
+    my $me      = Git::Raw::Signature->now($user, $user);
+    my $parents = $orphan ? [] : $self->git->head->target;
+    my $commit  = $self->git->commit($message, $me, $me, $parents, $tree);
+
+    return $commit->id;
 }
+
+#-------------------------------------------------------------------------------
 
 sub merge {
     # Attempt to merge branches
@@ -82,7 +139,12 @@ sub reset {
 }
 
 sub status {
-    # True if WC has changed
+    my ($self, %args) = @_;
+
+    my $file   = $args{file};
+    my $status = $self->git->status($file);
+
+    return $status ? 1 : 0;
 }
 
 #-------------------------------------------------------------------------------

@@ -21,10 +21,20 @@ has logger  => (
    lazy     => 1,
 );
 
+
 has config  => (
    is       => 'ro',
    isa      => 'Pinto::Config',
    default  => sub { $_[0]->result_source->schema->config },
+   init_arg => undef,
+   lazy     => 1,
+);
+
+
+has repo  => (
+   is       => 'ro',
+   isa      => 'Pinto::Repository',
+   default  => sub { $_[0]->result_source->schema->repo },
    init_arg => undef,
    lazy     => 1,
 );

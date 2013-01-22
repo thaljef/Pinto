@@ -4,16 +4,11 @@ package Pinto::Initializer;
 
 use Moose;
 
-use autodie;
-
 use PerlIO::gzip;
-use Path::Class;
 
-use Pinto::VCS;
-use Pinto::Database;
-use Pinto::Repository;
-use Pinto::Util qw(current_user);
+use Pinto;
 
+use autodie;
 use namespace::autoclean;
 
 #------------------------------------------------------------------------------
@@ -23,7 +18,7 @@ use namespace::autoclean;
 #------------------------------------------------------------------------------
 
 with qw( Pinto::Role::Configurable
-         Pinto::Role::PathMaker );
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
@@ -40,55 +35,38 @@ sub init {
     my ($self, %args) = @_;
 
     # Sanity checks
-    my $root_dir = $self->config->root_dir();
+    my $root_dir = $self->config->root_dir;
     die "Directory $root_dir must be empty to create a repository there\n"
-        if -e $root_dir and $root_dir->children();
+        if -e $root_dir and $root_dir->children;
 
-    # Create repos root directory
-    $self->mkpath($root_dir)
-        if not -e $root_dir;
+    # Make directory structure
+    for my $dir ( qw(root config cache log modules authors db vcs) ) {
+        my $meth = "${dir}_dir";
+        $self->config->$meth->mkpath;
+    }
 
-    # Create config dir
-    my $config_dir = $self->config->config_dir();
-    $self->mkpath($config_dir);
 
     # Write config file
-    my $config_file = $config_dir->file( $self->config->basename() );
+    my $config_file = $self->config->config_dir->file( $self->config->basename );
     $self->config->write_config_file( file => $config_file, values => \%args );
 
-    # Create modules dir
-    my $modules_dir = $self->config->modules_dir();
-    $self->mkpath($modules_dir);
-
-    # Create cache dir
-    my $cache_dir = $self->config->cache_dir();
-    $self->mkpath($cache_dir);
-
-    # Create log dir
-    my $log_dir = $self->config->log_dir();
-    $self->mkpath($log_dir);
-
-    # Set up database
-    $self->_create_db();
-
-    # Set up version control
-    $self->_create_vcs;
-
     # Write modlist
-    $self->_write_modlist();
-
-    # Create authors dir
-    my $authors_dir = $self->config->authors_dir();
-    $self->mkpath($authors_dir);
+    $self->_write_modlist;
 
     # Write authors index
     $self->_write_mailrc;
 
-    # Create the inital stack, if needed
-    $self->_create_stack(%args) if $args{stack};
+    # Set up database
+    $self->_create_db;
+
+    # Set up version control
+    $self->_create_vcs;
+
+    # Create master stack
+    $self->_create_stack;
 
     # Log message for posterity
-    $self->notice("Created new repository at directory $root_dir");
+    $self->notice("Created new repository at $root_dir");
 
     return $self;
 }
@@ -153,9 +131,10 @@ END_MODLIST
 sub _create_db {
     my ($self) = @_;
 
-    $self->mkpath($self->config->db_dir);
-    my $db = Pinto::Database->new( config => $self->config );
-    $db->deploy;
+    my $root  = $self->config->root;
+    my $pinto = Pinto->new(root => $root);
+
+    $pinto->repo->db->deploy;
 
     return;
 }
@@ -165,9 +144,10 @@ sub _create_db {
 sub _create_vcs {
     my ($self) = @_;
 
-    $self->mkpath($self->config->vcs_dir);
-    my $vcs = Pinto::VCS->new( config => $self->config );
-    $vcs->initialize;
+    my $root  = $self->config->root;
+    my $pinto = Pinto->new(root => $root);
+
+    $pinto->repo->vcs->initialize;
 
     return;
 }
@@ -175,27 +155,21 @@ sub _create_vcs {
 #------------------------------------------------------------------------------
 
 sub _create_stack {
-    my ($self, %args) = @_;
-
-    require Pinto;
-
-    my $stack_name        = $args{stack};
-    my $stack_is_default  = ! $args{nodefault};
-    my $stack_description = $args{description} || 'The initial stack.';
+    my ($self) = @_;
 
     my $root  = $self->config->root;
-    my $pinto = Pinto->new(root => $root);
+    my $repo  = Pinto->new(root => $root)->repo;
+    my $stack = $repo->create_stack(name => 'master', is_default  => 1);
 
-    $pinto->run(New => ( stack       => $stack_name,
-                         default     => $stack_is_default,
-                         description => $stack_description ) );
+    $stack->set_property(description => 'The master stack');
+    $stack->close(message => 'Initial commit', orphan => 1);
 
     return;
 }
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 
