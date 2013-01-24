@@ -9,7 +9,7 @@ use Test::Exception;
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------
-# Test bare repository
+# Test repository with master stack as default
 
 {
 	my $t = Pinto::Tester->new;
@@ -17,47 +17,33 @@ use Pinto::Tester;
 	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
 	$t->path_exists_ok( [qw(.pinto log)] );
+	$t->path_exists_ok( [qw(.pinto vcs)] );
 
-	throws_ok { $t->pinto->repo->get_stack } qr/default stack has not been set/,
-		'Bare repository has no stack';
+	$t->path_exists_ok( [qw(master modules 02packages.details.txt.gz)] );
+	$t->path_exists_ok( [qw(master modules 03modlist.data.gz)] );
+	$t->path_exists_ok( [qw(master authors 01mailrc.txt.gz)] );
+	$t->path_exists_ok( [qw(master meta stack.registry.txt)] );
+
+	my $stack = $t->pinto->repo->get_stack('master');
+	ok defined $stack, 'master stack exists';
+	is $stack->name, 'master', 'master stack has correct name';
+	is $stack->is_default, 1,  'master stack is the default stack';
+	is $stack->description, 'The master stack', 'master stack has default description';
 }
 
 #------------------------------------------------------------------------------
-# Test repository with a default stack
+# Test repository created without default stack
 
 {
-	my $config = {stack => 'dev'};
-	my $t = Pinto::Tester->new( init_args => $config );
 
-	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
-	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
-	$t->path_exists_ok( [qw(.pinto log)] );
+	my $t = Pinto::Tester->new( init_args => {nodefault => 1} );
 
-	$t->path_exists_ok( [qw(dev modules 02packages.details.txt.gz)] );
-	$t->path_exists_ok( [qw(dev modules 03modlist.data.gz)] );
-	$t->path_exists_ok( [qw(dev authors 01mailrc.txt.gz)] );
+	my $stack = $t->pinto->repo->get_stack('master');
+	ok defined $stack, 'master stack exists';
+	is $stack->is_default, 0, 'master stack is not default';
 
-	my $stack = $t->pinto->repo->get_stack;
-	is $stack->name, 'dev',   'Initial stack has the right name';
-	is $stack->is_default, 1, 'Initial stack is the default';
-
-	is $stack->get_property('description'), 'The initial stack.',
-          'Initial stack has the default description';
-}
-
-#------------------------------------------------------------------------------
-# Test repository created with a stack, but not default, and custom description
-
-{
-	my $config = {stack => 'dev', nodefault => 1, description => 'my stack'};
-	my $t = Pinto::Tester->new( init_args => $config );
-
-	my $stack = $t->pinto->repo->get_stack('dev');
-	is $stack->name, 'dev',   'Initial stack has the right name';
-	is $stack->is_default, 0, 'Initial stack is not the default';
-
-	is $stack->get_property('description'), 'my stack',
-          'Initial stack has custom description';
+	throws_ok {$t->pinto->repo->get_stack} qr/default stack has not been set/,
+		'get_stack(undef) throws exception when there is no default';
 }
 
 #------------------------------------------------------------------------------

@@ -146,7 +146,7 @@ sub parse_reg_spec {
     my ($pkg_name, $pkg_version) = split m{~}x, $pkg;
 
     # Set defaults
-    $stack_name  ||= 'init';
+    $stack_name  ||= 'master';
     $pkg_version ||= 0;
 
     return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);

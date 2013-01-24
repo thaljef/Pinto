@@ -140,7 +140,7 @@ sub _add {
         $dist = $self->repo->add(archive => $archive, author => $self->author);
     }
 
-    $dist->register(stack => $stack, pin => $self->pin);
+    $stack->register(distribution => $dist, pin => $self->pin);
     $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
     
     return;

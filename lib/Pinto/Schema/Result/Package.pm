@@ -145,7 +145,6 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
-use Carp;
 use String::Format;
 
 use Pinto::Util qw(itis);
@@ -155,6 +154,8 @@ use Pinto::PackageSpec;
 use overload ( '""'     => 'to_string',
                '<=>'    => 'numeric_compare',
                'cmp'    => 'string_compare',
+               '=='     => 'equals',
+               'eq'     => 'equals',
                fallback => undef );
 
 #------------------------------------------------------------------------------
@@ -233,6 +234,22 @@ sub registration {
 
 #------------------------------------------------------------------------------
 
+sub mtime {
+    my ($self) = @_;
+
+    return $self->distribution->mtime;
+}
+
+#------------------------------------------------------------------------------
+
+sub path {
+    my ($self) = @_;
+
+    return $self->distribution->path;
+}
+
+#------------------------------------------------------------------------------
+
 sub vname {
     my ($self) = @_;
 
@@ -246,6 +263,17 @@ sub as_spec {
 
     return Pinto::PackageSpec->new( name    => $self->name,
                                     version => $self->version );
+}
+
+#------------------------------------------------------------------------------
+
+sub as_struct {
+    my ($self) = @_;
+
+    return ( name         => $self->name,
+             version      => $self->version,
+             distribution => $self->path,
+             mtime        => $self->mtime, );
 }
 
 #------------------------------------------------------------------------------
@@ -293,43 +321,39 @@ sub default_format {
 
 #-------------------------------------------------------------------------------
 
+sub equals {
+    my ($pkg_a, $pkg_b) = @_;
+
+    return    ($pkg_a->name      eq   $pkg_b->name)
+           && ($pkg_a->version   ==   $pkg_b->version)
+           && ($pkg_a->path      eq   $pkg_b->path);
+}
+
+
+#-------------------------------------------------------------------------------
+
+
 sub numeric_compare {
     my ($pkg_a, $pkg_b) = @_;
 
-    my $pkg = __PACKAGE__;
-    throw "Can only compare $pkg objects"
-        if not ( itis($pkg_a, $pkg) && itis($pkg_b, $pkg) );
-
-    return 0 if $pkg_a->id == $pkg_b->id;
-
-    confess "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
+    throw "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name ne $pkg_b->name;
 
-    my $r =   ( $pkg_a->version             <=> $pkg_b->version             )
-           || ( $pkg_a->distribution->mtime <=> $pkg_b->distribution->mtime );
-
-    # No two non-identical packages can be considered equal!
-    confess "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
-
-    return $r;
-};
+    return    ($pkg_a->version <=> $pkg_b->version)
+           || ($pkg_a->mtime   <=> $pkg_b->mtime)
+           || throw "Unable to determine ordering $pkg_a <=> $pkg_b";
+}
 
 #-------------------------------------------------------------------------------
 
 sub string_compare {
     my ($pkg_a, $pkg_b) = @_;
 
-    my $pkg = __PACKAGE__;
-    throw "Can only compare $pkg objects"
-        if not ( itis($pkg_a, $pkg) && itis($pkg_b, $pkg) );
 
-    return 0 if $pkg_a->id() == $pkg_b->id();
-
-    my $r =   ( $pkg_a->name    cmp $pkg_b->name    )
+    return    ( $pkg_a->name    cmp $pkg_b->name    )
            || ( $pkg_a->version <=> $pkg_b->version );
 
-    return $r;
-};
+}
 
 #-------------------------------------------------------------------------------
 

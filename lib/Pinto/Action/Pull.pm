@@ -111,14 +111,13 @@ sub _pull {
 
     $self->notice("Pulling $target");
 
-    my ($dist, $did_pull) = $self->repo->find_or_pull(target => $target, stack => $stack);
-    my $did_register = defined $dist ? $dist->register(stack => $stack, pin => $self->pin) : undef;
+    my $dist = $self->repo->find_or_pull(target => $target, stack => $stack);
+    # TDOO: what if $dist comes back undef?
+    $stack->register(distribution => $dist, pin => $self->pin);
 
     if ($dist and not $self->norecurse) {
-        $did_pull += $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
+        $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
     }
-
-    $self->result->changed if $did_pull or $did_register;
 
     return;
 }

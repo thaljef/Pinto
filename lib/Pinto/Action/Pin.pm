@@ -63,7 +63,7 @@ sub _pin {
 
     $self->notice("Pinning distribution $dist to stack $stack");
 
-    $self->result->changed if $dist->pin(stack => $stack);
+    $stack->pin(distribution => $dist);
 
     return;
 }

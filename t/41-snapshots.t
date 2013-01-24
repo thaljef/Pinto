@@ -13,14 +13,14 @@ my $rev = shift;
 
 #-----------------------------------------------------------------------------
 
-my $t = Pinto::Tester->new_with_stack;
+my $t = Pinto::Tester->new;
 my $archive1 = make_dist_archive('Dist-1 = PkgA~1,PkgB~1,PkgC~1');
 sleep 1;
 my $archive2 = make_dist_archive('Dist-2 = PkgA~2,PkgB~1,PkgD~1');
 
 $t->run_ok(Add     => {archives => $archive1});            # Rev 1
 $t->run_ok(Pin     => {targets  => 'PkgA'});               # Rev 2
-$t->run_ok(Revert  => {stack    => 'init'});               # Rev 3
+$t->run_ok(Revert  => {stack    => 'master'});               # Rev 3
 $t->run_ok(Add     => {archives => $archive2});            # Rev 4
 $t->run_ok(Pop     => {targets  => 'JEFF/Dist-1.tar.gz'}); # Rev 5
 $t->run_ok(Pin     => {targets  => 'PkgD'});               # Rev 6

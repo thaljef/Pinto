@@ -42,6 +42,11 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
+=head2 description
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 is_default
 
   data_type: 'boolean'
@@ -58,24 +63,6 @@ __PACKAGE__->table("stack");
   default_value: (empty string)
   is_nullable: 1
 
-=head2 last_commit_message
-
-  data_type: 'text'
-  default_value: (empty string)
-  is_nullable: 1
-
-=head2 last_committed_by
-
-  data_type: 'text'
-  default_value: (empty string)
-  is_nullable: 1
-
-=head2 last_committed_on
-
-  data_type: 'integer'
-  default_value: 0
-  is_nullable: 1
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -85,18 +72,14 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "name_canonical",
   { data_type => "text", is_nullable => 0 },
+  "description",
+  { data_type => "text", is_nullable => 0 },
   "is_default",
   { data_type => "boolean", is_nullable => 0 },
   "is_locked",
   { data_type => "boolean", is_nullable => 0 },
   "last_commit_id",
   { data_type => "text", default_value => "", is_nullable => 1 },
-  "last_commit_message",
-  { data_type => "text", default_value => "", is_nullable => 1 },
-  "last_committed_by",
-  { data_type => "text", default_value => "", is_nullable => 1 },
-  "last_committed_on",
-  { data_type => "integer", default_value => 0, is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -151,8 +134,8 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-22 12:32:37
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3jX/WzKf5XGRwMMNtAGaFA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-23 13:33:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:PUDO12IUL14R7s9N73hFpQ
 
 #-------------------------------------------------------------------------------
 
@@ -164,7 +147,6 @@ with 'Pinto::Role::Schema::Result';
 
 #-------------------------------------------------------------------------------
 
-
 use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
@@ -174,8 +156,8 @@ use JSON qw(encode_json decode_json);
 use Pinto::Util qw(itis mksymlink current_time);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
-use Pinto::StackIndex;
-use Pinto::StackProps;
+use Pinto::IndexWriter;
+use Pinto::Registry;
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
@@ -186,60 +168,58 @@ use overload ( '""'  => 'to_string',
 has stack_dir => (
   is          => 'ro',
   isa         => Dir,
-  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name ) },
-  init_arg    => undef,
   lazy        => 1,
+  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name ) },
 );
 
 
 has modules_dir => (
   is          => 'ro',
   isa         => Dir,
-  default     => sub { $_[0]->stack_dir->subdir( 'modules' ) },
-  init_arg    => undef,
   lazy        => 1,
+  default     => sub { $_[0]->stack_dir->subdir( 'modules' ) },
 );
 
 
 has authors_dir => (
   is          => 'ro',
   isa         => Dir,
-  default     => sub { $_[0]->stack_dir->subdir( 'authors' ) },
-  init_arg    => undef,
   lazy        => 1,
+  default     => sub { $_[0]->stack_dir->subdir( 'authors' ) },
 );
+
+
+has meta_dir => (
+  is          => 'ro',
+  isa         => Dir,
+  lazy        => 1,
+  default     => sub { $_[0]->stack_dir->subdir( 'meta' ) },
+);
+
 
 has index_file => (
   is          => 'ro',
   isa         => File,
-  default     => sub { $_[0]->stack_dir->file('stack.index.txt') },
-  init_arg    => undef,
   lazy        => 1,
+  default     => sub { $_[0]->modules_dir->file('02packages.details.txt.gz') },
 );
 
 
-has props_file => (
+has registry_file => (
   is          => 'ro',
   isa         => File,
-  default     => sub { $_[0]->stack_dir->file('stack.props.txt') },
-  init_arg    => undef,
   lazy        => 1,
+  default     => sub { $_[0]->meta_dir->file('stack.registry.txt') },
 );
 
 
-has index => (
+has registry => (
   is       => 'ro',
-  isa      => 'Pinto::StackIndex',
-  default  => sub { Pinto::StackIndex->new(file => $_[0]->index_file) },
+  isa      => 'Pinto::Registry',
   lazy     => 1,
-);
-
-
-has props => (
-  is       => 'ro',
-  isa      => 'Pinto::StackProps',
-  default  => sub { Pinto::StackProps->new(file => $_[0]->props_file) },
-  lazy     => 1,
+  handles  => [ qw(lookup register unregister pin unpin) ],
+  default  => sub { Pinto::Registry->new( file   => $_[0]->registry_file,
+                                          logger => $_[0]->logger ) },
 );
 
 #------------------------------------------------------------------------------
@@ -248,9 +228,11 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
-  $args->{is_default} ||= 0;
-  $args->{is_locked}  ||= 0;
+  $args->{is_default}  ||= 0;
+  $args->{is_locked}   ||= 0;
+  $args->{description} ||= '';
   $args->{name_canonical} = lc $args->{name};
+
 
   return $args;
 }
@@ -273,15 +255,20 @@ sub BUILD {
   my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
   my $shared_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
   mksymlink($stack_modlist_file => $shared_modlist_file);
+
+  my $stack_meta_dir = $self->meta_dir;
+  $stack_meta_dir->mkpath;
+
+  return $self;
 }
 
 #------------------------------------------------------------------------------
 
 sub open {
-    my ($self) = @_;
+    my ($self, %opts) = @_;
 
     $self->check_lock;
-    $self->repo->vcs->checkout($self->name);
+    $self->repo->vcs->checkout(branch => $self->name, %opts);
 
     return $self;
 }
@@ -291,24 +278,13 @@ sub open {
 sub close {
     my ($self, %args) = @_;
 
-    $self->index->write;
-    my $index_file_basename = $self->index_file->basename;
-    my $vcs_index_file = $self->repo->config->vcs_dir->file($index_file_basename);
-    File::Copy::copy($self->index_file, $vcs_index_file); # TODO: die!
-    $self->repo->vcs->add($index_file_basename);
-
-    $self->props->write;
-    my $props_file_basename = $self->props_file->basename;
-    my $vcs_props_file = $self->repo->config->vcs_dir->file($props_file_basename);
-    File::Copy::copy($self->props_file, $vcs_props_file); # TODO: die!
-    $self->repo->vcs->add($props_file_basename);
+    $self->write_index;
+    $self->write_registry;
+    $self->copy_registry_to_vcs;
 
     my $commit_id = $self->repo->vcs->commit( %args );
 
-    $self->update( { last_commit_id      => $commit_id,
-                     last_commit_message => $args{message},
-                     last_committed_by   => $args{username},
-                     last_committed_on   => current_time });
+    $self->update( {last_commit_id => $commit_id} );
 
     return $self;
 }
@@ -316,17 +292,22 @@ sub close {
 #------------------------------------------------------------------------------
 
 sub copy {
-    my ($self, $changes) = @_;
+    my ($self, %changes) = @_;
 
-    my $new_stack = $changes->{name};
-    my $new_stack_canon = $changes->{name_canonical} = lc $new_stack;
+    my $new_stack = $changes{name};
+    my $new_stack_canon = $changes{name_canonical} = lc $new_stack;
 
     throw "Stack $new_stack already exists"
       if $self->result_source->resultset->find( {name_canonical => $new_stack_canon} );
 
-    $changes->{is_default} = 0; # Never duplicate the default flag
+     $changes{description} ||= "Copy of stack $self"; 
+     $changes{is_default} = 0; # Never duplicate the default flag
 
-    return $self->next::method($changes);
+     my $copy = $self->next::method(\%changes);
+
+     $self->repo->vcs->branch(from => $self->name, to => $copy->name);
+
+     return $copy->BUILD;
 }
 
 #------------------------------------------------------------------------------
@@ -335,10 +316,11 @@ sub delete {
     my ($self) = @_;
 
     $self->check_lock;
-    $self->stack_dir->rmtree or throw $!;
+    $self->next::method;
     $self->repo->vcs->delete_branch(branch => $self->name);
+    $self->stack_dir->rmtree or throw $!;
 
-    return $self->next::method;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -354,78 +336,9 @@ sub rename {
     throw "Stack $new_name already exists"
       if $self->result_source->resultset->find( {name_canonical => $new_name_canon} );
 
-    my $changes = {name => $new_name, name_canonical => $new_name_canon};
+      my $changes = {name => $new_name, name_canonical => $new_name_canon};
 
     return $self->update($changes);
-}
-
-#------------------------------------------------------------------------------
-
-sub get_property {
-    my ($self, @prop_keys) = @_;
-
-    my %props = %{ $self->get_properties };
-
-    return @props{ map {lc} @prop_keys };
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_properties {
-    my ($self) = @_;
-
-    my %props = %{ $self->properties };  # Making a copy!
-
-    return \%props;
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_property {
-    my ($self, $key, $value) = @_;
-
-    $self->set_properties( {$key => $value} );
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_properties {
-    my ($self, $new_props) = @_;
-
-    my $props = {}; #$self->properties;
-    while (my ($key, $value) = each %{$new_props}) {
-        Pinto::Util::validate_property_name($key);
-        $props->{lc $key} = $value;
-    }
-
-    #$self->update( {properties => $props} );
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_property {
-    my ($self, @prop_keys) = @_;
-
-    my $props = $self->properties;
-    delete $props->{lc $_} for @prop_keys;
-
-    $self->update({properties => $props});
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_properties {
-    my ($self) = @_;
-
-    self->update({properties => {}});
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -511,11 +424,8 @@ sub unmark_as_default {
 sub has_changed {
     my ($self) = @_;
 
-    for my $file ($self->index_file, $self->props_file) {
-      return 1 if $self->repo->vcs->status(file => $file->basename);
-    }
-
-    return 0;
+    return $self->registry->has_changed;
+    # or $self->properties->has_changed;
 }
 
 #------------------------------------------------------------------------------
@@ -532,6 +442,41 @@ sub last_commit_id_prefix {
   my ($self) = @_;
 
   return substr $self->last_commit_id, 0, 7;
+}
+
+#------------------------------------------------------------------------------
+
+sub write_index {
+    my ($self) = @_;
+
+    my $writer = Pinto::IndexWriter->new( file    => $self->index_file,
+                                          entries => $self->registry->entries,
+                                          logger  => $self->logger );
+
+    $writer->write_index;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub write_registry {
+    my ($self) = @_;
+
+    $self->registry->write;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub copy_registry_to_vcs {
+    my ($self) = @_;
+
+    my $registry_file_basename = $self->registry_file->basename;
+    my $vcs_registry_file = $self->repo->config->vcs_dir->file($registry_file_basename);
+    File::Copy::copy($self->registry_file, $vcs_registry_file); # TODO: die!
+    $self->repo->vcs->add(file => $registry_file_basename);
 }
 
 #------------------------------------------------------------------------------
@@ -580,7 +525,7 @@ sub to_string {
            G => sub { $self->last_commit_message                     },
            J => sub { $self->last_committed_by                       },
            U => sub { $self->last_committed_on->strftime('%c')       },
-           e => sub { $self->get_property('description')             },
+           e => sub { $self->description                             },
     );
 
     $format ||= $self->default_format();

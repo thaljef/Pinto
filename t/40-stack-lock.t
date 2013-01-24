@@ -11,7 +11,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 {
-	my $t = Pinto::Tester->new_with_stack;
+	my $t = Pinto::Tester->new;
 	my $archive = make_dist_archive('Foo-1 = Foo~1');
 	my $stack = $t->pinto->repo->get_stack;
 

@@ -38,7 +38,7 @@ use Pinto::Globals;
 
 local $Pinto::Globals::current_user = 'ME';
 
-my $t = Pinto::Tester->new_with_stack;
+my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
 

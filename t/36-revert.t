@@ -13,13 +13,13 @@ use Pinto::Tester::Util qw(make_dist_archive);
 # This test follows RJBS' use case....
 #------------------------------------------------------------------------------
 
-my $cpan = Pinto::Tester->new_with_stack;
+my $cpan = Pinto::Tester->new;
 $cpan->populate( 'JOHN/DistA-1 = PkgA~1 & PkgB~1',
                  'FRED/DistB-1 = PkgB~1', );
 
 #------------------------------------------------------------------------------
 
-my $local = Pinto::Tester->new_with_stack(init_args => {sources => $cpan->stack_url});
+my $local = Pinto::Tester->new(init_args => {sources => $cpan->stack_url});
 $local->head_revision_number_is(0);
 
 # Suppose MyDist requires PkgA, which requires PkgB
@@ -49,16 +49,16 @@ $local->run_ok(Pin => {targets => 'PkgA'});
 $local->head_revision_number_is(3);
 
 # PkgA should now be pinned, but not PkgB and PkgC
-$local->registration_ok('JOHN/DistA-2/PkgA~2/init/*');
-$local->registration_ok('FRED/DistB-1/PkgB~1/init/-');
-$local->registration_ok('MARC/DistC-1/PkgC~1/init/-');
+$local->registration_ok('JOHN/DistA-2/PkgA~2/master/*');
+$local->registration_ok('FRED/DistB-1/PkgB~1/master/-');
+$local->registration_ok('MARC/DistC-1/PkgC~1/master/-');
 
 # Oops! PkgA~2 breaks our app, so revert...
 $local->run_ok(Revert => {revision => -2});
 $local->head_revision_number_is(4);
 
 # PkgA should be at PkgA~1 and unpinned...
-$local->registration_ok('JOHN/DistA-1/PkgA~1/init/-');
+$local->registration_ok('JOHN/DistA-1/PkgA~1/master/-');
 
 # PkgB should still be at PkgB~1...
 $local->registration_ok('FRED/DistB-1/PkgB~1');

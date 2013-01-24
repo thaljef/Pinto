@@ -63,7 +63,7 @@ sub init {
     $self->_create_vcs;
 
     # Create master stack
-    $self->_create_stack;
+    $self->_create_stack(%args);
 
     # Log message for posterity
     $self->notice("Created new repository at $root_dir");
@@ -131,8 +131,7 @@ END_MODLIST
 sub _create_db {
     my ($self) = @_;
 
-    my $root  = $self->config->root;
-    my $pinto = Pinto->new(root => $root);
+    my $pinto = Pinto->new(root => $self->config->root);
 
     $pinto->repo->db->deploy;
 
@@ -144,8 +143,7 @@ sub _create_db {
 sub _create_vcs {
     my ($self) = @_;
 
-    my $root  = $self->config->root;
-    my $pinto = Pinto->new(root => $root);
+    my $pinto = Pinto->new(root => $self->config->root);
 
     $pinto->repo->vcs->initialize;
 
@@ -155,14 +153,14 @@ sub _create_vcs {
 #------------------------------------------------------------------------------
 
 sub _create_stack {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    my $root  = $self->config->root;
-    my $repo  = Pinto->new(root => $root)->repo;
-    my $stack = $repo->create_stack(name => 'master', is_default  => 1);
+    my $is_default = $args{nodefault} ? 0 : 1;
+    my $pinto      = Pinto->new(root => $self->config->root);
 
-    $stack->set_property(description => 'The master stack');
-    $stack->close(message => 'Initial commit', orphan => 1);
+    $pinto->run( New => (stack       => 'master',
+                         default     => $is_default,
+                         description => 'The master stack') );
 
     return;
 }

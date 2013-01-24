@@ -5,9 +5,10 @@ package Pinto::VCS;
 use Moose;
 
 use Git::Raw;
-use File::Touch ();
+use Path::Class;
 
 use Pinto::Types qw(Dir);
+use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -50,20 +51,23 @@ sub initialize {
     $vcs_dir->mkpath;
 
     Git::Raw::Repository->init($vcs_dir, 0);
+    # TODO: make root commit?
 
     return $self;
 }
 
 #-------------------------------------------------------------------------------
 
-sub branch {
-    my ($self, $from, $to) = @_;
+sub fork_branch {
+    my ($self, %args) = @_;
 
-    my $target = $self->git->lookup($from)
-        or throw "Target $from does not exist in version control";
+    my $from = $args{from};
+    my $to   = $args{to};
 
-    $self->git->checkout($target);
-    $self->git->branch($to, $self->repo->head);
+    my $branch_ref = Git::Raw::Branch->lookup($self->git, $from, 1)
+        or throw "No branch named $from in vcs";
+
+    $self->git->branch($to, $branch_ref->target);
 
     return $self;
 }
@@ -71,22 +75,26 @@ sub branch {
 #-------------------------------------------------------------------------------
 
 sub checkout {
-    my ($self, $branch_name) = @_;
+    my ($self, %args) = @_;
 
-    my $branch = Git::Raw::Branch->lookup($self->git, $branch_name, 1);
-    $self->git->checkout($branch, {});
+    my $branch = $args{branch};
+    my $orphan = $args{orphan};
 
-    return $self;
-}
+    if ($orphan) {
+        # HACK: Trick git into having an orphan branch.  It is not
+        # clear how to do this properly via the libgit2 API.
+        my $fh = $self->vcs_dir->subdir('.git')->file('HEAD')->openw;
+        print { $fh } "ref: refs/heads/$branch\n";
+        $self->git->index->clear; # ??
+        $self->git->index->write; # ??
+        return $self;
+    }
 
-#-------------------------------------------------------------------------------
+    my $branch_ref = Git::Raw::Branch->lookup($self->git, $branch, 1);
+    my $opts  = { checkout_strategy => {force => 1} };
 
-sub touch {
-    my ($self, $file) = @_;
-
-    # TODO: mksubdirs if needed
-    my $path = $self->config->vcs_dir->file($file);
-    File::Touch::touch( $path->stringify ) or die $!;
+    $self->git->checkout($branch_ref->target, $opts);
+    $self->git->head($branch_ref);
 
     return $self;
 }
@@ -100,10 +108,15 @@ sub log {
 #-------------------------------------------------------------------------------
 
 sub add {
-    my ($self, $file) = @_;
+    my ($self, %args) = @_;
 
-    # TODO: mksubdirs if needed
-    my $index = $self->git-> index;
+    my $file = $args{file};
+    $file    = file($file) if not itis($file, 'Path::Class');
+
+    my $dir = $self->vcs_dir->subdir($file->parent);
+    $dir->mkpath unless -e $dir;
+
+    my $index = $self->git->index;
     $index->add($file);
     $index->write;
 
@@ -119,10 +132,12 @@ sub commit {
     my $message = $args{message};
     my $orphan  = $args{orphan};
 
+    $message ||= 'Initial commit' if $orphan;
+
     my $tree_id = $self->git->index->write_tree;
     my $tree    = $self->git->lookup($tree_id);
     my $me      = Git::Raw::Signature->now($user, $user);
-    my $parents = $orphan ? [] : $self->git->head->target;
+    my $parents = $orphan ? [] : [$self->git->head->target];
     my $commit  = $self->git->commit($message, $me, $me, $parents, $tree);
 
     return $commit->id;

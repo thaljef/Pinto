@@ -11,7 +11,7 @@ use Pinto::Tester;
 #------------------------------------------------------------------------------
 # Setup a repository...
 
-my $t = Pinto::Tester->new_with_stack;
+my $t = Pinto::Tester->new;
 $t->pinto; # Just to kick lazy initializers
 
 #------------------------------------------------------------------------------

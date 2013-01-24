@@ -38,9 +38,6 @@ throws_ok { package_compare_ok( 'Dist-1/Foo-1-1', 'Dist-1/Foo-1-1' ) }
 throws_ok { package_compare_ok( 'Dist-1/Foo-1-0', 'Dist-1/Foo-1-0' ) }
   qr/Unable to determine ordering/;
 
-throws_ok { _make_pkg( 'Dist-1/Foo-1-0' ) <=> 1.2  }
-  qr/Can only compare Pinto::Schema::Result::Package objects/;
-
 #===============================================================================
 
 sub package_compare_ok {

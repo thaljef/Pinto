@@ -11,7 +11,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
 
-my $t = Pinto::Tester->new_with_stack;
+my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
 
@@ -68,9 +68,9 @@ my $t = Pinto::Tester->new_with_stack;
 {
 
   # Marking default stack...
-  my $init_stack = $t->pinto->repo->get_stack;
-  ok defined $init_stack, 'get_stack with no args returned a stack';
-  ok $init_stack->is_default, 'init stack is the default stack';
+  my $master_stack = $t->pinto->repo->get_stack;
+  ok defined $master_stack, 'get_stack with no args returned a stack';
+  ok $master_stack->is_default, 'master stack is the default stack';
 
   my $dev_stack = $t->pinto->repo->get_stack('dev');
   ok defined $dev_stack, 'got the dev stack';
@@ -80,10 +80,10 @@ my $t = Pinto::Tester->new_with_stack;
   ok $dev_stack->is_default, 'dev stack is now default';
 
   # Force reload from DB...
-  $init_stack->discard_changes;
-  ok !$init_stack->is_default, 'init stack is no longer default';
+  $master_stack->discard_changes;
+  ok !$master_stack->is_default, 'master stack is no longer default';
 
-  throws_ok { $init_stack->is_default(0) } qr/cannot directly set is_default/,
+  throws_ok { $master_stack->is_default(0) } qr/cannot directly set is_default/,
     'Setting is_default directly throws exception';
 }
 
@@ -98,13 +98,13 @@ my $t = Pinto::Tester->new_with_stack;
 
 
   # Copy to a stack that already exists
-  $t->run_throws_ok('Copy', {from_stack => 'init',
+  $t->run_throws_ok('Copy', {from_stack => 'master',
                              to_stack   => 'dev'},
                              qr/Stack dev already exists/);
 
 
    # Copy to a stack that already exists, but with different case
-  $t->run_throws_ok('Copy', {from_stack => 'init',
+  $t->run_throws_ok('Copy', {from_stack => 'master',
                              to_stack   => 'DeV'},
                              qr/Stack DeV already exists/);
 
@@ -115,17 +115,17 @@ my $t = Pinto::Tester->new_with_stack;
 
 
   # Copy to stack with invalid name
-  $t->run_throws_ok('Copy', {from_stack => 'init',
+  $t->run_throws_ok('Copy', {from_stack => 'master',
                               to_stack   => '$bogus@'},
                               qr/must be alphanumeric/);
 
   # Copy to stack with no name
-  $t->run_throws_ok('Copy', {from_stack => 'init',
+  $t->run_throws_ok('Copy', {from_stack => 'master',
                               to_stack   => ''},
                               qr/must be alphanumeric/);
 
   # Copy to stack with undef name
-  $t->run_throws_ok('Copy', {from_stack => 'init',
+  $t->run_throws_ok('Copy', {from_stack => 'master',
                               to_stack   => undef},
                               qr/must be alphanumeric/);
 }

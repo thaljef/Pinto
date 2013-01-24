@@ -47,11 +47,12 @@ has description => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->create_stack(name => $self->stack);
-    $stack->set_property(description => $self->description) if $self->description;
+    my %attrs = (name => $self->stack, description => $self->description);
+    my $stack = $self->repo->create_stack(%attrs)->open(orphan => 1);
+
     $stack->mark_as_default if $self->default;
 
-    $stack->close(message => 'Initial commit', orphan => 1);
+    $stack->close(orphan => 1);
 
     return $self->result->changed;
 }

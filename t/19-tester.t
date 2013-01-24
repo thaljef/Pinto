@@ -34,18 +34,18 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 #-------------------------------------------------------------------------------
 
 {
-  my $t = Pinto::Tester->new_with_stack;
+  my $t = Pinto::Tester->new;
 
   $t->populate('AUTHOR/FooAndBar-1.2=Foo~1.2,Bar~0.0');
 
   # Without .tar.gz extension
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo~1.2/init');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo~1.2/master');
 
   # With .tar.gz extension
-  $t->registration_ok('AUTHOR/FooAndBar-1.2.tar.gz/Foo~1.2/init');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2.tar.gz/Foo~1.2/master');
 
   # With explicit stack
-  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar~0.0/init');
+  $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar~0.0/master');
 
   # Without explicit stack
   $t->registration_ok('AUTHOR/FooAndBar-1.2/Bar~0.0');

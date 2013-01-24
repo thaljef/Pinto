@@ -314,10 +314,15 @@ sub get_package {
     my $stk_name = $args{stack};
 
     if ($stk_name) {
-        my $kommit = $self->get_stack($stk_name)->head;
-        my $where  = { 'package.name' => $pkg_name, kommit => $kommit->id };
-        my $registration = $self->db->select_registration($where);
-        return $registration ? $registration->package : ();
+        my $stack = $self->get_stack($stk_name);
+        my $entry = $stack->lookup(package => $pkg_name) or return (); 
+
+        my $where = { 'me.name'              => $pkg_name, 
+                      'distribution.author'  => $entry->author,
+                      'distribution.archive' => $entry->archive };
+
+        my @pkgs  = $self->db->select_packages($where)->all;
+        return @pkgs ? $pkgs[0] : ();
     }
     else {
         my $where  = { name => $pkg_name };
@@ -565,16 +570,14 @@ sub find_or_pull {
 sub _find_or_pull_by_package_spec {
     my ($self, $pspec, $stack) = @_;
 
-    $DB::single = 1;
     $self->info("Looking for package $pspec");
     my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
 
-
-    my $latest_in_stack = $stack->registration(package => $pspec);
+    my $latest_in_stack = $stack->registry->lookup(package => $pspec);
     if (defined $latest_in_stack && $latest_in_stack->package->version >= $pkg_ver) {
         my $got_dist = $latest_in_stack->package->distribution;
         $self->debug( sub {"Stack $stack already has package $pspec or newer as $latest_in_stack"} );
-        return ($got_dist, 0);
+        return $got_dist, 0;
     }
 
 
@@ -582,7 +585,7 @@ sub _find_or_pull_by_package_spec {
     if (defined $latest_in_repo && ($latest_in_repo->version >= $pkg_ver)) {
         my $got_dist = $latest_in_repo->distribution;
         $self->debug( sub {"Repository already has package $pspec or newer as $latest_in_repo"} );
-        return ($got_dist, 0);
+        return $got_dist;
     }
 
     my $dist_url = $self->locate( package => $pspec->name,
@@ -596,13 +599,13 @@ sub _find_or_pull_by_package_spec {
 
     if ( Pinto::Util::isa_perl($dist_url) ) {
         $self->debug("Distribution $dist_url is a perl. Skipping it");
-        return (undef, 0);
+        return;
     }
 
     $self->notice("Pulling distribution $dist_url");
     my $pulled_dist = $self->pull(url => $dist_url);
 
-    return ($pulled_dist, 1);
+    return $pulled_dist;
 }
 
 #------------------------------------------------------------------------------
@@ -616,7 +619,7 @@ sub _find_or_pull_by_distribution_spec {
 
     if ($got_dist) {
         $self->info("Already have distribution $dspec");
-        return ($got_dist, 0);
+        return $got_dist;
     }
 
     my $dist_url = $self->locate(distribution => $dspec->path)
@@ -626,13 +629,13 @@ sub _find_or_pull_by_distribution_spec {
 
     if ( Pinto::Util::isa_perl($dist_url) ) {
         $self->debug("Distribution $dist_url is a perl. Skipping it");
-        return (undef, 0);
+        return;
     }
 
     $self->notice("Pulling distribution $dist_url");
     my $pulled_dist = $self->pull(url => $dist_url);
 
-    return ($pulled_dist, 1);
+    return $pulled_dist;
 }
 
 #------------------------------------------------------------------------------
@@ -645,18 +648,16 @@ sub pull_prerequisites {
 
     my @prereq_queue = $dist->prerequisite_specs;
     my %visited = ($dist->path => 1);
-    my @pulled;
     my %seen;
 
   PREREQ:
     while (my $prereq = shift @prereq_queue) {
 
-        my ($required_dist, $did_pull) = $self->find_or_pull(target => $prereq, stack => $stack);
+        my $required_dist = $self->find_or_pull(target => $prereq, stack => $stack);
         next PREREQ if not $required_dist;
 
-        my $did_register = $required_dist->register(stack => $stack);
-
-        push @pulled, $required_dist if $did_pull || $did_register;
+        $DB::single = 1;
+        $stack->register(distribution => $required_dist);
 
         if ( $visited{$required_dist->path} ) {
             # We don't need to recurse into prereqs more than once
@@ -690,7 +691,7 @@ sub pull_prerequisites {
         $visited{$required_dist->path} = 1;
     }
 
-    return @pulled;
+    return $self;
 }
 
 #-------------------------------------------------------------------------------

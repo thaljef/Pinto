@@ -61,14 +61,14 @@ has description => (
 sub execute {
     my ($self) = @_;
 
-    my $orig = $self->repo->get_stack($self->from_stack);
-    my $copy = $self->repo->copy_stack(from => $orig, to => $self->to_stack);
-
-    my $description = $self->description || "Copy of stack $orig.";
-    $copy->set_property(description => $description);
+    my %changes = (name => $self->to_stack, description => $self->description);
+    my $orig    = $self->repo->get_stack($self->from_stack);
+    my $copy    = $orig->copy(%changes)->open;
 
     $copy->mark_as_default if $self->default;
     $copy->lock if $self->lock;
+
+    #$copy->write_files;
 
     return $self->result->changed;
 }

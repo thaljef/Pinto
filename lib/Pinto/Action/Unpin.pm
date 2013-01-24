@@ -63,7 +63,7 @@ sub _unpin {
 
     $self->notice("Unpinning distribution $dist from stack $stack");
 
-    $self->result->changed if $dist->unpin(stack => $stack);
+    $stack->unpin(distribution => $dist);
 
     return;
 }

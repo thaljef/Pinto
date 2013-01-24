@@ -238,130 +238,13 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-sub register {
-    my ($self, %args) = @_;
-
-    my $stack  = $args{stack};
-    my $pin    = $args{pin};
-    my $kommit = $stack->head;
-    my $did_register = 0;
-    my $errors       = 0;
-
-    # TODO: This process makes a of trips to the database.  You could
-    # optimize this by fetching all the incumbents at once, checking
-    # for pins, and then bulk-insert the new registrations.
-    
-    for my $pkg ($self->packages) {
-
-      my $incumbent = $stack->registration(package => $pkg);
-
-      if (not defined $incumbent) {
-          $self->debug(sub {"Registering $pkg on stack $stack"} );
-          $pkg->register(stack => $stack, pin => $pin);
-          $did_register++;
-          next;
-      }
-
-      my $incumbent_pkg = $incumbent->package;
-
-      if ( $incumbent_pkg == $pkg ) {
-        $self->debug( sub {"Package $pkg is already on stack $stack"} );
-        $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
-        next;
-      }
-
-
-      if ( $incumbent->is_pinned ) {
-        my $pkg_name = $pkg->name;
-        $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
-        $errors++;
-        next;
-      }
-
-      my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
-                                                         : ('notice',  'Upgrading');
-
-      $incumbent->delete;
-      $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
-      $pkg->register(stack => $stack, pin => $pin);
-      $did_register++;
-    }
-
-    throw "Unable to register distribution $self on stack $stack" if $errors;
-
-    return $did_register;
-}
-
-#------------------------------------------------------------------------------
-
-sub unregister {
-  my ($self, %args) = @_;
-
-  my $stack  = $args{stack};
-  my $force  = $args{force};
-  my $kommit = $stack->head;
-  my $did_unregister = 0;
-  my $conflicts      = 0;
-
-  my $rs = $self->registrations( {kommit => $kommit->id} );
-  for my $reg ($rs->all) {
-
-    if ($reg->is_pinned and not $force ) {
-      my $pkg = $reg->package;
-      $self->warning("Cannot unregister package $pkg because it is pinned to stack $stack");
-      $conflicts++;
-      next;
-    }
-
-    $did_unregister++;
-  }
-
-  throw "Unable to unregister distribution $self on stack $stack" if $conflicts;
-
-  $rs->delete;
-
-  return $did_unregister;
-}
-
-#------------------------------------------------------------------------------
-
-sub pin {
-    my ($self, %args) = @_;
-
-    my $stack   = $args{stack};
-    my $kommit  = $stack->head;
-
-    my $rs = $self->registrations( {kommit => $kommit->id, is_pinned => 0} );
-    throw "Distribution $self is not on stack $stack or is already pinned" unless $rs->count;
-    $rs->update({is_pinned => 1});
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub unpin {
-    my ($self, %args) = @_;
-
-    my $stack     = $args{stack};
-    my $kommit    = $stack->head;
- 
-    my $rs = $self->registrations( {kommit => $kommit->id, is_pinned => 1} );
-    throw "Distribution $self is not on stack $stack or is not pinned" unless $rs->count;
-    $rs->update({is_pinned => 0});
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 has distname_info => (
     isa      => 'CPAN::DistnameInfo',
     init_arg => undef,
     handles  => { name     => 'dist',
                   vname    => 'distvname',
                   version  => 'version',
-                  maturity => 'maturity' },
+                  maturity => 'maturity'},
     default  => sub { CPAN::DistnameInfo->new( $_[0]->path ) },
     lazy     => 1,
 );
@@ -440,21 +323,6 @@ sub package {
 
 #------------------------------------------------------------------------------
 
-sub registered_stacks {
-    my ($self) = @_;
-
-    my %stacks;
-
-    for my $reg ($self->registrations) {
-      # TODO: maybe use 'DISTICT'
-      $stacks{$reg->stack} = $reg->stack;
-    }
-
-    return values %stacks;
-}
-
-#------------------------------------------------------------------------------
-
 sub package_count {
     my ($self) = @_;
 
@@ -524,7 +392,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%A/%f', # AUTHOR/Dist-Name-1.0.tar.gz
+    return '%h', # AUTHOR/Dist-Name-1.0.tar.gz
 }
 
 #------------------------------------------------------------------------------

@@ -75,20 +75,6 @@ has tb => (
    default  => sub { __PACKAGE__->builder() },
 );
 
-#------------------------------------------------------------------------------
-
-sub new_with_stack {
-    my ($class, @args) = @_;
-
-    # Arguments could be either hash or hash reference
-    my $args = ($args[0] && ref $args[0] eq 'HASH') ? $args[0] : {@args};
-
-    # Set the initial stack if not given one
-    $args->{init_args} ||= {};
-    $args->{init_args}->{stack} = 'init';
-
-    return $class->new($args);
-}
 
 #------------------------------------------------------------------------------
 # This force the repository to be constructed immediately.  Just
@@ -102,16 +88,15 @@ sub BUILD { $_[0]->pinto }
 sub _build_pinto {
     my ($self) = @_;
 
-    my %defaults     = ( root    => $self->root() );
-    my %log_defaults = ( log_handler => Test::Log::Dispatch->new(),
-                         verbose     => 3, );
+    my %defaults     = ( root        => $self->root );
 
+    my %log_defaults = ( verbose     => 3,
+                         log_handler => Test::Log::Dispatch->new );
 
     my $initializer = Pinto::Initializer->new(%defaults, %log_defaults);
     $initializer->init( $self->init_args );
 
-    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args);
-    return $pinto;
+    return Pinto->new(%defaults, %log_defaults, $self->pinto_args);
 }
 
 #------------------------------------------------------------------------------
@@ -188,34 +173,27 @@ sub registration_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $kommit     = $self->pinto->repo->get_stack($stack_name)->head;
 
-    my $where = { kommit => $kommit->id, 'package.name' => $pkg_name };
-    my $attrs = { prefetch => {package => 'distribution' }};
-    my $reg = $self->pinto->repo->db->select_registration($where, $attrs);
+    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $reg   = $stack->registry->lookup(package => $pkg_name);
 
     return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
         if not $reg;
 
 
-    # Test package object...
-    my $pkg = $reg->package;
-    $self->tb->is_eq($pkg->name,    $pkg_name, "Package has correct name");
-    $self->tb->is_eq($pkg->version, $pkg_ver,  "Package has correct version");
+    $self->tb->is_eq($reg->name,         $pkg_name,  "Registry has correct package");
+    $self->tb->is_eq($reg->version,      $pkg_ver,   "Registry has correct version");
+    $self->tb->is_eq($reg->distribution, $dist_path, "Registry has correct distribution");
 
-    # Test distribution object...
-    my $dist = $reg->distribution;
-    $self->tb->is_eq($dist->path,  $dist_path, "Distribution has correct dist path");
+    $self->tb->ok($reg->is_pinned,  "Registration $reg should be pinned")     if $is_pinned;
+    $self->tb->ok(!$reg->is_pinned, "Registration $reg should not be pinned") if not $is_pinned;
 
+    # TODO: make these work on non-unix platforms too
     # Archive should be reachable through stack symlink (e.g. $stack/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
-    $self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
+    #$self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
 
     # Archive should be reachable through gobal authors dir (e.g. .pinto/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
-    $self->path_exists_ok( [ qw(.pinto authors id), $dist->native_path ] );
-
-    # Test pins...
-    $self->tb->ok($reg->is_pinned,  "Registration $reg should be pinned") if $is_pinned;
-    $self->tb->ok(!$reg->is_pinned, "Registration $reg should not be pinned") if not $is_pinned;
+    #$self->path_exists_ok( [ qw(.pinto authors id), $dist->native_path ] );
 
     # Test checksums...
     $self->path_exists_ok( [qw(.pinto authors id), $author_dir, 'CHECKSUMS'] );
@@ -234,10 +212,9 @@ sub registration_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $kommit    = $self->pinto->repo->get_stack($stack_name)->head;
 
-    my $where = {kommit => $kommit->id, 'package.name' => $pkg_name, 'distribution.author' => $author, 'distribution.archive' => $dist_archive};
-    my $reg = $self->pinto->repo->db->select_registration($where);
+    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $reg   = $stack->registry->lookup(package => $pkg_name);
 
     return $self->tb->ok(1, "Registration $reg_spec should not exist")
         if not $reg;
@@ -401,7 +378,7 @@ sub clear_cache {
 sub stack_url {
     my ($self, $stack_name) = @_;
 
-    $stack_name ||= 'init';
+    $stack_name ||= 'master';
 
     return URI->new('file://' . $self->root->resolve->absolute . "/$stack_name");
 }

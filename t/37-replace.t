@@ -11,16 +11,16 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
-  my $t = Pinto::Tester->new_with_stack;
+  my $t = Pinto::Tester->new;
 
   # archive_1 contains PkgA~1 and PkgB~1
   my $archive_1 =  make_dist_archive('Dist-1=PkgA~1,PkgB~1,PkgC~1');
 
-  # Put archive_1 on the init stack
+  # Put archive_1 on the master stack
   $t->run_ok(Add => {archives => $archive_1, author => 'JOHN', norecurse => 1});
 
-  # Copy the "init" stack to "dev".  Both now have the same PkgA, PkgB and PkgC from archive_1
-  $t->run_ok(Copy => {from_stack => 'init', to_stack => 'dev'});
+  # Copy the "master" stack to "dev".  Both now have the same PkgA, PkgB and PkgC from archive_1
+  $t->run_ok(Copy => {from_stack => 'master', to_stack => 'dev'});
 
   # TODO: should we allow replacing a pinned dist?
   # $t->run_ok(Pin => {stack => 'dev', targets => ['JOHN/Dist-1.tar.gz']});
@@ -40,10 +40,10 @@ use Pinto::Tester::Util qw(make_dist_archive);
   # Now replace archive_1 with archive_hotfixed
   $t->run_ok(Replace => {target => 'JOHN/Dist-1.tar.gz', archive => $archive_hotfixed, author => 'JOHN'});
 
-  # 'init' stack should now have hotfixed versions of PkgA and PkgB, plus PkgD
-  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgA~1/init');
-  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgB~1/init');
-  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgD~1/init');
+  # 'master' stack should now have hotfixed versions of PkgA and PkgB, plus PkgD
+  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgA~1/master');
+  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgB~1/master');
+  $t->registration_ok('JOHN/Dist-Hotfix-1/PkgD~1/master');
 
   # 'dev' stack should also have the hotfixed versions of PkgA and PkgB, plus PkgD
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgA~1/dev');
@@ -51,7 +51,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
   $t->registration_ok('JOHN/Dist-Hotfix-1/PkgD~1/dev');
 
   # PkgC should be gone from both stacks because it wasn't in the hotfixed archive
-  $t->registration_not_ok('JOHN/Dist-1/PkgC~1/init');
+  $t->registration_not_ok('JOHN/Dist-1/PkgC~1/master');
   $t->registration_not_ok('JOHN/Dist-1/PkgC~1/dev');
 
   # but 'qa' stack should still point to the other versions of PkgA and PkgB

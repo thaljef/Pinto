@@ -12,18 +12,18 @@ use Pinto::Tester;
 
 {
 
-  my $t = Pinto::Tester->new_with_stack;
+  my $t = Pinto::Tester->new;
 
   # Add 2 versions of a dist;
   $t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1'); # Rev 1
   $t->populate('AUTHOR/Dist-2 = PkgA~2, PkgB~2'); # Rev 2
 
-  # Copy the 'init' stack to 'dev', and make it the default
-  $t->run_ok(Copy => {from_stack => 'init', to_stack => 'dev', default => 1});
+  # Copy the 'master' stack to 'dev', and make it the default
+  $t->run_ok(Copy => {from_stack => 'master', to_stack => 'dev', default => 1});
   $t->head_revision_number_is(2, 'dev');
 
-  # Now blow away the init stack.
-  $t->run_ok(Kill => {stack => 'init'});
+  # Now blow away the master stack.
+  $t->run_ok(Kill => {stack => 'master'});
 
   # Newer packages should be on the 'dev' stack 
   $t->registration_ok( 'AUTHOR/Dist-2/PkgA~2/dev' );
