@@ -29,15 +29,15 @@ my $iters   = $opt->iterations;
 
 #-----------------------------------------------------------------------------
 
-Pinto::Initializer->new(root => "$root")->init(stack => 'master') unless -e $root;
-my $pinto = Pinto->new(root => "$root");
+{
+	Pinto::Initializer->new(root => "$root")->init(stack => 'master') unless -e $root;
+	my $pinto = Pinto->new(root => "$root");
 
-#-----------------------------------------------------------------------------
-
-for my $target (@targets) {
-	my $spec = Pinto::DistributionSpec->new($target);
-	next if $pinto->repo->get_distribution(spec => $spec);
-	$pinto->run(Pull => (targets => $target, message => "pulled $target"));
+	for my $target (@targets) {
+		my $spec = Pinto::DistributionSpec->new($target);
+		next if $pinto->repo->get_distribution(spec => $spec);
+		$pinto->run(Pull => (targets => $target, message => "pulled $target"));
+	}
 }
 
 #-----------------------------------------------------------------------------
@@ -48,11 +48,11 @@ for my $i (1..$iters) {
 	DB::enable_profile() if $i == $iters && defined $Devel::NYTProf::VERSION;
 
 	my $start = time;
-	my $pinto2 = Pinto->new(root => "$root");
-	$pinto2->run(Pin     => (targets => \@targets, message => 'pin'))     if $ops{pin};
-	$pinto2->run(Unpin   => (targets => \@targets, message => 'unpin'))   if $ops{unpin};
-	$pinto2->run(Pop     => (targets => \@targets, message => 'pop'))     if $ops{pop};
-	$pinto2->run(Reindex => (targets => \@targets, message => 'reindex')) if $ops{reindex};
+	my $pinto = Pinto->new(root => "$root");
+	$pinto->run(Pin     => (targets => \@targets, message => 'pin'))     if $ops{pin};
+	$pinto->run(Unpin   => (targets => \@targets, message => 'unpin'))   if $ops{unpin};
+	$pinto->run(Pop     => (targets => \@targets, message => 'pop'))     if $ops{pop};
+	$pinto->run(Reindex => (targets => \@targets, message => 'reindex')) if $ops{reindex};
 	my $elapsed = time - $start;
 
 	print "$elapsed seconds\n";
