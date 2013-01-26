@@ -28,8 +28,9 @@ has stack => (
 
 
 has pinned => (
-    is     => 'ro',
-    isa    => Bool,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
 
 
@@ -73,11 +74,14 @@ sub execute {
     my $dist    = $self->distributions;
     my $dist_rx = $dist ? qr/$dist/i : undef;
 
+    my $pinned = $self->pinned;
+
     my $stack = $self->repo->get_stack($self->stack);
     for my $entry ( @{ $stack->registry->entries } ) {
         next if $auth_rx  && $entry->author       !~ $auth_rx;
         next if $pkg_rx   && $entry->package      !~ $pkg_rx;
         next if $dist_rx  && $entry->distribution !~ $dist_rx;
+        next if $pinned   && not $entry->is_pinned; 
         $self->say( $entry );
     }
 
