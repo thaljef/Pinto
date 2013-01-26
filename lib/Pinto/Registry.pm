@@ -9,10 +9,6 @@ use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
 use Pinto::RegistryEntry;
 
-use PerlIO::gzip;
-
-use overload ( '""' => 'to_string' );
-
 #------------------------------------------------------------------------
 
 # VERSION
@@ -216,8 +212,13 @@ sub register_package {
   my $pkg = $args{package};
   my $pin = $args{pin} || 0;
 
-  my %struct = $pkg->as_struct;
-  my $entry = Pinto::RegistryEntry->new(%struct, is_pinned => $pin);
+  my %struct = ( package   => $pkg->name,
+                 version   => $pkg->version,
+                 author    => $pkg->distribution->author,
+                 archive   => $pkg->distribution->archive,
+                 is_pinned => $pin );
+
+  my $entry = Pinto::RegistryEntry->new(%struct);
 
   $self->add(entry => $entry);
 
@@ -317,21 +318,13 @@ sub entry_count {
 sub write {
   my ($self) = @_;
 
-  my $format = "%-24p %12v %-48h %i\n";
+  my $format = "%-32p  %12v  %A/%f  %i\n";
 
   my $fh = $self->file->openw;
   print { $fh } $_->to_string($format) for @{ $self->entries };
   close $fh;
 
   return $self;
-}
-
-#------------------------------------------------------------------------
-
-sub to_string {
-  my ($self) = @_;
-
-  return join "\n", @{ $self->entries };
 }
 
 #------------------------------------------------------------------------

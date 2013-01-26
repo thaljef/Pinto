@@ -9,7 +9,7 @@ use MooseX::Types::Moose qw(Str Bool Int);
 use String::Format;
 
 use Pinto::Types qw(Vers);
-use Pinto::Util qw(itis parse_dist_path);
+use Pinto::Util qw(itis author_dir);
 use Pinto::Exception qw(throw);
 
 use overload ( '""' => 'to_string' );
@@ -19,13 +19,6 @@ use overload ( '""' => 'to_string' );
 # VERSION
 
 #------------------------------------------------------------------------
-
-has distribution => (
-   is         => 'ro',
-   isa        => Str,
-   alias      => 'path',
-   required   => 1,
-);
 
 
 has package => (
@@ -44,26 +37,31 @@ has version => (
 );
 
 
-has is_pinned => (
-    is        => 'rw',
-    isa       => Bool,
-    default   => 0,
-);
-
-
 has author => (
     is        => 'rw',
     isa       => Str,
-    default   => sub { ( parse_dist_path($_[0]->path) )[0] },
-    lazy      => 1,
+    required  => 1,
 );
 
 
 has archive => (
     is        => 'rw',
     isa       => Str,
-    default   => sub { ( parse_dist_path($_[0]->path) )[1] },
-    lazy      => 1,
+    required  => 1,
+);
+
+
+has is_pinned => (
+    is        => 'rw',
+    isa       => Bool,
+    default   => 0,
+);
+
+has distribution => (
+   is         => 'ro',
+   isa        => Str,
+   alias      => 'path',
+   default    =>  sub { join '/', author_dir($_[0]->author), $_[0]->archive },
 );
 
 #------------------------------------------------------------------------------
@@ -84,13 +82,14 @@ sub BUILDARGS_from_string {
   my ($class, $str) = @_;
 
     chomp $str;
-    my ($package, $version, $path, $is_pinned, $mtime) = split /\s+/, $str;
+    my ($package, $version, $author_archive, $is_pinned) = split m/\s+/, $str;
+    my ($author, $archive) = split m|/|, $author_archive; 
 
-    return { name         => $package, 
+    return { package      => $package, 
              version      => $version, 
-             distribution => $path, 
-             is_pinned    => $is_pinned,
-             mtime        => $mtime };
+             author       => $author,
+             archive      => $archive, 
+             is_pinned    => $is_pinned };
 
 }
 
@@ -127,17 +126,19 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-         'p' => sub { $self->name               },
-         'v' => sub { $self->version            },
-         'h' => sub { $self->distribution       },
-         'i' => sub { $self->is_pinned          },
+         'A' => sub { $self->author         },
+         'p' => sub { $self->package        },
+         'v' => sub { $self->version        },
+         'h' => sub { $self->path           },
+         'f' => sub { $self->archive        },
+         'i' => sub { $self->is_pinned      },
     );
 
     # Some attributes are just undefined, usually because of
     # oddly named distributions and other old stuff on CPAN.
     no warnings 'uninitialized';  ## no critic qw(NoWarnings);
 
-    $format ||= $self->default_format();
+    $format ||= $self->default_format;
     return String::Format::stringf($format, %fspec);
 }
 
@@ -147,7 +148,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return "%-24p %12v %-48h %i";
+    return '%A/%f/%p~%v';
 }
 
 #-----------------------------------------------------------------------------

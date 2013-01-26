@@ -3,7 +3,7 @@
 package Pinto::Action::List;
 
 use Moose;
-use MooseX::Types::Moose qw(HashRef Str Bool);
+use MooseX::Types::Moose qw(HashRef Str Bool Undef);
 
 use Pinto::Types qw(Author StackName StackAll StackDefault StackObject);
 use Pinto::Util qw(is_stack_all);
@@ -22,7 +22,7 @@ extends qw( Pinto::Action );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackAll | StackDefault | StackObject,
+    isa       => StackName | StackDefault | StackObject,
     default   => undef,
 );
 
@@ -55,9 +55,7 @@ has distributions => (
 has format => (
     is        => 'ro',
     isa       => Str,
-    default   => "%m%s%y %-40p %12v  %A/%f",
-    predicate => 'has_format',
-    lazy      => 1,
+    default   => '%-32p  %12v  %A/%f  %i',
 );
 
 #------------------------------------------------------------------------------
@@ -77,12 +75,13 @@ sub execute {
     my $pinned = $self->pinned;
 
     my $stack = $self->repo->get_stack($self->stack);
+
     for my $entry ( @{ $stack->registry->entries } ) {
         next if $auth_rx  && $entry->author       !~ $auth_rx;
         next if $pkg_rx   && $entry->package      !~ $pkg_rx;
         next if $dist_rx  && $entry->distribution !~ $dist_rx;
         next if $pinned   && not $entry->is_pinned; 
-        $self->say( $entry );
+        $self->say($entry->to_string($self->format));
     }
 
     return $self->result;
