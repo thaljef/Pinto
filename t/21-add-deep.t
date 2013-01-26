@@ -68,14 +68,14 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
   $local->run_ok(Add => {author => 'ME', archives => $foo2});
   $local->run_ok(Add => {author => 'ME', archives => $foo1});
   
-  # Repository now contains both Foo~1 and Foo~2, but only the older Foo~1
-  # is actually on the stack (and it is pinned too)
+  # Repository now contains both Foo~1 and Foo~2, but only the 
+  # older Foo~1 is actually registered on the stack.
 
   $local->registration_ok('ME/Foo-1.tar.gz/Foo~1');
   $local->registration_not_ok('ME/Foo-2.tar.gz/Foo~2');
 
-  # When add Bar-1, we the stack should still have Foo~1, even though the
-  # newer Foo~2 is in the repository.  Bar only requires Foo~1.
+  # When we add Bar-1, the stack should still only have Foo~1, even though the
+  # newer Foo~2 is available in the repository.  Because Bar only requires Foo~1.
 
   my $bar1 = make_dist_archive('Bar-1 = Bar~1 & Foo~1');
   $local->run_ok(Add => {author => 'ME', archives => $bar1});

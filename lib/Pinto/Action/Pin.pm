@@ -43,12 +43,14 @@ has targets => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->open;
+    my $stack = $self->repo->get_stack($self->stack);
     $self->_pin($_, $stack) for $self->targets;
+
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
-    $stack->close(message => $message);
+    $stack->commit(message => $message);
+
     return $self->result->changed;
 }
 

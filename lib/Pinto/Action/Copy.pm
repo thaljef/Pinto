@@ -63,12 +63,10 @@ sub execute {
 
     my %changes = (name => $self->to_stack, description => $self->description);
     my $orig    = $self->repo->get_stack($self->from_stack);
-    my $copy    = $orig->copy(%changes)->open;
+    my $copy    = $self->repo->copy_stack(stack => $orig, %changes);
 
     $copy->mark_as_default if $self->default;
     $copy->lock if $self->lock;
-
-    #$copy->write_files;
 
     return $self->result->changed;
 }

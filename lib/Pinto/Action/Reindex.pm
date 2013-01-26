@@ -52,12 +52,14 @@ has pin => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->open;
+    my $stack = $self->repo->get_stack($self->stack);
     $self->_reindex($_, $stack) for $self->targets;
+
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
-    $stack->close(message => $message)->write_index;
+    $stack->commit(message => $message);
+    
     return $self->result->changed;
 }
 
@@ -69,9 +71,7 @@ sub _reindex {
     my $dist  = $self->repo->get_distribution(spec => $target);
     throw "Distribution $target is not in the repository" if not defined $dist;
 
-    my $did_register = $dist->register(stack => $stack, pin => $self->pin);
-
-    $self->result->changed if $did_register;
+    $stack->register(distribution => $dist, pin => $self->pin);
 
     return;
 }

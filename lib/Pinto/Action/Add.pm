@@ -93,7 +93,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack    = $self->repo->get_stack($self->stack)->open;
+    my $stack    = $self->repo->get_stack($self->stack);
     my @archives = $self->archives;
 
     while (my $archive = shift @archives) {
@@ -119,7 +119,8 @@ sub execute {
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
-    $stack->close(message => $message)->write_index;
+    $stack->commit(message => $message);
+
     return $self->result->changed;
 }
 

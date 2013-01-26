@@ -11,7 +11,7 @@ use Pinto::RegistryEntry;
 
 use PerlIO::gzip;
 
-use namespace::autoclean;
+use overload ( '""' => 'to_string' );
 
 #------------------------------------------------------------------------
 
@@ -25,6 +25,12 @@ has file => (
     required   => 1,
 );
 
+has repo => (
+    is         => 'ro',
+    isa        => 'Pinto::Repository',
+    weak_ref   => 1,
+    required   => 1,
+);
 
 has entries_by_distribution => (
     is        => 'ro',
@@ -161,37 +167,39 @@ sub register_distribution {
   my $pin   = $args{pin};
 
   my $errors = 0;
-    for my $pkg ($dist->packages) {
+    for my $new_pkg ($dist->packages) {
 
-      my $pkg_name  = $pkg->name;
-      my $incumbent = $self->lookup(package => $pkg_name);
+      my $pkg_name  = $new_pkg->name;
+      my $old_entry = $self->lookup(package => $pkg_name);
 
-      if (not defined $incumbent) {
-          $self->debug(sub {"Registering $pkg on stack"} );
-          $self->register_package(package => $pkg, pin => $pin);
+      if (not defined $old_entry) {
+          $self->debug(sub {"Registering $new_pkg on stack"} );
+          $self->register_package(package => $new_pkg, pin => $pin);
           next;
       }
 
+      my $old_pkg = $self->repo->get_package( name => $pkg_name,
+                                              path => $old_entry->distribution );
 
-      if ($pkg == $incumbent) {
-        $self->debug( sub {"Package $pkg is already on stack"} );
-        $incumbent->pin && $self->_set_has_changed(1) if $pin and not $incumbent->is_pinned;
+      if ($new_pkg == $old_pkg) {
+        $self->debug( sub {"Package $old_pkg is already on stack"} );
+        $old_entry->pin && $self->_set_has_changed(1) if $pin and not $old_entry->is_pinned;
         next;
       }
 
 
-      if ($incumbent->is_pinned) {
-        $self->error("Cannot add $pkg to stack because $pkg_name is pinned to $incumbent");
+      if ($old_entry->is_pinned) {
+        $self->error("Cannot add $new_pkg to stack because $pkg_name is pinned to $old_pkg");
         $errors++;
         next;
       }
 
-      my ($log_as, $direction) = ($pkg < $incumbent) ? ('warning', 'Downgrading')
-                                                     : ('notice',  'Upgrading');
+      my ($log_as, $direction) = ($new_pkg < $old_pkg) ? ('warning', 'Downgrading')
+                                                       : ('notice',  'Upgrading');
 
-      $self->delete(entry => $incumbent);
-      $self->$log_as("$direction package $incumbent to $pkg");
-      $self->register_package(package => $pkg, pin => $pin);
+      $self->delete(entry => $old_entry);
+      $self->$log_as("$direction package $old_pkg to $new_pkg");
+      $self->register_package(package => $new_pkg, pin => $pin);
     }
 
     throw "Unable to register distribution $dist on stack" if $errors;
@@ -218,18 +226,27 @@ sub register_package {
 
 #------------------------------------------------------------------------
 
-sub unregister_distributon {
+sub unregister {
+  my ($self, %args) = @_;
+
+  return $self->unregister_distribution(%args) if $args{distribution};
+  return $self->unregister_package(%args)      if $args{package};
+
+  throw "Don't know what to do with %args";
+
+}
+#------------------------------------------------------------------------
+
+sub unregister_distribution {
   my ($self, %args) = @_;
 
   my $dist  = $args{distribution};
   my $force = $args{force};
 
-  # for my $pkg ($dist->packages) {
-  #   my $pkg_name = $pkg->name;
-  # 
-  # }
-  # my $entry = delete $self->entries_by_distribution->{$dist} or throw "No dist";
-  # delete $self->entries_by_package->{$_} for {map $_->package} @{ $entry };
+  delete $self->entries_by_distribution->{ $dist->path }
+    or throw "Distribution $dist is not registered on this stack";
+
+  $self->unregister(package => $_) for $dist->packages;
 
   return $self;
 }
@@ -242,8 +259,8 @@ sub unregister_package {
   my $pkg   = $args{package};
   my $force = $args{force};
 
-  # my $entry = delete $self->entries_by_distribution->{$dist} or throw "No dist";
-  # delete $self->entries_by_package->{$_} for {map $_->package} @{ $entry };
+  delete $self->entries_by_package->{ $pkg->name }
+    or throw "Package $pkg is not registered on this stack";
 
   return $self;
 }
@@ -273,8 +290,8 @@ sub pin {
 sub unpin {
     my ($self, %args) = @_;
 
-    my $dist = $args{distribution};
-    my $entries = $self->entries_by_distribution->{$dist};
+    my $dist    = $args{distribution};
+    my $entries = $self->lookup(%args);
 
     throw "Distribution $dist is not registered on this stack" if not defined $entries;
 
@@ -300,13 +317,21 @@ sub entry_count {
 sub write {
   my ($self) = @_;
 
-  my $format = "%-24p %12v %-48h %i %t\n";
+  my $format = "%-24p %12v %-48h %i\n";
 
   my $fh = $self->file->openw;
   print { $fh } $_->to_string($format) for @{ $self->entries };
   close $fh;
 
   return $self;
+}
+
+#------------------------------------------------------------------------
+
+sub to_string {
+  my ($self) = @_;
+
+  return join "\n", @{ $self->entries };
 }
 
 #------------------------------------------------------------------------

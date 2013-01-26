@@ -150,8 +150,7 @@ with 'Pinto::Role::Schema::Result';
 use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
-use File::Copy ();
-use JSON qw(encode_json decode_json);
+use File::Copy::Recursive ();
 
 use Pinto::Util qw(itis mksymlink current_time);
 use Pinto::Types qw(Dir File);
@@ -169,7 +168,7 @@ has stack_dir => (
   is          => 'ro',
   isa         => Dir,
   lazy        => 1,
-  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name ) },
+  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name_canonical ) },
 );
 
 
@@ -189,11 +188,11 @@ has authors_dir => (
 );
 
 
-has meta_dir => (
+has work_dir => (
   is          => 'ro',
   isa         => Dir,
   lazy        => 1,
-  default     => sub { $_[0]->stack_dir->subdir( 'meta' ) },
+  default     => sub { $_[0]->stack_dir->subdir( 'work' ) },
 );
 
 
@@ -209,7 +208,7 @@ has registry_file => (
   is          => 'ro',
   isa         => File,
   lazy        => 1,
-  default     => sub { $_[0]->meta_dir->file('stack.registry.txt') },
+  default     => sub { $_[0]->work_dir->file('stack.registry.txt') },
 );
 
 
@@ -219,7 +218,8 @@ has registry => (
   lazy     => 1,
   handles  => [ qw(lookup register unregister pin unpin) ],
   default  => sub { Pinto::Registry->new( file   => $_[0]->registry_file,
-                                          logger => $_[0]->logger ) },
+                                          logger => $_[0]->logger,
+                                          repo   => $_[0]->repo ) },
 );
 
 #------------------------------------------------------------------------------
@@ -249,44 +249,17 @@ sub BUILD {
   $stack_modules_dir->mkpath;
 
   my $stack_authors_dir  = $self->authors_dir;
-  my $shared_authors_dir = $self->config->authors_dir->relative($stack_dir);
+  my $shared_authors_dir = $self->repo->config->authors_dir->relative($stack_dir);
   mksymlink($stack_authors_dir => $shared_authors_dir);
 
   my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
-  my $shared_modlist_file = $self->config->modlist_file->relative($stack_modules_dir);
+  my $shared_modlist_file = $self->repo->config->modlist_file->relative($stack_modules_dir);
   mksymlink($stack_modlist_file => $shared_modlist_file);
 
-  my $stack_meta_dir = $self->meta_dir;
-  $stack_meta_dir->mkpath;
+  my $stack_work_dir = $self->work_dir;
+  $stack_work_dir->mkpath;
 
   return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub open {
-    my ($self, %opts) = @_;
-
-    $self->check_lock;
-    $self->repo->vcs->checkout(branch => $self->name, %opts);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub close {
-    my ($self, %args) = @_;
-
-    $self->write_index;
-    $self->write_registry;
-    $self->copy_registry_to_vcs;
-
-    my $commit_id = $self->repo->vcs->commit( %args );
-
-    $self->update( {last_commit_id => $commit_id} );
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -294,20 +267,46 @@ sub close {
 sub copy {
     my ($self, %changes) = @_;
 
-    my $new_stack = $changes{name};
-    my $new_stack_canon = $changes{name_canonical} = lc $new_stack;
+    my $copy_name = $changes{name};
+    my $copy_stack_canon = $changes{name_canonical} = lc $copy_name;
 
-    throw "Stack $new_stack already exists"
-      if $self->result_source->resultset->find( {name_canonical => $new_stack_canon} );
+    $changes{description} ||= "Copy of stack $self"; 
+    $changes{is_default} = 0; # Never duplicate the default flag
 
-     $changes{description} ||= "Copy of stack $self"; 
-     $changes{is_default} = 0; # Never duplicate the default flag
+    my $orig_dir = $self->stack_dir;
+    throw "Directory $orig_dir does not exist" if not -e $orig_dir;
 
-     my $copy = $self->next::method(\%changes);
+    my $copy_dir = $self->repo->config->root_dir->subdir($copy_name);
+    throw "Directory $copy_dir already exists" if -e $copy_dir;
 
-     $self->repo->vcs->branch(from => $self->name, to => $copy->name);
+    $self->debug("Copying directory $orig_dir to $copy_dir");
+    File::Copy::Recursive::rcopy($self->stack_dir, $copy_dir)  or throw "Copy failed: $!";
 
-     return $copy->BUILD;
+    my $copy = $self->next::method(\%changes);
+
+    return $copy;
+}
+
+#------------------------------------------------------------------------------
+
+sub rename {
+    my ($self, %args) = @_;
+
+    my $new_name = $args{to};
+    my $new_name_canon = lc $new_name;
+
+    my $orig_dir = $self->stack_dir;
+    throw "Directory $orig_dir does not exist" if not -e $orig_dir;
+
+    my $new_dir = $self->repo->config->root_dir->subdir($new_name_canon);
+    throw "Directory $new_dir already exists" if -e $new_dir;
+
+    $self->debug("Renaming directory $orig_dir to $new_dir");
+    File::Copy::Recursive::rmove($orig_dir, $new_dir) or throw "Rename failed: $!";
+
+    $self->update( {name => $new_name, name_canonical => $new_name_canon} );
+
+    return $self
 }
 
 #------------------------------------------------------------------------------
@@ -315,30 +314,12 @@ sub copy {
 sub delete {
     my ($self) = @_;
 
-    $self->check_lock;
     $self->next::method;
-    $self->repo->vcs->delete_branch(branch => $self->name);
-    $self->stack_dir->rmtree or throw $!;
+
+    my $stack_dir = $self->stack_dir;
+    $stack_dir->rmtree or throw "Failed to remove $stack_dir: $!";
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub rename {
-    my ($self, $new_name) = @_;
-
-    my $new_name_canon = lc $new_name;
-
-    throw "Source and destination stacks are the same"
-      if $self->name_canonical eq $new_name_canon;
-
-    throw "Stack $new_name already exists"
-      if $self->result_source->resultset->find( {name_canonical => $new_name_canon} );
-
-      my $changes = {name => $new_name, name_canonical => $new_name_canon};
-
-    return $self->update($changes);
 }
 
 #------------------------------------------------------------------------------
@@ -470,13 +451,21 @@ sub write_registry {
 
 #------------------------------------------------------------------------------
 
-sub copy_registry_to_vcs {
+sub finalize {
     my ($self) = @_;
 
-    my $registry_file_basename = $self->registry_file->basename;
-    my $vcs_registry_file = $self->repo->config->vcs_dir->file($registry_file_basename);
-    File::Copy::copy($self->registry_file, $vcs_registry_file); # TODO: die!
-    $self->repo->vcs->add(file => $registry_file_basename);
+    $self->write_index;
+    $self->write_registry;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub commit {
+    my ($self, %args) = @_;
+
+    return $self->repo->commit(stack => $self, %args);
 }
 
 #------------------------------------------------------------------------------

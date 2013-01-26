@@ -298,30 +298,30 @@ Returns a L<Pinto:Schema::Result::Package> representing the latest
 version of the package with the given C<$pkg_name>.  If there is no
 such package with that name in the repository, returns nothing.
 
-=method get_package( name => $pkg_name, stack => $stk_name )
+=method get_package( name => $pkg_name, path => $dist_path )
 
 Returns the L<Pinto:Schema::Result::Package> with the given
-C<$pkg_name> that is on the stack with the given C<$stk_name>. If
-there is no such package on that stack, returns nothing.
+C<$pkg_name> that belongs to the distribution identified by 
+C<$dist_path>. If there is no such package in the repository, 
+returns nothing.
 
 =cut
 
 sub get_package {
     my ($self, %args) = @_;
 
-    my $pkg_name = $args{name};
-    my $pkg_vers = $args{version}; # ??
-    my $stk_name = $args{stack};
+    my $pkg_name  = $args{name}; # Required
+    my $dist_path = $args{path}; # Optional
 
-    if ($stk_name) {
-        my $stack = $self->get_stack($stk_name);
-        my $entry = $stack->lookup(package => $pkg_name) or return (); 
+    if ($dist_path) {
 
-        my $where = { 'me.name'              => $pkg_name, 
-                      'distribution.author'  => $entry->author,
-                      'distribution.archive' => $entry->archive };
+        my ($author, $archive) = Pinto::Util::parse_dist_path($dist_path);
 
-        my @pkgs  = $self->db->select_packages($where)->all;
+        my $where = { 'me.name'                        => $pkg_name, 
+                      'distribution.author_canonical'  => uc $author,
+                      'distribution.archive'           => $archive };
+
+        my @pkgs = $self->db->select_packages($where)->all;
         return @pkgs ? $pkgs[0] : ();
     }
     else {
@@ -355,27 +355,28 @@ sub get_distribution {
     my ($self, %args) = @_;
 
     my %where;
-    my %attrs = (key => 'author_canonical_archive_unique');
+    my %attrs;
 
     if (my $spec = $args{spec}) {
+        $attrs{key} = 'author_canonical_archive_unique';
         $where{author_canonical} = $spec->author_canonical;
         $where{archive}          = $spec->archive;
     }
     elsif (my $path = $args{path}) {
         my ($author, $archive)    = Pinto::Util::parse_dist_path($path);
+        $attrs{key} = 'author_canonical_archive_unique';
         $where{author_canonical}  = uc $author;
         $where{archive}           = $archive;
     }
-    elsif (my $sha256 = $args{sha256}){
-         $where{sha256} = $sha256;
+    elsif (my $sha256 = $args{sha256}) {
          $attrs{key} = 'sha256_unique';
+         $where{sha256} = $sha256;
     }
-    elsif (my $md5 = $args{md5}){
-         $where{md5} = $md5;
+    elsif (my $md5 = $args{md5}) {
          $attrs{key} = 'md5_unique';
+         $where{md5} = $md5;
     }
     else {
-        %attrs = ();
         %where = %args;
     }
 
@@ -393,18 +394,20 @@ sub get_distribution_by_spec {
     if ( itis($spec, 'Pinto::PackageSpec') ) {
         my $pkg_name = $spec->name;
         my $stack    = $args{stack} or throw "Must specify a stack";
-        my $pkg      = $self->get_package(name => $pkg_name, stack => $stack);
-        throw "Package $pkg_name is not on stack $stack" if not $pkg;
+        my $entry    = $stack->lookup(package => $pkg_name);
+        throw "Package $pkg_name is not on stack $stack" if not defined $entry;
+
+        my $dist_path = $entry->distribution;
+        my $pkg       = $self->get_package(name => $pkg_name, path => $dist_path);
+        throw "Package $pkg_name is on stack $stack but not in reposotiry" if not $pkg;
 
         return $pkg->distribution;
     }
 
 
     if ( itis($spec, 'Pinto::DistributionSpec') ) {
-        my $author  = $spec->author;
-        my $archive = $spec->archive;
         my $dist = $self->get_distribution(spec => $spec);
-        throw "Distribution $spec does not exist" if not $dist;
+        throw "Distribution $spec is not in the repository" if not $dist;
 
         return $dist;
     }
@@ -476,23 +479,7 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-sub delete {
-    my ($self, %args) = @_;
-
-    my $dist  = $args{dist};
-    my $force = $args{force};
-
-    throw "Cannot delete $dist because it has packages that are pinned"
-        if !$force && grep {$_->is_pinned} $dist->registrations;
-
-    $dist->delete;
-
-    my $basedir = $self->config->authors_id_dir;
-    my $path = $dist->native_path( $basedir );
-    $self->store->remove_archive( $path );
-
-    return $dist;
-}
+sub delete { }
 
 #------------------------------------------------------------------------------
 
@@ -557,7 +544,7 @@ sub find_or_pull {
         return $self->_find_or_pull_by_package_spec($target, $stack);
     }
     elsif ( itis($target, 'Pinto::DistributionSpec') ){
-        return $self->_find_or_pull_by_distribution_spec($target, $stack);
+        return $self->_find_or_pull_by_distribution_spec($target);
     }
     else {
         my $type = ref $target;
@@ -573,11 +560,11 @@ sub _find_or_pull_by_package_spec {
     $self->info("Looking for package $pspec");
     my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
 
-    my $latest_in_stack = $stack->registry->lookup(package => $pspec);
-    if (defined $latest_in_stack && $latest_in_stack->package->version >= $pkg_ver) {
-        my $got_dist = $latest_in_stack->package->distribution;
+    my $latest_in_stack = $stack->registry->lookup(package => $pkg_name);
+    if (defined $latest_in_stack && $latest_in_stack->version >= $pkg_ver) {
+        my $got_dist = $self->get_distribution(path => $latest_in_stack->path);
         $self->debug( sub {"Stack $stack already has package $pspec or newer as $latest_in_stack"} );
-        return $got_dist, 0;
+        return $got_dist;
     }
 
 
@@ -656,7 +643,6 @@ sub pull_prerequisites {
         my $required_dist = $self->find_or_pull(target => $prereq, stack => $stack);
         next PREREQ if not $required_dist;
 
-        $DB::single = 1;
         $stack->register(distribution => $required_dist);
 
         if ( $visited{$required_dist->path} ) {
@@ -696,19 +682,18 @@ sub pull_prerequisites {
 
 #-------------------------------------------------------------------------------
 
-=method create_stack(name => $stk_name)
-
-=cut
-
 sub create_stack {
     my ($self, %args) = @_;
 
-    Pinto::Util::validate_stack_name($args{name});
+    my $stk_name = $args{name};
 
-    throw "Stack $args{name} already exists"
-        if $self->get_stack($args{name}, nocroak => 1);
+    throw "Stack $stk_name already exists"
+      if $self->get_stack($stk_name, nocroak => 1);
 
-    my $stack = $self->db->schema->create_stack( \%args );
+    my $stack = $self->db->schema->create_stack(\%args);
+
+    $self->vcs->checkout_branch(name => $stack->name, as_orphan => 1);
+    $self->commit(stack => $stack, as_orphan => 1);
 
     return $stack;
 }
@@ -718,65 +703,69 @@ sub create_stack {
 sub copy_stack {
     my ($self, %args) = @_;
 
-    my $from_stack    = $args{from};
-    my $to_stack_name = $args{to};
+    my $copy_name  = $args{name};
+    my $stack      = delete $args{stack};
+    my $orig_name  = $stack->name;
 
-    my $changes  = {name => $to_stack_name};
-    my $copy     = $from_stack->copy( $changes );
+    throw "Stack $copy_name already exists"
+      if $self->get_stack($copy_name, nocroak => 1);
 
-    $self->create_stack_filesystem(stack => $copy);
-    $copy->write_index;
+    my $copy = $stack->copy(%args)->finalize;
+    $self->vcs->fork_branch(from => $orig_name, to => $copy_name);
 
     return $copy;
 }
 
+
 #-------------------------------------------------------------------------------
 
-sub delete_stack_filesystem {
+sub rename_stack {
+    my ($self, %args) = @_;
+
+    my $new_name = $args{to};
+    my $stack    = delete $args{stack};
+    my $old_name = $stack->name;
+
+    throw "Stack $new_name already exists"
+      if $self->get_stack($new_name, nocroak => 1);
+
+    $stack->check_lock;
+    $stack->rename(to => $new_name);
+    $self->vcs->rename_branch(from => $old_name, to => $new_name);
+
+    return $stack;
+}
+
+
+#-------------------------------------------------------------------------------
+
+
+sub delete_stack {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
-    throw "Stack $self is locked and cannot be deleted" if $stack->is_locked;
 
-    my $stack_dir = $self->root_dir->subdir($stack->name);
-    $self->debug("Removing stack directory $stack_dir");
+    $stack->check_lock;
+    $stack->delete;
+    $self->repo->vcs->delete_branch(branch => $stack->name);
 
-    $stack_dir->rmtree or throw "Failed to remove $stack_dir" if -e $stack_dir;
-
-    return $self;
+    return $stack;
 }
 
 #-------------------------------------------------------------------------------
 
-sub rename_stack_filesystem {
+sub commit {
     my ($self, %args) = @_;
 
-    my $from = $args{from};
-    my $to   = $args{to};
+    my $stack = $args{stack};
 
-    my $from_stack_dir = $self->root_dir->subdir($from);
-    throw "Directory $from_stack_dir does not exist" if not -e $from_stack_dir;
+    $stack->write_index;
+    $stack->write_registry;
 
-    my $to_stack_dir   = $self->root_dir->subdir($to);
-    throw "Directory $to_stack_dir already exists" if -e $to_stack_dir;
-
-    $self->debug("Renaming $from_stack_dir to $to_stack_dir");
-    move($from_stack_dir, $to_stack_dir) or throw "Rename failed: $!";
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub create_stack_vcs_branch {
-    my ($self, %args) = @_;
-
-    my $from = $args{from_stack}->name;
-    my $to   = $args{to_stack}->name;
-    my $vcs = $self->vcs;
-
-    $vcs->branch($from, $to);
-    $vcs->checkout($to);
+    my $reg_file = $stack->registry_file;
+    $self->vcs->checkout_branch(name => $stack->name_canonical) unless $args{as_orphan};
+    $self->vcs->add(file => $reg_file->basename, from => $reg_file);
+    $self->vcs->commit(%args);
 
     return $self;
 }

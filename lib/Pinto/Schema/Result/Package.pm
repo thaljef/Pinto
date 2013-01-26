@@ -154,8 +154,6 @@ use Pinto::PackageSpec;
 use overload ( '""'     => 'to_string',
                '<=>'    => 'numeric_compare',
                'cmp'    => 'string_compare',
-               '=='     => 'equals',
-               'eq'     => 'equals',
                fallback => undef );
 
 #------------------------------------------------------------------------------
@@ -321,23 +319,17 @@ sub default_format {
 
 #-------------------------------------------------------------------------------
 
-sub equals {
-    my ($pkg_a, $pkg_b) = @_;
-
-    return    ($pkg_a->name      eq   $pkg_b->name)
-           && ($pkg_a->version   ==   $pkg_b->version)
-           && ($pkg_a->path      eq   $pkg_b->path);
-}
-
-
-#-------------------------------------------------------------------------------
-
-
 sub numeric_compare {
     my ($pkg_a, $pkg_b) = @_;
 
+    my $class = __PACKAGE__;
+    throw "Can only compare $class objets"
+        unless itis($pkg_a, $class) && itis($pkg_b, $class);
+
     throw "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name ne $pkg_b->name;
+
+    return 0 if $pkg_a->id == $pkg_b->id;
 
     return    ($pkg_a->version <=> $pkg_b->version)
            || ($pkg_a->mtime   <=> $pkg_b->mtime)

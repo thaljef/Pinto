@@ -12,7 +12,7 @@ use Pinto::Types qw(Vers);
 use Pinto::Util qw(itis parse_dist_path);
 use Pinto::Exception qw(throw);
 
-use overload ( '""'     => 'to_string' );
+use overload ( '""' => 'to_string' );
 
 #------------------------------------------------------------------------
 
@@ -48,13 +48,6 @@ has is_pinned => (
     is        => 'rw',
     isa       => Bool,
     default   => 0,
-);
-
-
-has mtime => (
-    is        => 'rw',
-    isa       => Int,
-    required  => 1,
 );
 
 
@@ -138,7 +131,6 @@ sub to_string {
          'v' => sub { $self->version            },
          'h' => sub { $self->distribution       },
          'i' => sub { $self->is_pinned          },
-         't' => sub { $self->mtime              },
     );
 
     # Some attributes are just undefined, usually because of
@@ -155,7 +147,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%h/%p/%v/%i';  # DISTRIBUTION/PACKAGE/VERSION/IS_PINNED
+    return "%-24p %12v %-48h %i";
 }
 
 #-----------------------------------------------------------------------------

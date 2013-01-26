@@ -294,7 +294,7 @@ sub repository_clean_ok {
 
     my @stacks = $self->pinto->repo->db->select_stacks->all;
     $self->tb->is_eq(scalar @stacks, 1, 'Database has only one stack');
-    $self->tb->is_eq($stacks[0]->name, 'init',  'The stack is called "init"');
+    $self->tb->is_eq($stacks[0]->name, 'master', 'The stack is called "master"');
     $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
 
     my $authors_id_dir = $self->pinto->config->authors_id_dir;

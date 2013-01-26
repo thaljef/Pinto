@@ -12,6 +12,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
+  $DB::single = 1;
   my $t = Pinto::Tester->new;
   my $archive =  make_dist_archive('Dist-1=PkgA~1');
 

@@ -27,6 +27,7 @@ has schema => (
 has repo => (
    is         => 'ro',
    isa        => 'Pinto::Repository',
+   weak_ref   => 1,
    required   => 1,
 );
 
@@ -43,9 +44,7 @@ with qw( Pinto::Role::Configurable
 sub _build_schema {
     my ($self) = @_;
 
-    my $schema = Pinto::Schema->new( config => $self->config,
-                                     logger => $self->logger,
-                                     repo   => $self->repo, );
+    my $schema = Pinto::Schema->new;
 
     my $db_file = $self->config->db_file;
     my $dsn     = "dbi:SQLite:$db_file";
@@ -56,7 +55,6 @@ sub _build_schema {
 
     # Inject attributes thru back door
     $connected->logger($self->logger);
-    $connected->config($self->config);
     $connected->repo($self->repo);
 
     return $connected;
@@ -109,28 +107,6 @@ sub select_packages {
 
 #-------------------------------------------------------------------------------
 
-sub select_registration {
-  my ($self, $where, $attrs) = @_;
-
-  $attrs ||= {};
-  $attrs->{prefetch} ||= [ {package => 'distribution'}, 'kommit' ];
-
-  return $self->schema->registration_rs->find($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
-sub select_registrations {
-    my ($self, $where, $attrs) = @_;
-
-    $attrs ||= {};
-    $attrs->{prefetch} ||= [ qw( package kommit ) ];
-
-    return $self->schema->registration_rs->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
 sub select_stacks {
     my ($self, $where, $attrs) = @_;
 
@@ -147,14 +123,6 @@ sub select_stack {
     $where->{name_canonical} ||= lc delete $where->{name};
 
     return $self->schema->stack_rs->find( $where, $attrs );
-}
-
-#-------------------------------------------------------------------------------
-
-sub select_kommit {
-  my ($self, $where, $attrs) = @_;
-
-    return $self->schema->kommit_rs->find( $where, $attrs );
 }
 
 #-------------------------------------------------------------------------------

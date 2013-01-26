@@ -59,87 +59,26 @@ has format => (
     lazy      => 1,
 );
 
-
-has where => (
-    is       => 'ro',
-    isa      => HashRef,
-    builder  => '_build_where',
-    lazy     => 1,
-);
-
-#------------------------------------------------------------------------------
-
-sub _build_where {
-    my ($self) = @_;
-
-    my $where = {};
-
-    if (my $pkg_name = $self->packages) {
-        $where->{'package.name'} = { like => "%$pkg_name%" }
-    }
-
-    if (my $dist_name = $self->distributions) {
-        $where->{'distribution.archive'} = { like => "%$dist_name%" };
-    }
-
-    if (my $author = $self->author) {
-        $where->{'distribution.author_canonical'} = uc $author;
-    }
-
-    if (my $pinned = $self->pinned) {
-        $where->{is_pinned} = 1;
-    }
-
-    return $where;
-}
-
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $where    = $self->where;
-    my $stk_name = $self->stack;
+    my $auth    = $self->author;
+    my $auth_rx = $auth ? qr/$auth/i : undef;
 
-    my @stacks =   is_stack_all($stk_name)
-                 ? $self->repo->get_all_stacks
-                 : $self->repo->get_stack($stk_name);
+    my $pkg    = $self->packages;
+    my $pkg_rx = $pkg ? qr/$pkg/i : undef;
 
-    my $attrs = { prefetch => {package => 'distribution'} };
+    my $dist    = $self->distributions;
+    my $dist_rx = $dist ? qr/$dist/i : undef;
 
-    ##########################################################################
-
-    if (scalar @stacks == 1) {
-
-        # In the common case where we are only listing one stack, we can iterate
-        # through the registrations rather than slurping them all into memory.
-
-        $attrs->{order_by} = [ qw(package.name) ];
-        my $format = $self->format;
-        my $rs = $stacks[0]->head->registrations($where, $attrs);
-        while( my $registration = $rs->next ) {
-            $self->say($registration->to_string($format));
-        }
-    }
-    else {
-
-        # In the uncommon case where we are listing multiple stacks, we must
-        # slurp the registrations for all stacks into memory and then sort
-        # them by stack.
-
-        my @tuples = map { my $stack = $_; 
-                           map {[$stack => $_]} $stack->head->registrations($where, $attrs) } @stacks;
-
-        my @sorted = sort {    $a->[1]->package_name cmp $b->[1]->package_name 
-                            || $a->[0]->name cmp $a->[0]->name } @tuples;
-        
-        for (@sorted) {
-            my $stack        = $_->[0];
-            my $registration = $_->[1];
-            my $format = $self->has_format ? $self->format : "%m%s%y %-12k %-40p %12v  %A/%f";
-            $format = $stack->to_string($format); # Expands the stack-related placeholders
-            $self->say($registration->to_string($format));
-        }               
+    my $stack = $self->repo->get_stack($self->stack);
+    for my $entry ( @{ $stack->registry->entries } ) {
+        next if $auth_rx  && $entry->author       !~ $auth_rx;
+        next if $pkg_rx   && $entry->package      !~ $pkg_rx;
+        next if $dist_rx  && $entry->distribution !~ $dist_rx;
+        $self->say( $entry );
     }
 
     return $self->result;

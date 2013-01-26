@@ -48,11 +48,10 @@ sub execute {
     my ($self) = @_;
 
     my %attrs = (name => $self->stack, description => $self->description);
-    my $stack = $self->repo->create_stack(%attrs)->open(orphan => 1);
+    
+    my $stack = $self->repo->create_stack(%attrs);
 
     $stack->mark_as_default if $self->default;
-
-    $stack->close(orphan => 1);
 
     return $self->result->changed;
 }

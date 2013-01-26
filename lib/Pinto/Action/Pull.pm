@@ -69,7 +69,7 @@ has nofail => (
 sub execute {
     my ($self) = @_;
 
-    my $stack   = $self->repo->get_stack($self->stack)->open;
+    my $stack   = $self->repo->get_stack($self->stack);
     my @targets = $self->targets;
 
     while (my $target = shift @targets) {
@@ -95,7 +95,8 @@ sub execute {
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stacks => [$stack]);
-    $stack->close(message => $message)->write_index;
+    $stack->commit(message => $message);
+
     return $self->result->changed;
 }
 

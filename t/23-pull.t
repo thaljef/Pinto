@@ -31,7 +31,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
   my $result = $local->run_ok('Pull', {targets => 'Baz~1.2'});
   $local->result_changed_ok($result);
-  $DB::single = 1;
+  
   $local->registration_ok('JOHN/Baz-1.2/Baz~1.2');
   $local->registration_ok('PAUL/Nuts-2.3/Nuts~2.3');
 

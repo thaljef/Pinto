@@ -23,6 +23,8 @@ __PACKAGE__->load_namespaces;
 
 #-------------------------------------------------------------------------------
 
+use MooseX::SetOnce;
+
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(decamelize);
 
@@ -33,27 +35,19 @@ Readonly::Scalar our $SCHEMA_VERSION => 1;
 sub schema_version { return $SCHEMA_VERSION };
 
 #-------------------------------------------------------------------------------
-# TODO: Make these 'SetOnce'.
-
-has config => (
-    is      => 'rw',
-    isa     => 'Pinto::Config',
-    handles => [ qw() ],
-    default => sub { $_[0]->result_source->schema->config }, 
-);
 
 has logger => (
-    is      => 'rw',
-    isa     => 'Pinto::Logger',
-    handles => [ qw() ],
-    default => sub { $_[0]->result_source->schema->logger }, 
+    is       => 'rw',
+    isa      => 'Pinto::Logger',
+    traits   => [ qw(SetOnce) ],
+    weak_ref => 1,
 );
 
 has repo => (
-    is      => 'rw',
-    isa     => 'Pinto::Repository',
-    handles => [ qw() ],
-    default => sub { $_[0]->result_source->schema->repo }, 
+    is       => 'rw',
+    isa      => 'Pinto::Repository',
+    traits   => [ qw(SetOnce) ],
+    weak_ref => 1,
 );
 
 #-------------------------------------------------------------------------------
