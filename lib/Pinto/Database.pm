@@ -73,17 +73,6 @@ sub deploy {
 
 #-------------------------------------------------------------------------------
 
-sub select_distributions {
-    my ($self, $where, $attrs) = @_;
-
-    $attrs ||= {};
-    $attrs->{prefetch} ||= 'packages';
-
-    return $self->schema->distribution_rs->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
 sub select_distribution {
     my ($self, $where, $attrs) = @_;
 

@@ -3,6 +3,7 @@
 package Pinto::Repository;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Path::Class;
 use File::Find;
@@ -17,8 +18,6 @@ use Pinto::IndexCache;
 use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis);
-
-use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
@@ -233,7 +232,7 @@ sub get_stack {
     return $stack if itis($stack, 'Pinto::Schema::Result::Stack');
     return $self->get_default_stack if not $stack;
 
-    my $where = { name => $stack };
+    my $where = { name_canonical => lc $stack };
     my $got_stack = $self->db->schema->find_stack( $where );
 
     throw "Stack $stack does not exist"
@@ -357,30 +356,33 @@ sub get_distribution {
     my %where;
     my %attrs;
 
+        $DB::single = 1;
+
     if (my $spec = $args{spec}) {
-        $attrs{key} = 'author_canonical_archive_unique';
-        $where{author_canonical} = $spec->author_canonical;
-        $where{archive}          = $spec->archive;
+        my $author  = $spec->author_canonical;
+        my $archive = $spec->archive;
+        return $self->db->schema->distribution_rs->find_by_author_archive($author, $archive);
     }
     elsif (my $path = $args{path}) {
-        my ($author, $archive)    = Pinto::Util::parse_dist_path($path);
-        $attrs{key} = 'author_canonical_archive_unique';
-        $where{author_canonical}  = uc $author;
-        $where{archive}           = $archive;
+        my ($author, $archive)   = Pinto::Util::parse_dist_path($path);
+        return $self->db->schema->distribution_rs->find_by_author_archive($author, $archive);
     }
     elsif (my $sha256 = $args{sha256}) {
-         $attrs{key} = 'sha256_unique';
-         $where{sha256} = $sha256;
+         return $self->db->schema->distribution_rs->find_by_sha256($sha256);
+
     }
     elsif (my $md5 = $args{md5}) {
-         $attrs{key} = 'md5_unique';
-         $where{md5} = $md5;
+         return $self->db->schema->distribution_rs->find_by_md5($md5);
+    }
+    elsif (my $author = $args{author}) {
+        my $archive = $args{archive} or throw "Must specify archive with author";
+        return $self->db->schema->distribution_rs->find_by_author_archive($author, $archive);
     }
     else {
         %where = %args;
     }
 
-    return $self->db->select_distribution( \%where, \%attrs );
+    return $self->db->schema->distribution_rs->find( \%where, \%attrs );
 
 }
 
@@ -490,7 +492,8 @@ sub _validate_archive {
     throw "Archive $archive is not readable" if not -r $archive;
 
     my $basename = $archive->basename;
-    if (my $same_path = $self->get_distribution(author_canonical => uc($author), archive => $basename)) {
+    if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
+        $DB::single = 1;
         throw "A distribution already exists as $same_path";
     }
 
@@ -784,7 +787,7 @@ sub clean_files {
     my ($self, %args) = @_;
 
     my $deleted  = 0;
-    my $dists_rs = $self->db->select_distributions(undef, {prefetch => {}});
+    my $dists_rs = $self->db->schema->distribution_rs->search(undef, {prefetch => {}});
     my %known_dists = map { ($_->to_string => 1) } $dists_rs->all;
 
     my $callback = sub {
