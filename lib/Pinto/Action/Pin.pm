@@ -3,11 +3,10 @@
 package Pinto::Action::Pin;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(SpecList StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
