@@ -3,15 +3,12 @@
 package Pinto::Action::Log;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool Int Undef Str);
+use MooseX::Types::Moose qw(Bool Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
-use Term::ANSIColor;
+use Term::ANSIColor qw(color);
 
-use Pinto::Util qw(trim);
 use Pinto::Types qw(StackName StackDefault);
-use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -26,13 +23,6 @@ extends qw( Pinto::Action );
 has stack => (
     is        => 'ro',
     isa       => StackName | StackDefault,
-    default   => undef,
-);
-
-
-has revision => (
-    is        => 'ro',
-    isa       => Int | Undef,
     default   => undef,
 );
 
@@ -56,15 +46,11 @@ has nocolor => (
 sub execute {
     my ($self) = @_;
 
-    # Print the head
-    my head = $self->repo->get_stack($self->stack)->head;
-    $self->say( trim( $head->to_string($self->format) ) ) . "\n";
+    my $stack = $self->repo->get_stack($self->stack);
+    my $iterator = $self->repo->vcs->history(branch => $stack->name_canonical);
 
-    # Print all ancestors
-    my $rs = $head->ancestors;
-    while (my $kommit = $rs->next) {
-        last if $kommit->is_root_kommit;
-        $self->say( trim( $kommit->to_string($self->format) ) . "\n" );
+    while ( defined(my $commit = $iterator->next) ) {
+        $self->say( $commit->to_string($self->format) ); 
     }
 
     return $self->result;
@@ -80,10 +66,10 @@ sub _build_format {
 
     return <<"END_FORMAT";
 ${yellow}commit %I${reset}
-Date:   %u
-Author: %j 
+Date: %u
+User: %j 
 
-%g
+%{4}G
 END_FORMAT
 
 }
