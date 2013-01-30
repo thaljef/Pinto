@@ -3,16 +3,18 @@
 package Pinto::VCS;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Git::Raw;
+use DateTime;
+use Readonly;
 use Path::Class;
 use File::Copy ();
 
 use Pinto::Types qw(Dir);
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
+use Pinto::CommitIterator;
 
 #-------------------------------------------------------------------------------
 
@@ -42,6 +44,11 @@ has git     => (
 
 #-------------------------------------------------------------------------------
 
+Readonly::Scalar our $GIT_REPO_NOT_BARE   => 0;
+Readonly::Scalar our $GIT_BRANCH_IS_LOCAL => 1;
+
+#-------------------------------------------------------------------------------
+
 sub initialize {
     my ($self) = @_;
 
@@ -49,10 +56,9 @@ sub initialize {
 
     throw "VCS is already initialized" if -e $vcs_dir->subdir('.git');
 
-    $vcs_dir->mkpath;
+    $vcs_dir->mkpath if not -e $vcs_dir;
 
-    Git::Raw::Repository->init($vcs_dir, 0);
-    # TODO: make root commit?
+    Git::Raw::Repository->init($vcs_dir, $GIT_REPO_NOT_BARE);
 
     return $self;
 }
@@ -65,7 +71,7 @@ sub fork_branch {
     my $from = $args{from};
     my $to   = $args{to};
 
-    my $branch_ref = Git::Raw::Branch->lookup($self->git, $from, 1);
+    my $branch_ref = $self->_get_branch_ref($from);
 
     $self->git->branch($to, $branch_ref->target);
 
@@ -80,7 +86,7 @@ sub rename_branch {
     my $from = $args{from};
     my $to   = $args{to};
 
-    my $branch_ref = Git::Raw::Branch->lookup($self->git, $from, 1);
+    my $branch_ref = $self->_get_branch_ref($from);
 
     $branch_ref->move($to, 0);
 
@@ -94,7 +100,7 @@ sub delete_branch {
 
     my $branch = $args{branch};
 
-    my $branch_ref = Git::Raw::Branch->lookup($self->git, $branch, 1);
+    my $branch_ref = $self->_get_branch_ref($branch);
 
     $branch_ref->delete;
 
@@ -119,19 +125,13 @@ sub checkout_branch {
         return $self;
     }
 
-    my $branch = Git::Raw::Branch->lookup($self->git, $name, 1);
-    my $opts  = { checkout_strategy => {force => 1} };
+    my $branch_ref = $self->_get_branch_ref($name);
+    my $opts       = { checkout_strategy => {force => 1} };
 
-    $self->git->checkout($branch->target, $opts);
-    $self->git->head($branch);
+    $self->git->checkout($branch_ref->target, $opts);
+    $self->git->head($branch_ref);
 
     return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub log {
-    # Return revision history
 }
 
 #-------------------------------------------------------------------------------
@@ -179,6 +179,20 @@ sub commit {
 
 #-------------------------------------------------------------------------------
 
+sub history {
+    my ($self, %args) = @_;
+
+    my $branch = $args{branch};
+    my $walker = $self->git->walker;
+
+    my $branch_ref = $self->_get_branch_ref($branch);
+    $walker->push($branch_ref->target);
+
+    return Pinto::CommitIterator->new(walker => $walker);
+}
+
+#-------------------------------------------------------------------------------
+
 sub merge {
     # Attempt to merge branches
 }
@@ -194,6 +208,15 @@ sub status {
     my $status = $self->git->status($file);
 
     return $status ? 1 : 0;
+}
+
+#-------------------------------------------------------------------------------
+
+sub _get_branch_ref {
+    my ($self, $branch_name) = @_;
+
+    # Throws exception if branch does not exist
+    return Git::Raw::Branch->lookup($self->git, $branch_name, $GIT_BRANCH_IS_LOCAL);
 }
 
 #-------------------------------------------------------------------------------
