@@ -5,6 +5,7 @@ package Pinto::Registry;
 use Moose;
 use MooseX::Types::Moose qw(HashRef Bool);
 
+use Pinto::Util qw(itis);
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
 use Pinto::RegistryEntry;
@@ -132,10 +133,12 @@ sub lookup {
   my ($self, %args) = @_;
 
   if (my $pkg = $args{package}) {
-    return $self->entries_by_package->{$pkg};
+    my $name = itis($pkg, 'Pinto::Schema::Result::Package') ? $pkg->name : "$pkg";
+    return $self->entries_by_package->{$name};
   }
   elsif (my $dist = $args{distribution}) {
-    return $self->entries_by_distribution->{$dist};
+    my $path = itis($dist, 'Pinto::Schema::Result::Distribution') ? $dist->path : "$dist";
+    return $self->entries_by_distribution->{$path};
   }
   else {
     throw "Don't know what to do"
