@@ -22,7 +22,7 @@ use Pinto::Tester;
 	$t->path_exists_ok( [qw(master modules 02packages.details.txt.gz)] );
 	$t->path_exists_ok( [qw(master modules 03modlist.data.gz)] );
 	$t->path_exists_ok( [qw(master authors 01mailrc.txt.gz)] );
-	$t->path_exists_ok( [qw(master meta stack.registry.txt)] );
+	$t->path_exists_ok( [qw(master work stack.registry.txt)] );
 
 	my $stack = $t->pinto->repo->get_stack('master');
 	ok defined $stack, 'master stack exists';
