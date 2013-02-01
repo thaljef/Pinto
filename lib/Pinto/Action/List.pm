@@ -5,7 +5,7 @@ package Pinto::Action::List;
 use Moose;
 use MooseX::Types::Moose qw(HashRef Str Bool Undef);
 
-use Pinto::Types qw(Author StackName StackAll StackDefault StackObject);
+use Pinto::Types qw(AuthorID StackName StackAll StackDefault StackObject);
 use Pinto::Util qw(is_stack_all);
 
 use namespace::autoclean;
@@ -36,7 +36,7 @@ has pinned => (
 
 has author => (
     is     => 'ro',
-    isa    => Author,
+    isa    => AuthorID,
 );
 
 
