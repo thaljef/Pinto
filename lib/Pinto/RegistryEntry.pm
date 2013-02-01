@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Str Bool Int);
 
 use String::Format;
 
-use Pinto::Types qw(Vers);
+use Pinto::Types qw(Version);
 use Pinto::Util qw(itis author_dir);
 use Pinto::Exception qw(throw);
 
@@ -31,7 +31,7 @@ has package => (
 
 has version => (
     is         => 'ro',
-    isa        => Vers,
+    isa        => Version,
     coerce     => 1,
     required   => 1,
 );
