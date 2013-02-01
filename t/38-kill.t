@@ -12,7 +12,6 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 {
 
-  $DB::single = 1;
   my $t = Pinto::Tester->new;
   my $archive =  make_dist_archive('Dist-1=PkgA~1');
 
@@ -33,6 +32,8 @@ use Pinto::Tester::Util qw(make_dist_archive);
   
   # Check the filesystem
   $t->path_not_exists_ok( [qw(master)] );
+
+  # TODO: check that branch is gone too
 
 }
 
@@ -62,6 +63,8 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
   # Check the filesystem
   $t->path_not_exists_ok( [qw(master)] );
+
+  # TODO: check that branch is gone too
 
 }
 #------------------------------------------------------------------------------
