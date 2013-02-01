@@ -348,7 +348,7 @@ sub unlock {
     }
 
     $self->notice("Unlocking stack $self");
-    $self->udpate( {is_locked => 0} );
+    $self->update( {is_locked => 0} );
 
     return $self;
 }
