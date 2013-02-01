@@ -3,10 +3,7 @@
 package Pinto::Action::Verify;
 
 use Moose;
-
-use Pinto::Util;
-
-use namespace::autoclean;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 #------------------------------------------------------------------------------
 
@@ -21,11 +18,11 @@ extends qw( Pinto::Action );
 sub execute {
     my ($self) = @_;
 
-    my $dist_rs = $self->repo->schema->select_distributions;
+    my $dist_rs = $self->repo->db->schema->distribution_rs;
 
     while ( my $dist = $dist_rs->next ) {
-        my $archive = $dist->archive( $self->repo->root_dir );
-        $self->say("Missing distribution $archive") if not -e $archive;
+        my $archive = $dist->native_path( $self->repo->config->authors_id_dir );
+        $self->say("Missing distribution $dist") if not -e $archive;
     }
 
     return $self->result;
@@ -33,7 +30,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 
