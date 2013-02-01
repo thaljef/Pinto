@@ -286,13 +286,13 @@ sub head_revision_number_is {
 sub repository_clean_ok {
     my ($self) = @_;
 
-    my @dists = $self->pinto->repo->db->select_distributions->all;
+    my @dists = $self->pinto->repo->db->schema->distribution_rs->all;
     $self->tb->is_eq(scalar @dists, 0, 'Database has no distributions');
 
-    my @pkgs = $self->pinto->repo->db->select_packages->all;
+    my @pkgs = $self->pinto->repo->db->schema->package_rs->all;
     $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
 
-    my @stacks = $self->pinto->repo->db->select_stacks->all;
+    my @stacks = $self->pinto->repo->db->schema->stack_rs->all;
     $self->tb->is_eq(scalar @stacks, 1, 'Database has only one stack');
     $self->tb->is_eq($stacks[0]->name, 'master', 'The stack is called "master"');
     $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
