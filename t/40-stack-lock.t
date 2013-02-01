@@ -22,7 +22,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 			          qr/is locked/, 'Cannot modify locked stack');
 
 	$t->run_ok(Unlock => {});
-	is $stack->refresh->is_locked, undef, 'Stack is unlocked';
+	is $stack->refresh->is_locked, 0, 'Stack is unlocked';
 
 	$t->run_ok(Add => {archives => $archive});
 }
