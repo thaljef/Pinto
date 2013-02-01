@@ -10,7 +10,7 @@ use Dist::Metadata;
 use Module::CoreList;
 
 use Pinto::Exception qw(throw);
-use Pinto::Types qw(File Vers);
+use Pinto::Types qw(File Version);
 
 use version;
 use namespace::autoclean;
@@ -35,7 +35,7 @@ has archive => (
 
 has target_perl_version => (
     is         => 'ro',
-    isa        => Vers,
+    isa        => Version,
     default    => sub { version->parse( $] ) },
     coerce     => 1,
     lazy       => 1,
