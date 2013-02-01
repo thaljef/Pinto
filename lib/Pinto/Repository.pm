@@ -356,8 +356,6 @@ sub get_distribution {
     my %where;
     my %attrs;
 
-        $DB::single = 1;
-
     if (my $spec = $args{spec}) {
         my $author  = $spec->author_canonical;
         my $archive = $spec->archive;
@@ -732,7 +730,6 @@ sub rename_stack {
     throw "Stack $new_name already exists"
       if $self->get_stack($new_name, nocroak => 1);
 
-    $stack->check_lock;
     $stack->rename(to => $new_name);
     $self->vcs->rename_branch(from => $old_name, to => $new_name);
 
@@ -748,9 +745,8 @@ sub delete_stack {
 
     my $stack = $args{stack};
 
-    $stack->check_lock;
     $stack->delete;
-    $self->repo->vcs->delete_branch(branch => $stack->name);
+    $self->vcs->delete_branch(branch => $stack->name);
 
     return $stack;
 }
