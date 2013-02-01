@@ -51,7 +51,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
     qr/already exists/, 'Cannot rename to stack that already exists');
 
  $t->run_throws_ok(Rename => {from_stack => 'existing', to_stack => 'existing'},
-    qr/stacks are the same/, 'Cannot rename to stack to itself');
+    qr/already exists/, 'Cannot rename to stack to itself');
 
 }
 
