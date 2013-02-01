@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool Str);
 use Try::Tiny;
 
 use Pinto::Util qw(sha256);
-use Pinto::Types qw(Author FileList StackName StackObject StackDefault);
+use Pinto::Types qw(AuthorID FileList StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
 
 use namespace::autoclean;
@@ -29,7 +29,7 @@ with qw( Pinto::Role::PauseConfig Pinto::Role::Committable );
 
 has author => (
     is         => 'ro',
-    isa        => Author,
+    isa        => AuthorID,
     default    => sub { uc($_[0]->pausecfg->{user} || '') || $_[0]->config->username },
     lazy       => 1,
 );
