@@ -392,7 +392,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%h', # AUTHOR/Dist-Name-1.0.tar.gz
+    return '%A/%f', # AUTHOR/Dist-Name-1.0.tar.gz
 }
 
 #------------------------------------------------------------------------------
