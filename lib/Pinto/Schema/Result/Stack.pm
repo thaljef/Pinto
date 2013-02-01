@@ -264,6 +264,13 @@ sub BUILD {
 
 #------------------------------------------------------------------------------
 
+before [ qw(register unregister pin unpin rename delete) ] => sub {
+  my ($self, @args) = @_;
+  $self->check_lock;
+};
+
+#------------------------------------------------------------------------------
+
 sub copy {
     my ($self, %changes) = @_;
 
