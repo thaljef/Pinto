@@ -3,13 +3,13 @@
 package Pinto::Initializer;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use PerlIO::gzip;
 
 use Pinto;
 
 use autodie;
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -55,6 +55,9 @@ sub init {
 
     # Write authors index
     $self->_write_mailrc;
+
+    # Establish version
+    $self->_set_version;
 
     # Set up database
     $self->_create_db;
@@ -124,6 +127,18 @@ END_MODLIST
     # template.
 
     return sprintf $template, $0, scalar localtime, 'CPAN::Modulelist';
+}
+
+#------------------------------------------------------------------------------
+
+sub _set_version {
+    my ($self) = @_;
+
+    my $pinto = Pinto->new(root => $self->config->root);
+
+    $pinto->repo->set_version;
+
+    return;
 }
 
 #------------------------------------------------------------------------------
