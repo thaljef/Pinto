@@ -5,6 +5,7 @@ package Pinto::Repository;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Readonly;
 use Path::Class;
 use File::Find;
 use File::Copy qw(move);
@@ -19,9 +20,15 @@ use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis);
 
+use version;
+
 #-------------------------------------------------------------------------------
 
 # VERSION
+
+#-------------------------------------------------------------------------------
+
+Readonly::Scalar our $REPOSITORY_VERSION => 1;
 
 #-------------------------------------------------------------------------------
 
@@ -121,17 +128,6 @@ sub BUILD {
 
 #-------------------------------------------------------------------------------
 
-sub check_version {
-    my ($self) = @_;
-
-    my $schema_version = $self->db->schema->schema_version;
-    my $db_version     = $self->db->schema->get_version;
-
-    throw "Database version ($db_version) and schema version ($schema_version) do not match"
-        if $db_version != $schema_version;
-
-    return $self;
-}
 
 #-------------------------------------------------------------------------------
 
@@ -262,7 +258,7 @@ sub get_default_stack {
     my ($self) = @_;
 
     my $where = {is_default => 1};
-    my @stacks = $self->db->select_stacks( $where )->all;
+    my @stacks = $self->db->schema->search_stack( $where )->all;
 
     # Assert that there is no more than one default stack
     throw "PANIC: There must be no more than one default stack" if @stacks > 1;
@@ -286,7 +282,21 @@ last modification time).
 sub get_all_stacks {
     my ($self) = @_;
 
-    return $self->db->select_stacks->all;
+    return $self->db->schema->stack_rs->all;
+}
+
+#-------------------------------------------------------------------------------
+
+=method stack_count()
+
+Returns the total number of stacks that currently exist in the repository.
+
+=cut
+
+sub stack_count {
+    my ($self) = @_;
+
+    return $self->db->schema->stack_rs->count;
 }
 
 #-------------------------------------------------------------------------------
@@ -320,12 +330,15 @@ sub get_package {
                       'distribution.author_canonical'  => uc $author,
                       'distribution.archive'           => $archive };
 
-        my @pkgs = $self->db->select_packages($where)->all;
+        my @pkgs = $self->db->schema->search_package($where)->with_distribution;
+
+        # TODO: Assert there is only one package
         return @pkgs ? $pkgs[0] : ();
     }
     else {
         my $where  = { name => $pkg_name };
-        my @pkgs   = $self->db->select_packages( $where )->all;
+        my @pkgs   = $self->db->schema->search_package($where)->with_distribution;
+
         my $latest = (sort {$a <=> $b} @pkgs)[-1];
         return defined $latest ? $latest : ();
     }
@@ -359,28 +372,40 @@ sub get_distribution {
     if (my $spec = $args{spec}) {
         my $author  = $spec->author_canonical;
         my $archive = $spec->archive;
-        return $self->db->schema->distribution_rs->find_by_author_archive($author, $archive);
+        return $self->db->schema->distribution_rs
+                                ->with_packages
+                                ->find_by_author_archive($author, $archive);
     }
     elsif (my $path = $args{path}) {
         my ($author, $archive)   = Pinto::Util::parse_dist_path($path);
-        return $self->db->schema->distribution_rs->find_by_author_archive($author, $archive);
+        return $self->db->schema->distribution_rs
+                                ->with_packages
+                                ->find_by_author_archive($author, $archive);
     }
     elsif (my $sha256 = $args{sha256}) {
-         return $self->db->schema->distribution_rs->find_by_sha256($sha256);
+         return $self->db->schema->distribution_rs
+                                 ->with_packages
+                                 ->find_by_sha256($sha256);
 
     }
     elsif (my $md5 = $args{md5}) {
-         return $self->db->schema->distribution_rs->find_by_md5($md5);
+         return $self->db->schema->distribution_rs
+                                 ->with_packages
+                                 ->find_by_md5($md5);
     }
     elsif (my $author = $args{author}) {
         my $archive = $args{archive} or throw "Must specify archive with author";
-        return $self->db->schema->distribution_rs->find_by_author_archive($author, $archive);
+        return $self->db->schema->distribution_rs
+                                ->with_packages
+                                ->find_by_author_archive($author, $archive);
     }
     else {
         %where = %args;
     }
 
-    return $self->db->schema->distribution_rs->find( \%where, \%attrs );
+    return $self->db->schema->distribution_rs
+                            ->with_packages
+                            ->find( \%where, \%attrs );
 
 }
 
@@ -807,6 +832,48 @@ sub clean_files {
     File::Find::find({no_chdir => 1, wanted => $callback}, $authors_dir);
 
     return $deleted;
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_version {
+    my ($self) = @_;
+
+    my $version_file = $self->config->version_file;
+
+    return undef if not -e $version_file;  # Old repos have no version file
+
+    my $version = $version_file->slurp(chomp => 1);
+
+    return $version;
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_version {
+    my ($self, $version) = @_;
+
+    $version ||= $REPOSITORY_VERSION;
+
+    my $version_fh = $self->config->version_file->openw;
+    print { $version_fh } $version, "\n";
+    close $version_fh;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub check_version {
+    my ($self) = @_;
+
+    my $repo_version = $self->get_version;
+    my $code_version = $REPOSITORY_VERSION;
+
+    throw "Repository version ($repo_version) and Pinto version ($code_version) do not match"
+        if $repo_version != $code_version;
+
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
