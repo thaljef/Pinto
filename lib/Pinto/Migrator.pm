@@ -3,11 +3,10 @@
 package Pinto::Migrator;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto;
-use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
+use Pinto::Repository;
 
 #------------------------------------------------------------------------------
 
@@ -15,8 +14,7 @@ use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable
-	     Pinto::Role::Loggable );
+with qw( Pinto::Role::Configurable );
 
 #------------------------------------------------------------------------------
 
@@ -26,17 +24,17 @@ sub migrate {
 
     my $pinto = Pinto->new(root => $self->config->root);
 
-    my $db_version = $pinto->repo->db->get_version;
-    my $schema_version = $pinto->repo->db->schema->schema_version;
+    my $repo_version = $pinto->repo->get_version;
+    my $code_version = $Pinto::Repository::REPOSITORY_VERSION;
 
     die "This repository is too old to migrate\n"
-      if not defined $db_version;
+      if not defined $repo_version;
 
     die "This repository is up to date\n"
-      if $db_version == $schema_version;
+      if $repo_version == $code_version;
 
     die "This repository too new.  Upgrade Pinto instead\n"
-      if $db_version > $schema_version;
+      if $repo_version > $code_version;
 
     die "Migration is not implemented yet\n";
 }
