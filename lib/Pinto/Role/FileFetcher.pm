@@ -30,8 +30,7 @@ has ua => (
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::PathMaker
-         Pinto::Role::Loggable );
+with qw( Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
@@ -59,7 +58,7 @@ sub fetch {
 
     $self->debug("Skipping $from: already fetched to $to") and return 0 if -e $to;
 
-    $self->mkpath( $to->parent() );
+    $to->parent->mkpath if not -e $to->parent;
     my $has_changed = $self->_fetch($from_uri, $to);
 
     return $has_changed;
