@@ -4,6 +4,7 @@ package Pinto::Registry;
 
 use Moose;
 use MooseX::Types::Moose qw(HashRef Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Util qw(itis);
 use Pinto::Types qw(File);
@@ -125,6 +126,22 @@ sub entries {
     my @keys = sort keys %{ $self->entries_by_package };
 
     return [ @{$self->entries_by_package}{@keys} ]; # Slicing!
+}
+
+#------------------------------------------------------------------------
+
+sub distribution_count {
+  my ($self) = @_;
+
+  return scalar keys %{ $self->entries_by_distribution };
+}
+
+#------------------------------------------------------------------------
+
+sub package_count {
+  my ($self) = @_;
+
+  return scalar keys %{ $self->entries_by_package };
 }
 
 #------------------------------------------------------------------------
