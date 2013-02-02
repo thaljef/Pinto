@@ -3,8 +3,9 @@
 package Pinto::RegistryEntry;
 
 use Moose;
-use MooseX::Aliases;
 use MooseX::Types::Moose qw(Str Bool Int);
+use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Aliases;
 
 use String::Format;
 
