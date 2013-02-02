@@ -13,9 +13,9 @@ use base 'DBIx::Class::ResultSet';
 #------------------------------------------------------------------------------
 
 sub with_packages {
-  my ($self, $where, $attrs) = @_;
+  my ($self, $where) = @_;
 
-  return $self->search->({}, {prefetch => 'packages'});
+  return $self->search($where || {}, {prefetch => 'packages'});
 }
 
 #------------------------------------------------------------------------------

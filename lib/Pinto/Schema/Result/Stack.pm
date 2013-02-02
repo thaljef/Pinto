@@ -216,7 +216,7 @@ has registry => (
   is       => 'ro',
   isa      => 'Pinto::Registry',
   lazy     => 1,
-  handles  => [ qw(lookup register unregister pin unpin) ],
+  handles  => [ qw(lookup register unregister pin unpin package_count distribution_count) ],
   default  => sub { Pinto::Registry->new( file   => $_[0]->registry_file,
                                           logger => $_[0]->logger,
                                           repo   => $_[0]->repo ) },
