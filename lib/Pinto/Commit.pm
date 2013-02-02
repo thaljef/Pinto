@@ -6,7 +6,10 @@ use Moose;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use DateTime;
 use String::Format;
+
+use Pinto::Util qw(itis);
 
 use overload ( '""'  => 'to_string' );
 
@@ -48,7 +51,6 @@ has message => (
 );
 
 
-
 has message_title => (
   is          => 'ro',
   isa         => Str,
@@ -63,6 +65,25 @@ has message_body => (
   lazy        => 1,
   default     => sub { ... }, # TODO
 );
+
+#------------------------------------------------------------------------------
+
+around BUILDARGS => sub {
+  my ($orig, $class, @args) = @_;
+
+  if ( @args == 1 && itis($args[0], 'Git::Raw::Commit') ) {
+
+    my $git_commit = $args[0];
+    my $datetime = DateTime->from_epoch(epoch => $git_commit->time);
+
+    return $class->$orig( id       => $git_commit->id,
+                          time     => $datetime,
+                          message  => $git_commit->message,
+                          username => $git_commit->committer->name );
+  }
+
+  return $class->$orig(@args);
+};
 
 #------------------------------------------------------------------------------
 

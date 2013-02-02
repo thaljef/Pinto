@@ -21,13 +21,7 @@ sub next {
 
   my $git_commit = $self->walker->next;
 
-  # TODO: Convert git's offset (in minutes) to a DateTime::Timezone
-  my $datetime = DateTime->from_epoch(epoch => $git_commit->time);
-
-  return Pinto::Commit->new( id       => $git_commit->id,
-                             time     => $datetime,
-                             message  => $git_commit->message,
-                             username => $git_commit->committer->name, );
+  return Pinto::Commit->new( $git_commit );
 }
 
 #------------------------------------------------------------------------------
