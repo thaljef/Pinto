@@ -19,7 +19,7 @@ has walker => (
 sub next {
   my ($self) = @_;
 
-  my $git_commit = $self->walker->next;
+  my $git_commit = $self->walker->next or return;
 
   return Pinto::Commit->new( $git_commit );
 }
