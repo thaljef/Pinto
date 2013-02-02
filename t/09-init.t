@@ -14,6 +14,7 @@ use Pinto::Tester;
 {
 	my $t = Pinto::Tester->new;
 
+	$t->path_exists_ok( [qw(.pinto version)] );
 	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
 	$t->path_exists_ok( [qw(.pinto log)] );
@@ -29,6 +30,9 @@ use Pinto::Tester;
 	is $stack->name, 'master', 'master stack has correct name';
 	is $stack->is_default, 1,  'master stack is the default stack';
 	is $stack->description, 'The master stack', 'master stack has default description';
+
+	my $repo = $t->pinto->repo;
+	is $repo->get_version, $Pinto::Repository::REPOSITORY_VERSION, 'Repo version matches';
 }
 
 #------------------------------------------------------------------------------
