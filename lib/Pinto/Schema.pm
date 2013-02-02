@@ -90,6 +90,20 @@ sub get_version {
 
 #-------------------------------------------------------------------------------
 
+sub check_version {
+    my ($self) = @_;
+
+    my $schema_version = $self->schema_version;
+    my $db_version     = $self->get_version;
+
+    throw "Database version ($db_version) and schema version ($schema_version) do not match"
+        if $db_version != $schema_version;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
 sub resultset_names {
 	my ($class) = @_;
 
