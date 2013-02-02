@@ -1,20 +1,18 @@
-package Pinto::Config;
-
 # ABSTRACT: Internal configuration for a Pinto repository
 
-use Moose;
+package Pinto::Config;
 
-use MooseX::Configuration;
+use Moose;
 use MooseX::Types::Moose qw(Str Bool Int);
 use MooseX::Types::Log::Dispatch qw(LogLevel);
+use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Configuration;
 use MooseX::Aliases;
 
 use URI;
 
 use Pinto::Types qw(Dir File Username);
 use Pinto::Util qw(current_username );
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -197,6 +195,15 @@ has sources_list => (
     handles    => { sources_list => 'elements' },
     init_arg   => undef,
     lazy       => 1,
+);
+
+
+has version_file => (
+    is           => 'ro',
+    isa          => File,
+    init_arg     => undef,
+    default      => sub { return $_[0]->pinto_dir->file('version') },
+    lazy         => 1,
 );
 
 
