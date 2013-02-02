@@ -424,6 +424,14 @@ sub get_distribution_by_spec {
 
 #-------------------------------------------------------------------------------
 
+sub get_commit {
+    my ($self, $commit_id) = @_;
+
+    return $self->vcs->get_commit(commit_id => $commit_id);
+}
+
+#-------------------------------------------------------------------------------
+
 =method add( archive => $path, author => $id )
 
 =method add( archive => $path, author => $id, source => $url )

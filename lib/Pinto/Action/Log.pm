@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Term::ANSIColor qw(color);
 
-use Pinto::Types qw(StackName StackDefault);
+use Pinto::Types qw(StackName StackDefault CommitID);
 
 #------------------------------------------------------------------------------
 
@@ -24,6 +24,12 @@ has stack => (
     is        => 'ro',
     isa       => StackName | StackDefault,
     default   => undef,
+);
+
+
+has commit => (
+    is        => 'ro',
+    isa       => CommitID,
 );
 
 
@@ -46,11 +52,21 @@ has nocolor => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
-    my $iterator = $self->repo->vcs->history(branch => $stack->name_canonical);
+    if (my $commit_id = $self->commit) {
 
-    while ( defined(my $commit = $iterator->next) ) {
+        # Just show the one commit
+        my $commit = $self->repo->get_commit($commit_id);
         $self->say( $commit->to_string($self->format) ); 
+    }
+    else {
+
+        # Show all commits for the stack
+        my $stack = $self->repo->get_stack($self->stack);
+        my $iterator = $self->repo->vcs->history(branch => $stack->name_canonical);
+
+        while ( defined(my $commit = $iterator->next) ) {
+            $self->say( $commit->to_string($self->format) ); 
+        }
     }
 
     return $self->result;

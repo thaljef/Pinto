@@ -10,11 +10,13 @@ use DateTime;
 use Readonly;
 use Path::Class;
 use File::Copy ();
+use Try::Tiny;
 
 use Pinto::Types qw(Dir);
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 use Pinto::CommitIterator;
+use Pinto::Commit;
 
 #-------------------------------------------------------------------------------
 
@@ -193,6 +195,29 @@ sub history {
 
 #-------------------------------------------------------------------------------
 
+sub get_commit {
+    my ($self, %args) = @_;
+
+    my $commit_id = $args{commit_id};
+
+    my $commit_ref = $self->_get_commit_ref($commit_id);
+
+    return Pinto::Commit->new($commit_ref);
+}
+
+#-------------------------------------------------------------------------------
+
+sub diff {
+    my ($self, %args);
+
+    my $commit_id = $args{commit_id};
+
+    my $commit_ref = $self->_get_commit_ref($commit_id);
+
+
+}
+#-------------------------------------------------------------------------------
+
 sub merge {
     # Attempt to merge branches
 }
@@ -215,8 +240,32 @@ sub status {
 sub _get_branch_ref {
     my ($self, $branch_name) = @_;
 
-    # Throws exception if branch does not exist
-    return Git::Raw::Branch->lookup($self->git, $branch_name, $GIT_BRANCH_IS_LOCAL);
+    my $branch = try {
+        Git::Raw::Branch->lookup($self->git, $branch_name, $GIT_BRANCH_IS_LOCAL);
+    }
+    catch {
+        throw "Branch $branch_name does not exist" if m/not found/;
+        throw "VCS error: $_";
+    };
+
+    return $branch;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub _get_commit_ref {
+    my ($self, $commit_id) = @_;
+
+    my $commit = try {
+        Git::Raw::Commit->lookup($self->git, $commit_id);
+    }
+    catch {
+        throw "Commit $commit_id does not exist" if m/not found/;
+        throw "VCS error: $_";
+    };
+
+    return $commit;
 }
 
 #-------------------------------------------------------------------------------
