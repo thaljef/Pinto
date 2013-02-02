@@ -3,7 +3,6 @@
 package Pinto::Statistics;
 
 use Moose;
-use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use String::Format;
@@ -17,7 +16,7 @@ use String::Format;
 
 has stack => (
     is      => 'ro',
-    isa     => Str,
+    isa     => 'Pinto::Schema::Result::Stack',
 );
 
 
@@ -41,9 +40,7 @@ sub total_distributions {
 sub stack_distributions {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
-
-    return $stack->distribution_count;
+    return $self->stack->distribution_count;
 }
 
 #------------------------------------------------------------------------------
@@ -59,9 +56,7 @@ sub total_packages {
 sub stack_packages {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
-
-    return $stack->package_count;
+    return $self->stack->package_count;
 }
 
 #------------------------------------------------------------------------------
