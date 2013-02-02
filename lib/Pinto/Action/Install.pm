@@ -90,15 +90,17 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->pull ? $self->repo->open_stack($self->stack)
-                            : $self->repo->get_stack($self->stack);
+    my $stack = $self->repo->get_stack($self->stack);
 
-    do { $self->_pull($stack, $_) for $self->targets } if $self->pull;
+    if ($self->pull) {
 
-    if ($self->pull and $self->result->made_changes and not $self->dryrun) {
-        my $message = $self->edit_message(stacks => [$stack]);
-        $stack->close(message => $message);
-        $self->repo->write_index(stack => $stack);
+        $self->_pull($stack, $_) for $self->targets; 
+
+        if ($stack->has_changed and not $self->dryrun) {
+            my $message = $self->edit_message(stack => $stack);
+            $stack->commit(message => $message);
+            $self->result->changed;
+        }
     }
 
     $self->_install($stack, $self->targets);

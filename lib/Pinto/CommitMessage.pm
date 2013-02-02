@@ -15,11 +15,10 @@ use overload ( q{""} => 'to_string' );
 
 #------------------------------------------------------------------------------
 
-has stacks => (
-    traits  => [ qw(Array) ],
-    isa     => ArrayRef[ 'Pinto::Schema::Result::Stack' ],
-    handles => {stacks => 'elements'},
-    default => sub { [] },
+has stack => (
+    is       => 'ro',
+    isa      => 'Pinto::Schema::Result::Stack',
+    required => 1,
 );
 
 
@@ -33,29 +32,8 @@ has title => (
 has details => (
     is      => 'ro',
     isa     => Str,
-    builder => '_build_details',
-    lazy    => 1,
+    default => '',
 );
-
-#------------------------------------------------------------------------------
-
-sub _build_details {
-    my ($self) = @_;
-
-    my @stacks = $self->stacks;
-
-    return 'No details available.' if not @stacks;
-
-    my $details = '';
-    for my $stack ( @stacks ) {
-        my @changes = $stack->head->registration_changes;
-        $details .= "# STACK: $stack\n" if @stacks > 1;
-        $details .= "# $_\n" for (@changes ? @changes : '# No details available.');
-        $details .= "#\n#\n";
-    }
-
-    return $details;
-}
 
 #------------------------------------------------------------------------------
 
