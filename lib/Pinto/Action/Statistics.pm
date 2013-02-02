@@ -3,11 +3,10 @@
 package Pinto::Action::Statistics;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Statistics;
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -30,11 +29,10 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    # FIXME!
     my $stack = $self->repo->get_stack($self->stack);
 
-    my $stats = Pinto::Statistics->new(db    => $self->repo->db,
-                                       stack => $stack->name);
+    my $stats = Pinto::Statistics->new( repo  => $self->repo,
+                                        stack => $stack );
 
     $self->say($stats->to_formatted_string);
 
