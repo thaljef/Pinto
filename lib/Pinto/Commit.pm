@@ -76,7 +76,7 @@ sub to_string {
            u => sub { $self->time->strftime('%c')        },
            g => sub { $self->message_title               },
            G => sub { my $indent = ' ' x (shift || 0); 
-                      $self->message =~ s/^/$indent/rg   },
+                      $self->message =~ s/^/$indent/mrg   },
     );
 
     $format ||= $self->default_format;
