@@ -3,10 +3,9 @@
 package Pinto::Database;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Schema;
-
-use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 
@@ -35,8 +34,7 @@ has repo => (
 # Roles
 
 with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable
-         Pinto::Role::PathMaker );
+         Pinto::Role::Loggable );
 
 #-------------------------------------------------------------------------------
 # Builders
@@ -65,53 +63,10 @@ sub _build_schema {
 sub deploy {
     my ($self) = @_;
 
-    $self->mkpath( $self->config->db_dir );
+    $self->config->db_dir->mkpath;
     $self->schema->deploy;
 
     return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub select_distribution {
-    my ($self, $where, $attrs) = @_;
-
-    $attrs ||= {};
-    $attrs->{prefetch} ||= 'packages';
-    $attrs->{key}      ||= 'author_canonical_archive_unique';
-
-    return $self->schema->distribution_rs->find($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
-sub select_packages {
-    my ($self, $where, $attrs) = @_;
-
-    $attrs ||= {};
-    $attrs->{prefetch} ||= 'distribution';
-
-    return $self->schema->package_rs->search($where, $attrs);
-}
-
-#-------------------------------------------------------------------------------
-
-sub select_stacks {
-    my ($self, $where, $attrs) = @_;
-
-    return $self->schema->stack_rs->search( $where, $attrs );
-}
-
-#-------------------------------------------------------------------------------
-
-sub select_stack {
-    my ($self, $where, $attrs) = @_;
-
-    $attrs ||= {};
-    $attrs->{key} = 'name_canonical_unique';
-    $where->{name_canonical} ||= lc delete $where->{name};
-
-    return $self->schema->stack_rs->find( $where, $attrs );
 }
 
 #-------------------------------------------------------------------------------
