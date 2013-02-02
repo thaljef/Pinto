@@ -112,26 +112,6 @@ has locker  => (
 
 #-------------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self) = @_;
-
-    unless (    -e $self->config->db_dir
-             && -e $self->config->modules_dir
-             && -e $self->config->authors_dir ) {
-
-        my $root_dir = $self->config->root_dir();
-        throw "Directory $root_dir does not look like a Pinto repository";
-    }
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-
-#-------------------------------------------------------------------------------
-
-
 sub get_property {
     my ($self, @keys) = @_;
 
@@ -872,6 +852,23 @@ sub check_version {
 
     throw "Repository version ($repo_version) and Pinto version ($code_version) do not match"
         if $repo_version != $code_version;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub check_sanity {
+    my ($self) = @_;
+
+    unless (    -e $self->config->db_file
+             && -e $self->config->version_file
+             && -e $self->config->modules_dir
+             && -e $self->config->authors_dir ) {
+
+        my $root_dir = $self->config->root_dir;
+        throw "Directory $root_dir does not look like a Pinto repository";
+    }
 
     return $self;
 }
