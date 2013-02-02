@@ -4,10 +4,9 @@ package Pinto::Statistics;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use String::Format;
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -22,9 +21,9 @@ has stack => (
 );
 
 
-has db => (
+has repo => (
     is       => 'ro',
-    isa      => 'Pinto::Database',
+    isa      => 'Pinto::Repository',
     required => 1,
 );
 
@@ -34,7 +33,7 @@ has db => (
 sub total_distributions {
     my ($self) = @_;
 
-    return $self->db->select_distributions->count;
+    return $self->repo->db->schema->distribution_rs->count;
 }
 
 #------------------------------------------------------------------------------
@@ -42,12 +41,9 @@ sub total_distributions {
 sub stack_distributions {
     my ($self) = @_;
 
-    my $where = { 'stack.name' => $self->stack };
-    my $attrs = { select   => 'distribution_path',
-                  join     => 'stack',
-                  distinct => 1 };
+    my $stack = $self->repo->get_stack($self->stack);
 
-    return $self->db->select_registrations( $where, $attrs )->count;
+    return $stack->distribution_count;
 }
 
 #------------------------------------------------------------------------------
@@ -55,7 +51,7 @@ sub stack_distributions {
 sub total_packages {
     my ($self) = @_;
 
-    return $self->db->select_packages->count;
+    return $self->repo->db->schema->package_rs->count;
 }
 
 #------------------------------------------------------------------------------
@@ -63,10 +59,9 @@ sub total_packages {
 sub stack_packages {
     my ($self) = @_;
 
-    my $where = { 'stack.name' => $self->stack };
-    my $attrs = { join => 'stack' };
+    my $stack = $self->repo->get_stack($self->stack);
 
-    return $self->db->select_registrations( $where, $attrs )->count;
+    return $stack->package_count;
 }
 
 #------------------------------------------------------------------------------
@@ -120,7 +115,7 @@ END_FORMAT
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 1;
