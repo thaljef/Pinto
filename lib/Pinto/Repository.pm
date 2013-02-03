@@ -730,7 +730,6 @@ sub copy_stack {
     return $copy;
 }
 
-
 #-------------------------------------------------------------------------------
 
 sub rename_stack {
@@ -749,9 +748,7 @@ sub rename_stack {
     return $stack;
 }
 
-
 #-------------------------------------------------------------------------------
-
 
 sub delete_stack {
     my ($self, %args) = @_;
@@ -769,7 +766,8 @@ sub delete_stack {
 sub commit {
     my ($self, %args) = @_;
 
-    my $stack = $args{stack};
+    my $stack       = delete $args{stack};
+    my %commit_args = %args;
 
     $stack->write_index;
     $stack->write_registry;
@@ -777,7 +775,9 @@ sub commit {
     my $reg_file = $stack->registry_file;
     $self->vcs->checkout_branch(name => $stack->name_canonical) unless $args{as_orphan};
     $self->vcs->add(file => $reg_file->basename, from => $reg_file);
-    $self->vcs->commit(%args);
+
+    my $commit_id = $self->vcs->commit(%commit_args);
+    $stack->update( {last_commit_id => $commit_id} );
 
     return $self;
 }
