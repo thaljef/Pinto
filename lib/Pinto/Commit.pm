@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use DateTime;
 use String::Format;
 
-use Pinto::Util qw(itis);
+use Pinto::Util qw(itis trim first_line);
 
 use overload ( '""'  => 'to_string' );
 
@@ -55,7 +55,7 @@ has message_title => (
   is          => 'ro',
   isa         => Str,
   lazy        => 1,
-  default     => sub { ... }, # TODO
+  default     => sub { trim( first_line($_[0]->message) ) },
 );
 
 
@@ -63,7 +63,7 @@ has message_body => (
   is          => 'ro',
   isa         => Str,
   lazy        => 1,
-  default     => sub { ... }, # TODO
+  default     => sub { trim( $_[0]->message ) }, # TODO
 );
 
 #------------------------------------------------------------------------------
