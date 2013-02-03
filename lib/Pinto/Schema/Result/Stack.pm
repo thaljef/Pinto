@@ -477,6 +477,16 @@ sub commit {
 
 #------------------------------------------------------------------------------
 
+sub head {
+    my ($self) = @_;
+
+    my $last_commit_id = $self->last_commit_id or return;
+
+    return $self->repo->get_commit($last_commit_id);
+}
+
+#------------------------------------------------------------------------------
+
 sub numeric_compare {
     my ($stack_a, $stack_b) = @_;
 
@@ -514,14 +524,17 @@ sub to_string {
 
     my %fspec = (
            k => sub { $self->name                                    },
+           e => sub { $self->description                             },
            M => sub { $self->is_default                  ? '*' : ' ' },
            L => sub { $self->is_locked                   ? '!' : ' ' },
-           I => sub { $self->last_commit_id                          },
-           i => sub { $self->last_commit_id_prefix                   },
-           G => sub { $self->last_commit_message                     },
-           J => sub { $self->last_committed_by                       },
-           U => sub { $self->last_committed_on->strftime('%c')       },
-           e => sub { $self->description                             },
+           I => sub { $self->head->id                                },
+           i => sub { $self->head->id_prefix                         },
+           G => sub { $self->head->message                           },
+           t => sub { $self->head->message_title                     },
+           b => sub { $self->head->message_body                      },
+           J => sub { $self->head->username                          },
+           U => sub { $self->head->time->strftime('%b %e %Y %H:%M')  },
+ 
     );
 
     $format ||= $self->default_format();
