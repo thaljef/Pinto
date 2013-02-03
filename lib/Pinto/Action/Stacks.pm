@@ -4,8 +4,9 @@ package Pinto::Action::Stacks;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
-use namespace::autoclean;
+use List::Util qw(max);
 
 #------------------------------------------------------------------------------
 
@@ -20,7 +21,6 @@ extends 'Pinto::Action';
 has format => (
     is      => 'ro',
     isa     => Str,
-    default => "%M%L %-16k %i %-16J %U",
 );
 
 #------------------------------------------------------------------------------
@@ -28,9 +28,14 @@ has format => (
 sub execute {
     my ($self) = @_;
 
-    for my $stack ( sort {$a cmp $b} $self->repo->get_all_stacks ) {
-        $self->say($stack->to_string($self->format));
-    }
+    my @stacks = sort {$a cmp $b} $self->repo->get_all_stacks;
+
+	my $max_name = max map { length($_->name) } @stacks;
+	my $max_user = max map { length($_->head->username) } @stacks;
+
+	my $format = $self->format || "%M%L %-${max_name}k  %U  %-{$max_user}J  %i: %t";
+
+    $self->say($_->to_string($format)) for @stacks;
 
     return $self->result;
 }
