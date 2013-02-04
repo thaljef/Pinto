@@ -62,7 +62,7 @@ sub execute {
 
         # Show all commits for the stack
         my $stack = $self->repo->get_stack($self->stack);
-        my $iterator = $self->repo->vcs->history(branch => $stack->name_canonical);
+        my $iterator = $self->repo->vcs->history(branch => $stack->name);
 
         while ( defined(my $commit = $iterator->next) ) {
             $self->say( $commit->to_string($self->format) ); 
