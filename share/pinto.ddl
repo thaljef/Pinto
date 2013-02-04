@@ -1,10 +1,3 @@
-CREATE TABLE repository_property (
-       id              INTEGER PRIMARY KEY NOT NULL,
-       key             TEXT                NOT NULL COLLATE NOCASE,
-       value           TEXT                DEFAULT ''
-);
-
-
 CREATE TABLE distribution (
        id                INTEGER PRIMARY KEY NOT NULL,
        author            TEXT                NOT NULL COLLATE NOCASE,
