@@ -1,3 +1,5 @@
+# ABSTRACT: Common queries for Packages
+
 use utf8;
 package Pinto::Schema::ResultSet::Package;
 
