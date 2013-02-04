@@ -9,9 +9,12 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use DateTime;
 use String::Format;
 
+use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis trim title_text body_text);
 
-use overload ( '""'  => 'to_string' );
+use overload ( '""'     => 'to_string',
+               '<=>'    => 'numeric_compare',
+               fallback => undef );
 
 #------------------------------------------------------------------------------
 
@@ -88,6 +91,20 @@ around BUILDARGS => sub {
 
   return $class->$orig(@args);
 };
+
+#------------------------------------------------------------------------------
+
+sub numeric_compare {
+  my ($commit_a, $commit_b) = @_;
+
+  my $class = __PACKAGE__;
+    throw "Can only compare $class objets"
+        unless itis($commit_a, $class) && itis($commit_b, $class);
+
+  return 0 if $commit_a->id eq $commit_b->id;
+
+  return $commit_a->time <=> $commit_b->time;
+}
 
 #------------------------------------------------------------------------------
 
