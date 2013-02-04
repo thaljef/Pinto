@@ -1,15 +1,13 @@
 CREATE TABLE repository_property (
        id              INTEGER PRIMARY KEY NOT NULL,
-       key             TEXT                NOT NULL,
-       key_canonical   TEXT                NOT NULL,
+       key             TEXT                NOT NULL COLLATE NOCASE,
        value           TEXT                DEFAULT ''
 );
 
 
 CREATE TABLE distribution (
        id                INTEGER PRIMARY KEY NOT NULL,
-       author            TEXT                NOT NULL,
-       author_canonical  TEXT                NOT NULL,
+       author            TEXT                NOT NULL COLLATE NOCASE,
        archive           TEXT                NOT NULL,
        source            TEXT                NOT NULL,
        mtime             INTEGER             NOT NULL,
@@ -31,8 +29,7 @@ CREATE TABLE package (
 
 CREATE TABLE stack (
        id                   INTEGER PRIMARY KEY NOT NULL,
-       name                 TEXT                NOT NULL,
-       name_canonical       TEXT                NOT NULL,
+       name                 TEXT                NOT NULL COLLATE NOCASE,
        description          TEXT                NOT NULL,
        is_default           BOOLEAN             NOT NULL,
        is_locked            BOOLEAN             NOT NULL,
@@ -49,19 +46,11 @@ CREATE TABLE prerequisite (
        FOREIGN KEY(distribution)  REFERENCES distribution(id) ON DELETE CASCADE
 );
 
-/***********************************************************
 
-Schema::Loader names the indexes for us when it generates
-schema classes for us.  So I've just chosen arbitrary names
-
-***********************************************************/
-
-CREATE UNIQUE INDEX a ON distribution(author_canonical, archive);
-CREATE UNIQUE INDEX b ON distribution(md5);
-CREATE UNIQUE INDEX c ON distribution(sha256);
-CREATE UNIQUE INDEX d ON package(name, distribution);
-CREATE UNIQUE INDEX e ON stack(name);
-CREATE UNIQUE INDEX f ON stack(name_canonical);
-CREATE UNIQUE INDEX g ON repository_property(key);
-CREATE UNIQUE INDEX h ON repository_property(key_canonical);
-CREATE UNIQUE INDEX i ON prerequisite(distribution, package_name);
+CREATE UNIQUE INDEX author_archive_unqiue            ON distribution(author, archive);
+CREATE UNIQUE INDEX md5_unique                       ON distribution(md5);
+CREATE UNIQUE INDEX sha256_unique                    ON distribution(sha256);
+CREATE UNIQUE INDEX name_distribution_unique         ON package(name, distribution);
+CREATE UNIQUE INDEX name_unique                      ON stack(name);
+CREATE UNIQUE INDEX key_unique                       ON repository_property(key);
+CREATE UNIQUE INDEX distribution_package_name_unique ON prerequisite(distribution, package_name);
