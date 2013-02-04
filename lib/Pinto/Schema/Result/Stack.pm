@@ -250,12 +250,19 @@ before [ qw(register unregister pin unpin rename delete) ] => sub {
 
 #------------------------------------------------------------------------------
 
+before is_default => sub {
+  my ($self, @args) = @_;
+  throw "Cannot directly set is_default.  Use mark_as_default instead" if @args;
+};
+
+#------------------------------------------------------------------------------
+
 sub copy {
     my ($self, %changes) = @_;
 
     my $copy_name = $changes{name};
 
-    $changes{description} ||= "Copy of stack $self"; 
+    $changes{description} ||= "Copy of stack $self."; 
     $changes{is_default} = 0; # Never duplicate the default flag
 
     my $orig_dir = $self->stack_dir;
