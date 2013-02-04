@@ -21,14 +21,14 @@ my $t = Pinto::Tester->new;
   $t->run_ok('New', {stack => $stk_name, description => $stk_desc});
   my $stack = $t->pinto->repo->get_stack($stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
-  is $stack->get_property('description'), $stk_desc, 'Got correct stack description';
+  is $stack->description, $stk_desc, 'Got correct stack description';
 
   # Add to the stack...
   my $foo_and_bar_1 = make_dist_archive('FooAndBar-1 = Foo~1,Bar~1');
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1});
 
-  # Note the time of last kommit
-  my $old_mtime = $stack->refresh->head->timestamp;
+  # Note the time of last commit
+  my $old_mtime = $stack->refresh->head->time;
 
   # time passes
   sleep 2;
@@ -38,7 +38,7 @@ my $t = Pinto::Tester->new;
   $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_2});
 
   # Check that mtime was updated...
-  cmp_ok $stack->refresh->head->timestamp, '>', $old_mtime, 'Updated stack mtime';
+  cmp_ok $stack->refresh->head->time, '>', $old_mtime, 'Updated stack mtime';
 }
 
 #------------------------------------------------------------------------------
@@ -56,10 +56,10 @@ my $t = Pinto::Tester->new;
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
 
-  is $qa_stack->get_property('description'), 'Copy of stack dev.',
+  is $qa_stack->description, 'Copy of stack dev.',
     'Copied stack has default description';
 
-  is $qa_stack->head, $dev_stack->head,
+  is $qa_stack->head->id, $dev_stack->head->id,
     'Head of copied stack points to head of original stack';
 }
 
@@ -83,8 +83,24 @@ my $t = Pinto::Tester->new;
   $master_stack->discard_changes;
   ok !$master_stack->is_default, 'master stack is no longer default';
 
-  throws_ok { $master_stack->is_default(0) } qr/cannot directly set is_default/,
+  throws_ok { $master_stack->is_default(0) } qr/Cannot directly set is_default/,
     'Setting is_default directly throws exception';
+}
+
+#------------------------------------------------------------------------------
+# Mixed-case stack names...
+
+{
+
+  $t->run_ok(New => {stack => 'MixedCase'}, 
+    'Created stack with mixed-case name');
+
+  ok $t->pinto->repo->get_stack('mixedcase'), 
+    'Got stack using name with different case';
+
+  $t->path_exists_ok( ['MixedCase'], 
+    'Stack directory name has mixed-case name too' );
+
 }
 
 #------------------------------------------------------------------------------
@@ -106,7 +122,7 @@ my $t = Pinto::Tester->new;
    # Copy to a stack that already exists, but with different case
   $t->run_throws_ok('Copy', {from_stack => 'master',
                              to_stack   => 'DeV'},
-                             qr/Stack DeV already exists/);
+                             qr/Stack dev already exists/);
 
 
   # Create stack with invalid name

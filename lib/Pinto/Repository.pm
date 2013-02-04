@@ -650,8 +650,9 @@ sub copy_stack {
     my $stack      = delete $args{stack};
     my $orig_name  = $stack->name;
 
-    throw "Stack $copy_name already exists"
-      if $self->get_stack($copy_name, nocroak => 1);
+    if (my $existing = $self->get_stack($copy_name, nocroak => 1) ) {
+        throw "Stack $existing already exists"
+    } 
 
     my $copy = $stack->copy(%args)->finalize;
     $self->vcs->fork_branch(from => $orig_name, to => $copy_name);
