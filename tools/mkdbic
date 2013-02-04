@@ -3,8 +3,8 @@
 # Run this command from the root directory of the distribution.  You
 # must install DBIx::Class::Schema::Loader first.
 
-mkdir tmp
-rm tmp/pinto.db
+[[ -e tmp ]] || mkdir tmp
+rm -rf tmp/pinto.db
 
 sqlite3 tmp/pinto.db < share/pinto.ddl
 
