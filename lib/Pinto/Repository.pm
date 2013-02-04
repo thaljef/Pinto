@@ -6,9 +6,8 @@ use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Readonly;
-use Path::Class;
 use File::Find;
-use File::Copy qw(move);
+use Path::Class;
 
 use Pinto::VCS;
 use Pinto::Util;
@@ -18,7 +17,6 @@ use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis);
 
 use version;
 
@@ -205,7 +203,7 @@ stack that you can modify, use C<open_stack>.
 sub get_stack {
     my ($self, $stack, %opts) = @_;
 
-    return $stack if itis($stack, 'Pinto::Schema::Result::Stack');
+    return $stack if Pinto::Util::itis($stack, 'Pinto::Schema::Result::Stack');
     return $self->get_default_stack if not $stack;
 
     my $where = { name_canonical => lc $stack };
@@ -396,7 +394,7 @@ sub get_distribution_by_spec {
 
     my $spec  = $args{spec};
 
-    if ( itis($spec, 'Pinto::PackageSpec') ) {
+    if ( Pinto::Util::itis($spec, 'Pinto::PackageSpec') ) {
         my $pkg_name = $spec->name;
         my $stack    = $args{stack} or throw "Must specify a stack";
         my $entry    = $stack->lookup(package => $pkg_name);
@@ -410,7 +408,7 @@ sub get_distribution_by_spec {
     }
 
 
-    if ( itis($spec, 'Pinto::DistributionSpec') ) {
+    if ( Pinto::Util::itis($spec, 'Pinto::DistributionSpec') ) {
         my $dist = $self->get_distribution(spec => $spec);
         throw "Distribution $spec is not in the repository" if not $dist;
 
@@ -554,10 +552,10 @@ sub find_or_pull {
     my $target = $args{target};
     my $stack  = $args{stack};
 
-    if ( itis($target, 'Pinto::PackageSpec') ){
+    if ( Pinto::Util::itis($target, 'Pinto::PackageSpec') ){
         return $self->_find_or_pull_by_package_spec($target, $stack);
     }
-    elsif ( itis($target, 'Pinto::DistributionSpec') ){
+    elsif ( Pinto::Util::itis($target, 'Pinto::DistributionSpec') ){
         return $self->_find_or_pull_by_distribution_spec($target);
     }
     else {
@@ -806,7 +804,7 @@ sub clean_files {
     my $callback = sub {
         return if not -f $_;
 
-        my $path    = file($_);
+        my $path    = Path::Class::file($_);
         my $author  = $path->parent->basename;
         my $archive = $path->basename;
 
