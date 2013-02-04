@@ -37,11 +37,6 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
-=head2 name_canonical
-
-  data_type: 'text'
-  is_nullable: 0
-
 =head2 description
 
   data_type: 'text'
@@ -70,8 +65,6 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
-  "name_canonical",
-  { data_type => "text", is_nullable => 0 },
   "description",
   { data_type => "text", is_nullable => 0 },
   "is_default",
@@ -95,18 +88,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
-
-=head2 C<name_canonical_unique>
-
-=over 4
-
-=item * L</name_canonical>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("name_canonical_unique", ["name_canonical"]);
 
 =head2 C<name_unique>
 
@@ -134,8 +115,8 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-23 13:33:43
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:PUDO12IUL14R7s9N73hFpQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-04 12:16:40
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:e3ju/T8XuZ86KqnzUthaFA
 
 #-------------------------------------------------------------------------------
 
@@ -168,7 +149,7 @@ has stack_dir => (
   is          => 'ro',
   isa         => Dir,
   lazy        => 1,
-  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name_canonical ) },
+  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name ) },
 );
 
 
@@ -231,8 +212,6 @@ sub FOREIGNBUILDARGS {
   $args->{is_default}  ||= 0;
   $args->{is_locked}   ||= 0;
   $args->{description} ||= '';
-  $args->{name_canonical} = lc $args->{name};
-
 
   return $args;
 }
@@ -275,7 +254,6 @@ sub copy {
     my ($self, %changes) = @_;
 
     my $copy_name = $changes{name};
-    my $copy_stack_canon = $changes{name_canonical} = lc $copy_name;
 
     $changes{description} ||= "Copy of stack $self"; 
     $changes{is_default} = 0; # Never duplicate the default flag
@@ -300,18 +278,17 @@ sub rename {
     my ($self, %args) = @_;
 
     my $new_name = $args{to};
-    my $new_name_canon = lc $new_name;
 
     my $orig_dir = $self->stack_dir;
     throw "Directory $orig_dir does not exist" if not -e $orig_dir;
 
-    my $new_dir = $self->repo->config->root_dir->subdir($new_name_canon);
+    my $new_dir = $self->repo->config->root_dir->subdir($new_name);
     throw "Directory $new_dir already exists" if -e $new_dir;
 
     $self->debug("Renaming directory $orig_dir to $new_dir");
     File::Copy::Recursive::rmove($orig_dir, $new_dir) or throw "Rename failed: $!";
 
-    $self->update( {name => $new_name, name_canonical => $new_name_canon} );
+    $self->update( {name => $new_name} );
 
     return $self
 }
