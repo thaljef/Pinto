@@ -1,5 +1,5 @@
-^profiles/.*
+^profiles
 ^nytprof
-sql/pinto.db$
+^tmp$
 Pinto.sublime-project
 Pinto.sublime-workspace
