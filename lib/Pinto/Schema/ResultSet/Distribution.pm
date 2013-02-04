@@ -41,8 +41,8 @@ sub find_by_md5 {
 sub find_by_author_archive {
   my ($self, $author, $archive) = @_;
 
-  my $where = {author_canonical => uc $author, archive => $archive};
-  my $attrs = {key => 'author_canonical_archive_unique'};
+  my $where = {author => $author, archive => $archive};
+  my $attrs = {key => 'author_archive_unique'};
 
   return $self->find($where, $attrs);
 }
