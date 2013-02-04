@@ -110,74 +110,6 @@ has locker  => (
 
 #-------------------------------------------------------------------------------
 
-sub get_property {
-    my ($self, @keys) = @_;
-
-    my %props = %{ $self->get_properties };
-    return @props{@keys};
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_properties {
-    my ($self) = @_;
-
-    my @props = $self->db->repository_properties->search->all;
-
-    return { map { $_->key => $_->value } @props };
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_property {
-    my ($self, $key, $value) = @_;
-
-    return $self->set_properties( {$key => $value} );
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_properties {
-    my ($self, $props) = @_;
-
-    my $attrs  = {key => 'key_canonical_unique'};
-    while (my ($key, $value) = each %{$props}) {
-        Pinto::Util::validate_property_name($key);
-        my $kv_pair = {key => $key, key_canonical => lc($key), value => $value};
-        $self->db->repository_properties->update_or_create($kv_pair, $attrs);
-    }
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_property {
-    my ($self, @keys) = @_;
-
-    for my $key (@keys) {
-        my $where = {key => $key};
-        my $prop = $self->db->repository_properties->update_or_create($where);
-        $prop->delete if $prop;
-    }
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete_properties {
-    my ($self) = @_;
-
-    # TODO: Do not allow deletion of system props
-    my $props_rs = $self->db->repository_properties->search;
-    $props_rs->delete;
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
 =method get_stack()
 
 =method get_stack( $stack_name )
@@ -206,7 +138,7 @@ sub get_stack {
     return $stack if Pinto::Util::itis($stack, 'Pinto::Schema::Result::Stack');
     return $self->get_default_stack if not $stack;
 
-    my $where = { name_canonical => lc $stack };
+    my $where = { name => $stack };
     my $got_stack = $self->db->schema->find_stack( $where );
 
     throw "Stack $stack does not exist"
@@ -304,9 +236,9 @@ sub get_package {
 
         my ($author, $archive) = Pinto::Util::parse_dist_path($dist_path);
 
-        my $where = { 'me.name'                        => $pkg_name, 
-                      'distribution.author_canonical'  => uc $author,
-                      'distribution.archive'           => $archive };
+        my $where = { 'me.name'              => $pkg_name, 
+                      'distribution.author'  => $author,
+                      'distribution.archive' => $archive };
 
         my @pkgs = $self->db->schema->search_package($where)->with_distribution;
 
@@ -502,7 +434,6 @@ sub _validate_archive {
 
     my $basename = $archive->basename;
     if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
-        $DB::single = 1;
         throw "A distribution already exists as $same_path";
     }
 
@@ -771,7 +702,7 @@ sub commit {
     $stack->write_registry;
 
     my $reg_file = $stack->registry_file;
-    $self->vcs->checkout_branch(name => $stack->name_canonical) unless $args{as_orphan};
+    $self->vcs->checkout_branch(name => $stack->name) unless $args{as_orphan};
     $self->vcs->add(file => $reg_file->basename, from => $reg_file);
 
     # NOTE: Git will create a commit object even if nothing has changed.  The new commit
