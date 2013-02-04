@@ -776,6 +776,10 @@ sub commit {
     $self->vcs->checkout_branch(name => $stack->name_canonical) unless $args{as_orphan};
     $self->vcs->add(file => $reg_file->basename, from => $reg_file);
 
+    # NOTE: Git will create a commit object even if nothing has changed.  The new commit
+    # will just point to the same tree as the last commit.  So it is up to you to check
+    # whether you really need to commit or not.  Use $stack->stack_has_changed().
+
     my $commit_id = $self->vcs->commit(%commit_args);
     $stack->update( {last_commit_id => $commit_id} );
 
