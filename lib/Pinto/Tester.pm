@@ -35,6 +35,9 @@ BEGIN {
     # So we don't prompt for commit messages
     $Pinto::Globals::is_interactive = 0; 
 
+    # So the username/author is constant
+    $Pinto::Globals::current_username = 'AUTHOR';
+
     # So we can run `prove` without having the ddl installed
     no warnings 'redefine';
     my $ddl_file = file( qw(share pinto.ddl) );
