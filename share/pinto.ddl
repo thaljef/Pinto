@@ -45,5 +45,4 @@ CREATE UNIQUE INDEX md5_unique                       ON distribution(md5);
 CREATE UNIQUE INDEX sha256_unique                    ON distribution(sha256);
 CREATE UNIQUE INDEX name_distribution_unique         ON package(name, distribution);
 CREATE UNIQUE INDEX name_unique                      ON stack(name);
-CREATE UNIQUE INDEX key_unique                       ON repository_property(key);
 CREATE UNIQUE INDEX distribution_package_name_unique ON prerequisite(distribution, package_name);
