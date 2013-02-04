@@ -5,7 +5,11 @@ package Pinto::Database;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Path::Class qw(file);
+use File::ShareDir qw(dist_file);
+
 use Pinto::Schema;
+use Pinto::Types qw(File);
 
 #-------------------------------------------------------------------------------
 
@@ -28,6 +32,15 @@ has repo => (
    isa        => 'Pinto::Repository',
    weak_ref   => 1,
    required   => 1,
+);
+
+
+has ddl_file => (
+   is         => 'ro',
+   isa        => File,
+   init_arg   => undef,
+   default    => sub { file( dist_file( qw(Pinto pinto.ddl) ) ) },
+   lazy       => 1,
 );
 
 #-------------------------------------------------------------------------------
@@ -59,12 +72,34 @@ sub _build_schema {
 }
 
 #-------------------------------------------------------------------------------
+# NB: We used to just let DBIx::Class generate the DDL from its own schema, but 
+# SQL::Translator does not support the COLLATE feature of SQLite.  So now, we
+# ship Pinto with a real copy of the DDL, and feed it into the database when
+# the repository is initialized.
+#
+# Personally, I kinda prefer having a raw DDL file, rather than generating it 
+# because then I know *exactly* what the database schema will be, and we are 
+# no longer exposed to bugs that might exist in SQL::Translator.  We don't need
+# to deploy to different RDBMSes, so we don't really need SQL::Translator to 
+# help with that anyway.
+#
+# DBD::SQLite can only process one statement at a time, so we have to parse
+# the file and "do" each statement separately.  Splitting on semicolons is
+# primitive, but effective (as long as semicolons are only used in statement
+# terminators).
+#-------------------------------------------------------------------------------
 
 sub deploy {
     my ($self) = @_;
 
     $self->config->db_dir->mkpath;
-    $self->schema->deploy;
+
+    my $dbh = $self->schema->storage->dbh;
+    my $ddl = $self->ddl_file->slurp;
+
+    my $guard = $self->schema->storage->txn_scope_guard;
+    $dbh->do("$_;") for split /;/, $ddl;
+    $guard->commit;
 
     return $self;
 }
