@@ -42,7 +42,6 @@ BEGIN {
     no warnings 'redefine';
     my $ddl_file = file( qw(share pinto.ddl) );
     *Pinto::Database::ddl_file = sub { $ddl_file } if -e $ddl_file;
-
 }
 
 #------------------------------------------------------------------------------
