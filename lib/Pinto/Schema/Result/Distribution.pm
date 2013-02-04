@@ -37,11 +37,6 @@ __PACKAGE__->table("distribution");
   data_type: 'text'
   is_nullable: 0
 
-=head2 author_canonical
-
-  data_type: 'text'
-  is_nullable: 0
-
 =head2 archive
 
   data_type: 'text'
@@ -74,8 +69,6 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "author",
   { data_type => "text", is_nullable => 0 },
-  "author_canonical",
-  { data_type => "text", is_nullable => 0 },
   "archive",
   { data_type => "text", is_nullable => 0 },
   "source",
@@ -102,11 +95,11 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<author_canonical_archive_unique>
+=head2 C<author_archive_unique>
 
 =over 4
 
-=item * L</author_canonical>
+=item * L</author>
 
 =item * L</archive>
 
@@ -114,10 +107,7 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "author_canonical_archive_unique",
-  ["author_canonical", "archive"],
-);
+__PACKAGE__->add_unique_constraint("author_archive_unique", ["author", "archive"]);
 
 =head2 C<md5_unique>
 
@@ -189,8 +179,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-19 17:14:53
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:z7OmVe7355Z4wFSBCfQRWA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-04 11:03:56
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:c2P+pLq6KzLZMTiBMNZg9g
 
 #-------------------------------------------------------------------------------
 
@@ -231,7 +221,6 @@ sub FOREIGNBUILDARGS {
 
     $args ||= {};
     $args->{source} ||= 'LOCAL';
-    $args->{author_canonical} = uc $args->{author};
 
     return $args;
 }
@@ -249,13 +238,21 @@ has distname_info => (
     lazy     => 1,
 );
 
-#------------------------------------------------------------------------------
 
 has is_devel => (
     is       => 'ro',
     isa      => 'Bool',
     init_arg => undef,
     default  => sub {$_[0]->maturity() eq 'developer'},
+    lazy     => 1,
+);
+
+
+has author_canonical => (
+    is       => 'ro',
+    isa      => 'Str',
+    init_arg => undef,
+    default  => sub {uc $_[0]->author},
     lazy     => 1,
 );
 

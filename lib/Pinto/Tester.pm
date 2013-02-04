@@ -30,7 +30,17 @@ extends qw(Test::Builder::Module);
 
 #------------------------------------------------------------------------------
 
-BEGIN { $Pinto::Globals::is_interactive = 0; }
+BEGIN { 
+
+    # So we don't prompt for commit messages
+    $Pinto::Globals::is_interactive = 0; 
+
+    # So we can run `prove` without having the ddl installed
+    no warnings 'redefine';
+    my $ddl_file = file( qw(share pinto.ddl) );
+    *Pinto::Database::ddl_file = sub { $ddl_file } if -e $ddl_file;
+
+}
 
 #------------------------------------------------------------------------------
 
