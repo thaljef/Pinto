@@ -3,9 +3,10 @@
 # Run this command from the root directory of the distribution.  You
 # must install DBIx::Class::Schema::Loader first.
 
-rm -rf sql/pinto.db
+mkdir tmp
+rm tmp/pinto.db
 
-sqlite3 sql/pinto.db < sql/pinto.sql
+sqlite3 tmp/pinto.db < share/pinto.ddl
 
 dbicdump -Ilib \
          -o skip_load_external=1 \
@@ -13,5 +14,5 @@ dbicdump -Ilib \
          -o 'use_moose=1' \
          -o 'result_roles=[ qw(Pinto::Role::Schema::Result) ]' \
          Pinto::Schema \
-         dbi:SQLite:sql/pinto.db
+         dbi:SQLite:tmp/pinto.db
 
