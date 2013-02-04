@@ -68,7 +68,7 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
   $local->registration_not_ok('AUTHOR/DistD-1/PkgD~1/master', 'Dependency of failed target was unregisted');
 
   # In fact, they shouldn't even exist in the DB...
-  my $DistD = $local->pinto->repo->get_distribution(author_canonical => 'AUTHOR', archive => 'DistD-1.tar.gz');
+  my $DistD = $local->pinto->repo->get_distribution(author => 'AUTHOR', archive => 'DistD-1.tar.gz');
   is $DistD, undef, 'Depedency of failed target is gone completely';
 
   # However, the archive for B and its prereq D will still be on the filesystem...
