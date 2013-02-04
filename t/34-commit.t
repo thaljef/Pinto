@@ -39,7 +39,6 @@ use Pinto::Globals;
 local $Pinto::Globals::current_username = 'ME';
 
 my $t = Pinto::Tester->new;
-$DB::single = 1;
 
 #------------------------------------------------------------------------------
 
