@@ -40,6 +40,12 @@ CREATE TABLE prerequisite (
 );
 
 
+/*****************************************************************************
+* These index names must match those that are created by DBIC::Schema::Loader.
+* If you create or change an index, make sure the name generated for the Schema
+* classes is added or changed here as well.
+*****************************************************************************/
+
 CREATE UNIQUE INDEX author_archive_unqiue            ON distribution(author, archive);
 CREATE UNIQUE INDEX md5_unique                       ON distribution(md5);
 CREATE UNIQUE INDEX sha256_unique                    ON distribution(sha256);
