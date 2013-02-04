@@ -1,3 +1,5 @@
+# ABSTRACT: Common queries for Distributions
+
 use utf8;
 package Pinto::Schema::ResultSet::Distribution;
 
