@@ -3,11 +3,7 @@
 package Pinto::Action::Clean;
 
 use Moose;
-
-use Path::Class;
-use File::Find;
-
-use namespace::autoclean;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 #------------------------------------------------------------------------------
 
@@ -22,7 +18,9 @@ extends qw( Pinto::Action );
 sub execute {
     my ($self) = @_;
 
-    $self->repo->clean_files(force => 1);
+    my $did_delete = $self->repo->clean_files;
+
+    $self->result->changed if $did_delete;
 
     return $self->result;
 }
