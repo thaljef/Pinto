@@ -269,6 +269,8 @@ sub unregister_distribution {
 
   $self->unregister(package => $_) for $dist->packages;
 
+  $self->_set_has_changed(1);
+
   return $self;
 }
 
@@ -282,6 +284,8 @@ sub unregister_package {
 
   delete $self->entries_by_package->{ $pkg->name }
     or throw "Package $pkg is not registered on this stack";
+
+  $self->_set_has_changed(1);
 
   return $self;
 }
