@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Term::ANSIColor qw(color);
 
-use Pinto::Types qw(StackName StackObject);
+use Pinto::Types qw(StackName StackDefault StackObject CommitID);
 
 #------------------------------------------------------------------------------
 
@@ -22,15 +22,27 @@ extends qw( Pinto::Action );
 
 has left_stack => (
     is       => 'ro',
-    isa      => StackName | StackObject,
+    isa      => StackName | StackDefault | StackObject,
     required => 1,
+);
+
+
+has left_commit => (
+    is       => 'ro',
+    isa      => CommitID,
 );
 
 
 has right_stack => (
     is       => 'ro',
-    isa      => StackName | StackObject,
+    isa      => StackName | StackDefault | StackObject,
     required => 1,
+);
+
+
+has right_commit => (
+    is       => 'ro',
+    isa      => CommitID,
 );
 
 
@@ -42,14 +54,44 @@ has nocolor => (
 
 #------------------------------------------------------------------------------
 
+around BUILDARGS => sub {
+  my $orig  = shift;
+  my $class = shift;
+
+  # Convert hashref back to hash, so notation is easier
+  my %args = %{ $class->$orig(@_) };
+
+  # This mess parses the left/right stack attributes into 
+  # separate left/right stack and commit attributes.
+
+  for my $lr ( qw(left right) ) {
+    my ($s, $c) = ($lr . '_stack', $lr . '_commit');
+    @args{$s, $c} = (split /[@]/, $args{$s})
+      if defined $args{$s} and $args{$s} =~ /[@]/;
+
+    # split() gives us empty strings,
+    # but we can only take undef  
+    $args{$s} ||= undef;
+  }
+
+  return \%args;
+};
+
+#------------------------------------------------------------------------------
+
 sub execute {
     my ($self) = @_;
 
-    my $left  = $self->repo->get_stack($self->left_stack);
-    my $right = $self->repo->get_stack($self->right_stack);
+    my $left_stack  = $self->repo->get_stack($self->left_stack);
+    my $left_commit = $self->left_commit ? $self->repo->get_commit($self->left_commit) 
+                                         : $left_stack->head;
 
-    my $diff = $self->repo->vcs->diff( left_commit_id  => $left->last_commit_id,
-                                       right_commit_id => $right->last_commit_id );
+    my $right_stack  = $self->repo->get_stack($self->right_stack);
+    my $right_commit = $self->right_commit ? $self->repo->get_commit($self->right_commit) 
+                                           : $right_stack->head;
+
+    my $diff = $self->repo->vcs->diff( left_commit_id  => $left_commit->id,
+                                       right_commit_id => $right_commit->id );
 
     my $buffer = '';
     my ($red, $green, $reset) = $self->nocolor 
@@ -66,8 +108,11 @@ sub execute {
 
     $diff->patch($cb);
 
-    $self->say("$left..$right");
-    $self->say($buffer);
+    if ($buffer) {
+      my @hfields = ($left_stack, $left_commit, $right_stack, $right_commit);   
+      $self->say(sprintf "%s@%s..%s@%s", @hfields);
+      $self->say($buffer);
+    }
 
     return $self->result;
 }
