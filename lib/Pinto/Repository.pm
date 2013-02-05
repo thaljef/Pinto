@@ -85,8 +85,7 @@ has cache => (
     is         => 'ro',
     isa        => 'Pinto::IndexCache',
     lazy       => 1,
-    handles    => [ qw(locate) ],
-    clearer    => 'clear_cache',
+    handles    => [ qw(locate clear_cache) ],
     default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
                                                 logger => $_[0]->logger ) },
 );

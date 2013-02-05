@@ -18,7 +18,9 @@ use namespace::autoclean;
 has locator => (
     is         => 'ro',
     isa        => 'Package::Locator',
-    lazy_build => 1,
+    handles    => [ qw(clear_cache) ],
+    builder    => '_build_locator',
+    lazy       => 1,
 );
 
 #-------------------------------------------------------------------------------
@@ -65,6 +67,7 @@ sub contents {
     return @seen{ sort keys %seen };
 
 }
+
 #-------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable();
