@@ -1,6 +1,6 @@
-# ABSTRACT: Iterator returning each commit in the stack history
+# ABSTRACT: Iterates through commit history
 
-package Pinto::CommitIterator;
+package Pinto::CommitWalker;
 
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
@@ -13,7 +13,7 @@ use Pinto::Commit;
 
 #------------------------------------------------------------------------------
 
-has walker => (
+has raw_walker => (
   is          => 'ro',
   isa         => 'Git::Raw::Walker',
   required    => 1,
@@ -24,9 +24,9 @@ has walker => (
 sub next {
   my ($self) = @_;
 
-  my $git_commit = $self->walker->next or return;
+  my $git_commit = $self->raw_walker->next or return;
 
-  return Pinto::Commit->new( $git_commit );
+  return Pinto::Commit->new( raw_commit => $git_commit );
 }
 
 #------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ sub next {
 sub reset {
   my ($self) = @_;
 
-  $self->walker->reset;
+  $self->raw_walker->reset;
 
   return $self;
 }

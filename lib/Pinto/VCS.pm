@@ -15,7 +15,7 @@ use Try::Tiny;
 use Pinto::Types qw(Dir);
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
-use Pinto::CommitIterator;
+use Pinto::CommitWalker;
 use Pinto::Commit;
 use Pinto::Diff;
 
@@ -191,7 +191,7 @@ sub history {
     my $branch_ref = $self->_get_branch_ref($branch);
     $walker->push($branch_ref->target);
 
-    return Pinto::CommitIterator->new(walker => $walker);
+    return Pinto::CommitWalker->new(raw_walker => $walker);
 }
 
 #-------------------------------------------------------------------------------

@@ -22,39 +22,55 @@ use overload ( '""'     => 'to_string',
 
 #------------------------------------------------------------------------------
 
+has raw_commit => (
+  is          => 'ro',
+  isa         => 'Git::Raw::Commit',
+  required    => 1,
+);
+
+
 has id => (
   is          => 'ro',
   isa         => Str,
-  required    => 1,
+  init_arg    => undef,
+  default     => sub { $_[0]->raw_commit->id },
+  lazy        => 1,
 );
 
 
 has id_prefix => (
   is          => 'ro',
   isa         => Str,
-  lazy        => 1,
+  init_arg    => undef,
   default     => sub { substr($_[0]->id, 0, 7) },
+  lazy        => 1,
 );
 
 
 has username => (
   is          => 'ro',
   isa         => Str,
-  required    => 1,
+  init_arg    => undef,
+  default     => sub { $_[0]->raw_commit->committer->name },
+  lazy        => 1,
 );
 
 
 has time => (
   is          => 'ro',
   isa         => 'DateTime',
-  required    => 1,
+  init_arg    => undef,
+  default     => sub { DateTime->from_epoch(epoch => $_[0]->raw_commit->time) },
+  lazy        => 1,
 );
 
 
 has message => (
   is          => 'ro',
   isa         => Str,
-  required    => 1,
+  init_arg    => undef,
+  default     => sub { trim( $_[0]->raw_commit->message ) },
+  lazy        => 1,
 );
 
 
@@ -72,25 +88,6 @@ has message_body => (
   lazy        => 1,
   default     => sub { trim( body_text($_[0]->message) ) },
 );
-
-#------------------------------------------------------------------------------
-
-around BUILDARGS => sub {
-  my ($orig, $class, @args) = @_;
-
-  if ( @args == 1 && itis($args[0], 'Git::Raw::Commit') ) {
-
-    my $git_commit = $args[0];
-    my $datetime = DateTime->from_epoch(epoch => $git_commit->time);
-
-    return $class->$orig( id       => $git_commit->id,
-                          time     => $datetime,
-                          message  => $git_commit->message,
-                          username => $git_commit->committer->name );
-  }
-
-  return $class->$orig(@args);
-};
 
 #------------------------------------------------------------------------------
 
