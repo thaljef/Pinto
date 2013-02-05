@@ -305,6 +305,8 @@ sub rename {
 sub delete {
     my ($self) = @_;
 
+    throw "Cannot kill the default stack" if $self->is_default;
+
     $self->next::method;
 
     my $stack_dir = $self->stack_dir;
