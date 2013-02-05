@@ -58,6 +58,7 @@ sub execute {
 
     my $cb = sub {
       my ($type, $patch_line) = @_;
+      # TODO: Decide if/how to display these types...
       return if $type =~ m/(ctx|file|hunk|bin)/;
       my $color = $type eq 'add' ? $green : $red;
       $buffer .= ($color  . $patch_line . $reset);
