@@ -219,7 +219,7 @@ sub diff {
 
     my $diff = $left_tree->diff($self->git, $right_tree);
 
-    return Pinto::Diff->new($diff);
+    return Pinto::Diff->new(raw_diff => $diff);
 }
 
 #-------------------------------------------------------------------------------

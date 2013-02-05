@@ -283,19 +283,6 @@ sub result_not_changed_ok {
 
 #------------------------------------------------------------------------------
 
-sub head_revision_number_is {
-    my ($self, $revnum, $stack_name, $test_name) = @_;
-
-    my $stack = $self->pinto->repo->get_stack($stack_name);
-    my $head  = $stack->head_revision;
-
-    $test_name ||= "Head revision number of stack $stack matches";
-
-    return $self->tb->is_eq($head->number, $revnum, $test_name);
-}
-
-#------------------------------------------------------------------------------
-
 sub repository_clean_ok {
     my ($self) = @_;
 

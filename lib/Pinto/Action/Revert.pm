@@ -3,12 +3,11 @@
 package Pinto::Action::Revert;
 
 use Moose;
-use MooseX::Types::Moose qw(Int);
+use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto::Types qw(StackName StackDefault StackObject);
+use Pinto::Patch;
+use Pinto::Types qw(StackName StackDefault StackObject CommitID);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -31,40 +30,11 @@ has stack => (
 );
 
 
-has revision => (
+has commit => (
     is       => 'ro',
-    isa      => Int,
-    default  => -1,
+    isa      => CommitID,
+    coerce   => 1,
 );
-
-
-has target_revision => (
-    is       => 'ro',
-    isa      => Int,
-    init_arg => undef,
-    builder  => '_build_target_revision',
-    lazy     => 1,
-);
-
-#------------------------------------------------------------------------------
-
-sub _build_target_revision {
-    my ($self) = @_;
-
-    my $stack     = $self->repo->get_stack($self->stack);
-
-    my $revnum    = $self->revision;
-    my $headnum   = $stack->head_revision->number;
-    my $target    = $revnum < 0 ? ($headnum + $revnum) : $revnum;
-
-    throw "Cannot go beyond revision 0" if $target < 0;
-
-    throw "Revision $target has not happend yet on stack $stack" if $target > $headnum;
-
-    throw "Revision $target is the head of stack $stack" if $target == $headnum;
-
-    return $target;
-}
 
 #------------------------------------------------------------------------------
 
@@ -72,38 +42,19 @@ sub execute {
     my ($self) = @_;
 
     my $stack = $self->repo->get_stack($self->stack);
-    my $target = $self->target_revision;
 
-    $self->_revert($stack, $target);
+    my $diff  = $self->repo->vcs->diff( left_commit_id => $stack->last_commit_id,
+                                        right_commit_id => $self->commit );
 
-    if (not $self->dryrun) {
-        my $message = $self->edit_message(stacks => [$stack]);
-        $stack->close(message => $message);
-        $self->repo->write_index(stack => $stack);
-    }
+    my $patch = Pinto::Patch->new(diff => $diff, stack => $stack);
+    $patch->apply;
+
+    return $self->result if $self->dryrun or $stack->has_not_changed;
+
+    my $message = $self->edit_message(stack => $stack);
+    $stack->commit(message => $message);
 
     return $self->result->changed;
-}
-
-#------------------------------------------------------------------------------
-
-sub _revert {
-    my ($self, $stack, $target) = @_;
-
-    $self->notice("Reverting stack $stack to revision $target");
-
-    my $new_head  = $self->repo->open_revision(stack => $stack);
-    my $previous_revision = $new_head->previous_revision;
-
-    while ($previous_revision->number > $target) {
-        $previous_revision->undo;
-        $previous_revision = $previous_revision->previous_revision;
-
-        # If our logic is right, then $previous_revision should always exist
-        throw "PANIC: Reached end of history" if not defined $previous_revision;
-    }
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -111,9 +62,9 @@ sub _revert {
 sub message_title {
     my ($self) = @_;
 
-    my $revnum = $self->target_revision;
+    my $commit = $self->commit;
 
-    return "Reverted to revision $revnum.";
+    return "Reverted to commit $commit.";
 }
 
 #------------------------------------------------------------------------------
