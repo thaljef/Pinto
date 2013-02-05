@@ -1,4 +1,4 @@
-# ABSTRACT: Represents 
+# ABSTRACT: Represents difference between two stacks
 
 package Pinto::Diff;
 
@@ -18,18 +18,6 @@ has raw_diff => (
   isa         => 'Git::Raw::Diff',
   required    => 1,
 );
-
-#------------------------------------------------------------------------------
-
-around BUILDARGS => sub {
-  my ($orig, $class, @args) = @_;
-
-  if ( @args == 1 && itis($args[0], 'Git::Raw::Diff') ) {
-    return $class->$orig( raw_diff => $args[0] );
-  }
-
-  return $class->$orig(@args);
-};
 
 #------------------------------------------------------------------------------
 
