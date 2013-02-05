@@ -3,7 +3,8 @@
 package Pinto::CommitMessage;
 
 use Moose;
-use MooseX::Types::Moose qw(ArrayRef Str);
+use MooseX::Types::Moose qw(Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Term::EditorEdit;
 

@@ -1,6 +1,6 @@
-package Pinto::Tester::Util;
-
 # ABSTRACT: Static helper functions for testing
+
+package Pinto::Tester::Util;
 
 use strict;
 use warnings;

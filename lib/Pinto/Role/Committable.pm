@@ -4,6 +4,7 @@ package Pinto::Role::Committable;
 
 use Moose::Role;
 use MooseX::Types::Moose qw(Bool Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 

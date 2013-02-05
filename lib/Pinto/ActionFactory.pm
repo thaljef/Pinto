@@ -4,6 +4,7 @@ package Pinto::ActionFactory;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Class::Load;
 

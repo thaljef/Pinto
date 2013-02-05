@@ -5,6 +5,7 @@ package Pinto::Result;
 use Moose;
 
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 #-----------------------------------------------------------------------------
 

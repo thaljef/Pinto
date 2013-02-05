@@ -3,8 +3,7 @@
 package Pinto::Role::Schema::Result;
 
 use Moose::Role;
-
-use namespace::autoclean;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 #------------------------------------------------------------------------------
 

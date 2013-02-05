@@ -5,6 +5,7 @@ package Pinto::Tester;
 use Moose;
 use MooseX::NonMoose;
 use MooseX::Types::Moose qw(ScalarRef HashRef);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Carp;
 use IO::String;

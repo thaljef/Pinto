@@ -3,6 +3,7 @@
 package Pinto::Role::Transactional;
 
 use Moose::Role;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 

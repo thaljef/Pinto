@@ -1,8 +1,9 @@
-# ABSTRACT: Represents 
+# ABSTRACT: Iterator returning each commit in the stack history
 
 package Pinto::CommitIterator;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Commit;
 
