@@ -203,7 +203,7 @@ sub get_commit {
 
     my $commit_ref = $self->_get_commit_ref($commit_id);
 
-    return Pinto::Commit->new($commit_ref);
+    return Pinto::Commit->new(raw_commit => $commit_ref);
 }
 
 #-------------------------------------------------------------------------------
