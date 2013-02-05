@@ -188,6 +188,8 @@ with 'Pinto::Role::Schema::Result';
 
 #-------------------------------------------------------------------------------
 
+use MooseX::Types::Moose qw(Str Bool);
+
 use URI;
 use Path::Class;
 use CPAN::DistnameInfo;
@@ -241,7 +243,7 @@ has distname_info => (
 
 has is_devel => (
     is       => 'ro',
-    isa      => 'Bool',
+    isa      => Bool,
     init_arg => undef,
     default  => sub {$_[0]->maturity() eq 'developer'},
     lazy     => 1,
@@ -250,7 +252,7 @@ has is_devel => (
 
 has author_canonical => (
     is       => 'ro',
-    isa      => 'Str',
+    isa      => Str,
     init_arg => undef,
     default  => sub {uc $_[0]->author},
     lazy     => 1,

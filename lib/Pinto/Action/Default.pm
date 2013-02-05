@@ -31,7 +31,7 @@ has stack => (
 
 has none => (
 	is      => 'ro',
-	isa     => 'Bool',
+	isa     => Bool,
 	default => 0,
 );
 
