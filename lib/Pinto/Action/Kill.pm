@@ -45,7 +45,7 @@ sub execute {
 
     $stack->unlock if $stack->is_locked && $self->force;
 
-    $self->repo->delete_stack(stack => $stack);
+    $self->repo->kill_stack(stack => $stack);
 
     return $self->result->changed;
 }

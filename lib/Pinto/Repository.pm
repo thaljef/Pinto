@@ -679,12 +679,12 @@ sub rename_stack {
 
 #-------------------------------------------------------------------------------
 
-sub delete_stack {
+sub kill_stack {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
 
-    $stack->delete;
+    $stack->kill;
     $self->vcs->delete_branch(branch => $stack->name);
 
     return $stack;
