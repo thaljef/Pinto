@@ -17,6 +17,7 @@ use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
 use Pinto::CommitIterator;
 use Pinto::Commit;
+use Pinto::Diff;
 
 #-------------------------------------------------------------------------------
 
@@ -208,14 +209,19 @@ sub get_commit {
 #-------------------------------------------------------------------------------
 
 sub diff {
-    my ($self, %args);
+    my ($self, %args) = @_;
 
-    my $commit_id = $args{commit_id};
+    my $left_commit_id = $args{left_commit_id};
+    my $left_tree = $self->_get_commit_ref($left_commit_id)->tree;
 
-    my $commit_ref = $self->_get_commit_ref($commit_id);
+    my $right_commit_id = $args{right_commit_id};
+    my $right_tree = $self->_get_commit_ref($right_commit_id)->tree;
 
+    my $diff = $left_tree->diff($self->git, $right_tree);
 
+    return Pinto::Diff->new($diff);
 }
+
 #-------------------------------------------------------------------------------
 
 sub merge {
