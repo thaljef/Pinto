@@ -132,6 +132,7 @@ use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
 use File::Copy::Recursive ();
+use File::Copy ();
 
 use Pinto::Util qw(itis mksymlink current_time);
 use Pinto::Types qw(Dir File);
@@ -293,7 +294,7 @@ sub rename {
     throw "Directory $new_dir already exists" if -e $new_dir;
 
     $self->debug("Renaming directory $orig_dir to $new_dir");
-    File::Copy::Recursive::rmove($orig_dir, $new_dir) or throw "Rename failed: $!";
+    File::Copy::move($orig_dir, $new_dir) or throw "Rename failed: $!";
 
     $self->update( {name => $new_name} );
 
