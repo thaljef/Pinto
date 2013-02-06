@@ -456,7 +456,7 @@ sub add_distribution {
     my $author  = $args{author};
     my $source  = $args{source} || 'LOCAL';
 
-    $self->assert_archive_ok($author, $archive);
+    $self->assert_archive_not_duplicate($author, $archive);
 
     # Assemble the basic structure...
     my $dist_struct = { author   => $author,
@@ -709,7 +709,7 @@ sub set_version {
 
 #------------------------------------------------------------------------------
 
-sub assert_archive_ok {
+sub assert_archive_not_duplicate {
     my ($self, $author, $archive) = @_;
 
     throw "Archive $archive does not exist"  if not -e $archive;
