@@ -785,7 +785,7 @@ sub set_version {
 
 #-------------------------------------------------------------------------------
 
-sub check_version {
+sub assert_version_ok {
     my ($self) = @_;
 
     my $repo_version = $self->get_version;
@@ -799,7 +799,7 @@ sub check_version {
 
 #-------------------------------------------------------------------------------
 
-sub check_sanity {
+sub assert_sanity_ok {
     my ($self) = @_;
 
     unless (    -e $self->config->db_file

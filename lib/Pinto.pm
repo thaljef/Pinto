@@ -49,8 +49,8 @@ sub run {
     my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
 
     my $result = try { 
-        $self->repo->check_sanity;
-        $self->repo->check_version;
+        $self->repo->assert_sanity_ok;
+        $self->repo->assert_version_ok;
         $self->repo->lock($lock_type); 
         $action->execute;
     }

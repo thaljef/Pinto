@@ -244,9 +244,9 @@ sub BUILD {
 
 #------------------------------------------------------------------------------
 
-before [ qw(register unregister pin unpin rename delete) ] => sub {
+before [ qw(register unregister pin unpin rename kill) ] => sub {
   my ($self, @args) = @_;
-  $self->check_lock;
+  $self->assert_not_locked;
 };
 
 #------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
-sub check_lock {
+sub assert_not_locked {
     my ($self) = @_;
 
     throw "Stack $self is locked and cannot be modified or deleted" 
