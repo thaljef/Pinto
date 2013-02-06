@@ -29,7 +29,6 @@ use Pinto::Tester;
 	ok defined $stack, 'master stack exists';
 	is $stack->name, 'master', 'master stack has correct name';
 	is $stack->is_default, 1,  'master stack is the default stack';
-	is $stack->description, 'The master stack', 'master stack has default description';
 
 	my $repo = $t->pinto->repo;
 	is $repo->get_version, $Pinto::Repository::REPOSITORY_VERSION, 'Repo version matches';

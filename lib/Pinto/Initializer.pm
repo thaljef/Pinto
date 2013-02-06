@@ -173,10 +173,9 @@ sub _create_stack {
     my $is_default = $args{nodefault} ? 0 : 1;
     my $pinto      = Pinto->new(root => $self->config->root);
 
-    $pinto->run( New => (stack       => 'master',
-                         default     => $is_default,
-                         description => 'The master stack') );
-
+    $pinto->run( New => (stack   => 'master',
+                         default => $is_default) );
+    
     return;
 }
 

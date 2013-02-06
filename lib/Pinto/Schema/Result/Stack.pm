@@ -37,11 +37,6 @@ __PACKAGE__->table("stack");
   data_type: 'text'
   is_nullable: 0
 
-=head2 description
-
-  data_type: 'text'
-  is_nullable: 0
-
 =head2 is_default
 
   data_type: 'boolean'
@@ -64,8 +59,6 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "name",
-  { data_type => "text", is_nullable => 0 },
-  "description",
   { data_type => "text", is_nullable => 0 },
   "is_default",
   { data_type => "boolean", is_nullable => 0 },
@@ -115,8 +108,8 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-04 12:16:40
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:e3ju/T8XuZ86KqnzUthaFA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-06 15:48:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XnSpptyWvHcDQAX2lrZrxw
 
 #-------------------------------------------------------------------------------
 
@@ -212,7 +205,6 @@ sub FOREIGNBUILDARGS {
   $args ||= {};
   $args->{is_default}  ||= 0;
   $args->{is_locked}   ||= 0;
-  $args->{description} ||= '';
 
   return $args;
 }
@@ -298,7 +290,6 @@ sub copy {
 
     my $copy_name = $changes{name};
 
-    $changes{description} ||= "Copy of stack $self."; 
     $changes{is_default} = 0; # Never duplicate the default flag
 
     my $orig_dir = $self->stack_dir;
@@ -546,7 +537,6 @@ sub to_string {
 
     my %fspec = (
            k => sub { $self->name                                    },
-           e => sub { $self->description                             },
            M => sub { $self->is_default                  ? '*' : ' ' },
            L => sub { $self->is_locked                   ? '!' : ' ' },
            I => sub { $self->head->id                                },

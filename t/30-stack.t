@@ -17,15 +17,14 @@ my $t = Pinto::Tester->new;
 
 {
   # Create a new stack...
-  my ($stk_name, $stk_desc) = ('dev', 'the development stack');
-  $t->run_ok('New', {stack => $stk_name, description => $stk_desc});
+  my $stk_name = 'dev';
+  $t->run_ok( New => {stack => $stk_name} );
   my $stack = $t->pinto->repo->get_stack($stk_name);
   is $stack->name, $stk_name, 'Got correct stack name';
-  is $stack->description, $stk_desc, 'Got correct stack description';
 
   # Add to the stack...
   my $foo_and_bar_1 = make_dist_archive('FooAndBar-1 = Foo~1,Bar~1');
-  $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1});
+  $t->run_ok( Add => {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1} );
 
   # Note the time of last commit
   my $old_mtime = $stack->refresh->head->time;
@@ -35,7 +34,7 @@ my $t = Pinto::Tester->new;
 
   # Add more stuff to the stack...
   my $foo_and_bar_2 = make_dist_archive('FooAndBar-2 = Foo~2,Bar~2');
-  $t->run_ok('Add', {author => 'ME', stack => $stk_name, archives => $foo_and_bar_2});
+  $t->run_ok( Add => {author => 'ME', stack => $stk_name, archives => $foo_and_bar_2});
 
   # Check that mtime was updated...
   cmp_ok $stack->refresh->head->time, '>', $old_mtime, 'Updated stack mtime';
@@ -46,18 +45,14 @@ my $t = Pinto::Tester->new;
 {
   # Copy dev -> qa...
   my $dev_stk_name = 'dev';
-  my ($qa_stk_name, $qa_stk_desc) = ('qa', 'the qa stack');
-  $t->run_ok('Copy', {from_stack  => $dev_stk_name,
-                      to_stack    => $qa_stk_name,});
+  my $qa_stk_name  = 'qa';
+  $t->run_ok( Copy => {from_stack => $dev_stk_name, to_stack => $qa_stk_name} );
 
   my $dev_stack = $t->pinto->repo->get_stack($dev_stk_name);
   my $qa_stack  = $t->pinto->repo->get_stack($qa_stk_name);
 
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
-
-  is $qa_stack->description, 'Copy of stack dev.',
-    'Copied stack has default description';
 
   is $qa_stack->head->id, $dev_stack->head->id,
     'Head of copied stack points to head of original stack';
@@ -108,40 +103,40 @@ my $t = Pinto::Tester->new;
 
 {
   # Copy from a stack that doesn't exist
-  $t->run_throws_ok('Copy', {from_stack => 'nowhere',
+  $t->run_throws_ok(Copy => {from_stack => 'nowhere',
                              to_stack   => 'somewhere'},
                              qr/Stack nowhere does not exist/);
 
 
   # Copy to a stack that already exists
-  $t->run_throws_ok('Copy', {from_stack => 'master',
+  $t->run_throws_ok(Copy => {from_stack => 'master',
                              to_stack   => 'dev'},
                              qr/Stack dev already exists/);
 
 
    # Copy to a stack that already exists, but with different case
-  $t->run_throws_ok('Copy', {from_stack => 'master',
+  $t->run_throws_ok(Copy => {from_stack => 'master',
                              to_stack   => 'DeV'},
                              qr/Stack dev already exists/);
 
 
   # Create stack with invalid name
-  $t->run_throws_ok('New', {stack => '$bogus@'},
+  $t->run_throws_ok(New => {stack => '$bogus@'},
                             qr/must be alphanumeric/);
 
 
   # Copy to stack with invalid name
-  $t->run_throws_ok('Copy', {from_stack => 'master',
+  $t->run_throws_ok(Copy => {from_stack => 'master',
                               to_stack   => '$bogus@'},
                               qr/must be alphanumeric/);
 
   # Copy to stack with no name
-  $t->run_throws_ok('Copy', {from_stack => 'master',
+  $t->run_throws_ok(Copy => {from_stack => 'master',
                               to_stack   => ''},
                               qr/must be alphanumeric/);
 
   # Copy to stack with undef name
-  $t->run_throws_ok('Copy', {from_stack => 'master',
+  $t->run_throws_ok(Copy => {from_stack => 'master',
                               to_stack   => undef},
                               qr/must be alphanumeric/);
 }

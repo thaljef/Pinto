@@ -3,7 +3,7 @@
 package Pinto::Action::Copy;
 
 use Moose;
-use MooseX::Types::Moose qw(Str Bool Undef);
+use MooseX::Types::Moose qw(Bool);
 
 use Pinto::Types qw(StackName StackObject);
 
@@ -50,18 +50,12 @@ has lock => (
     default => 0,
 );
 
-
-has description => (
-    is         => 'ro',
-    isa        => Str | Undef,
-);
-
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my %changes = (name => $self->to_stack, description => $self->description);
+    my %changes = (name => $self->to_stack);
     my $orig    = $self->repo->get_stack($self->from_stack);
     my $copy    = $self->repo->copy_stack(stack => $orig, %changes);
 
