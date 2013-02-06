@@ -37,7 +37,7 @@ sub apply {
 
     my $cb = sub {
       my ($type, $patch_line) = @_;
-      $DB::single = 1;
+      
       push @adds, substr $patch_line, 1  if $type eq 'add';
       push @dels, substr $patch_line, 1  if $type eq 'del';
     };
