@@ -258,6 +258,41 @@ before is_default => sub {
 
 #------------------------------------------------------------------------------
 
+=method get_distribution( spec => $dist_spec )
+
+Given a L<Pinto::PackageSpec>, returns the L<Pinto::Schema::Result::Distribution>
+which contains the package with the same name as the spec B<and the same or higher 
+version as the spec>.  Returns nothing if no such distribution is found in 
+this stack.
+
+=method get_distribution( spec => $pkg_spec )
+
+Given a L<Pinto::DistributionSpec>, returns the L<Pinto::Schema::Result::Distribution>
+from this stack with the same author id and archive attributes as the spec.  
+Returns nothing if no such distribution is found in this stack.
+
+=cut
+
+sub get_distribution {
+    my ($self, %args) = @_;
+
+    if (my $spec = $args{spec}) {
+        if ( itis($spec, 'Pinto::DistributionSpec') ) {
+            my $entries = $self->registry->lookup(distribution => $spec->path);
+            return $entries ? $self->repo->get_distribution(path => $spec->path) : ();
+        }
+        elsif ( itis($spec, 'Pinto::PackageSpec') ) {
+            my $entry = $self->registry->lookup(package => $spec->name);
+            return () if !$entry or $entry->version < $spec->version;
+            return $self->repo->get_distribution(path => $entry->path);
+        }
+    }
+
+    throw 'Invalid arguments';
+}
+
+#------------------------------------------------------------------------------
+
 sub copy {
     my ($self, %changes) = @_;
 
