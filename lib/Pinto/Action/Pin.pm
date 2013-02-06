@@ -56,11 +56,11 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _pin {
-    my ($self, $spec, $stack) = @_;
+    my ($self, $target, $stack) = @_;
 
-    my $dist = $self->repo->get_distribution_by_spec(spec => $spec, stack => $stack);
+    my $dist = $stack->get_distribution(spec => $target);
 
-    throw "$spec does not exist in the repository" if not defined $dist;
+    throw "$target is not registered on stack $stack" if not defined $dist;
 
     $self->notice("Pinning distribution $dist to stack $stack");
 

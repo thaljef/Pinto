@@ -21,7 +21,7 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
 {
  
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
-  $local->run_throws_ok(Pull => {targets => [qw(PkgA PkgB PkgC) ]}, qr/Cannot find prerequisite PkgE~1/);
+  $local->run_throws_ok(Pull => {targets => [qw(PkgA PkgB PkgC) ]}, qr/Cannot find PkgE~1 anywhere/);
 
   # None of the packages should be registered because one failed...
   $local->registration_not_ok('AUTHOR/DistA-1/PkgA~1/master');
@@ -54,7 +54,7 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
   $local->run_ok(Pull => {targets => [qw(PkgA PkgB PkgC)], nofail => 1});
 
   # We should see a log message saying that B failed, because E was missing...
-  $local->log_like( qr/Cannot find prerequisite PkgE~1/);
+  $local->log_like( qr/Cannot find PkgE~1 anywhere/);
   $local->log_like( qr/PkgB~0 failed...continuing/);
 
   # Both A and C should be registered...

@@ -54,7 +54,6 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
   # Re-pulling
   $result = $local->run_ok('Pull', {targets => 'JOHN/Baz-1.2.tar.gz'});
   $local->result_not_changed_ok($result);
-  $local->log_like(qr{Already have distribution JOHN/Baz-1.2.tar.gz});
   $local->log_like(qr{Package JOHN/Baz-1.2/Baz~1.2 is already on stack});
   $local->log_like(qr{Package PAUL/Nuts-2.3/Nuts~2.3 is already on stack});
 }
@@ -65,7 +64,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
   # Pull non-existant package
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
   $local->run_throws_ok('Pull', {targets => 'Nowhere~1.2'},
-                         qr/Cannot find prerequisite Nowhere~1.2/);
+                         qr/Cannot find Nowhere~1.2 anywhere/);
 
 }
 
@@ -75,7 +74,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
   # Pull non-existant dist
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
   $local->run_throws_ok('Pull', {targets => 'JOHN/Nowhere-1.2.tar.gz'},
-                         qr{Cannot find prerequisite JOHN/Nowhere-1.2.tar.gz});
+                         qr{Cannot find JOHN/Nowhere-1.2.tar.gz anywhere});
 
 }
 

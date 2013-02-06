@@ -110,15 +110,15 @@ sub _pull {
         return;
     }
 
+    
     $self->notice("Pulling $target");
 
-    my $dist = $self->repo->find_or_pull(target => $target, stack => $stack);
-    # TDOO: what if $dist comes back undef?
-    $stack->register(distribution => $dist, pin => $self->pin);
+    my $dist =         $stack->get_distribution(spec => $target)
+               || $self->repo->get_distribution(spec => $target)
+               || $self->repo->ups_distribution(spec => $target);
 
-    if ($dist and not $self->norecurse) {
-        $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
-    }
+    $stack->register(distribution => $dist, pin => $self->pin);
+    $self->repo->pull_prerequisites(dist => $dist, stack => $stack) if not $self->norecurse;
 
     return;
 }

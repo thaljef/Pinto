@@ -68,10 +68,12 @@ use Pinto::Tester::Util qw(make_dist_archive);
 {
 	my $t = Pinto::Tester->new;
 
-	$t->run_throws_ok(Pin   => {targets => 'Foo'}, qr/Foo is not on stack/);
-	$t->run_throws_ok(Unpin => {targets => 'Foo'}, qr/Foo is not on stack/);
+	$t->run_throws_ok(Pin   => {targets => 'Foo'}, qr/Foo~0 is not registered on stack/);
+	$t->run_throws_ok(Unpin => {targets => 'Foo'}, qr/Foo~0 is not registered on stack/);
 
-	$t->populate('Foo-1 = Foo~1');
+
+	# TODO: decide if we need these...
+	# $t->populate('Foo-1 = Foo~1');
 
 	# $t->run_ok(Pin    => {targets => 'Foo'});
 	# $t->run_throws_ok(Pin   => {targets => 'Foo'}, qr/is already pinned/);

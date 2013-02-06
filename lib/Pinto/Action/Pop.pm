@@ -68,8 +68,8 @@ sub execute {
 sub _pop {
     my ($self, $target, $stack) = @_;
 
-    my $dist  = $self->repo->get_distribution(spec => $target);
-    throw "Distribution $target is not in the repository" if not defined $dist;
+    my $dist  = $stack->get_distribution(spec => $target);
+    throw "Distribution $target is not registered on stack $stack" if not defined $dist;
 
     $stack->unregister(distribution => $dist, force => $self->force);
 

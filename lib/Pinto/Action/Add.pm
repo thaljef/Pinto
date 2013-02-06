@@ -4,14 +4,12 @@ package Pinto::Action::Add;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool Str);
-
+use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 
 use Pinto::Util qw(sha256);
 use Pinto::Types qw(AuthorID FileList StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -138,7 +136,7 @@ sub _add {
     }
     else {
         $self->notice("Adding distribution archive $archive");
-        $dist = $self->repo->add(archive => $archive, author => $self->author);
+        $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
     }
 
     $stack->register(distribution => $dist, pin => $self->pin);

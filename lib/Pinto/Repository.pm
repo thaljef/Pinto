@@ -10,7 +10,6 @@ use File::Find;
 use Path::Class;
 
 use Pinto::VCS;
-use Pinto::Util;
 use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
@@ -18,6 +17,7 @@ use Pinto::IndexCache;
 use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
 use Pinto::Exception qw(throw);
+use Pinto::Util qw(itis);
 
 use version;
 
@@ -86,7 +86,8 @@ has cache => (
     is         => 'ro',
     isa        => 'Pinto::IndexCache',
     lazy       => 1,
-    handles    => [ qw(locate clear_cache) ],
+    handles    => [ qw(locate) ],
+    clearer    => '_clear_cache',
     default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
                                                 logger => $_[0]->logger ) },
 );
@@ -135,7 +136,7 @@ stack that you can modify, use C<open_stack>.
 sub get_stack {
     my ($self, $stack, %opts) = @_;
 
-    return $stack if Pinto::Util::itis($stack, 'Pinto::Schema::Result::Stack');
+    return $stack if itis($stack, 'Pinto::Schema::Result::Stack');
     return $self->get_default_stack if not $stack;
 
     my $where = { name => $stack };
@@ -211,11 +212,33 @@ sub stack_count {
 
 #-------------------------------------------------------------------------------
 
+=method get_commit($commit)
+
+=cut
+
+sub get_commit {
+    my ($self, $commit) = @_;
+
+    return $commit if itis($commit, 'Pinto::Commit');
+    return $self->vcs->get_commit(commit_id => $commit);
+}
+
+#-------------------------------------------------------------------------------
+
+=method get_package( spec => $pkg_spec )
+
+Returns a L<Pinto:Schema::Result::Package> representing the latest
+version of the package in the repository with the same name as
+the package spec B<and the same or higher version> as the package 
+spec.  See L<Pinto::PackageSpec> for the definition of a package
+spec.
+
 =method get_package( name => $pkg_name )
 
 Returns a L<Pinto:Schema::Result::Package> representing the latest
-version of the package with the given C<$pkg_name>.  If there is no
-such package with that name in the repository, returns nothing.
+version of the package in the repostiory with the given C<$pkg_name>.  
+If there is no such package with that name in the repository, 
+returns nothing.
 
 =method get_package( name => $pkg_name, path => $dist_path )
 
@@ -229,10 +252,24 @@ returns nothing.
 sub get_package {
     my ($self, %args) = @_;
 
-    my $pkg_name  = $args{name}; # Required
-    my $dist_path = $args{path}; # Optional
+    my $spec      = $args{spec};
+    my $pkg_name  = $args{name};
+    my $dist_path = $args{path};
 
-    if ($dist_path) {
+    # Retrieve latest version of package that meets the spec
+    if ($spec) {
+        my $pkg_name = $spec->name;
+        my $version  = $spec->version;
+
+        my @pkgs = $self->db->schema->search_package({name => $pkg_name})->with_distribution;
+        my $latest = (sort {$a <=> $b} @pkgs)[-1];
+
+        return $latest->version >= $spec->version ? $latest : ();
+    }
+
+
+    # Retrieve package from a specific distribution
+    elsif ($pkg_name && $dist_path) {
 
         my ($author, $archive) = Pinto::Util::parse_dist_path($dist_path);
 
@@ -242,122 +279,157 @@ sub get_package {
 
         my @pkgs = $self->db->schema->search_package($where)->with_distribution;
 
-        # TODO: Assert there is only one package
         return @pkgs ? $pkgs[0] : ();
     }
-    else {
+
+
+    # Retrieve latest version of package in the entire repository
+    elsif ($pkg_name) {
+
         my $where  = { name => $pkg_name };
         my @pkgs   = $self->db->schema->search_package($where)->with_distribution;
 
         my $latest = (sort {$a <=> $b} @pkgs)[-1];
         return defined $latest ? $latest : ();
     }
+
+    throw 'Invalid arguments';
 }
 
 #-------------------------------------------------------------------------------
 
-=method get_distribution( author => $author, archive => $archive )
+=method get_distribution( spec => $pkg_spec )
+
+Given a L<Pinto::PackageSpec>, returns the L<Pinto::Schema::Result::Distribution>
+that contains the B<latest version of the package> in this repository with the same 
+name as the spec B<and the same or higher version as the spec>.  Returns nothing 
+if no such distribution is found.
 
 =method get_distribution( spec => $dist_spec )
 
+Given a L<Pinto::DistributionSpec>, returns the L<Pinto::Schema::Result::Distribution>
+from this repository with the same author id and archive attributes as the spec.  
+Returns nothing if no such distribution is found.
+
 =method get_distribution( path => $dist_path )
+
+Given a distribution path, (for example C<AUTHOR/Dist-1.0.tar.gz> or C<A/AU/AUTHOR/Dist-1.0.tar.gz>
+returns the L<Pinto::Schema::Result::Distribution> from this repository that is 
+identified by the author ID and archive file name in the path.  Returns nothing
+if no such distribution is found.
 
 =method get_distribution( sha256 => $sha256 )
 
-Returns the L<Pinto::Schema::Result::Distribution> with the given
-author ID and archive name.  If given a L<Pinto::DistributionSpec>
-object, it will get the author ID and archive name from it instead.
-If given a distribution path like those from an 02packages file, it
-parses the author ID and archive name from that instead.  If there is
-no matching distribution in the respoistory, returns nothing.
+Given an SHA-256 digest as a string of hexadecimal characters, returns the
+L<Pinto::Schema::Result::Distribution> from this repository with the same 
+digest.  Returns nothing if no such distribution is found.
+
+=method get_distribution( author => $author, archive => $archive )
+
+Given an author id and a distribution archive file basename, returns the 
+L<Pinto::Schema::Result::Distribution> from this repository with those
+attributes.  Returns nothing if no such distribution exists.
 
 =cut
 
 sub get_distribution {
     my ($self, %args) = @_;
 
-    my %where;
-    my %attrs;
-
+    # Retrieve a distribution by DistSpec or PackageSpec
     if (my $spec = $args{spec}) {
-        my $author  = $spec->author_canonical;
-        my $archive = $spec->archive;
-        return $self->db->schema->distribution_rs
-                                ->with_packages
-                                ->find_by_author_archive($author, $archive);
+        if ( itis($spec, 'Pinto::DistributionSpec') ) {
+            my $author  = $spec->author_canonical;
+            my $archive = $spec->archive;
+
+            return $self->db->schema->distribution_rs
+                                    ->with_packages
+                                    ->find_by_author_archive($author, $archive);
+        }
+        elsif ( itis($spec, 'Pinto::PackageSpec') ) {
+            my $pkg = $self->get_package(name => $spec->name);
+            return () if ! defined($pkg) or $pkg->version < $spec->version;
+            return $pkg->distribution;
+        } 
+
+        throw 'Invalid arguments';
     }
+
+
+    # Retrieve a distribution by its path (e.g. AUTHOR/Dist-1.0.tar.gz)
     elsif (my $path = $args{path}) {
-        my ($author, $archive)   = Pinto::Util::parse_dist_path($path);
+        my ($author, $archive) = Pinto::Util::parse_dist_path($path);
+
         return $self->db->schema->distribution_rs
                                 ->with_packages
                                 ->find_by_author_archive($author, $archive);
     }
+
+
+    # Retrieve a distribution by its SHA-256 digest
     elsif (my $sha256 = $args{sha256}) {
          return $self->db->schema->distribution_rs
                                  ->with_packages
                                  ->find_by_sha256($sha256);
-
     }
+
+
+    # Retrieve a distribution by its MD5 digest
     elsif (my $md5 = $args{md5}) {
          return $self->db->schema->distribution_rs
                                  ->with_packages
                                  ->find_by_md5($md5);
     }
+
+    # Retrieve a distribution by author and archive
     elsif (my $author = $args{author}) {
         my $archive = $args{archive} or throw "Must specify archive with author";
+
         return $self->db->schema->distribution_rs
                                 ->with_packages
                                 ->find_by_author_archive($author, $archive);
     }
-    else {
-        %where = %args;
-    }
 
-    return $self->db->schema->distribution_rs
-                            ->with_packages
-                            ->find( \%where, \%attrs );
-
+    throw 'Invalid arguments';
 }
 
 #-------------------------------------------------------------------------------
 
-sub get_distribution_by_spec {
+=method ups_distribution( spec => $pkg_spec )
+
+Given a L<Pinto::PackageSpec>, locates the distribution that contains the latest
+version of the package across all upstream repositories with the same name as 
+the spec, and the same or higher version as the spec.  If such distribution is
+found, it is fetched and added to this repository.  If it is not found,
+then an exception is thrown.
+
+=method ups_distribution( spec => $dist_spec )
+
+Given a L<Pinto::DistributionSpec>, locates the first distribution in any 
+upstream repository with the same author and archive as the spec.  If such 
+distribution is found, it is fetched and added to this repository.  If it 
+is not found, then an exception is thrown.
+
+=cut
+
+sub ups_distribution {
     my ($self, %args) = @_;
 
-    my $spec  = $args{spec};
+    my $spec = $args{spec};
+    my $dist_url;
 
-    if ( Pinto::Util::itis($spec, 'Pinto::PackageSpec') ) {
-        my $pkg_name = $spec->name;
-        my $stack    = $args{stack} or throw "Must specify a stack";
-        my $entry    = $stack->lookup(package => $pkg_name);
-        throw "Package $pkg_name is not on stack $stack" if not defined $entry;
-
-        my $dist_path = $entry->distribution;
-        my $pkg       = $self->get_package(name => $pkg_name, path => $dist_path);
-        throw "Package $pkg_name is on stack $stack but not in reposotiry" if not $pkg;
-
-        return $pkg->distribution;
+    if ( Pinto::Util::itis($spec, 'Pinto::PackageSpec') ){
+        $dist_url = $self->locate(package => $spec->name, version => $spec->version, latest => 1);
+    }
+    elsif ( Pinto::Util::itis($spec, 'Pinto::DistributionSpec') ){
+        $dist_url = $self->locate(distribution => $spec->path)
+    }
+    else {
+        throw 'Invalid arguments';
     }
 
+    throw "Cannot find $spec anywhere" if not $dist_url;
 
-    if ( Pinto::Util::itis($spec, 'Pinto::DistributionSpec') ) {
-        my $dist = $self->get_distribution(spec => $spec);
-        throw "Distribution $spec is not in the repository" if not $dist;
-
-        return $dist;
-    }
-
-
-    my $type = ref $spec;
-    throw "Don't know how to resolve target of type $type";
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_commit {
-    my ($self, $commit_id) = @_;
-
-    return $self->vcs->get_commit(commit_id => $commit_id);
+    return $self->fetch_distribution(url => $dist_url);
 }
 
 #-------------------------------------------------------------------------------
@@ -377,14 +449,14 @@ representing the newly added distribution.
 
 =cut
 
-sub add {
+sub add_distribution {
     my ($self, %args) = @_;
 
     my $archive = $args{archive};
     my $author  = $args{author};
     my $source  = $args{source} || 'LOCAL';
 
-    $self->_validate_archive($author, $archive);
+    $self->assert_archive_ok($author, $archive);
 
     # Assemble the basic structure...
     my $dist_struct = { author   => $author,
@@ -408,7 +480,7 @@ sub add {
     my $r = scalar @requires;
     $self->info("Distribution $archive provides $p and requires $r packages");
 
-    # Always update database *before* moving the archive into the
+    # Update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
     # the repository will still be clean.
 
@@ -422,42 +494,17 @@ sub add {
 
 #------------------------------------------------------------------------------
 
-sub delete { }
+=method fetch_distribution( url => $url )
 
-#------------------------------------------------------------------------------
-
-sub _validate_archive {
-    my ($self, $author, $archive) = @_;
-
-    throw "Archive $archive does not exist"  if not -e $archive;
-    throw "Archive $archive is not readable" if not -r $archive;
-
-    my $basename = $archive->basename;
-    if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
-        throw "A distribution already exists as $same_path";
-    }
-
-    my $sha256 = Pinto::Util::sha256($archive);
-    if (my $same_sha = $self->get_distribution(sha256 => $sha256)) {
-        throw "Archive $archive is identical to $same_sha";
-    }
-
-    return;
-}
-
-#------------------------------------------------------------------------------
-
-=method pull( url => $url )
-
-Pulls a distribution archive from a remote URL and adds it to this
+Fetches a distribution archive from a remote URL and adds it to this
 repository.  The packages provided by the distribution will be
 indexed, and the prerequisites will be recorded.  Returns a
-L<Pinto::Schema::Result::Distribution> object representing the newly
-pulled distribution.
+L<Pinto::Schema::Result::Distribution> object representing the fetched 
+distribution.
 
 =cut
 
-sub pull {
+sub fetch_distribution {
     my ($self, %args) = @_;
 
     my $url = $args{url};
@@ -469,103 +516,10 @@ sub pull {
     my ($author, undef) = Pinto::Util::parse_dist_path($path);
     my $archive = $self->fetch_temporary(url => $url);
 
-    my $dist = $self->add( archive   => $archive,
-                           author    => $author,
-                           source    => $url );
+    my $dist = $self->add_distribution( archive   => $archive,
+                                        author    => $author,
+                                        source    => $url );
     return $dist;
-}
-
-#------------------------------------------------------------------------------
-
-sub find_or_pull {
-    my ($self, %args) = @_;
-
-    my $target = $args{target};
-    my $stack  = $args{stack};
-
-    if ( Pinto::Util::itis($target, 'Pinto::PackageSpec') ){
-        return $self->_find_or_pull_by_package_spec($target, $stack);
-    }
-    elsif ( Pinto::Util::itis($target, 'Pinto::DistributionSpec') ){
-        return $self->_find_or_pull_by_distribution_spec($target);
-    }
-    else {
-        my $type = ref $target;
-        throw "Don't know how to pull a $type";
-    }
-}
-
-#------------------------------------------------------------------------------
-
-sub _find_or_pull_by_package_spec {
-    my ($self, $pspec, $stack) = @_;
-
-    $self->info("Looking for package $pspec");
-    my ($pkg_name, $pkg_ver) = ($pspec->name, $pspec->version);
-
-    my $latest_in_stack = $stack->registry->lookup(package => $pkg_name);
-    if (defined $latest_in_stack && $latest_in_stack->version >= $pkg_ver) {
-        my $got_dist = $self->get_distribution(path => $latest_in_stack->path);
-        $self->debug( sub {"Stack $stack already has package $pspec or newer as $latest_in_stack"} );
-        return $got_dist;
-    }
-
-
-    my $latest_in_repo = $self->get_package(name => $pkg_name);
-    if (defined $latest_in_repo && ($latest_in_repo->version >= $pkg_ver)) {
-        my $got_dist = $latest_in_repo->distribution;
-        $self->debug( sub {"Repository already has package $pspec or newer as $latest_in_repo"} );
-        return $got_dist;
-    }
-
-    my $dist_url = $self->locate( package => $pspec->name,
-                                  version => $pspec->version,
-                                  latest  => 1 );
-
-    throw "Cannot find prerequisite $pspec anywhere"
-      if not $dist_url;
-
-    $self->debug("Found package $pspec or newer in $dist_url");
-
-    if ( Pinto::Util::isa_perl($dist_url) ) {
-        $self->debug("Distribution $dist_url is a perl. Skipping it");
-        return;
-    }
-
-    $self->notice("Pulling distribution $dist_url");
-    my $pulled_dist = $self->pull(url => $dist_url);
-
-    return $pulled_dist;
-}
-
-#------------------------------------------------------------------------------
-
-sub _find_or_pull_by_distribution_spec {
-    my ($self, $dspec) = @_;
-
-    $self->info("Looking for distribution $dspec");
-
-    my $got_dist = $self->get_distribution( spec => $dspec );
-
-    if ($got_dist) {
-        $self->info("Already have distribution $dspec");
-        return $got_dist;
-    }
-
-    my $dist_url = $self->locate(distribution => $dspec->path)
-      or throw "Cannot find prerequisite $dspec anywhere";
-
-    $self->debug("Found package $dspec at $dist_url");
-
-    if ( Pinto::Util::isa_perl($dist_url) ) {
-        $self->debug("Distribution $dist_url is a perl. Skipping it");
-        return;
-    }
-
-    $self->notice("Pulling distribution $dist_url");
-    my $pulled_dist = $self->pull(url => $dist_url);
-
-    return $pulled_dist;
 }
 
 #------------------------------------------------------------------------------
@@ -578,9 +532,12 @@ sub pull_prerequisites {
 
     my $cb = sub {
         my ($walker, $prereq) = @_;
-        my $dist = $self->find_or_pull(target => $prereq, stack => $stack) or return;
-        $stack->register(distribution => $dist);
-        return $dist;
+
+        my $dist =   $stack->get_distribution(spec => $prereq)
+                   || $self->get_distribution(spec => $prereq) 
+                   || $self->ups_distribution(spec => $prereq);
+
+        return defined $dist ? $stack->register(distribution => $dist) : undef;
     };
 
     my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb);
@@ -750,6 +707,27 @@ sub set_version {
     return $self;
 }
 
+#------------------------------------------------------------------------------
+
+sub assert_archive_ok {
+    my ($self, $author, $archive) = @_;
+
+    throw "Archive $archive does not exist"  if not -e $archive;
+    throw "Archive $archive is not readable" if not -r $archive;
+
+    my $basename = $archive->basename;
+    if (my $same_path = $self->get_distribution(author => $author, archive => $basename)) {
+        throw "A distribution already exists as $same_path";
+    }
+
+    my $sha256 = Pinto::Util::sha256($archive);
+    if (my $same_sha = $self->get_distribution(sha256 => $sha256)) {
+        throw "Archive $archive is identical to $same_sha";
+    }
+
+    return;
+}
+
 #-------------------------------------------------------------------------------
 
 sub assert_version_ok {
@@ -761,7 +739,7 @@ sub assert_version_ok {
     throw "Repository version ($repo_version) and Pinto version ($code_version) do not match"
         if $repo_version != $code_version;
 
-    return $self;
+    return;
 }
 
 #-------------------------------------------------------------------------------
@@ -778,9 +756,19 @@ sub assert_sanity_ok {
         throw "Directory $root_dir does not look like a Pinto repository";
     }
 
-    return $self;
+    return;
 }
 
+#-------------------------------------------------------------------------------
+
+sub clear_cache {
+    my ($self) = @_;
+
+    $self->cache->clear_cache; # Clears cache file from disk
+    $self->_clear_cache;       # Clears object from memory
+
+    return $self;
+}
 #-------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable;

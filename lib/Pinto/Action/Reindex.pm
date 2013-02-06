@@ -4,11 +4,10 @@ package Pinto::Action::Reindex;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(DistSpecList StackName StackDefault StackObject);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -66,10 +65,10 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _reindex {
-    my ($self, $target, $stack) = @_;
+    my ($self, $spec, $stack) = @_;
 
-    my $dist  = $self->repo->get_distribution(spec => $target);
-    throw "Distribution $target is not in the repository" if not defined $dist;
+    my $dist  = $self->repo->get_distribution(spec => $spec);
+    throw "Distribution $spec is not in the repository" if not defined $dist;
 
     $stack->register(distribution => $dist, pin => $self->pin);
 
