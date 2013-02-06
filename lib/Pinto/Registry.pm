@@ -157,9 +157,8 @@ sub lookup {
     my $path = itis($dist, 'Pinto::Schema::Result::Distribution') ? $dist->path : "$dist";
     return $self->entries_by_distribution->{$path};
   }
-  else {
-    throw "Don't know what to do"
-  }
+
+  throw 'Invalid arguments';
 }
 
 #------------------------------------------------------------------------
@@ -167,11 +166,10 @@ sub lookup {
 sub register {
   my ($self, %args) = @_;
 
-  return $self->register_distribution(%args) if $args{distribution};
-  return $self->register_package(%args)      if $args{package};
+  return $self->register_distribution(%args) if defined $args{distribution};
+  return $self->register_package(%args)      if defined $args{package};
 
-  throw "Don't know what to do with %args";
-
+  throw 'Invalid arguments';
 }
 
 #------------------------------------------------------------------------
@@ -195,7 +193,7 @@ sub register_distribution {
       }
 
       my $old_pkg = $self->repo->get_package( name => $pkg_name,
-                                              path => $old_entry->distribution );
+                                              path => $old_entry->path );
 
       if ($new_pkg == $old_pkg) {
         $self->debug( sub {"Package $old_pkg is already on stack"} );
@@ -220,7 +218,7 @@ sub register_distribution {
 
     throw "Unable to register distribution $dist on stack" if $errors;
 
-    return $self;
+    return $dist;
 
 }
 
