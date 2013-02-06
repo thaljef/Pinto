@@ -49,6 +49,7 @@ has git     => (
 
 Readonly::Scalar our $GIT_REPO_NOT_BARE   => 0;
 Readonly::Scalar our $GIT_BRANCH_IS_LOCAL => 1;
+Readonly::Scalar our $GIT_RESET_TYPE_HARD => 'hard';
 
 #-------------------------------------------------------------------------------
 
@@ -228,9 +229,19 @@ sub merge {
     # Attempt to merge branches
 }
 
+#-------------------------------------------------------------------------------
+
 sub reset {
-    # Restore WC to pristine state
+    my ($self, %args) = @_;
+
+    my $commit = $self->_get_commit_ref($args{commit});
+
+    $self->git->reset($commit, $GIT_RESET_TYPE_HARD);
+
+    return $self;
 }
+
+#-------------------------------------------------------------------------------
 
 sub status {
     my ($self, %args) = @_;

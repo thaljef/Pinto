@@ -47,6 +47,7 @@ sub execute {
 
     my $merger = Pinto::Merger::FastForward->new( config     => $self->config,
                                                   logger     => $self->logger,
+                                                  repo       => $self->repo,
                                                   from_stack => $from_stack,
                                                   to_stack   => $to_stack );
 
