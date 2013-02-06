@@ -16,6 +16,7 @@ use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
+use Pinto::PrerequisiteWalker;
 use Pinto::Exception qw(throw);
 
 use version;
@@ -575,49 +576,15 @@ sub pull_prerequisites {
     my $dist  = $args{dist};
     my $stack = $args{stack};
 
-    my @prereq_queue = $dist->prerequisite_specs;
-    my %visited = ($dist->path => 1);
-    my %seen;
+    my $cb = sub {
+        my ($walker, $prereq) = @_;
+        my $dist = $self->find_or_pull(target => $prereq, stack => $stack) or return;
+        $stack->register(distribution => $dist);
+        return $dist;
+    };
 
-  PREREQ:
-    while (my $prereq = shift @prereq_queue) {
-
-        my $required_dist = $self->find_or_pull(target => $prereq, stack => $stack);
-        next PREREQ if not $required_dist;
-
-        $stack->register(distribution => $required_dist);
-
-        if ( $visited{$required_dist->path} ) {
-            # We don't need to recurse into prereqs more than once
-            $self->debug("Already visited archive $required_dist");
-            next PREREQ;
-        }
-
-      NEW_PREREQ:
-        for my $new_prereq ( $required_dist->prerequisite_specs ) {
-
-            # This is all pretty hacky.  It might be better to represent the queue
-            # as a hash table instead of a list, since we really need to keep track
-            # of things by name.
-
-            # Add this prereq to the queue only if greater than the ones we already got
-            my $name = $new_prereq->{name};
-
-            next NEW_PREREQ if exists $seen{$name}
-                               && $new_prereq->{version} <= $seen{$name};
-
-            # Take any prior versions of this prereq out of the queue
-            @prereq_queue = grep { $_->{name} ne $name } @prereq_queue;
-
-            # Note that this is the latest version of this prereq we've seen so far
-            $seen{$name} = $new_prereq->{version};
-
-            # Push the prereq onto the queue
-            push @prereq_queue, $new_prereq;
-        }
-
-        $visited{$required_dist->path} = 1;
-    }
+    my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb);
+    $walker->walk;
 
     return $self;
 }
