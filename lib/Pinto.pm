@@ -3,13 +3,12 @@
 package Pinto;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 
 use Pinto::Repository;
 use Pinto::ActionFactory;
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
