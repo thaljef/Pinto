@@ -3,10 +3,7 @@
 package Pinto::Action::Diff;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
-
-use Term::ANSIColor qw(color);
 
 use Pinto::Types qw(StackName StackDefault StackObject CommitID);
 
@@ -17,6 +14,10 @@ use Pinto::Types qw(StackName StackDefault StackObject CommitID);
 #------------------------------------------------------------------------------
 
 extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Colorable );
 
 #------------------------------------------------------------------------------
 
@@ -43,13 +44,6 @@ has right_stack => (
 has right_commit => (
     is       => 'ro',
     isa      => CommitID,
-);
-
-
-has nocolor => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -94,16 +88,12 @@ sub execute {
                                        right_commit_id => $right_commit->id );
 
     my $buffer = '';
-    my ($red, $green, $reset) = $self->nocolor 
-                                ? ('') x 3
-                                : (color('red'), color('green'), color('reset'));
-
     my $cb = sub {
       my ($type, $patch_line) = @_;
-      # TODO: Decide if/how to display these types...
+      chomp $patch_line;
       return if $type =~ m/(ctx|file|hunk|bin)/;
-      my $color = $type eq 'add' ? $green : $red;
-      $buffer .= ($color  . $patch_line . $reset);
+      my $color = $type eq 'add' ? $self->color_1 : $self->color_3;
+      $buffer .= ($color  . $patch_line . $self->color_0 . "\n");
     };
 
     $diff->patch($cb);
@@ -111,7 +101,7 @@ sub execute {
     if ($buffer) {
       my @hfields = ($left_stack, $left_commit, $right_stack, $right_commit);   
       $self->say(sprintf "%s@%s..%s@%s", @hfields);
-      $self->say($buffer);
+      $self->chat($buffer);
     }
 
     return $self->result;

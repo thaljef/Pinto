@@ -3,10 +3,8 @@
 package Pinto::Action::Log;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
-
-use Term::ANSIColor qw(color);
 
 use Pinto::Types qw(StackName StackDefault);
 
@@ -17,6 +15,10 @@ use Pinto::Types qw(StackName StackDefault);
 #------------------------------------------------------------------------------
 
 extends qw( Pinto::Action );
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Colorable );
 
 #------------------------------------------------------------------------------
 
@@ -32,13 +34,6 @@ has format => (
     isa     => Str,
     builder => '_build_format',
     lazy    => 1,
-);
-
-
-has nocolor => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -61,11 +56,11 @@ sub execute {
 sub _build_format {
     my ($self) = @_;
 
-    my $yellow = $self->nocolor ? '' : color('bold yellow');
-    my $reset  = $self->nocolor ? '' : color('reset');
+    my $c = $self->color_2;
+    my $r = $self->color_0;
 
     return <<"END_FORMAT";
-${yellow}commit %I${reset}
+${c}commit %I${r}
 Date: %u
 User: %j 
 

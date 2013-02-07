@@ -18,6 +18,10 @@ extends 'Pinto::Action';
 
 #------------------------------------------------------------------------------
 
+with 'Pinto::Role::Colorable';
+
+#------------------------------------------------------------------------------
+
 has format => (
     is      => 'ro',
     isa     => Str,
@@ -35,7 +39,19 @@ sub execute {
 
 	my $format = $self->format || "%M%L %-${max_name}k  %U  %-{$max_user}J  %i: %t";
 
-    $self->say($_->to_string($format)) for @stacks;
+	for my $stack (@stacks) {
+		my $string = $stack->to_string($format);
+
+		if ($stack->is_default) {
+			$string = $self->color_1 . $string . $self->color_0;
+		}
+		elsif ($stack->is_locked) {
+			$string = $self->color_3 . $string . $self->color_0;
+		}
+
+		$self->say( $string ); 
+	}
+
 
     return $self->result;
 }
