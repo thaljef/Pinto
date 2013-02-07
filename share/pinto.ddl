@@ -23,7 +23,6 @@ CREATE TABLE package (
 CREATE TABLE stack (
        id                   INTEGER PRIMARY KEY NOT NULL,
        name                 TEXT                NOT NULL COLLATE NOCASE,
-       description          TEXT                NOT NULL,
        is_default           BOOLEAN             NOT NULL,
        is_locked            BOOLEAN             NOT NULL,
        last_commit_id       TEXT                DEFAUlT ''
