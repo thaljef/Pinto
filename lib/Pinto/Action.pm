@@ -4,14 +4,14 @@ package Pinto::Action;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use MooseX::MarkAsMethods (autoclean => 1);
+
 use IO::Pipe;
 
 use Pinto::Result;
 use Pinto::Exception;
 use Pinto::Types qw(Io);
 use Pinto::Util qw(is_interactive);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

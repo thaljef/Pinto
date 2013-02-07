@@ -4,10 +4,9 @@ package Pinto::Action::Copy;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(StackName StackObject);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

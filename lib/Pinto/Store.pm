@@ -3,13 +3,12 @@
 package Pinto::Store;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 use CPAN::Checksums;
 
-use Pinto::Exception;
-
-use namespace::autoclean;
+use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 

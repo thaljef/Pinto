@@ -4,11 +4,9 @@ package Pinto::Action::List;
 
 use Moose;
 use MooseX::Types::Moose qw(HashRef Str Bool Undef);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(AuthorID StackName StackAll StackDefault StackObject);
-use Pinto::Util qw(is_stack_all);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

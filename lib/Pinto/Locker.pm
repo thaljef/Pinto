@@ -3,14 +3,13 @@
 package Pinto::Locker;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Path::Class;
 use File::NFSLock;
 
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 

@@ -4,14 +4,13 @@ package Pinto::IndexWriter;
 
 use Moose;
 use MooseX::Types::Moose qw(ArrayRef);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use PerlIO::gzip;
 use HTTP::Date qw(time2str);
 
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(File);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

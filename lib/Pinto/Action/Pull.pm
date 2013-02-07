@@ -4,14 +4,13 @@ package Pinto::Action::Pull;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 use Module::CoreList;
 
 use Pinto::Util qw(itis);
 use Pinto::Types qw(SpecList StackName StackDefault StackObject);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -110,7 +109,7 @@ sub _pull {
         return;
     }
 
-    
+
     $self->notice("Pulling $target");
 
     my $dist =         $stack->get_distribution(spec => $target)

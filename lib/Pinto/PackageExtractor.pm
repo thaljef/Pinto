@@ -4,6 +4,7 @@ package Pinto::PackageExtractor;
 
 use Moose;
 use MooseX::Types::Moose qw(HashRef Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 use Dist::Metadata;
@@ -13,7 +14,6 @@ use Pinto::Exception qw(throw);
 use Pinto::Types qw(File Version);
 
 use version;
-use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 

@@ -349,7 +349,7 @@ sub lock {
 
     if ($self->is_locked) {
       $self->warning("Stack $self is already locked");
-      return $self;
+      return 0;
     }
 
     $self->notice("Locking stack $self");
@@ -364,13 +364,13 @@ sub unlock {
 
     if (not $self->is_locked) {
       $self->warning("Stack $self is not locked");
-      return $self;
+      return 0;
     }
 
     $self->notice("Unlocking stack $self");
     $self->update( {is_locked => 0} );
 
-    return $self;
+    return 1;
 }
 
 #------------------------------------------------------------------------------

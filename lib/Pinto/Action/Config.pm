@@ -4,13 +4,13 @@ package Pinto::Action::Config;
 
 use Moose;
 use MooseX::Types::Moose qw(Str HashRef);
+use MooseX::MarkAsMethods (autoclean => 1);
 
-
-use String::Format qw(stringf);
+use String::Format;
 
 use Pinto::Types qw(StackName StackObject);
 
-use namespace::autoclean;
+
 
 #------------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ sub _show_properties {
 
     my $props = $target->get_properties;
     while ( my ($prop, $value) = each %{$props} ) {
-        $self->say(stringf($self->format, {n => $prop, v => $value}));
+        $self->say(String:Format::stringf($self->format, {n => $prop, v => $value}));
     }
 
     return;

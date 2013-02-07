@@ -1,12 +1,11 @@
+# ABSTRACT: Manages indexes files from upstream repositories
+
 package Pinto::IndexCache;
 
-# ABSTRACT: Manages indexes files from remote repositories
-
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Package::Locator;
-
-use namespace::autoclean;
 
 #-------------------------------------------------------------------------------
 

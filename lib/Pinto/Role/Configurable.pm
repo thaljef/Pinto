@@ -3,10 +3,9 @@
 package Pinto::Role::Configurable;
 
 use Moose::Role;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Config;
-
-use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 
@@ -33,6 +32,7 @@ around BUILDARGS => sub {
     return $args;
 };
 
+#-----------------------------------------------------------------------------
 1;
 
 __END__

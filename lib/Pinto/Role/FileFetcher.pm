@@ -3,6 +3,7 @@
 package Pinto::Role::FileFetcher;
 
 use Moose::Role;
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use File::Temp;
 use Path::Class;
@@ -10,8 +11,6 @@ use LWP::UserAgent;
 
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -147,7 +146,6 @@ sub _make_uri {
 }
 
 #------------------------------------------------------------------------------
-
 1;
 
 __END__

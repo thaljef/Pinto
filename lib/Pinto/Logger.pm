@@ -4,6 +4,7 @@ package Pinto::Logger;
 
 use Moose;
 use MooseX::Types::Moose qw(Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use DateTime;
 use Log::Dispatch;
@@ -12,8 +13,6 @@ use Log::Dispatch::File;
 use Pinto::Util qw(itis);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #-----------------------------------------------------------------------------
 

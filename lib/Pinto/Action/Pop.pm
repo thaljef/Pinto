@@ -4,11 +4,10 @@ package Pinto::Action::Pop;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(DistSpecList StackName StackDefault StackObject);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

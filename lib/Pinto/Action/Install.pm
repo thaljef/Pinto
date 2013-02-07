@@ -4,13 +4,12 @@ package Pinto::Action::Install;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool HashRef ArrayRef Maybe Str);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use File::Which qw(which);
 
 use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

@@ -4,11 +4,10 @@ package Pinto::Action::Merge;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Merger::FastForward;
 use Pinto::Types qw(StackName StackObject);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 

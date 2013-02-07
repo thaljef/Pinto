@@ -4,10 +4,9 @@ package Pinto::Action::New;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
+use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(StackName);
-
-use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -35,7 +34,6 @@ has default => (
     isa     => Bool,
     default => 0,
 );
-
 
 #------------------------------------------------------------------------------
 
