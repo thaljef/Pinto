@@ -1,0 +1,94 @@
+*** API ***
+
+$stack->checkout;                # Reads registry from file in stackdir
+$stack->register(...);           # Updates registry in memory
+$stack->stage(...)               # Write registry to file in vcsdir
+$stack->diff(...);               # Diff registry file in vcsdir
+$stack->commit(...)              # Commit registry, copy to stackdir
+
+#------------------------------------------------------------------
+
+
+To create master stack:
+1) Create stack obj
+2) Touch files in vcs
+3) Add files in vcs
+4) Commit files in vcs
+5) Create stack filesystem (dirs, symlinks)
+6) Copy and zip files to stack
+
+To copy a stack:
+1) Copy stack obj
+2) Checkout origin branch in vcs?
+2) Make branch in vcs
+3) Checkout branch in vcs
+4) Create stack filesystem (dirs, symlinks)
+5) Copy and zip files to stack
+
+To create new stack:
+1) Create stack obj
+2) Create orphan branch in vcs
+3) Checkout branch in vcs
+4) Touch files in vcs
+5) Add files in vcs
+6) Commit files in vcs
+7) Create stack filesystem (dirs, symlinks)
+8) Copy and zip files to stack
+
+Notes: 
+No need to checkout master branch for initial commit
+
+* Commit Workflow:
+Checout branch in vcs workdir
+Read files from vcs workdir
+Write files to vcs workdir
+Add files to to vcs
+Commit files to vcs
+Copy files to stack dir
+Generate 02packages
+
+* Alternative Comit Workflow
+Checkout branch in vcs workdir
+Read files from stack dir
+Write files to stack dir
+Generate 02packages
+Copy files to vcs workdir
+Add files to vcs
+Commit files to vcs
+
+* Copy Workflow:
+Checkout origin in vcs workdir ??
+Create branch in vcs
+Checkout branch in vcs workdir
+Copy files to stack dir
+Generate 02packages
+
+* Alternative Copy Workflow:
+Checkout origin in vcs workdir ??
+Create branch in vcs
+Copy origin stack to new stack dir
+Read files from stack dir
+
+
+* New Workflow:
+Create orphan branch in vcs
+Checkout branch in vcs workdir
+Write files to vcs workdir
+Copy files to stack dir
+Generate 02packages
+
+* Considerations:
+The files in the repo should be the authority, not the stack ??
+File operations are not transactional, so if failure ocurrs make sure we can recover
+
+Role of the Repository object:
+Get stacks
+Copy stacks
+Create stacks
+Get dists & packages from schema
+
+
+Making orphan branches:
+git root commit (store this in db)
+make branch from root commit
+checkout branch.
