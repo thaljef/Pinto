@@ -375,6 +375,57 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
+sub checkout {
+    my ($self) = @_;
+
+    $self->repo->vcs->checkout_branch(name => $self->name);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub stage {
+    my ($self) = @_;
+
+    my $reg_file_basename = $self->registry_file->basename;
+    my $vcs_reg_file = $self->repo->config->vcs_dir->file($reg_file_basename);
+    $self->write_registry(to => $vcs_reg_file);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub diff {
+    my ($self) = @_;
+
+    return $self->repo->vcs->diff_wc;
+}
+
+#------------------------------------------------------------------------------
+
+
+sub commit {
+    my ($self, %args) = @_;
+
+    my $reg_file = $self->registry_file;
+    $self->repo->vcs->add(file => $reg_file->basename);
+
+    $self->write_registry;
+    
+    # NOTE: Git will create a commit object even if nothing has changed.  The new commit
+    # will just point to the same tree as the last commit.  So it is up to you to check
+    # whether you really need to commit or not.  Use $stack->stack_has_changed().
+
+    my $commit_id = $self->repo->vcs->commit(%args);
+    $self->update( {last_commit_id => $commit_id} );
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub assert_not_locked {
     my ($self) = @_;
 
@@ -462,9 +513,9 @@ sub write_index {
 #------------------------------------------------------------------------------
 
 sub write_registry {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    $self->registry->write;
+    $self->registry->write(%args);
 
     return $self;
 }
@@ -478,14 +529,6 @@ sub finalize {
     $self->write_registry;
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub commit {
-    my ($self, %args) = @_;
-
-    return $self->repo->commit(stack => $self, %args);
 }
 
 #------------------------------------------------------------------------------

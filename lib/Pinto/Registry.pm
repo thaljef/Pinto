@@ -338,11 +338,12 @@ sub entry_count {
 #------------------------------------------------------------------------
 
 sub write {
-  my ($self) = @_;
+  my ($self, %args) = @_;
 
+  my $file   = $args{to} || $self->file;
   my $format = "%-32p  %12v  %A/%f  %i\n";
 
-  my $fh = $self->file->openw;
+  my $fh = $file->openw;
   print { $fh } $_->to_string($format) for @{ $self->entries };
   close $fh;
 

@@ -53,19 +53,22 @@ sub to_string {
     my ($self) = @_;
 
     my $title   = $self->title;
-    my $details = $self->details;
+    my $stack   = $self->stack;
+    my $details = $self->details || 'No details available';
 
-    return <<END_MESSAGE;
+    $details =~ s/^/# /gm;
+
+    return <<"END_MESSAGE";
 $title
 
 
 #------------------------------------------------------------------------------
-# Please edit or ammend the message above to describe the change.  The message
-# should include a one-line title, followed by one blank line, followed by the
-# message body.  Any line that starts with "#" will be ignored.  To abort the
-# commit, delete the entire message above, save the file, and close the editor. 
+# Please edit or amend the message above to describe the change.  The first
+# line of the message will be used as the title.  Any line that starts with 
+# a "#" will be ignored.  To abort the commit, delete the entire message above, 
+# save the file, and close the editor. 
 #
-# Changes to be committed:
+# Details of the changes to be committed to stack $stack:
 #
 $details
 END_MESSAGE

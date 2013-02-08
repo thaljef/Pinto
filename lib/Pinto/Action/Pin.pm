@@ -47,7 +47,8 @@ sub execute {
 
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    my $message = $self->edit_message(stack => $stack);
+    my $diff = $stack->stage->diff->to_string;
+    my $message = $self->edit_message(stack => $stack, details => $diff);
     $stack->commit(message => $message);
 
     return $self->result->changed;

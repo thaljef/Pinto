@@ -72,8 +72,9 @@ around execute => sub {
 sub edit_message {
     my ($self, %args) = @_;
 
-    my $stack  =  $args{stack};
-    my $title  =  $args{title} || $self->message_title || '';
+    my $stack   = $args{stack};
+    my $title   = $args{title} || $self->message_title || '';
+    my $details = $args{details} || '';
 
     return interpolate($self->message)
         if $self->has_message and $self->message =~ /\S+/;
@@ -87,7 +88,10 @@ sub edit_message {
     return $title
         if not is_interactive;
 
-    my $message = Pinto::CommitMessage->new(stack => $stack, title => $title)->edit;
+    my $message = Pinto::CommitMessage->new( stack   => $stack, 
+                                             title   => $title, 
+                                             details => $details)->edit;
+
     throw 'Aborting due to empty commit message' if $message !~ /\S+/;
 
     return $message;

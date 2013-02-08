@@ -158,7 +158,7 @@ sub add {
     $index->add($file);
     $index->write;
 
-    return $self;
+    return $dir->file($file);
 }
 
 #-------------------------------------------------------------------------------
@@ -219,6 +219,16 @@ sub diff {
     my $right_tree = $self->_get_commit_ref($right_commit_id)->tree;
 
     my $diff = $left_tree->diff($self->git, $right_tree);
+
+    return Pinto::Diff->new(raw_diff => $diff);
+}
+
+#-------------------------------------------------------------------------------
+
+sub diff_wc {
+    my ($self) = @_;
+
+    my $diff = $self->git->diff;
 
     return Pinto::Diff->new(raw_diff => $diff);
 }
