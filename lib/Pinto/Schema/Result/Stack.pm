@@ -170,7 +170,6 @@ use Pinto::Util qw(itis mksymlink current_time);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
 use Pinto::IndexWriter;
-use Pinto::Registry;
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
@@ -202,38 +201,11 @@ has authors_dir => (
 );
 
 
-has work_dir => (
-  is          => 'ro',
-  isa         => Dir,
-  lazy        => 1,
-  default     => sub { $_[0]->stack_dir->subdir( 'work' ) },
-);
-
-
 has index_file => (
   is          => 'ro',
   isa         => File,
   lazy        => 1,
   default     => sub { $_[0]->modules_dir->file('02packages.details.txt.gz') },
-);
-
-
-has registry_file => (
-  is          => 'ro',
-  isa         => File,
-  lazy        => 1,
-  default     => sub { $_[0]->work_dir->file('stack.registry.txt') },
-);
-
-
-has registry => (
-  is       => 'ro',
-  isa      => 'Pinto::Registry',
-  lazy     => 1,
-  handles  => [ qw(lookup register unregister pin unpin package_count distribution_count) ],
-  default  => sub { Pinto::Registry->new( file   => $_[0]->registry_file,
-                                          logger => $_[0]->logger,
-                                          repo   => $_[0]->repo ) },
 );
 
 #------------------------------------------------------------------------------
@@ -244,6 +216,7 @@ sub FOREIGNBUILDARGS {
   $args ||= {};
   $args->{is_default}  ||= 0;
   $args->{is_locked}   ||= 0;
+  $args->{properties}  ||= '{}';
 
   return $args;
 }
@@ -266,9 +239,6 @@ sub BUILD {
   my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
   my $shared_modlist_file = $self->repo->config->modlist_file->relative($stack_modules_dir);
   mksymlink($stack_modlist_file => $shared_modlist_file);
-
-  my $stack_work_dir = $self->work_dir;
-  $stack_work_dir->mkpath;
 
   return $self;
 }
@@ -424,27 +394,6 @@ sub checkout {
 
 #------------------------------------------------------------------------------
 
-sub stage {
-    my ($self) = @_;
-
-    my $reg_file_basename = $self->registry_file->basename;
-    my $vcs_reg_file = $self->repo->config->vcs_dir->file($reg_file_basename);
-    $self->write_registry(to => $vcs_reg_file);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub diff {
-    my ($self) = @_;
-
-    return $self->repo->vcs->diff_wc;
-}
-
-#------------------------------------------------------------------------------
-
-
 sub commit {
     my ($self, %args) = @_;
 
@@ -462,6 +411,22 @@ sub commit {
 
     return $self;
 }
+
+#------------------------------------------------------------------------------
+
+sub register {}
+
+#------------------------------------------------------------------------------
+
+sub unregister {}
+
+#------------------------------------------------------------------------------
+
+sub pin {}
+
+#------------------------------------------------------------------------------
+
+sub unpin {}
 
 #------------------------------------------------------------------------------
 
@@ -516,7 +481,6 @@ sub has_changed {
     my ($self) = @_;
 
     return $self->registry->has_changed;
-    # or $self->properties->has_changed;
 }
 
 #------------------------------------------------------------------------------
@@ -525,14 +489,6 @@ sub has_not_changed {
     my ($self) = @_;
 
     return ! $self->has_changed;
-}
-
-#------------------------------------------------------------------------------
-
-sub last_commit_id_prefix {
-  my ($self) = @_;
-
-  return substr $self->last_commit_id, 0, 7;
 }
 
 #------------------------------------------------------------------------------
@@ -547,37 +503,6 @@ sub write_index {
     $writer->write_index;
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub write_registry {
-    my ($self, %args) = @_;
-
-    $self->registry->write(%args);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub finalize {
-    my ($self) = @_;
-
-    $self->write_index;
-    $self->write_registry;
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub head {
-    my ($self) = @_;
-
-    my $last_commit_id = $self->last_commit_id or return;
-
-    return $self->repo->get_commit($last_commit_id);
 }
 
 #------------------------------------------------------------------------------
@@ -627,8 +552,7 @@ sub to_string {
            t => sub { $self->head->message_title                     },
            b => sub { $self->head->message_body                      },
            J => sub { $self->head->username                          },
-           U => sub { $self->head->time->strftime('%b %e %Y %H:%M')  },
- 
+           U => sub { $self->head->time->strftime('%b %e %Y %H:%M')  }, 
     );
 
     $format ||= $self->default_format();
