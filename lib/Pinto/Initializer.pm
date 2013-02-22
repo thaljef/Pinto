@@ -45,10 +45,8 @@ sub init {
         $self->config->$meth->mkpath;
     }
 
-
     # Write config file
-    my $config_file = $self->config->config_dir->file( $self->config->basename );
-    $self->config->write_config_file( file => $config_file, values => \%args );
+    $self->_write_config(%args);
 
     # Write modlist
     $self->_write_modlist;
@@ -62,9 +60,6 @@ sub init {
     # Set up database
     $self->_create_db;
 
-    # Set up version control
-    $self->_create_vcs;
-
     # Create master stack
     $self->_create_stack(%args);
 
@@ -76,6 +71,14 @@ sub init {
 
 #------------------------------------------------------------------------------
 
+sub _write_config {
+    my ($self, %args) = @_;
+
+    my $config_file = $self->config->config_dir->file( $self->config->basename );
+    $self->config->write_config_file( file => $config_file, values => \%args );
+};
+
+#------------------------------------------------------------------------------
 
 sub _write_modlist {
     my ($self) = @_;
@@ -149,18 +152,6 @@ sub _create_db {
     my $pinto = Pinto->new(root => $self->config->root);
 
     $pinto->repo->db->deploy;
-
-    return;
-}
-
-#------------------------------------------------------------------------------
-
-sub _create_vcs {
-    my ($self) = @_;
-
-    my $pinto = Pinto->new(root => $self->config->root);
-
-    $pinto->repo->vcs->initialize;
 
     return;
 }
