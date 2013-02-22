@@ -183,7 +183,7 @@ has sources  => (
     is        => 'ro',
     isa       => Str,
     key       => 'sources',
-    default   => 'http://cpan.perl.org',
+    default   => 'http://cpan.perl.org http://backpan.perl.org',
     documentation => 'URLs of repositories for foreign distributions (space delimited)',
 );
 
