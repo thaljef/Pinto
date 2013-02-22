@@ -122,6 +122,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
+=head2 registrations
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Registration>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registrations",
+  "Pinto::Schema::Result::Registration",
+  { "foreign.package" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -136,8 +151,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-01-19 17:14:53
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0BFNsmlhn7FvoG+RKS1ntg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gGO966ZU3WAbznrH044TYA
 
 #------------------------------------------------------------------------------
 

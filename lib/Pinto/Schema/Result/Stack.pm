@@ -47,11 +47,16 @@ __PACKAGE__->table("stack");
   data_type: 'boolean'
   is_nullable: 0
 
-=head2 last_commit_id
+=head2 properties
 
   data_type: 'text'
-  default_value: (empty string)
-  is_nullable: 1
+  is_nullable: 0
+
+=head2 head
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
 
 =cut
 
@@ -64,8 +69,10 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 0 },
   "is_locked",
   { data_type => "boolean", is_nullable => 0 },
-  "last_commit_id",
-  { data_type => "text", default_value => "", is_nullable => 1 },
+  "properties",
+  { data_type => "text", is_nullable => 0 },
+  "head",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -94,6 +101,38 @@ __PACKAGE__->set_primary_key("id");
 
 __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
+=head1 RELATIONS
+
+=head2 head
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Kommit>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "head",
+  "Pinto::Schema::Result::Kommit",
+  { id => "head" },
+  { is_deferrable => 0, on_delete => "RESTRICT", on_update => "NO ACTION" },
+);
+
+=head2 registrations
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::Registration>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registrations",
+  "Pinto::Schema::Result::Registration",
+  { "foreign.stack" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -108,8 +147,8 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-06 15:48:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XnSpptyWvHcDQAX2lrZrxw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UqRFX6GAcrFZPOUdJm5LfA
 
 #-------------------------------------------------------------------------------
 
