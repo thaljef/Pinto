@@ -9,7 +9,6 @@ use Readonly;
 use File::Find;
 use Path::Class;
 
-use Pinto::VCS;
 use Pinto::Store;
 use Pinto::Locker;
 use Pinto::Database;
@@ -60,18 +59,6 @@ has store => (
     lazy       => 1,
     default    => sub { Pinto::Store->new( config => $_[0]->config,
                                            logger => $_[0]->logger ) },
-);
-
-=attr vcs
-
-=cut
-
-has vcs => (
-    is         => 'ro',
-    isa        => 'Pinto::VCS',
-    lazy       => 1,
-    default    => sub { Pinto::VCS->new( config => $_[0]->config,
-                                         logger => $_[0]->logger ) },
 );
 
 =attr cache
