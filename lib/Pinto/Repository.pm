@@ -524,7 +524,8 @@ sub pull_prerequisites {
                    || $self->get_distribution(spec => $prereq) 
                    || $self->ups_distribution(spec => $prereq);
 
-        return defined $dist ? $stack->register(distribution => $dist) : undef;
+        return if not defined $dist;
+        return $stack->register(distribution => $dist);
     };
 
     my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb);
