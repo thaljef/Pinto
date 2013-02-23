@@ -79,6 +79,20 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<digest_unique>
+
+=over 4
+
+=item * L</digest>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("digest_unique", ["digest"]);
+
 =head1 RELATIONS
 
 =head2 kommit_graph_children
@@ -140,8 +154,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mltNkn+8FQYp/U4vxuM7aw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-22 22:33:12
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mL9IChPi67v9Yh55aRVjIw
 
 #------------------------------------------------------------------------------
 
