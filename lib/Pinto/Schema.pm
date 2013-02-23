@@ -56,14 +56,15 @@ sub deploy {
     my ($self) = @_;
 
     $self->next::method;
-    $self->set_version;
+    $self->set_db_version;
+    $self->set_root_kommit;
 
     return $self;
 }
 
 #-------------------------------------------------------------------------------
 
-sub set_version {
+sub set_db_version {
     my ($self) = @_;
 
     # NOTE: SQLite only permits integers for the user_version.
@@ -78,7 +79,7 @@ sub set_version {
 
 #-------------------------------------------------------------------------------
 
-sub get_version {
+sub get_db_version {
     my ($self) = @_;
 
     my $dbh = $self->storage->dbh;
@@ -90,7 +91,7 @@ sub get_version {
 
 #-------------------------------------------------------------------------------
 
-sub check_version {
+sub check_db_version {
     my ($self) = @_;
 
     my $schema_version = $self->schema_version;
@@ -104,12 +105,42 @@ sub check_version {
 
 #-------------------------------------------------------------------------------
 
+sub set_root_kommit {
+    my ($self) = @_;
+
+    my $attrs = { digest   => $self->root_kommit_digest, 
+                  username => 'pinto', 
+                  message  => 'root kommit' };
+
+    return $self->create_kommit($attrs);   
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_root_kommit {
+    my ($self) = @_;
+
+    my $where = {digest => $self->root_kommit_digest};
+    my $attrs = {key => 'digest_unique'};
+
+    my $kommit = $self->find_kommit($where, $attrs)
+        or throw "PANIC: No root kommit was found";
+
+    return $kommit;
+}
+
+#-------------------------------------------------------------------------------
+
+sub root_kommit_digest { return '0' x 32 }
+
+#-------------------------------------------------------------------------------
+
 sub resultset_names {
-	my ($class) = @_;
+    my ($class) = @_;
 
-	my @resultset_names = sort keys %{ $class->source_registrations };
+    my @resultset_names = sort keys %{ $class->source_registrations };
 
-	return @resultset_names;
+    return @resultset_names;
 }
 
 #-------------------------------------------------------------------------------
@@ -118,22 +149,22 @@ for my $rs (__PACKAGE__->resultset_names) {
 
     ## no critic
 
-	no strict 'refs';
-	my $rs_decameled = decamelize($rs);
+    no strict 'refs';
+    my $rs_decameled = decamelize($rs);
 
-	my $rs_method_name = __PACKAGE__ . "::${rs_decameled}_rs";
-	*{$rs_method_name} = eval "sub { return \$_[0]->resultset('$rs') }";
+    my $rs_method_name = __PACKAGE__ . "::${rs_decameled}_rs";
+    *{$rs_method_name} = eval "sub { return \$_[0]->resultset('$rs') }";
 
-	my $create_method_name = __PACKAGE__ . "::create_${rs_decameled}";
-	*{$create_method_name} = eval "sub { return \$_[0]->$rs_method_name->create(\$_[1]) }";
+    my $create_method_name = __PACKAGE__ . "::create_${rs_decameled}";
+    *{$create_method_name} = eval "sub { return \$_[0]->$rs_method_name->create(\$_[1]) }";
 
-	my $search_method_name = __PACKAGE__ . "::search_${rs_decameled}";
-	*{$search_method_name} = eval "sub { return \$_[0]->$rs_method_name->search(\$_[1] || {}, \$_[2] || {}) }";
+    my $search_method_name = __PACKAGE__ . "::search_${rs_decameled}";
+    *{$search_method_name} = eval "sub { return \$_[0]->$rs_method_name->search(\$_[1] || {}, \$_[2] || {}) }";
 
-	my $find_method_name = __PACKAGE__ . "::find_${rs_decameled}";
-	*{$find_method_name} = eval "sub { return \$_[0]->$rs_method_name->find(\$_[1] || {}, \$_[2] || {}) }";
+    my $find_method_name = __PACKAGE__ . "::find_${rs_decameled}";
+    *{$find_method_name} = eval "sub { return \$_[0]->$rs_method_name->find(\$_[1] || {}, \$_[2] || {}) }";
 
-	## use critic
+    ## use critic
 }
 
 #-------------------------------------------------------------------------------
