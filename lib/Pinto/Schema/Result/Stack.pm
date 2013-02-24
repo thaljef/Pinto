@@ -496,11 +496,10 @@ sub has_not_changed {
 sub write_index {
     my ($self) = @_;
 
-    #my $writer = Pinto::IndexWriter->new( file    => $self->index_file,
-    #                                      entries => $self->registry->entries,
-    #                                      logger  => $self->logger );
-
-    #$writer->write_index;
+    my $writer = Pinto::IndexWriter->new( stack  => $self,
+                                          logger => $self->repo->logger,
+                                          config => $self->repo->config );
+    $writer->write_index;
 
     return $self;
 }

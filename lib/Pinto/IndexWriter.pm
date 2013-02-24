@@ -1,16 +1,16 @@
-# ABSTRACT: Writes the 02packages.details.txt.gz file
+# ABSTRACT: Write records to an 02packages.details.txt file
 
 package Pinto::IndexWriter;
 
 use Moose;
-use MooseX::Types::Moose qw(ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use PerlIO::gzip;
+use Path::Class qw(file);
 use HTTP::Date qw(time2str);
 
-use Pinto::Exception qw(throw);
 use Pinto::Types qw(File);
+use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
@@ -18,21 +18,24 @@ use Pinto::Types qw(File);
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Loggable );
+with qw( Pinto::Role::Configurable
+         Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
-has file  => (
-    is        => 'ro',
-    isa       => File,
-    required  => 1,
+has stack => (
+    is       => 'ro',
+    isa      => 'Pinto::Schema::Result::Stack',
+    required => 1,
 );
 
 
-has entries => (
+has index_file  => (
     is      => 'ro',
-    isa     => ArrayRef[ 'Pinto::RegistryEntry' ],
-    default => sub { [] },
+    isa     => File,
+    lazy    => 1,
+    default => sub { file( $_[0]->config->root, $_[0]->stack->name,
+                           qw(modules 02packages.details.txt.gz)) }
 );
 
 #------------------------------------------------------------------------------
@@ -40,14 +43,17 @@ has entries => (
 sub write_index {
     my ($self) = @_;
 
-    my $file  = $self->file;
-    $self->info("Writing index file at $file");
+    my $index_file  = $self->index_file;
+    my $stack = $self->stack;
 
-    open my $handle, ">:gzip", $file or throw "Cannot open $file: $!";
+    $self->info("Writing index for stack $stack at $index_file");
+    open my $handle, '>:gzip', $index_file or throw "Cannot open $index_file: $!";
 
-    $self->_write_header($handle);
-    $self->_write_entries($handle);
+    my @records = $self->_get_index_records($stack);
+    my $count = @records;
 
+    $self->_write_header($handle, $index_file, $count);
+    $self->_write_records($handle, @records);
     close $handle;
 
     return $self;
@@ -56,12 +62,11 @@ sub write_index {
 #------------------------------------------------------------------------------
 
 sub _write_header {
-    my ($self, $fh) = @_;
+    my ($self, $fh, $filename, $line_count) = @_;
 
-    my $base    = $self->file->basename;
-    my $url     = 'file://' . $self->file->absolute->as_foreign('Unix');
+    my $base    = $filename->basename;
+    my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
     my $version = $Pinto::IndexWriter::VERSION || 'UNKNOWN VERSION';
-    my $count   = scalar @{ $self->entries };
 
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $base
@@ -70,7 +75,7 @@ Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
 Written-By:   Pinto::IndexWriter $version
-Line-Count:   $count
+Line-Count:   $line_count
 Last-Updated: @{[ time2str(time) ]}
 
 END_PACKAGE_HEADER
@@ -80,13 +85,46 @@ END_PACKAGE_HEADER
 
 #------------------------------------------------------------------------------
 
-sub _write_entries {
-    my ($self, $fh) = @_;
+sub _write_records {
+    my ($self, $fh, @records) = @_;
 
-    my $format = "%-24p %12v %-48h\n";
-    print { $fh } $_->to_string($format) for @{ $self->entries };
+    for my $record ( @records ) {
+        my ($name, $version, $author, $archive) = @{ $record };
+        my $path = join '/', substr($author, 0, 1), substr($author, 0, 2), $author, $archive;
+        my $width = 38 - length $version;
+        $width = length $name if $width < length $name;
+        printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
+    }
 
     return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub _get_index_records {
+    my ($self, $stack) = @_;
+
+    # The index is rewritten after almost every action, so we want
+    # this to be as fast as possible (especially during an Add or
+    # Remove action).  Therefore, we use a cursor to get raw data and
+    # skip all the DBIC extras.
+
+    # Yes, slurping all the records at once consumes a lot of memory,
+    # but I want them to be sorted the way perl sorts them, not the
+    # way sqlite sorts them.  That way, the index file looks more
+    # like one produced by PAUSE.  Also, this is about twice as fast
+    # as using an iterator to read each record lazily.
+
+    my @joins   = qw(package distribution);
+    my @selects = qw(package.name package.version distribution.author distribution.archive);
+
+    my $attrs   = {join => \@joins, select => \@selects};
+    my $rs      = $stack->search_related('registrations', {}, $attrs);
+    my @records = sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
+
+    return @records;
+
+
 }
 
 #------------------------------------------------------------------------------
@@ -98,8 +136,3 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 __END__
-
-
-
-
-
