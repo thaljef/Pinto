@@ -10,6 +10,8 @@ use File::ShareDir qw(dist_file);
 
 use Pinto::Schema;
 use Pinto::Types qw(File);
+use Pinto::Exception qw(throw);
+use Pinto::Util qw(current_time current_username);
 
 #-------------------------------------------------------------------------------
 
@@ -99,10 +101,42 @@ sub deploy {
 
     my $guard = $self->schema->storage->txn_scope_guard;
     $dbh->do("$_;") for split /;/, $ddl;
+    $self->create_root_kommit;
     $guard->commit;
 
     return $self;
 }
+
+#-------------------------------------------------------------------------------
+
+sub create_root_kommit {
+    my ($self) = @_;
+
+    my $attrs = { sha256    => $self->root_kommit_sha256, 
+                  message   => 'root commit',
+                  username  => current_username, 
+                  timestamp => current_time };
+
+    return $self->schema->create_kommit($attrs);   
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_root_kommit {
+    my ($self) = @_;
+
+    my $where = {sha256 => $self->root_kommit_sha256};
+    my $attrs = {key => 'sha256_unique'};
+
+    my $kommit = $self->schema->find_kommit($where, $attrs)
+        or throw "PANIC: No root kommit was found";
+
+    return $kommit;
+}
+
+#-------------------------------------------------------------------------------
+
+sub root_kommit_sha256 { return '0' x 32 }
 
 #-------------------------------------------------------------------------------
 

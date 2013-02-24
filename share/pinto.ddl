@@ -49,7 +49,7 @@ CREATE TABLE registration (
 
 CREATE TABLE kommit (
        id              INTEGER PRIMARY KEY NOT NULL,
-       digest          TEXT                NOT NULL,
+       sha256          TEXT                NOT NULL,
        message         TEXT                NOT NULL,
        username        TEXT                NOT NULL,
        timestamp       INTEGER             NOT NULL
@@ -88,5 +88,5 @@ CREATE UNIQUE INDEX sha256_unique                    ON distribution(sha256);
 CREATE UNIQUE INDEX name_distribution_unique         ON package(name, distribution);
 CREATE UNIQUE INDEX stack_package_name_unique        ON registration(stack, package_name);
 CREATE UNIQUE INDEX name_unique                      ON stack(name);
-CREATE UNIQUE INDEX digest_unique                    ON kommit(digest);
+CREATE UNIQUE INDEX kommit_sha256_unique             ON kommit(sha256);
 CREATE UNIQUE INDEX distribution_package_name_unique ON prerequisite(distribution, package_name);

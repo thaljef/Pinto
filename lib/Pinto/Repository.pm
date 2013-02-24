@@ -544,10 +544,10 @@ sub create_stack {
     throw "Stack $stk_name already exists"
       if $self->get_stack($stk_name, nocroak => 1);
 
-    my $stack = $self->db->schema->create_stack(\%args);
+    my $root  = $self->db->get_root_kommit;
+    my $stack = $self->db->schema->create_stack( {%args, head => $root} );
 
-    $self->vcs->checkout_branch(name => $stack->name, as_orphan => 1);
-    $self->commit(stack => $stack, as_orphan => 1);
+    $stack->write_index;
 
     return $stack;
 }

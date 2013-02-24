@@ -52,18 +52,6 @@ has repo => (
 
 #-------------------------------------------------------------------------------
 
-sub deploy {
-    my ($self) = @_;
-
-    $self->next::method;
-    $self->set_db_version;
-    $self->set_root_kommit;
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
 sub set_db_version {
     my ($self) = @_;
 
@@ -91,47 +79,17 @@ sub get_db_version {
 
 #-------------------------------------------------------------------------------
 
-sub check_db_version {
+sub assert_db_version_ok {
     my ($self) = @_;
 
     my $schema_version = $self->schema_version;
-    my $db_version     = $self->get_version;
+    my $db_version     = $self->get_db_version;
 
     throw "Database version ($db_version) and schema version ($schema_version) do not match"
         if $db_version != $schema_version;
 
     return $self;
 }
-
-#-------------------------------------------------------------------------------
-
-sub set_root_kommit {
-    my ($self) = @_;
-
-    my $attrs = { digest   => $self->root_kommit_digest, 
-                  username => 'pinto', 
-                  message  => 'root kommit' };
-
-    return $self->create_kommit($attrs);   
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_root_kommit {
-    my ($self) = @_;
-
-    my $where = {digest => $self->root_kommit_digest};
-    my $attrs = {key => 'digest_unique'};
-
-    my $kommit = $self->find_kommit($where, $attrs)
-        or throw "PANIC: No root kommit was found";
-
-    return $kommit;
-}
-
-#-------------------------------------------------------------------------------
-
-sub root_kommit_digest { return '0' x 32 }
 
 #-------------------------------------------------------------------------------
 

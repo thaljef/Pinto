@@ -32,7 +32,7 @@ __PACKAGE__->table("kommit");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 digest
+=head2 sha256
 
   data_type: 'text'
   is_nullable: 0
@@ -57,7 +57,7 @@ __PACKAGE__->table("kommit");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "digest",
+  "sha256",
   { data_type => "text", is_nullable => 0 },
   "message",
   { data_type => "text", is_nullable => 0 },
@@ -81,17 +81,17 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<digest_unique>
+=head2 C<sha256_unique>
 
 =over 4
 
-=item * L</digest>
+=item * L</sha256>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("digest_unique", ["digest"]);
+__PACKAGE__->add_unique_constraint("sha256_unique", ["sha256"]);
 
 =head1 RELATIONS
 
@@ -154,8 +154,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-22 22:33:12
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mL9IChPi67v9Yh55aRVjIw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-22 22:54:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SgAOtf2KV6g8bt7n+E8fuA
 
 #------------------------------------------------------------------------------
 
@@ -204,19 +204,6 @@ sub FOREIGNBUILDARGS {
   $args->{timestamp}    ||=  0;
 
   return $args;
-}
-
-#------------------------------------------------------------------------------
-
-sub insert {
-  my ($self) = @_;
-
-  $self->next::method;
-
-  $self->create_related(kommit_graph_ancestors => { descendant => $self, 
-                                                    depth      => 0 });
-
-  return $self;
 }
 
 #------------------------------------------------------------------------------

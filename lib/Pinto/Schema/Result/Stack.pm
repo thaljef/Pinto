@@ -496,11 +496,11 @@ sub has_not_changed {
 sub write_index {
     my ($self) = @_;
 
-    my $writer = Pinto::IndexWriter->new( file    => $self->index_file,
-                                          entries => $self->registry->entries,
-                                          logger  => $self->logger );
+    #my $writer = Pinto::IndexWriter->new( file    => $self->index_file,
+    #                                      entries => $self->registry->entries,
+    #                                      logger  => $self->logger );
 
-    $writer->write_index;
+    #$writer->write_index;
 
     return $self;
 }
@@ -543,16 +543,16 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                    },
-           M => sub { $self->is_default                  ? '*' : ' ' },
-           L => sub { $self->is_locked                   ? '!' : ' ' },
-           I => sub { $self->head->id                                },
-           i => sub { $self->head->id_prefix                         },
-           G => sub { $self->head->message                           },
-           t => sub { $self->head->message_title                     },
-           b => sub { $self->head->message_body                      },
-           J => sub { $self->head->username                          },
-           U => sub { $self->head->time->strftime('%b %e %Y %H:%M')  }, 
+           k => sub { $self->name                                         },
+           M => sub { $self->is_default                       ? '*' : ' ' },
+           L => sub { $self->is_locked                        ? '!' : ' ' },
+           I => sub { $self->head->sha256                                 },
+           i => sub { $self->head->sha256_prefix                          },
+           G => sub { $self->head->message                                },
+           t => sub { $self->head->message_title                          },
+           b => sub { $self->head->message_body                           },
+           J => sub { $self->head->username                               },
+           U => sub { $self->head->timestamp->strftime('%b %e %Y %H:%M')  }, 
     );
 
     $format ||= $self->default_format();
