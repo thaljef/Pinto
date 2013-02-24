@@ -91,7 +91,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack    = $self->repo->get_stack($self->stack)->checkout;
+    my $stack    = $self->repo->get_stack($self->stack);
     my @archives = $self->archives;
 
     while (my $archive = shift @archives) {
@@ -139,7 +139,7 @@ sub _add {
         $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
     }
 
-    $stack->register(distribution => $dist, pin => $self->pin);
+    $dist->register(stack => $stack, pin => $self->pin);
     $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
     
     return;

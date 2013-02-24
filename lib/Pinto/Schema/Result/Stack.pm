@@ -245,13 +245,6 @@ sub BUILD {
 
 #------------------------------------------------------------------------------
 
-before [ qw(register unregister pin unpin rename kill) ] => sub {
-  my ($self, @args) = @_;
-  $self->assert_not_locked;
-};
-
-#------------------------------------------------------------------------------
-
 before is_default => sub {
   my ($self, @args) = @_;
   throw "Cannot directly set is_default.  Use mark_as_default instead" if @args;
@@ -322,6 +315,8 @@ sub rename {
 
     my $new_name = $args{to};
 
+    $self->assert_not_locked;
+
     my $orig_dir = $self->stack_dir;
     throw "Directory $orig_dir does not exist" if not -e $orig_dir;
 
@@ -340,6 +335,8 @@ sub rename {
 
 sub kill {
     my ($self) = @_;
+
+    $self->assert_not_locked;
 
     throw "Cannot kill the default stack" if $self->is_default;
 
@@ -384,49 +381,15 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
-sub checkout {
-    my ($self) = @_;
-
-    $self->repo->vcs->checkout_branch(name => $self->name);
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub commit {
     my ($self, %args) = @_;
 
-    my $reg_file = $self->registry_file;
-    $self->repo->vcs->add(file => $reg_file->basename);
-
-    $self->write_registry;
-    
-    # NOTE: Git will create a commit object even if nothing has changed.  The new commit
-    # will just point to the same tree as the last commit.  So it is up to you to check
-    # whether you really need to commit or not.  Use $stack->stack_has_changed().
-
-    my $commit_id = $self->repo->vcs->commit(%args);
-    $self->update( {last_commit_id => $commit_id} );
+    my $kommit = $self->schema->create_kommit(\%args);
+    $kommit->add_parent(kommit => $self->head);
+    $self->update( {head => $kommit} );
 
     return $self;
 }
-
-#------------------------------------------------------------------------------
-
-sub register {}
-
-#------------------------------------------------------------------------------
-
-sub unregister {}
-
-#------------------------------------------------------------------------------
-
-sub pin {}
-
-#------------------------------------------------------------------------------
-
-sub unpin {}
 
 #------------------------------------------------------------------------------
 
