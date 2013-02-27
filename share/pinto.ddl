@@ -29,7 +29,7 @@ CREATE TABLE stack (
        is_default      BOOLEAN             NOT NULL,
        is_locked       BOOLEAN             NOT NULL,
        properties      TEXT                NOT NULL,
-       head            INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE RESTRICT
+       head            INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE RESTRICT
 );
 
 
@@ -48,17 +48,17 @@ CREATE TABLE registration (
 CREATE TABLE registration_change (
        id              INTEGER PRIMARY KEY NOT NULL,
        event           TEXT                NOT NULL,
-       kommit          INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE CASCADE,
+       revision         INTEGER            NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
        package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
        package_name    TEXT                NOT NULL,
        distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
        is_pinned       BOOLEAN             NOT NULL,
 
-       UNIQUE(kommit, event, package_name)
+       UNIQUE(revision, package_name, event)
 );
 
 
-CREATE TABLE kommit (
+CREATE TABLE revision (
        id              INTEGER PRIMARY KEY NOT NULL,
        uuid            TEXT                NOT NULL        UNIQUE,
        message         TEXT                NOT NULL,
@@ -67,10 +67,10 @@ CREATE TABLE kommit (
 );
 
 
-CREATE TABLE kommit_graph (
+CREATE TABLE ancestry (
        id              INTEGER PRIMARY KEY NOT NULL,
-       parent          INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE CASCADE,
-       child           INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE CASCADE
+       parent          INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
+       child           INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE
 );
 
 

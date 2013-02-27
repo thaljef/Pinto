@@ -101,7 +101,7 @@ sub deploy {
 
     my $guard = $self->schema->storage->txn_scope_guard;
     $dbh->do("$_;") for split /;/, $ddl;
-    $self->create_root_kommit;
+    $self->create_root_revision;
     $guard->commit;
 
     return $self;
@@ -109,31 +109,31 @@ sub deploy {
 
 #-------------------------------------------------------------------------------
 
-sub create_root_kommit {
+sub create_root_revision {
     my ($self) = @_;
 
-    my $attrs = { uuid => $self->root_kommit_uuid, message   => 'root commit' };
+    my $attrs = { uuid => $self->root_revision_uuid, message   => 'root commit' };
 
-    return $self->schema->create_kommit($attrs);   
+    return $self->schema->create_revision($attrs);   
 }
 
 #-------------------------------------------------------------------------------
 
-sub get_root_kommit {
+sub get_root_revision {
     my ($self) = @_;
 
-    my $where = {uuid => $self->root_kommit_uuid};
+    my $where = {uuid => $self->root_revision_uuid};
     my $attrs = {key => 'uuid_unique'};
 
-    my $kommit = $self->schema->find_kommit($where, $attrs)
-        or throw "PANIC: No root kommit was found";
+    my $revision = $self->schema->find_revision($where, $attrs)
+        or throw "PANIC: No root revision was found";
 
-    return $kommit;
+    return $revision;
 }
 
 #-------------------------------------------------------------------------------
 
-sub root_kommit_uuid { return '00000000-0000-0000-0000-000000000000' }
+sub root_revision_uuid { return '00000000-0000-0000-0000-000000000000' }
 
 #-------------------------------------------------------------------------------
 

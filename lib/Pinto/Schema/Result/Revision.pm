@@ -1,12 +1,12 @@
 use utf8;
-package Pinto::Schema::Result::Kommit;
+package Pinto::Schema::Result::Revision;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Pinto::Schema::Result::Kommit
+Pinto::Schema::Result::Revision
 
 =cut
 
@@ -18,11 +18,11 @@ use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
 extends 'DBIx::Class::Core';
 
-=head1 TABLE: C<kommit>
+=head1 TABLE: C<revision>
 
 =cut
 
-__PACKAGE__->table("kommit");
+__PACKAGE__->table("revision");
 
 =head1 ACCESSORS
 
@@ -95,32 +95,32 @@ __PACKAGE__->add_unique_constraint("uuid_unique", ["uuid"]);
 
 =head1 RELATIONS
 
-=head2 kommit_graph_children
+=head2 ancestry_children
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::KommitGraph>
+Related object: L<Pinto::Schema::Result::Ancestry>
 
 =cut
 
 __PACKAGE__->has_many(
-  "kommit_graph_children",
-  "Pinto::Schema::Result::KommitGraph",
+  "ancestry_children",
+  "Pinto::Schema::Result::Ancestry",
   { "foreign.child" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 kommit_graph_parents
+=head2 ancestry_parents
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::KommitGraph>
+Related object: L<Pinto::Schema::Result::Ancestry>
 
 =cut
 
 __PACKAGE__->has_many(
-  "kommit_graph_parents",
-  "Pinto::Schema::Result::KommitGraph",
+  "ancestry_parents",
+  "Pinto::Schema::Result::Ancestry",
   { "foreign.parent" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -136,7 +136,7 @@ Related object: L<Pinto::Schema::Result::RegistrationChange>
 __PACKAGE__->has_many(
   "registration_changes",
   "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.kommit" => "self.id" },
+  { "foreign.revision" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -169,12 +169,12 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:05:41
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Vo5N8tP9uauwwliEMN/f4w
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:35:30
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:n0rctsXh0c+hCmHamjM0JQ
 
 #------------------------------------------------------------------------------
 
-# ABSTRACT: FIX ME!
+# ABSTRACT: Represents a set of changes to a stack
 
 #------------------------------------------------------------------------------
 
@@ -262,7 +262,7 @@ sub FOREIGNBUILDARGS {
 sub add_parent {
     my ($self, $parent) = @_;
 
-    $self->create_related(kommit_graph_children => {parent => $parent->id});
+    $self->create_related(ancestry_children => {parent => $parent->id});
 
     return;
 }
@@ -272,7 +272,7 @@ sub add_parent {
 sub add_child {
     my ($self, $child) = @_;
 
-    $self->create_related(kommit_graph_parents => {child => $child->id});
+    $self->create_related(ancestry_parents => {child => $child->id});
 
     return;
 }
@@ -283,7 +283,7 @@ sub parents {
   my ($self) = @_;
 
   my $where = {child => $self->id};
-  my $attrs = {join => 'kommit_graph_parents', order_by => 'me.timestamp'};
+  my $attrs = {join => 'ancestry_parents', order_by => 'me.timestamp'};
 
   return $self->result_source->resultset->search($where, $attrs)->all;
 }
@@ -294,7 +294,7 @@ sub children {
   my ($self) = @_;
 
   my $where = {parent => $self->id};
-  my $attrs = {join => 'kommit_graph_children', order_by => 'me.timestamp'};
+  my $attrs = {join => 'ancestry_children', order_by => 'me.timestamp'};
 
   return $self->result_source->resultset->search($where, $attrs)->all;
 }
@@ -302,15 +302,15 @@ sub children {
 #------------------------------------------------------------------------------
 
 sub numeric_compare {
-    my ($kommit_a, $kommit_b) = @_;
+    my ($revision_a, $revision_b) = @_;
 
     my $pkg = __PACKAGE__;
     throw "Can only compare $pkg objects"
-        if not ( itis($kommit_a, $pkg) && itis($kommit_b, $pkg) );
+        if not ( itis($revision_a, $pkg) && itis($revision_b, $pkg) );
 
-    return 0 if $kommit_a->id == $kommit_b->id;
+    return 0 if $revision_a->id == $revision_b->id;
 
-    my $r = ($kommit_a->timestamp <=> $kommit_b->timestamp);
+    my $r = ($revision_a->timestamp <=> $revision_b->timestamp);
 
     return $r;
 }
@@ -318,13 +318,13 @@ sub numeric_compare {
 #------------------------------------------------------------------------------
 
 sub equals {
-    my ($kommit_a, $kommit_b) = @_;
+    my ($revision_a, $revision_b) = @_;
 
     my $pkg = __PACKAGE__;
     throw "Can only compare $pkg objects"
-        if not ( itis($kommit_a, $pkg) && itis($kommit_b, $pkg) );
+        if not ( itis($revision_a, $pkg) && itis($revision_b, $pkg) );
 
-    return $kommit_a->id == $kommit_b->id;
+    return $revision_a->id == $revision_b->id;
 }
 
 #------------------------------------------------------------------------------
@@ -360,3 +360,5 @@ __PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 1;
+
+__END__

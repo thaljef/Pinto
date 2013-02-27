@@ -37,7 +37,7 @@ __PACKAGE__->table("registration_change");
   data_type: 'text'
   is_nullable: 0
 
-=head2 kommit
+=head2 revision
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -72,7 +72,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "event",
   { data_type => "text", is_nullable => 0 },
-  "kommit",
+  "revision",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -98,23 +98,23 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<kommit_event_package_name_unique>
+=head2 C<revision_package_name_event_unique>
 
 =over 4
 
-=item * L</kommit>
-
-=item * L</event>
+=item * L</revision>
 
 =item * L</package_name>
+
+=item * L</event>
 
 =back
 
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "kommit_event_package_name_unique",
-  ["kommit", "event", "package_name"],
+  "revision_package_name_event_unique",
+  ["revision", "package_name", "event"],
 );
 
 =head1 RELATIONS
@@ -134,21 +134,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
-=head2 kommit
-
-Type: belongs_to
-
-Related object: L<Pinto::Schema::Result::Kommit>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "kommit",
-  "Pinto::Schema::Result::Kommit",
-  { id => "kommit" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
-);
-
 =head2 package
 
 Type: belongs_to
@@ -161,6 +146,21 @@ __PACKAGE__->belongs_to(
   "package",
   "Pinto::Schema::Result::Package",
   { id => "package" },
+  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
+);
+
+=head2 revision
+
+Type: belongs_to
+
+Related object: L<Pinto::Schema::Result::Revision>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "revision",
+  "Pinto::Schema::Result::Revision",
+  { id => "revision" },
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
@@ -178,8 +178,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 12:42:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pUmVt/ere3UWaVY9GRPSfA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:35:30
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Y3vm3z+XXIGPsJYfV75DFg
 
 #-------------------------------------------------------------------------------
 
@@ -219,8 +219,8 @@ sub to_string {
          D => sub { $self->package->distribution->vname                             },
          w => sub { $self->package->distribution->version                           },
          u => sub { $self->package->distribution->url                               },
-         j => sub { $self->kommit->username                                         },
-         u => sub { $self->kommit->timestamp->strftime('%c')                        },
+         j => sub { $self->revision->username                                       },
+         u => sub { $self->revision->timestamp->strftime('%c')                      },
          y => sub { $self->is_pinned                            ? '*' : ' '         },
     );
 
@@ -245,4 +245,3 @@ __PACKAGE__->meta->make_immutable;
 1;
 
 __END__
-

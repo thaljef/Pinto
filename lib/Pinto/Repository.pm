@@ -545,7 +545,7 @@ sub create_stack {
     throw "Stack $stk_name already exists"
       if $self->get_stack($stk_name, nocroak => 1);
 
-    my $root  = $self->db->get_root_kommit;
+    my $root  = $self->db->get_root_revision;
     my $stack = $self->db->schema->create_stack( {%args, head => $root} );
 
     $stack->write_index;

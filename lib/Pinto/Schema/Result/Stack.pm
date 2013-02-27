@@ -107,13 +107,13 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 Type: belongs_to
 
-Related object: L<Pinto::Schema::Result::Kommit>
+Related object: L<Pinto::Schema::Result::Revision>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "head",
-  "Pinto::Schema::Result::Kommit",
+  "Pinto::Schema::Result::Revision",
   { id => "head" },
   { is_deferrable => 0, on_delete => "RESTRICT", on_update => "NO ACTION" },
 );
@@ -147,8 +147,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UqRFX6GAcrFZPOUdJm5LfA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:35:30
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9gc3N4bjSGe6vlg/a46CKw
 
 #-------------------------------------------------------------------------------
 
@@ -413,9 +413,9 @@ sub unlock {
 sub commit {
     my ($self, %args) = @_;
 
-    my $kommit = $self->result_source->schema->create_kommit(\%args);
-    $kommit->add_parent($self->head);
-    $self->update( {head => $kommit} );
+    my $revision = $self->result_source->schema->create_revision(\%args);
+    $revision->add_parent($self->head);
+    $self->update( {head => $revision} );
     $self->write_index;
 
     return $self;
@@ -508,7 +508,7 @@ sub numeric_compare {
 
     return 0 if $stack_a->id == $stack_b->id;
 
-    my $r = ($stack_a->head_revision <=> $stack_b->head_revision);
+    my $r = ($stack_a->head <=> $stack_b->head);
 
     return $r;
 }

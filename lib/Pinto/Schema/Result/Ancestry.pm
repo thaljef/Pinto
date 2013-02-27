@@ -1,12 +1,12 @@
 use utf8;
-package Pinto::Schema::Result::KommitGraph;
+package Pinto::Schema::Result::Ancestry;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-Pinto::Schema::Result::KommitGraph
+Pinto::Schema::Result::Ancestry
 
 =cut
 
@@ -18,11 +18,11 @@ use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
 extends 'DBIx::Class::Core';
 
-=head1 TABLE: C<kommit_graph>
+=head1 TABLE: C<ancestry>
 
 =cut
 
-__PACKAGE__->table("kommit_graph");
+__PACKAGE__->table("ancestry");
 
 =head1 ACCESSORS
 
@@ -73,13 +73,13 @@ __PACKAGE__->set_primary_key("id");
 
 Type: belongs_to
 
-Related object: L<Pinto::Schema::Result::Kommit>
+Related object: L<Pinto::Schema::Result::Revision>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "child",
-  "Pinto::Schema::Result::Kommit",
+  "Pinto::Schema::Result::Revision",
   { id => "child" },
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
@@ -88,13 +88,13 @@ __PACKAGE__->belongs_to(
 
 Type: belongs_to
 
-Related object: L<Pinto::Schema::Result::Kommit>
+Related object: L<Pinto::Schema::Result::Revision>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "parent",
-  "Pinto::Schema::Result::Kommit",
+  "Pinto::Schema::Result::Revision",
   { id => "parent" },
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
@@ -113,12 +113,12 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:PVd+tKczSa/kyZ3cH4tLQA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:20:24
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NAFcD1cZ00q/UhZ15CEYUg
 
 #-------------------------------------------------------------------------------
 
-# ABSTRACT: An atomic set of changes to a stack
+# ABSTRACT: Represents the relationship between revisions
 
 #-----------------------------------------------------------------------------
 

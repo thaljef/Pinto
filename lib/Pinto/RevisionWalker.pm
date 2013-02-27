@@ -16,7 +16,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 has start => (
 	is       => 'ro',
-	isa      => 'Pinto::Schema::Result::Kommit',
+	isa      => 'Pinto::Schema::Result::Revision',
 	required => 1,
 );
 

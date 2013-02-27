@@ -202,19 +202,7 @@ __PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0
 # Schema::Loader does not create many-to-many relationships for us.  So we
 # must create them by hand here...
 
-__PACKAGE__->many_to_many( kommits => 'registration', 'kommit' );
-
-#------------------------------------------------------------------------------
-
-sub sqlt_deploy_hook {
-    my ($self, $sqlt_table) = @_;
- 
-    $sqlt_table->add_index(name => 'package_idx_name',   fields => ['name']);
-    $sqlt_table->add_index(name => 'package_idx_file',   fields => ['file']);
-    $sqlt_table->add_index(name => 'package_idx_sha256', fields => ['sha256']);
-
-    return;
-}
+__PACKAGE__->many_to_many( revisions => 'registration', 'revision' );
 
 #------------------------------------------------------------------------------
 
@@ -255,10 +243,10 @@ sub registration {
     my ($self, %args) = @_;
 
     my $stack = $args{stack};
-    my $where = {kommit => $stack->head->id};
-    my $attrs = {key    => 'kommit_package_unique'};
+    my $where = {revision => $stack->head->id};
+    my $attrs = {key      => 'revision_package_unique'};
 
-    return $self->find_related('registrations', $where, $attrs);
+    return $self->find_related(registrations => $where, $attrs);
 }
 
 #------------------------------------------------------------------------------
@@ -266,7 +254,7 @@ sub registration {
 sub vname {
     my ($self) = @_;
 
-    return $self->name() . '~' . $self->version();
+    return $self->name . '~' . $self->version;
 }
 
 #------------------------------------------------------------------------------
