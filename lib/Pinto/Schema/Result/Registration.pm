@@ -187,7 +187,7 @@ use Pinto::Exception qw(throw);
 
 use overload ( '""'     => 'to_string',
                'cmp'    => 'string_compare',
-               '<=>'    => 'compare',
+               '<=>'    => 'numeric_compare',
                fallback => undef );
 
 #-------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ sub unpin {
 
 #-------------------------------------------------------------------------------
 
-sub compare {
+sub numeric_compare {
     my ($reg_a, $reg_b) = @_;
 
     my $pkg = __PACKAGE__;
