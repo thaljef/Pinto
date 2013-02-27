@@ -48,7 +48,7 @@ CREATE TABLE registration (
 CREATE TABLE registration_change (
        id              INTEGER PRIMARY KEY NOT NULL,
        event           TEXT                NOT NULL,
-       revision         INTEGER            NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
+       revision        INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
        package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
        package_name    TEXT                NOT NULL,
        distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
