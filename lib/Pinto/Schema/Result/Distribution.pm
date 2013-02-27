@@ -165,6 +165,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 registration_changes
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::RegistrationChange>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registration_changes",
+  "Pinto::Schema::Result::RegistrationChange",
+  { "foreign.distribution" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 registrations
 
 Type: has_many
@@ -194,16 +209,14 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wUmi2GfDncuvLjcyK9HesA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 09:54:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DiLPdKEnqj5KyFu7MxPvnQ
 
 #-------------------------------------------------------------------------------
 
 # ABSTRACT: Represents a distribution archive
 
 #-------------------------------------------------------------------------------
-
-use MooseX::Types::Moose qw(Str Bool);
 
 use URI;
 use Path::Class;
@@ -244,32 +257,145 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
+sub register {
+    my ($self, %args) = @_;
+
+    my $stack  = $args{stack};
+    my $pin    = $args{pin};
+    my $did_register = 0;
+    my $errors       = 0;
+
+    $stack->assert_not_locked;
+
+    # TODO: This process makes a of trips to the database.  You could
+    # optimize this by fetching all the incumbents at once, checking
+    # for pins, and then bulk-insert the new registrations.
+    
+    for my $pkg ($self->packages) {
+
+      my $where = {package_name => $pkg->name};
+      my $incumbent = $stack->find_related(registrations => $where);
+
+      if (not defined $incumbent) {
+          $self->debug(sub {"Registering $pkg on stack $stack"} );
+          $pkg->register(stack => $stack, pin => $pin);
+          $did_register++;
+          next;
+      }
+
+      my $incumbent_pkg = $incumbent->package;
+
+      if ( $incumbent_pkg == $pkg ) {
+        $self->debug( sub {"Package $pkg is already on stack $stack"} );
+        $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
+        next;
+      }
+
+
+      if ( $incumbent->is_pinned ) {
+        my $pkg_name = $pkg->name;
+        $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
+        $errors++;
+        next;
+      }
+
+      my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
+                                                         : ('notice',  'Upgrading');
+
+      $incumbent->delete;
+      $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
+      $pkg->register(stack => $stack, pin => $pin);
+      $did_register++;
+    }
+
+    throw "Unable to register distribution $self on stack $stack" if $errors;
+
+    return $did_register;
+}
+
+#------------------------------------------------------------------------------
+
+sub unregister {
+  my ($self, %args) = @_;
+
+  my $stack  = $args{stack};
+  my $force  = $args{force};
+  my $did_unregister = 0;
+  my $conflicts      = 0;
+
+  $stack->assert_not_locked;
+
+  my $rs = $self->registrations( {stack => $stack->id} );
+  for my $reg ($rs->all) {
+
+    if ($reg->is_pinned and not $force ) {
+      my $pkg = $reg->package;
+      $self->warning("Cannot unregister package $pkg because it is pinned to stack $stack");
+      $conflicts++;
+      next;
+    }
+
+    $did_unregister++;
+  }
+
+  throw "Unable to unregister distribution $self on stack $stack" if $conflicts;
+
+  $rs->delete;
+
+  return $did_unregister;
+}
+
+#------------------------------------------------------------------------------
+
+sub pin {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+    $stack->assert_not_locked;
+
+    my $rs = $self->registrations( {stack => $stack->id, is_pinned => 0} );
+    throw "Distribution $self is not on stack $stack or is already pinned" unless $rs->count;
+
+    $rs->update({is_pinned => 1});
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub unpin {
+    my ($self, %args) = @_;
+
+    my $stack = $args{stack};
+    $stack->assert_not_locked;
+ 
+    my $rs = $self->registrations( {stack => $stack->id, is_pinned => 1} );
+    throw "Distribution $self is not on stack $stack or is not pinned" unless $rs->count;
+    $rs->update({is_pinned => 0});
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 has distname_info => (
     isa      => 'CPAN::DistnameInfo',
     init_arg => undef,
     handles  => { name     => 'dist',
                   vname    => 'distvname',
                   version  => 'version',
-                  maturity => 'maturity'},
+                  maturity => 'maturity' },
     default  => sub { CPAN::DistnameInfo->new( $_[0]->path ) },
     lazy     => 1,
 );
 
+#------------------------------------------------------------------------------
 
 has is_devel => (
     is       => 'ro',
-    isa      => Bool,
+    isa      => 'Bool',
     init_arg => undef,
     default  => sub {$_[0]->maturity() eq 'developer'},
-    lazy     => 1,
-);
-
-
-has author_canonical => (
-    is       => 'ro',
-    isa      => Str,
-    init_arg => undef,
-    default  => sub {uc $_[0]->author},
     lazy     => 1,
 );
 
@@ -278,9 +404,9 @@ has author_canonical => (
 sub path {
     my ($self) = @_;
 
-    return join '/', substr($self->author_canonical, 0, 1),
-                     substr($self->author_canonical, 0, 2),
-                     $self->author_canonical,
+    return join '/', substr($self->author, 0, 1),
+                     substr($self->author, 0, 2),
+                     $self->author,
                      $self->archive;
 }
 
@@ -290,9 +416,9 @@ sub native_path {
     my ($self, @base) = @_;
 
     return Path::Class::file( @base,
-                              substr($self->author_canonical, 0, 1),
-                              substr($self->author_canonical, 0, 2),
-                              $self->author_canonical,
+                              substr($self->author, 0, 1),
+                              substr($self->author, 0, 2),
+                              $self->author,
                               $self->archive );
 }
 
@@ -337,6 +463,21 @@ sub package {
 
 #------------------------------------------------------------------------------
 
+sub registered_stacks {
+    my ($self) = @_;
+
+    my %stacks;
+
+    for my $reg ($self->registrations) {
+      # TODO: maybe use 'DISTICT'
+      $stacks{$reg->stack} = $reg->stack;
+    }
+
+    return values %stacks;
+}
+
+#------------------------------------------------------------------------------
+
 sub package_count {
     my ($self) = @_;
 
@@ -370,8 +511,8 @@ sub string_compare {
 
     return 0 if $dist_a->id == $dist_b->id;
 
-    my $r =   ($dist_a->author_canonical cmp $dist_b->author_canonical)
-           || ($dist_a->archive          cmp $dist_b->archive);
+    my $r =   ($dist_a->author  cmp $dist_b->author)
+           || ($dist_a->archive cmp $dist_b->archive);
 
     return $r;
 }
@@ -392,7 +533,6 @@ sub to_string {
          's' => sub { $self->is_local()   ? 'l' : 'f'         },
          'S' => sub { $self->source()                         },
          'a' => sub { $self->author()                         },
-         'A' => sub { $self->author_canonical()               },
          'u' => sub { $self->url()                            },
          'c' => sub { $self->package_count()                  },
     );
@@ -406,7 +546,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%A/%f', # AUTHOR/Dist-Name-1.0.tar.gz
+    return '%a/%f', # AUTHOR/Dist-Name-1.0.tar.gz
 }
 
 #------------------------------------------------------------------------------

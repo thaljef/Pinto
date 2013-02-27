@@ -70,7 +70,7 @@ sub _reindex {
     my $dist  = $self->repo->get_distribution(spec => $spec);
     throw "Distribution $spec is not in the repository" if not defined $dist;
 
-    $stack->register(distribution => $dist, pin => $self->pin);
+    $dist->register(stack => $stack, pin => $self->pin);
 
     return;
 }

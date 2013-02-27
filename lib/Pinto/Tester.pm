@@ -5,7 +5,6 @@ package Pinto::Tester;
 use Moose;
 use MooseX::NonMoose;
 use MooseX::Types::Moose qw(ScalarRef HashRef);
-use MooseX::MarkAsMethods (autoclean => 1);
 
 use Carp;
 use IO::String;
@@ -88,7 +87,6 @@ has tb => (
    default  => sub { __PACKAGE__->builder() },
 );
 
-
 #------------------------------------------------------------------------------
 # This force the repository to be constructed immediately.  Just
 # making the 'pinto' attribute non-lazy didn't work, probably due to
@@ -101,15 +99,16 @@ sub BUILD { $_[0]->pinto }
 sub _build_pinto {
     my ($self) = @_;
 
-    my %defaults     = ( root        => $self->root );
+    my %defaults     = ( root    => $self->root() );
+    my %log_defaults = ( log_handler => Test::Log::Dispatch->new(),
+                         verbose     => 3, );
 
-    my %log_defaults = ( verbose     => 3,
-                         log_handler => Test::Log::Dispatch->new );
 
     my $initializer = Pinto::Initializer->new(%defaults, %log_defaults);
     $initializer->init( $self->init_args );
 
-    return Pinto->new(%defaults, %log_defaults, $self->pinto_args);
+    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args);
+    return $pinto;
 }
 
 #------------------------------------------------------------------------------
@@ -186,27 +185,34 @@ sub registration_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
+    my $stack      = $self->pinto->repo->get_stack($stack_name);
 
-    my $stack = $self->pinto->repo->get_stack($stack_name);
-    my $reg   = $stack->registry->lookup(package => $pkg_name);
+    my $where = { stack => $stack->id, 'package.name' => $pkg_name };
+    my $attrs = { prefetch => {package => 'distribution' }};
+    my $reg = $self->pinto->repo->db->schema->find_registration($where, $attrs);
 
     return $self->tb->ok(0, "Package $pkg_name is not on stack $stack_name")
         if not $reg;
 
 
-    $self->tb->is_eq($reg->name,         $pkg_name,  "Registry has correct package");
-    $self->tb->is_eq($reg->version,      $pkg_ver,   "Registry has correct version");
-    $self->tb->is_eq($reg->distribution, $dist_path, "Registry has correct distribution");
+    # Test package object...
+    my $pkg = $reg->    package;
+    $self->tb->is_eq($pkg->name,    $pkg_name, "Package has correct name");
+    $self->tb->is_eq($pkg->version, $pkg_ver,  "Package has correct version");
 
-    $self->tb->ok($reg->is_pinned,  "Registration $reg should be pinned")     if $is_pinned;
-    $self->tb->ok(!$reg->is_pinned, "Registration $reg should not be pinned") if not $is_pinned;
+    # Test distribution object...
+    my $dist = $reg->distribution;
+    $self->tb->is_eq($dist->path,  $dist_path, "Distribution has correct dist path");
 
-    # TODO: make these work on non-unix platforms too
     # Archive should be reachable through stack symlink (e.g. $stack/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
-    #$self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
+    $self->path_exists_ok( [$stack_name, qw(authors id), $dist->native_path] );
 
     # Archive should be reachable through gobal authors dir (e.g. .pinto/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz)
-    #$self->path_exists_ok( [ qw(.pinto authors id), $dist->native_path ] );
+    $self->path_exists_ok( [ qw(.pinto authors id), $dist->native_path ] );
+
+    # Test pins...
+    $self->tb->ok($reg->is_pinned,  "Registration $reg should be pinned") if $is_pinned;
+    $self->tb->ok(!$reg->is_pinned, "Registration $reg should not be pinned") if not $is_pinned;
 
     # Test checksums...
     $self->path_exists_ok( [qw(.pinto authors id), $author_dir, 'CHECKSUMS'] );
@@ -225,9 +231,10 @@ sub registration_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path = $author_dir->file($dist_archive)->as_foreign('Unix');
+    my $stack     = $self->pinto->repo->get_stack($stack_name);
 
-    my $stack = $self->pinto->repo->get_stack($stack_name);
-    my $reg   = $stack->registry->lookup(package => $pkg_name);
+    my $where = {stack => $stack->id, 'package.name' => $pkg_name, 'distribution.author' => $author, 'distribution.archive' => $dist_archive};
+    my $reg = $self->pinto->repo->db->schema->search_registration($where);
 
     return $self->tb->ok(1, "Registration $reg_spec should not exist")
         if not $reg;
@@ -283,6 +290,19 @@ sub result_not_changed_ok {
 
 #------------------------------------------------------------------------------
 
+sub head_revision_number_is {
+    my ($self, $revnum, $stack_name, $test_name) = @_;
+
+    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $head  = $stack->head_revision;
+
+    $test_name ||= "Head revision number of stack $stack matches";
+
+    return $self->tb->is_eq($head->number, $revnum, $test_name);
+}
+
+#------------------------------------------------------------------------------
+
 sub repository_clean_ok {
     my ($self) = @_;
 
@@ -294,7 +314,7 @@ sub repository_clean_ok {
 
     my @stacks = $self->pinto->repo->db->schema->stack_rs->all;
     $self->tb->is_eq(scalar @stacks, 1, 'Database has only one stack');
-    $self->tb->is_eq($stacks[0]->name, 'master', 'The stack is called "master"');
+    $self->tb->is_eq($stacks[0]->name, 'master',  'The stack is called "master"');
     $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
 
     my $authors_id_dir = $self->pinto->config->authors_id_dir;

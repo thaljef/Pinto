@@ -18,7 +18,7 @@ use Pinto::Config;
 {
     my %default_cases = (
         root      => 'nowhere',
-        sources   => 'http://cpan.perl.org',
+        sources   => 'http://cpan.perl.org http://backpan.perl.org',
         devel     => 0,
     );
 

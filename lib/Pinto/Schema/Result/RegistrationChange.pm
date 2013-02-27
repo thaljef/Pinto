@@ -178,10 +178,71 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 09:54:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3mvYKUYXnYxcUEwDZGgc3A
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 23:17:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:69Ujep2XrWaTPD6Pn9YzTA
+
+#-------------------------------------------------------------------------------
+
+# ABSTRACT: A single change to the registry
+
+#-------------------------------------------------------------------------------
+
+# VERSION
+
+#-------------------------------------------------------------------------------
+
+use String::Format;
+
+use Pinto::Exception qw(throw);
+
+use overload ( q{""} => 'to_string' );
+
+#-------------------------------------------------------------------------------
+
+sub to_string {
+   my ($self, $format) = @_;
 
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+    my %fspec = (
+         A => sub { $self->event eq 'insert'                    ? 'A' : 'D'         },
+         p => sub { $self->package->name                                            },
+         P => sub { $self->package->vname                                           },
+         v => sub { $self->package->version                                         },
+         m => sub { $self->package->distribution->is_devel      ? 'd' : 'r'         },
+         p => sub { $self->package->distribution->path                              },
+         P => sub { $self->package->distribution->native_path                       },
+         f => sub { $self->package->distribution->archive                           },
+         s => sub { $self->package->distribution->is_local      ? 'l' : 'f'         },
+         S => sub { $self->package->distribution->source                            },
+         a => sub { $self->package->distribution->author                            },
+         d => sub { $self->package->distribution->name                              },
+         D => sub { $self->package->distribution->vname                             },
+         w => sub { $self->package->distribution->version                           },
+         u => sub { $self->package->distribution->url                               },
+         j => sub { $self->kommit->username                                         },
+         u => sub { $self->kommit->timestamp->strftime('%c')                        },
+         y => sub { $self->is_pinned                            ? '*' : ' '         },
+    );
+
+    # Some attributes are just undefined, usually because of
+    # oddly named distributions and other old stuff on CPAN.
+    no warnings 'uninitialized';  ## no critic qw(NoWarnings);
+
+    $format ||= $self->default_format();
+    return String::Format::stringf($format, %fspec);
+}
+
+sub default_format {
+
+    return '%A %y %a/%f/%P';
+}
+
+#-------------------------------------------------------------------------------
+
 __PACKAGE__->meta->make_immutable;
+
+#-------------------------------------------------------------------------------
 1;
+
+__END__
+

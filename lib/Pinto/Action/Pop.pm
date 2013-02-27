@@ -70,7 +70,7 @@ sub _pop {
     my $dist  = $stack->get_distribution(spec => $target);
     throw "Distribution $target is not registered on stack $stack" if not defined $dist;
 
-    $stack->unregister(distribution => $dist, force => $self->force);
+    $dist->unregister(stack => $stack, force => $self->force);
 
     return;
 }

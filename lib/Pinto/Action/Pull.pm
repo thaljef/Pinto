@@ -109,14 +109,13 @@ sub _pull {
         return;
     }
 
-
     $self->notice("Pulling $target");
 
     my $dist =         $stack->get_distribution(spec => $target)
                || $self->repo->get_distribution(spec => $target)
                || $self->repo->ups_distribution(spec => $target);
 
-    $stack->register(distribution => $dist, pin => $self->pin);
+    $dist->register(stack => $stack, pin => $self->pin);
     $self->repo->pull_prerequisites(dist => $dist, stack => $stack) if not $self->norecurse;
 
     return;

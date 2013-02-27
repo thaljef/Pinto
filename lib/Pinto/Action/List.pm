@@ -3,10 +3,12 @@
 package Pinto::Action::List;
 
 use Moose;
-use MooseX::Types::Moose qw(HashRef Str Bool Undef);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Types::Moose qw(HashRef Str Bool);
 
 use Pinto::Types qw(AuthorID StackName StackAll StackDefault StackObject);
+use Pinto::Constants qw($PINTO_STACK_NAME_ALL);
+
+use namespace::autoclean;
 
 #------------------------------------------------------------------------------
 
@@ -20,15 +22,14 @@ extends qw( Pinto::Action );
 
 has stack => (
     is        => 'ro',
-    isa       => StackName | StackDefault | StackObject,
+    isa       => StackName | StackAll | StackDefault | StackObject,
     default   => undef,
 );
 
 
 has pinned => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
+    is     => 'ro',
+    isa    => Bool,
 );
 
 
@@ -53,33 +54,78 @@ has distributions => (
 has format => (
     is        => 'ro',
     isa       => Str,
-    default   => '%-32p  %12v  %A/%f  %i',
+    default   => '%m%s%y %-40p %12v %a/%f',
+    predicate => 'has_format',
+    lazy      => 1,
 );
+
+
+has where => (
+    is       => 'ro',
+    isa      => HashRef,
+    builder  => '_build_where',
+    lazy     => 1,
+);
+
+#------------------------------------------------------------------------------
+
+sub _build_where {
+    my ($self) = @_;
+
+    my $where = {};
+
+    if (my $pkg_name = $self->packages) {
+        $where->{'package.name'} = { like => "%$pkg_name%" }
+    }
+
+    if (my $dist_name = $self->distributions) {
+        $where->{'distribution.archive'} = { like => "%$dist_name%" };
+    }
+
+    if (my $author = $self->author) {
+        $where->{'distribution.author'} = uc $author;
+    }
+
+    if (my $pinned = $self->pinned) {
+        $where->{is_pinned} = 1;
+    }
+
+    return $where;
+}
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $auth    = $self->author;
-    my $auth_rx = $auth ? qr/$auth/i : undef;
+    my $where    = $self->where;
+    my $stk_name = $self->stack;
+    my $format;
 
-    my $pkg    = $self->packages;
-    my $pkg_rx = $pkg ? qr/$pkg/i : undef;
+    if (defined $stk_name and $stk_name eq $PINTO_STACK_NAME_ALL) {
+        # If listing all stacks, then include the stack name
+        # in the listing, unless a custom format has been given
+        $format = $self->has_format ? $self->format
+                                    : '%m%s%y %-12k %-40p %12v %a/%f';
+    }
+    else{
+        # Otherwise, list only the named stack, falling back to
+        # the default stack if no stack was named at all.
+        my $stack = $self->repo->get_stack($stk_name);
+        $where->{'stack.name'} = $stack->name;
+        $format = $self->format;
+    }
 
-    my $dist    = $self->distributions;
-    my $dist_rx = $dist ? qr/$dist/i : undef;
 
-    my $pinned = $self->pinned;
+    my $attrs = {prefetch => ['stack', {package => 'distribution'}],
+                 order_by => [ qw(package.name) ] };
 
-    my $stack = $self->repo->get_stack($self->stack);
+    ################################################################
 
-    for my $entry ( @{ $stack->registry->entries } ) {
-        next if $auth_rx  && $entry->author       !~ $auth_rx;
-        next if $pkg_rx   && $entry->package      !~ $pkg_rx;
-        next if $dist_rx  && $entry->distribution !~ $dist_rx;
-        next if $pinned   && not $entry->is_pinned; 
-        $self->say($entry->to_string($self->format));
+    my $rs = $self->repo->db->schema->search_registration($where, $attrs);
+
+    while( my $registration = $rs->next ) {
+        $self->say($registration->to_string($format));
     }
 
     return $self->result;

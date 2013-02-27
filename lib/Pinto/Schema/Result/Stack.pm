@@ -272,13 +272,22 @@ sub get_distribution {
 
     if (my $spec = $args{spec}) {
         if ( itis($spec, 'Pinto::DistributionSpec') ) {
-            my $entries = $self->registry->lookup(distribution => $spec->path);
-            return $entries ? $self->repo->get_distribution(path => $spec->path) : ();
+
+            my $attrs = {prefetch => 'distribution'};
+            my $where = {'distribution.author'  => $spec->author, 
+                         'distribution.archive' => $spec->archive};
+
+            my $reg = $self->find_related(registrations => $where, $attrs) or return;
+            return $reg->distribution;
         }
         elsif ( itis($spec, 'Pinto::PackageSpec') ) {
-            my $entry = $self->registry->lookup(package => $spec->name);
-            return () if !$entry or $entry->version < $spec->version;
-            return $self->repo->get_distribution(path => $entry->path);
+
+            my $attrs = {prefetch => [ qw(package distribution) ]};
+            my $where = {package_name => $spec->name};
+
+            my $reg = $self->find_related(registrations => $where) or return;
+            return if $reg->package->version < $spec->version;
+            return $reg->distribution;
         }
     }
 
@@ -306,6 +315,26 @@ sub copy {
     my $copy = $self->next::method(\%changes);
 
     return $copy;
+}
+
+#------------------------------------------------------------------------------
+
+sub copy_registrations {
+    my ($self, %args) = @_;
+
+    my $to_stack = $args{to};
+    $self->info("Copying registrations for stack $self into stack $to_stack");
+
+    my $where = {stack => $self->id};
+    my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
+    my $rs = $self->result_source->schema->resultset('Registration');
+
+    my @rows = $rs->search($where, $attrs)->all;
+    for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
+
+    $rs->populate(\@rows);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -384,9 +413,12 @@ sub unlock {
 sub commit {
     my ($self, %args) = @_;
 
-    my $kommit = $self->schema->create_kommit(\%args);
-    $kommit->add_parent(kommit => $self->head);
+    $args{username} ||= $self->repo->config->username;
+    $args{sha256}   ||= rand;
+    my $kommit = $self->result_source->schema->create_kommit(\%args);
+    $kommit->add_parent($self->head);
     $self->update( {head => $kommit} );
+    $self->write_index;
 
     return $self;
 }
@@ -443,7 +475,7 @@ sub unmark_as_default {
 sub has_changed {
     my ($self) = @_;
 
-    return $self->registry->has_changed;
+    return 1;
 }
 
 #------------------------------------------------------------------------------

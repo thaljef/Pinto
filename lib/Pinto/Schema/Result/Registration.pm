@@ -192,16 +192,6 @@ use overload ( '""'     => 'to_string',
 
 #-------------------------------------------------------------------------------
 
-sub sqlt_deploy_hook {
-    my ($self, $sqlt_table) = @_;
- 
-    $sqlt_table->add_index(name => 'registration_idx_kommit', fields => ['kommit']);
-
-    return;
-}
-
-#-------------------------------------------------------------------------------
-
 sub FOREIGNBUILDARGS {
     my ($class, $args) = @_;
 
@@ -237,81 +227,6 @@ sub unpin {
 
 #-------------------------------------------------------------------------------
 
-sub merge {
-    my ($self, %args) = @_;
-
-    my $to_stk = $args{to};
-
-    my $from_pkg = $self->package;
-    my $to_reg   = $to_stk->registration(package => $from_pkg);
-
-    # CASE 1:  The package is not registered on the target stack,
-    # so we can go ahead and just add it there.
-
-    if (not defined $to_reg) {
-         $self->debug("Adding package $from_pkg to stack $to_stk");
-         $self->copy( {stack => $to_stk} );
-         return (0, 1);
-     }
-
-    # CASE 2:  The exact same package is in both the source
-    # and the target stacks, so we don't have to merge.  But
-    # if the source is pinned, then we should also copy the
-    # pin to the target.
-
-    if ($self == $to_reg) {
-        $self->debug("$self and $to_reg are the same");
-        if ($self->is_pinned and not $to_reg->is_pinned) {
-            $self->debug("Adding pin to $to_reg");
-            $to_reg->pin;
-            return (0, 1);
-        }
-        return (0, 0);
-    }
-
-    # CASE 3:  The package in the target stack is newer than the
-    # one in the source stack.  If the package in the source stack
-    # is pinned, then we have a conflict, so whine.  If it is not
-    # pinned then there is nothing to do because the package in
-    # the target stack is already newer.
-
-    if ($to_reg > $self) {
-        if ( $self->is_pinned ) {
-            $self->warning("$self is pinned to a version older than $to_reg");
-            return (1, 0);
-        }
-        $self->debug("$to_reg is already newer than $self");
-        return (0, 0);
-    }
-
-
-    # CASE 4:  The package in the target stack is older than the
-    # one in the source stack.  If the package in the target stack
-    # is pinned, then we have a conflict, so whine.  If it is not
-    # pinned, then upgrade the package in the target stack with
-    # the newer package in the source stack.
-
-    if ($to_reg < $self) {
-        if ( $to_reg->is_pinned ) {
-            $self->warning("$to_reg is pinned to a version older than $self");
-            return (1, 0);
-        }
-        my $from_pkg = $self->package;
-        $self->info("Upgrading $to_reg to $from_pkg");
-        $to_reg->delete;
-        $self->copy( {stack => $to_reg->stack} );
-        return (0, 1);
-    }
-
-    # CASE 5:  The above logic should cover all possible scenarios.
-    # So if we get here then either our logic is flawed or something
-    # weird has happened in the database.
-
-    throw "Unable to merge $self into $to_reg";
-}
-
-#-------------------------------------------------------------------------------
-
 sub compare {
     my ($reg_a, $reg_b) = @_;
 
@@ -329,15 +244,15 @@ sub compare {
 sub string_compare {
     my ($reg_a, $reg_b) = @_;
 
-    my $pkg = __PACKAGE__;
-    throw "Can only compare $pkg objects"
-        if not ( itis($reg_a, $pkg) && itis($reg_b, $pkg) );
+    my $class = __PACKAGE__;
+    throw "Can only compare $class objects"
+        if not ( itis($reg_a, $class) && itis($reg_b, $class) );
 
     return 0 if $reg_a->id == $reg_b->id;
 
-    return    ($reg_a->package->distribution->author_canonical cmp $reg_b->package->distribution->author_canonical)
-           || ($reg_a->package->distribution->vname            cmp $reg_b->package->distribution->vname)
-           || ($reg_a->package->vname                          cmp $reg_b->package->vname);
+    return    ($reg_a->package->distribution->author cmp $reg_b->package->distribution->author)
+           || ($reg_a->package->distribution->vname  cmp $reg_b->package->distribution->vname)
+           || ($reg_a->package->vname                cmp $reg_b->package->vname);
 }
 
 #------------------------------------------------------------------------------
@@ -349,24 +264,22 @@ sub to_string {
     # warn __PACKAGE__ . " stringified from $file at line $line";
 
     my %fspec = (
-         p => sub { $self->package->name                                              },
-         P => sub { $self->package->vname                                             },
-         v => sub { $self->package->version                                           },
-         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'               },
-         h => sub { $self->package->distribution->path                                },
-         H => sub { $self->package->distribution->native_path                         },
-         f => sub { $self->package->distribution->archive                             },
-         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'               },
-         S => sub { $self->package->distribution->source                              },
-         a => sub { $self->package->distribution->author                              },
-         A => sub { $self->package->distribution->author_canonical                    },
-         d => sub { $self->package->distribution->name                                },
-         D => sub { $self->package->distribution->vname                               },
-         V => sub { $self->package->distribution->version                             },
-         u => sub { $self->package->distribution->url                                 },
-         i => sub { $self->kommit->sha256_short                                       },
-         I => sub { $self->kommit->sha256                                             },
-         y => sub { $self->is_pinned                        ? '*' : ' '               },
+         p => sub { $self->package->name                                     },
+         P => sub { $self->package->vname                                    },
+         v => sub { $self->package->version                                  },
+         y => sub { $self->is_pinned                        ? '*' : ' '      },
+         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'      },
+         h => sub { $self->package->distribution->path                       },
+         H => sub { $self->package->distribution->native_path                },
+         f => sub { $self->package->distribution->archive                    },
+         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'      },
+         S => sub { $self->package->distribution->source                     },
+         a => sub { $self->package->distribution->author                     },
+         d => sub { $self->package->distribution->name                       },
+         D => sub { $self->package->distribution->vname                      },
+         V => sub { $self->package->distribution->version                    },
+         u => sub { $self->package->distribution->url                        },
+         k => sub { $self->stack->name                                       },
     );
 
     # Some attributes are just undefined, usually because of
@@ -382,7 +295,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%A/%D/%P/%i'; # AUTHOR/DIST_VNAME/PKG_VNAME/KOMMIT
+    return '%a/%D/%P/%k'; # AUTHOR/DIST_VNAME/PKG_VNAME/STACK
 }
 
 #------------------------------------------------------------------------------

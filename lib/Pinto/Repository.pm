@@ -440,7 +440,7 @@ sub add_distribution {
     my ($self, %args) = @_;
 
     my $archive = $args{archive};
-    my $author  = $args{author};
+    my $author  = uc $args{author};
     my $source  = $args{source} || 'LOCAL';
 
     $self->assert_archive_not_duplicate($author, $archive);
@@ -525,7 +525,8 @@ sub pull_prerequisites {
                    || $self->ups_distribution(spec => $prereq);
 
         return if not defined $dist;
-        return $stack->register(distribution => $dist);
+        $dist->register(stack => $stack);
+        return $dist;
     };
 
     my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb);
@@ -565,8 +566,10 @@ sub copy_stack {
         throw "Stack $existing already exists"
     } 
 
-    my $copy = $stack->copy(%args)->finalize;
-    $self->vcs->fork_branch(from => $orig_name, to => $copy_name);
+    my $copy = $stack->copy(%args);
+    $stack->copy_registrations(to => $copy);
+    
+    $copy->write_index;
 
     return $copy;
 }
@@ -584,7 +587,6 @@ sub rename_stack {
       if $self->get_stack($new_name, nocroak => 1);
 
     $stack->rename(to => $new_name);
-    $self->vcs->rename_branch(from => $old_name, to => $new_name);
 
     return $stack;
 }
@@ -597,7 +599,6 @@ sub kill_stack {
     my $stack = $args{stack};
 
     $stack->kill;
-    $self->vcs->delete_branch(branch => $stack->name);
 
     return $stack;
 }

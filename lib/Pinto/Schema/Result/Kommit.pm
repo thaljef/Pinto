@@ -125,6 +125,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 registration_changes
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::RegistrationChange>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registration_changes",
+  "Pinto::Schema::Result::RegistrationChange",
+  { "foreign.kommit" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 stacks
 
 Type: has_many
@@ -154,8 +169,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-22 22:54:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SgAOtf2KV6g8bt7n+E8fuA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 23:28:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ilj501g0I9PMFtPU2JKTAw
 
 #------------------------------------------------------------------------------
 
@@ -197,36 +212,15 @@ __PACKAGE__->inflate_column('timestamp' => {
 sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
+  # Needed?
   $args ||= {};
   $args->{sha256}       ||= '';
   $args->{message}      ||= '';
-  $args->{username}     ||= '';
   $args->{timestamp}    ||=  0;
 
   return $args;
 }
 
-#------------------------------------------------------------------------------
-
-sub finalize {
-    my ($self, %args) = @_;
-
-    if (not $self->message) {
-      throw "Cannot finalize kommit $self without a message" unless $args{message};
-      $self->message( $args{message} );
-    }
-
-    if (not $self->username) {
-      throw "Cannot finalize kommit $self without a username" unless $args{username};
-      $self->username( $args{username} );
-    }
-
-    $self->timestamp( current_time );
-    $self->sha256( $self->compute_digest );
-
-    return $self->update;
-
-}
 #------------------------------------------------------------------------------
 
 sub message_title {
@@ -255,7 +249,7 @@ sub message_body {
 
 #------------------------------------------------------------------------------
 
-sub sha256_short {
+sub sha256_prefix {
     my ($self) = @_;
 
     return substr $self->sha256, 0, 8;
@@ -271,7 +265,7 @@ sub compute_digest {
                            $self->username,
                            $self->message;
 
-    my $sha = Digest::SHA->new(1);
+    my $sha = Digest::SHA->new(256);
     $sha->add($string);
 
     return $sha->hexdigest;
@@ -282,61 +276,9 @@ sub compute_digest {
 sub add_parent {
     my ($self, $parent) = @_;
 
-    my $child_id  = $self->id;
-    my $parent_id = $parent->id;
-
-    my $sql = "INSERT INTO kommit_graph (ancestor, descendant, depth) "
-            . "SELECT ancestor, $child_id, depth + 1 FROM kommit_graph "
-            . "WHERE descendant = $parent_id ";
-
-    my $dbh = $self->result_source->schema->storage->dbh;
-    $dbh->do($sql);
+    $self->create_related(kommit_graph_children => {parent => $parent->id});
 
     return;
-}
-
-#------------------------------------------------------------------------------
-
-sub ancestors {
-  my ($self) = @_;
-
-  my $where = {descendant =>  $self->id, ancestor => {'!=' => $self->id}};
-  my $attrs = {join => 'kommit_graph_ancestors', order_by => {-desc => 'me.timestamp'}, distinct => 1};
-
-  return $self->result_source->resultset->search($where, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
-sub is_ancestor_to {
-  my ($self, $kommit) = @_;
-
-  my $where = {descendant =>  $kommit->id, ancestor => $self->id};
-  my $attrs = {join => 'kommit_graph_ancestors'};
-
-  return $self->result_source->resultset->search($where, $attrs)->count;
-}
-
-#------------------------------------------------------------------------------
-
-sub descendants {
-  my ($self) = @_;
-
-  my $where = {ancestor =>  $self->id, descendant => {'!=' => $self->id}};
-  my $attrs = {join => 'kommit_graph_descendants', order_by => 'me.timestamp', distinct => 1};
-
-  return $self->result_source->resultset->search($where, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
-sub is_descendant_of {
-  my ($self, $kommit) = @_;
-
-  my $where = {descendant =>  $self->id, ancestor => $kommit->id};
-  my $attrs = {join => 'kommit_graph_descendants'};
-
-  return $self->result_source->resultset->search($where, $attrs)->count;
 }
 
 #------------------------------------------------------------------------------
@@ -344,8 +286,8 @@ sub is_descendant_of {
 sub parents {
   my ($self) = @_;
 
-  my $where = {descendant => $self->id, ancestor => {'!=' => $self->id}, depth => 1};
-  my $attrs = {join => 'kommit_graph_ancestors', order_by => 'me.timestamp'};
+  my $where = {descendant => $self->id};
+  my $attrs = {join => 'kommit_graph_parents', order_by => 'me.timestamp'};
 
   return $self->result_source->resultset->search($where, $attrs);
 }
@@ -355,8 +297,8 @@ sub parents {
 sub children {
   my ($self) = @_;
 
-  my $where = {ancestor => $self->id, descendant => {'!=' => $self->id}, depth => 1};
-  my $attrs = {join => 'kommit_graph_descendants', order_by => 'me.timestamp'};
+  my $where = {ancestor => $self->id};
+  my $attrs = {join => 'kommit_graph_children', order_by => 'me.timestamp'};
 
   return $self->result_source->resultset->search($where, $attrs);
 }
@@ -404,13 +346,11 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-
-           i => sub { $self->sha256_short              },
+           i => sub { $self->sha256_prefix             },
            I => sub { $self->sha256                    },
            g => sub { $self->message                   },
            j => sub { $self->username                  },
            u => sub { $self->timestamp->strftime('%c') },
-
     );
 
     $format ||= $self->default_format;

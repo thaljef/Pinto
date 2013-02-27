@@ -47,8 +47,7 @@ sub execute {
 
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    my $diff    = $stack->stage->diff->to_string;
-    my $message = $self->edit_message(stack => $stack, details => $diff);
+    my $message = $self->edit_message(stack => $stack);
     $stack->commit(message => $message);
 
     return $self->result->changed;
@@ -65,7 +64,7 @@ sub _unpin {
 
     $self->notice("Unpinning distribution $dist from stack $stack");
 
-    $stack->unpin(distribution => $dist);
+    $dist->unpin(stack => $stack);
 
     return;
 }

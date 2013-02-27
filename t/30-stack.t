@@ -27,7 +27,7 @@ my $t = Pinto::Tester->new;
   $t->run_ok( Add => {author => 'ME', stack => $stk_name, archives => $foo_and_bar_1} );
 
   # Note the time of last commit
-  my $old_mtime = $stack->refresh->head->time;
+  my $old_mtime = $stack->refresh->head->timestamp;
 
   # time passes
   sleep 2;
@@ -37,7 +37,7 @@ my $t = Pinto::Tester->new;
   $t->run_ok( Add => {author => 'ME', stack => $stk_name, archives => $foo_and_bar_2});
 
   # Check that mtime was updated...
-  cmp_ok $stack->refresh->head->time, '>', $old_mtime, 'Updated stack mtime';
+  cmp_ok $stack->refresh->head->timestamp, '>', $old_mtime, 'Updated stack mtime';
 }
 
 #------------------------------------------------------------------------------

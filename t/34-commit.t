@@ -96,7 +96,7 @@ my $t = Pinto::Tester->new;
 	my $stack  = $t->pinto->repo->get_stack;
 	my $commit = $stack->head;
 
-	is ($commit->message, "my title  \n\nmy body", 'Got custom commit message when specified');
+	is ($commit->message, "  my title  \n\nmy body  ", 'Got custom commit message when specified');
 	is ($commit->message_body, 'my body', 'Got message body');
 	is ($commit->message_title, 'my title', 'Got message title');
 }

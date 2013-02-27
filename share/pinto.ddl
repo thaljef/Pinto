@@ -47,6 +47,21 @@ CREATE TABLE registration (
 );
 
 
+CREATE TABLE registration_change (
+       id            INTEGER PRIMARY KEY NOT NULL,
+       event         TEXT                NOT NULL,
+       kommit        INTEGER             NOT NULL,
+       package       INTEGER             NOT NULL,
+       package_name  TEXT                NOT NULL,
+       distribution  INTEGER             NOT NULL,
+       is_pinned     BOOLEAN             NOT NULL,
+
+       FOREIGN KEY(kommit)       REFERENCES kommit(id)       ON DELETE CASCADE,
+       FOREIGN KEY(package)      REFERENCES package(id)      ON DELETE CASCADE,
+       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
+);
+
+
 CREATE TABLE kommit (
        id              INTEGER PRIMARY KEY NOT NULL,
        sha256          TEXT                NOT NULL,
@@ -87,6 +102,7 @@ CREATE UNIQUE INDEX md5_unique                       ON distribution(md5);
 CREATE UNIQUE INDEX sha256_unique                    ON distribution(sha256);
 CREATE UNIQUE INDEX name_distribution_unique         ON package(name, distribution);
 CREATE UNIQUE INDEX stack_package_name_unique        ON registration(stack, package_name);
+CREATE UNIQUE INDEX event_package_name_kommit        ON registration_change(event, package_name, kommit);
 CREATE UNIQUE INDEX name_unique                      ON stack(name);
 CREATE UNIQUE INDEX kommit_sha256_unique             ON kommit(sha256);
 CREATE UNIQUE INDEX distribution_package_name_unique ON prerequisite(distribution, package_name);

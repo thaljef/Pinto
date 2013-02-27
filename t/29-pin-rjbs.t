@@ -69,13 +69,6 @@ $local->run_ok('Unpin', {targets => 'PkgB'});
 # Make sure PkgB-1 is not pinned on the master stack...
 $local->registration_ok('FRED/DistB-1/PkgB~1/master/-');
 
-# Now we can bring over the work that was done on the xxx stack...
-$local->run_ok('Merge', {from_stack => 'xxx', to_stack => 'master'});
-
-# And now the master stack should have all the latest and greatest...
-$local->registration_ok('JOHN/DistA-2/PkgA~2');
-$local->registration_ok('FRED/DistB-2/PkgB~2');
-
 #------------------------------------------------------------------------------
 
 done_testing;

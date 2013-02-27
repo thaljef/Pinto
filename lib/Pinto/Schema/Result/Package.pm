@@ -122,6 +122,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
+=head2 registration_changes
+
+Type: has_many
+
+Related object: L<Pinto::Schema::Result::RegistrationChange>
+
+=cut
+
+__PACKAGE__->has_many(
+  "registration_changes",
+  "Pinto::Schema::Result::RegistrationChange",
+  { "foreign.package" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 registrations
 
 Type: has_many
@@ -151,8 +166,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gGO966ZU3WAbznrH044TYA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 09:54:13
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eDCiiSpRr/cp6BQ1/5httQ
 
 #------------------------------------------------------------------------------
 
@@ -160,6 +175,7 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
+use Carp;
 use String::Format;
 
 use Pinto::Util qw(itis);
@@ -223,7 +239,7 @@ sub register {
     # This avoids having to requery the DB for the whole object.
     my $dist_id = $self->{_column_data}->{distribution};
 
-    my $struct = { kommit       => $stack->head,
+    my $struct = { stack        => $stack,
                    is_pinned    => $pin,
                    package_name => $self->name,
                    distribution => $dist_id };
@@ -247,22 +263,6 @@ sub registration {
 
 #------------------------------------------------------------------------------
 
-sub mtime {
-    my ($self) = @_;
-
-    return $self->distribution->mtime;
-}
-
-#------------------------------------------------------------------------------
-
-sub path {
-    my ($self) = @_;
-
-    return $self->distribution->path;
-}
-
-#------------------------------------------------------------------------------
-
 sub vname {
     my ($self) = @_;
 
@@ -276,17 +276,6 @@ sub as_spec {
 
     return Pinto::PackageSpec->new( name    => $self->name,
                                     version => $self->version );
-}
-
-#------------------------------------------------------------------------------
-
-sub as_struct {
-    my ($self) = @_;
-
-    return ( name         => $self->name,
-             version      => $self->version,
-             distribution => $self->path,
-             mtime        => $self->mtime, );
 }
 
 #------------------------------------------------------------------------------
@@ -308,7 +297,6 @@ sub to_string {
          's' => sub { $self->distribution->is_local()   ? 'l' : 'f'   },
          'S' => sub { $self->distribution->source()                   },
          'a' => sub { $self->distribution->author()                   },
-         'A' => sub { $self->distribution->author_canonical()         },
          'd' => sub { $self->distribution->name()                     },
          'D' => sub { $self->distribution->vname()                    },
          'V' => sub { $self->distribution->version()                  },
@@ -329,7 +317,7 @@ sub to_string {
 sub default_format {
     my ($self) = @_;
 
-    return '%A/%D/%P';  # AUTHOR/DIST_VNAME/PKG_VNAME
+    return '%a/%D/%P';  # AUTHOR/DIST_VNAME/PKG_VNAME
 }
 
 #-------------------------------------------------------------------------------
@@ -337,30 +325,40 @@ sub default_format {
 sub numeric_compare {
     my ($pkg_a, $pkg_b) = @_;
 
-    my $class = __PACKAGE__;
-    throw "Can only compare $class objets"
-        unless itis($pkg_a, $class) && itis($pkg_b, $class);
-
-    throw "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
-        if $pkg_a->name ne $pkg_b->name;
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($pkg_a, $pkg) && itis($pkg_b, $pkg) );
 
     return 0 if $pkg_a->id == $pkg_b->id;
 
-    return    ($pkg_a->version <=> $pkg_b->version)
-           || ($pkg_a->mtime   <=> $pkg_b->mtime)
-           || throw "Unable to determine ordering $pkg_a <=> $pkg_b";
-}
+    confess "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
+        if $pkg_a->name ne $pkg_b->name;
+
+    my $r =   ( $pkg_a->version             <=> $pkg_b->version             )
+           || ( $pkg_a->distribution->mtime <=> $pkg_b->distribution->mtime );
+
+    # No two non-identical packages can be considered equal!
+    confess "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
+
+    return $r;
+};
 
 #-------------------------------------------------------------------------------
 
 sub string_compare {
     my ($pkg_a, $pkg_b) = @_;
 
+    my $pkg = __PACKAGE__;
+    throw "Can only compare $pkg objects"
+        if not ( itis($pkg_a, $pkg) && itis($pkg_b, $pkg) );
 
-    return    ( $pkg_a->name    cmp $pkg_b->name    )
+    return 0 if $pkg_a->id() == $pkg_b->id();
+
+    my $r =   ( $pkg_a->name    cmp $pkg_b->name    )
            || ( $pkg_a->version <=> $pkg_b->version );
 
-}
+    return $r;
+};
 
 #-------------------------------------------------------------------------------
 

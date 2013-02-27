@@ -116,7 +116,19 @@ with 'Pinto::Role::Schema::Result';
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:PVd+tKczSa/kyZ3cH4tLQA
 
+#-------------------------------------------------------------------------------
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+# ABSTRACT: An atomic set of changes to a stack
+
+#-----------------------------------------------------------------------------
+
+# VERSION
+
+#-----------------------------------------------------------------------------
+
 __PACKAGE__->meta->make_immutable;
+
+#-----------------------------------------------------------------------------
 1;
+
+__END__
