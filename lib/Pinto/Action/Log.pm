@@ -6,7 +6,9 @@ use Moose;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Pinto::RevisionWalker;
 use Pinto::Types qw(StackName StackDefault);
+
 
 #------------------------------------------------------------------------------
 
@@ -41,11 +43,12 @@ has format => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
-    my $iterator = $self->repo->vcs->history(branch => $stack->name);
+    my $stack  = $self->repo->get_stack($self->stack);
+    my $walker = Pinto::RevisionWalker->new(start => $stack->head);
 
-    while (my $commit = $iterator->next) {
-        $self->say( $commit->to_string($self->format) ); 
+    $DB::single = 1;
+    while (my $revision = $walker->next) {
+        $self->say( $revision->to_string($self->format) ); 
     }
 
     return $self->result;

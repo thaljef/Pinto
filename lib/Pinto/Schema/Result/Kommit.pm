@@ -182,7 +182,7 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
-use Pinto::Exception qw(throw);
+use MooseX::Types::Moose qw(Str);
 
 use DateTime;
 use DateTime::TimeZone;
@@ -190,7 +190,7 @@ use String::Format;
 use Digest::SHA;
 
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis trim current_time);
+use Pinto::Util qw(itis trim indent title_text body_text);
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
@@ -209,6 +209,43 @@ __PACKAGE__->inflate_column('timestamp' => {
 
 #------------------------------------------------------------------------------
 
+has sha256_prefix => (
+  is          => 'ro',
+  isa         => Str,
+  default     => sub { substr($_[0]->sha256, 0, 7) },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has message_title => (
+  is          => 'ro',
+  isa         => Str,
+  default     => sub { trim( title_text($_[0]->message) ) },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has message_body => (
+  is          => 'ro',
+  isa         => Str,
+  default     => sub { trim( body_text($_[0]->message) ) },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+
+has is_root => (
+  is          => 'ro',
+  isa         => Bool,
+  default     => sub { $_[0]->id == 1 },
+  init_arg    => undef,
+  lazy        => 1,
+);
+
+#------------------------------------------------------------------------------
+
 sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
@@ -219,40 +256,6 @@ sub FOREIGNBUILDARGS {
   $args->{timestamp}    ||=  0;
 
   return $args;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self, $max_chars) = @_;
-
-    my $message = $self->message;
-    my $title = trim( (split /\n/, $message)[0] );
-
-    if ($max_chars and length $title > $max_chars) {
-      $title = substr($title, 0, $max_chars - 3,) . '...';
-    }
-
-    return $title;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_body {
-    my ($self) = @_;
-
-    my $message = $self->message;
-    my $body = ($message =~ m/^ [^\n]+ \n+ (.*)/xms) ? $1 : '';
-
-    return trim($body);
-}
-
-#------------------------------------------------------------------------------
-
-sub sha256_prefix {
-    my ($self) = @_;
-
-    return substr $self->sha256, 0, 8;
 }
 
 #------------------------------------------------------------------------------
@@ -283,13 +286,23 @@ sub add_parent {
 
 #------------------------------------------------------------------------------
 
+sub add_child {
+    my ($self, $child) = @_;
+
+    $self->create_related(kommit_graph_parents => {child => $child->id});
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
 sub parents {
   my ($self) = @_;
 
-  my $where = {descendant => $self->id};
+  my $where = {child => $self->id};
   my $attrs = {join => 'kommit_graph_parents', order_by => 'me.timestamp'};
 
-  return $self->result_source->resultset->search($where, $attrs);
+  return $self->result_source->resultset->search($where, $attrs)->all;
 }
 
 #------------------------------------------------------------------------------
@@ -297,19 +310,10 @@ sub parents {
 sub children {
   my ($self) = @_;
 
-  my $where = {ancestor => $self->id};
+  my $where = {parent => $self->id};
   my $attrs = {join => 'kommit_graph_children', order_by => 'me.timestamp'};
 
-  return $self->result_source->resultset->search($where, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
-sub is_root_kommit {
-  my ($self) = @_;
-
-  # TODO: use the root's digest to test for identity
-  return $self->id == 1;
+  return $self->result_source->resultset->search($where, $attrs)->all;
 }
 
 #------------------------------------------------------------------------------
@@ -348,9 +352,11 @@ sub to_string {
     my %fspec = (
            i => sub { $self->sha256_prefix             },
            I => sub { $self->sha256                    },
-           g => sub { $self->message                   },
            j => sub { $self->username                  },
            u => sub { $self->timestamp->strftime('%c') },
+           g => sub { $self->message_body              },
+           t => sub { $self->message_title             },
+           G => sub { indent( $self->message, $_[0] )  },
     );
 
     $format ||= $self->default_format;
