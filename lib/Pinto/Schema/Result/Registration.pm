@@ -205,13 +205,47 @@ sub FOREIGNBUILDARGS {
 
 #-------------------------------------------------------------------------------
 
+# sub insert {
+#     my ($self) = @_;
+
+#     my $change = { event        => 'insert',
+#                    revision     => 1,
+#                    package      => $self->package->id,
+#                    package_name => $self->package_name,
+#                    distribution => $self->distribution->id,
+#                    is_pinned    => $self->is_pinned };
+
+#     #$self->result_source->schema->create_registration_change($change);
+
+#     return $self->next::method;
+# }
+
+# #-------------------------------------------------------------------------------
+
+# sub delete {
+#     my ($self) = @_;
+
+#     my $change = { event        => 'delete',
+#                    revision     => 1,
+#                    package_name => $self->package_name };
+
+#     #$self->result_source->schema->create_registration_change($change);
+
+#     return $self->next::method;
+# }
+
+#-------------------------------------------------------------------------------
+
 sub pin {
     my ($self) = @_;
 
     throw "$self is already pinned" if $self->is_pinned;
-    $self->update({is_pinned => 1});
 
-    return $self;
+    $self->delete;
+    my $copy = $self->copy({is_pinned => 1});
+
+
+    return $copy;
 }
 
 #-------------------------------------------------------------------------------
@@ -220,9 +254,12 @@ sub unpin {
     my ($self) = @_;
 
     throw "$self is not pinned" if not $self->is_pinned;
-    $self->update({is_pinned => 0});
 
-    return $self;
+    $self->delete;
+    my $copy = $self->copy({is_pinned => 0});
+
+
+    return $copy;
 }
 
 #-------------------------------------------------------------------------------
