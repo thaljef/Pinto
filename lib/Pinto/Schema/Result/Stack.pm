@@ -413,8 +413,6 @@ sub unlock {
 sub commit {
     my ($self, %args) = @_;
 
-    $args{username} ||= $self->repo->config->username;
-    $args{sha256}   ||= rand;
     my $kommit = $self->result_source->schema->create_kommit(\%args);
     $kommit->add_parent($self->head);
     $self->update( {head => $kommit} );

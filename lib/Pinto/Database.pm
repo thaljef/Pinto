@@ -112,10 +112,7 @@ sub deploy {
 sub create_root_kommit {
     my ($self) = @_;
 
-    my $attrs = { sha256    => $self->root_kommit_sha256, 
-                  message   => 'root commit',
-                  username  => current_username, 
-                  timestamp => current_time };
+    my $attrs = { uuid => $self->root_kommit_uuid, message   => 'root commit' };
 
     return $self->schema->create_kommit($attrs);   
 }
@@ -125,8 +122,8 @@ sub create_root_kommit {
 sub get_root_kommit {
     my ($self) = @_;
 
-    my $where = {sha256 => $self->root_kommit_sha256};
-    my $attrs = {key => 'sha256_unique'};
+    my $where = {uuid => $self->root_kommit_uuid};
+    my $attrs = {key => 'uuid_unique'};
 
     my $kommit = $self->schema->find_kommit($where, $attrs)
         or throw "PANIC: No root kommit was found";
@@ -136,7 +133,7 @@ sub get_root_kommit {
 
 #-------------------------------------------------------------------------------
 
-sub root_kommit_sha256 { return '0' x 32 }
+sub root_kommit_uuid { return '00000000-0000-0000-0000-000000000000' }
 
 #-------------------------------------------------------------------------------
 

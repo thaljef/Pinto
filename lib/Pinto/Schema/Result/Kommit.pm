@@ -32,7 +32,7 @@ __PACKAGE__->table("kommit");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 sha256
+=head2 uuid
 
   data_type: 'text'
   is_nullable: 0
@@ -57,7 +57,7 @@ __PACKAGE__->table("kommit");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "sha256",
+  "uuid",
   { data_type => "text", is_nullable => 0 },
   "message",
   { data_type => "text", is_nullable => 0 },
@@ -81,17 +81,17 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<sha256_unique>
+=head2 C<uuid_unique>
 
 =over 4
 
-=item * L</sha256>
+=item * L</uuid>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("sha256_unique", ["sha256"]);
+__PACKAGE__->add_unique_constraint("uuid_unique", ["uuid"]);
 
 =head1 RELATIONS
 
@@ -169,8 +169,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 23:28:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ilj501g0I9PMFtPU2JKTAw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:05:41
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Vo5N8tP9uauwwliEMN/f4w
 
 #------------------------------------------------------------------------------
 
@@ -190,7 +190,7 @@ use String::Format;
 use Digest::SHA;
 
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis trim indent title_text body_text);
+use Pinto::Util qw(:all);
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
@@ -209,10 +209,10 @@ __PACKAGE__->inflate_column('timestamp' => {
 
 #------------------------------------------------------------------------------
 
-has sha256_prefix => (
+has uuid_prefix => (
   is          => 'ro',
   isa         => Str,
-  default     => sub { substr($_[0]->sha256, 0, 7) },
+  default     => sub { substr($_[0]->uuid, 0, 8) },
   init_arg    => undef,
   lazy        => 1,
 );
@@ -249,29 +249,12 @@ has is_root => (
 sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
-  # Needed?
   $args ||= {};
-  $args->{sha256}       ||= '';
-  $args->{message}      ||= '';
-  $args->{timestamp}    ||=  0;
+  $args->{uuid}      ||= uuid;
+  $args->{username}  ||= current_username;
+  $args->{timestamp} ||= current_time;
 
   return $args;
-}
-
-#------------------------------------------------------------------------------
-
-sub compute_digest {
-    my ($self) = @_;
-
-    my $string = join '|', $self->registrations->get_column('package'),
-                           $self->timestamp->hires_epoch,
-                           $self->username,
-                           $self->message;
-
-    my $sha = Digest::SHA->new(256);
-    $sha->add($string);
-
-    return $sha->hexdigest;
 }
 
 #------------------------------------------------------------------------------
@@ -350,8 +333,8 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           i => sub { $self->sha256_prefix             },
-           I => sub { $self->sha256                    },
+           i => sub { $self->uuid_prefix               },
+           I => sub { $self->uuid                      },
            j => sub { $self->username                  },
            u => sub { $self->timestamp->strftime('%c') },
            g => sub { $self->message_body              },

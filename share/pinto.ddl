@@ -29,7 +29,7 @@ CREATE TABLE stack (
        is_default      BOOLEAN             NOT NULL,
        is_locked       BOOLEAN             NOT NULL,
        properties      TEXT                NOT NULL,
-       head            INTEGER             NOT NULL        REFERENCES kommit(id) ON DELETE RESTRICT
+       head            INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE RESTRICT
 );
 
 
@@ -60,7 +60,7 @@ CREATE TABLE registration_change (
 
 CREATE TABLE kommit (
        id              INTEGER PRIMARY KEY NOT NULL,
-       sha256          TEXT                NOT NULL        UNIQUE,
+       uuid            TEXT                NOT NULL        UNIQUE,
        message         TEXT                NOT NULL,
        username        TEXT                NOT NULL,
        timestamp       INTEGER             NOT NULL
@@ -69,8 +69,8 @@ CREATE TABLE kommit (
 
 CREATE TABLE kommit_graph (
        id              INTEGER PRIMARY KEY NOT NULL,
-       parent          INTEGER             NOT NULL        REFERENCES kommit(id) ON DELETE CASCADE,
-       child           INTEGER             NOT NULL        REFERENCES kommit(id) ON DELETE CASCADE
+       parent          INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE CASCADE,
+       child           INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE CASCADE
 );
 
 
