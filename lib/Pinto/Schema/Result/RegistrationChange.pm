@@ -98,23 +98,23 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<event_package_name_kommit_unique>
+=head2 C<kommit_event_package_name_unique>
 
 =over 4
+
+=item * L</kommit>
 
 =item * L</event>
 
 =item * L</package_name>
-
-=item * L</kommit>
 
 =back
 
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "event_package_name_kommit_unique",
-  ["event", "package_name", "kommit"],
+  "kommit_event_package_name_unique",
+  ["kommit", "event", "package_name"],
 );
 
 =head1 RELATIONS
@@ -178,8 +178,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 23:17:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:69Ujep2XrWaTPD6Pn9YzTA
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 12:42:48
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pUmVt/ere3UWaVY9GRPSfA
 
 #-------------------------------------------------------------------------------
 

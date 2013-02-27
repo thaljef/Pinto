@@ -1,11 +1,13 @@
 CREATE TABLE distribution (
        id              INTEGER PRIMARY KEY NOT NULL,
-       author          TEXT                NOT NULL COLLATE NOCASE,
+       author          TEXT                NOT NULL        COLLATE NOCASE,
        archive         TEXT                NOT NULL,
        source          TEXT                NOT NULL,
        mtime           INTEGER             NOT NULL,
-       sha256          TEXT                NOT NULL,
-       md5             TEXT                NOT NULL 
+       sha256          TEXT                NOT NULL        UNIQUE,
+       md5             TEXT                NOT NULL        UNIQUE,
+
+       UNIQUE(author, archive)
 );
 
 
@@ -15,56 +17,50 @@ CREATE TABLE package (
        version         TEXT                NOT NULL,
        file            TEXT                DEFAULT NULL,
        sha256          TEXT                DEFAULT NULL,
-       distribution    INTEGER             NOT NULL,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
 
-       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
+       UNIQUE(name, distribution)
 );
 
 
 CREATE TABLE stack (
        id              INTEGER PRIMARY KEY NOT NULL,
-       name            TEXT                NOT NULL COLLATE NOCASE,
+       name            TEXT                NOT NULL        UNIQUE COLLATE NOCASE,
        is_default      BOOLEAN             NOT NULL,
        is_locked       BOOLEAN             NOT NULL,
        properties      TEXT                NOT NULL,
-       head            INTEGER             NOT NULL,
-
-       FOREIGN KEY(head) REFERENCES kommit(id) ON DELETE RESTRICT
+       head            INTEGER             NOT NULL        REFERENCES kommit(id) ON DELETE RESTRICT
 );
 
 
 CREATE TABLE registration (
        id              INTEGER PRIMARY KEY NOT NULL,
-       stack           INTEGER             NOT NULL,
-       package         INTEGER             NOT NULL,
+       stack           INTEGER             NOT NULL        REFERENCES stack(id)        ON DELETE CASCADE,
+       package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
        package_name    TEXT                NOT NULL,
-       distribution    INTEGER             NOT NULL,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
        is_pinned       BOOLEAN             NOT NULL,
 
-       FOREIGN KEY(stack)        REFERENCES stack(id)         ON DELETE CASCADE,
-       FOREIGN KEY(package)      REFERENCES package(id)       ON DELETE CASCADE,
-       FOREIGN KEY(distribution) REFERENCES distribution(id)  ON DELETE CASCADE
+       UNIQUE(stack, package_name)
 );
 
 
 CREATE TABLE registration_change (
-       id            INTEGER PRIMARY KEY NOT NULL,
-       event         TEXT                NOT NULL,
-       kommit        INTEGER             NOT NULL,
-       package       INTEGER             NOT NULL,
-       package_name  TEXT                NOT NULL,
-       distribution  INTEGER             NOT NULL,
-       is_pinned     BOOLEAN             NOT NULL,
+       id              INTEGER PRIMARY KEY NOT NULL,
+       event           TEXT                NOT NULL,
+       kommit          INTEGER             NOT NULL        REFERENCES kommit(id)       ON DELETE CASCADE,
+       package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
+       package_name    TEXT                NOT NULL,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
+       is_pinned       BOOLEAN             NOT NULL,
 
-       FOREIGN KEY(kommit)       REFERENCES kommit(id)       ON DELETE CASCADE,
-       FOREIGN KEY(package)      REFERENCES package(id)      ON DELETE CASCADE,
-       FOREIGN KEY(distribution) REFERENCES distribution(id) ON DELETE CASCADE
+       UNIQUE(kommit, event, package_name)
 );
 
 
 CREATE TABLE kommit (
        id              INTEGER PRIMARY KEY NOT NULL,
-       sha256          TEXT                NOT NULL,
+       sha256          TEXT                NOT NULL        UNIQUE,
        message         TEXT                NOT NULL,
        username        TEXT                NOT NULL,
        timestamp       INTEGER             NOT NULL
@@ -73,36 +69,16 @@ CREATE TABLE kommit (
 
 CREATE TABLE kommit_graph (
        id              INTEGER PRIMARY KEY NOT NULL,
-       parent          INTEGER             NOT NULL,
-       child           INTEGER             NOT NULL,
-
-       FOREIGN KEY(parent) REFERENCES kommit(id) ON DELETE CASCADE,
-       FOREIGN KEY(child)  REFERENCES kommit(id) ON DELETE CASCADE
+       parent          INTEGER             NOT NULL        REFERENCES kommit(id) ON DELETE CASCADE,
+       child           INTEGER             NOT NULL        REFERENCES kommit(id) ON DELETE CASCADE
 );
 
 
 CREATE TABLE prerequisite (
        id              INTEGER PRIMARY KEY NOT NULL,
-       distribution    INTEGER             NOT NULL,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
        package_name    TEXT                NOT NULL,
        package_version TEXT                NOT NULL,
-  
-       FOREIGN KEY(distribution)  REFERENCES distribution(id) ON DELETE CASCADE
+
+       UNIQUE(distribution, package_name)
 );
-
-
-/*****************************************************************************
-* These index names must match those that are created by DBIC::Schema::Loader.
-* If you create or change an index, make sure the name generated for the Schema
-* classes is added or changed here as well.
-*****************************************************************************/
-
-CREATE UNIQUE INDEX author_archive_unqiue            ON distribution(author, archive);
-CREATE UNIQUE INDEX md5_unique                       ON distribution(md5);
-CREATE UNIQUE INDEX sha256_unique                    ON distribution(sha256);
-CREATE UNIQUE INDEX name_distribution_unique         ON package(name, distribution);
-CREATE UNIQUE INDEX stack_package_name_unique        ON registration(stack, package_name);
-CREATE UNIQUE INDEX event_package_name_kommit        ON registration_change(event, package_name, kommit);
-CREATE UNIQUE INDEX name_unique                      ON stack(name);
-CREATE UNIQUE INDEX kommit_sha256_unique             ON kommit(sha256);
-CREATE UNIQUE INDEX distribution_package_name_unique ON prerequisite(distribution, package_name);
