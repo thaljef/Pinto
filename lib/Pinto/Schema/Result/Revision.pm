@@ -52,6 +52,16 @@ __PACKAGE__->table("revision");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 tz_offset
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 is_committed
+
+  data_type: 'boolean'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -65,6 +75,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "timestamp",
   { data_type => "integer", is_nullable => 0 },
+  "tz_offset",
+  { data_type => "text", is_nullable => 0 },
+  "is_committed",
+  { data_type => "boolean", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -169,8 +183,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:35:30
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:n0rctsXh0c+hCmHamjM0JQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 21:43:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6aJNDY23GCrkCBy1UmHX+w
 
 #------------------------------------------------------------------------------
 
@@ -250,10 +264,12 @@ sub FOREIGNBUILDARGS {
   my ($class, $args) = @_;
 
   $args ||= {};
-  $args->{uuid}      ||= uuid;
-  $args->{username}  ||= current_username;
-  $args->{timestamp} ||= current_time;
-
+  $args->{uuid}         ||= uuid;
+  $args->{username}     ||= current_username;
+  $args->{timestamp}    ||= current_time;
+  $args->{tz_offset}    ||= '';
+  $args->{is_committed} ||= 0;
+  
   return $args;
 }
 
@@ -297,6 +313,20 @@ sub children {
   my $attrs = {join => 'ancestry_children', order_by => 'me.timestamp'};
 
   return $self->result_source->resultset->search($where, $attrs)->all;
+}
+
+#------------------------------------------------------------------------------
+
+sub commit {
+    my ($self, %args) = @_;
+
+    throw "Must specify a message to commit" if not $args{message};
+
+    $args{is_committed} = 1;
+
+    $self->update(\%args);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

@@ -199,15 +199,20 @@ sub stack_count {
 
 #-------------------------------------------------------------------------------
 
-=method get_commit($commit)
+=method get_revision($commit)
 
 =cut
 
-sub get_commit {
-    my ($self, $commit) = @_;
+sub get_revision {
+    my ($self, $revision) = @_;
 
-    return $commit if itis($commit, 'Pinto::Commit');
-    return $self->vcs->get_commit(commit_id => $commit);
+    return $revision if itis($revision, 'Pinto::Schema::Result::Revision');
+
+    my @revs = $self->db->schema->search_revision( {uuid => {like => $revision}} );
+
+    throw "Revision id $revision is ambiguous" if @revs > 1;
+
+    return @revs ? $revs[0] : ();
 }
 
 #-------------------------------------------------------------------------------
@@ -548,6 +553,7 @@ sub create_stack {
     my $root  = $self->db->get_root_revision;
     my $stack = $self->db->schema->create_stack( {%args, head => $root} );
 
+    $stack->make_filesystem;
     $stack->write_index;
 
     return $stack;
@@ -566,9 +572,10 @@ sub copy_stack {
         throw "Stack $existing already exists"
     } 
 
-    my $copy = $stack->copy(%args);
+    my $copy = $stack->copy(\%args);
     $stack->copy_registrations(to => $copy);
     
+    $copy->make_filesystem;
     $copy->write_index;
 
     return $copy;

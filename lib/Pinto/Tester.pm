@@ -36,7 +36,8 @@ BEGIN {
     $Pinto::Globals::is_interactive = 0; 
 
     # So the username/author is constant
-    $Pinto::Globals::current_username = 'AUTHOR';
+    $Pinto::Globals::current_author_id = 'AUTHOR';
+    $Pinto::Globals::current_username  = 'USERNAME';
 
     # So we can run `prove` without having the ddl installed
     no warnings 'redefine';
@@ -401,6 +402,16 @@ sub stack_url {
     $stack_name ||= 'master';
 
     return URI->new('file://' . $self->root->resolve->absolute . "/$stack_name");
+}
+
+#------------------------------------------------------------------------------
+
+sub set_current_time {
+    my ($self, $time) = @_;
+
+    $Pinto::Globals::current_time = $time || 0;
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

@@ -63,7 +63,9 @@ CREATE TABLE revision (
        uuid            TEXT                NOT NULL        UNIQUE,
        message         TEXT                NOT NULL,
        username        TEXT                NOT NULL,
-       timestamp       INTEGER             NOT NULL
+       timestamp       INTEGER             NOT NULL,
+       tz_offset       TEXT                NOT NULL,
+       is_committed    BOOLEAN             NOT NULL
 );
 
 

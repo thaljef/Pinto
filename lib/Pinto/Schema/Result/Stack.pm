@@ -223,28 +223,6 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-sub BUILD {
-  my ($self) = @_;
-
-  my $stack_dir = $self->stack_dir;
-  $stack_dir->mkpath;
-
-  my $stack_modules_dir = $self->modules_dir;
-  $stack_modules_dir->mkpath;
-
-  my $stack_authors_dir  = $self->authors_dir;
-  my $shared_authors_dir = $self->repo->config->authors_dir->relative($stack_dir);
-  mksymlink($stack_authors_dir => $shared_authors_dir);
-
-  my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
-  my $shared_modlist_file = $self->repo->config->modlist_file->relative($stack_modules_dir);
-  mksymlink($stack_modlist_file => $shared_modlist_file);
-
-  return $self;
-}
-
-#------------------------------------------------------------------------------
-
 before is_default => sub {
   my ($self, @args) = @_;
   throw "Cannot directly set is_default.  Use mark_as_default instead" if @args;
@@ -296,25 +274,33 @@ sub get_distribution {
 
 #------------------------------------------------------------------------------
 
+sub make_filesystem {
+    my ($self) = @_;
+
+    my $stack_dir = $self->stack_dir;
+    $stack_dir->mkpath;
+
+    my $stack_modules_dir = $self->modules_dir;
+    $stack_modules_dir->mkpath;
+
+    my $stack_authors_dir  = $self->authors_dir;
+    my $shared_authors_dir = $self->repo->config->authors_dir->relative($stack_dir);
+    mksymlink($stack_authors_dir => $shared_authors_dir);
+
+    my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
+    my $shared_modlist_file = $self->repo->config->modlist_file->relative($stack_modules_dir);
+    mksymlink($stack_modlist_file => $shared_modlist_file);
+
+  return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub copy {
-    my ($self, %changes) = @_;
+    my ($self, $changes) = @_;
 
-    my $copy_name = $changes{name};
-
-    $changes{is_default} = 0; # Never duplicate the default flag
-
-    my $orig_dir = $self->stack_dir;
-    throw "Directory $orig_dir does not exist" if not -e $orig_dir;
-
-    my $copy_dir = $self->repo->config->root_dir->subdir($copy_name);
-    throw "Directory $copy_dir already exists" if -e $copy_dir;
-
-    $self->debug("Copying directory $orig_dir to $copy_dir");
-    File::Copy::Recursive::rcopy($self->stack_dir, $copy_dir)  or throw "Copy failed: $!";
-
-    my $copy = $self->next::method(\%changes);
-
-    return $copy;
+    $changes->{is_default} = 0; # Never duplicate the default flag
+    return $self->next::method($changes);
 }
 
 #------------------------------------------------------------------------------
@@ -410,13 +396,36 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
-sub commit {
+sub start_revision {
     my ($self, %args) = @_;
 
+    $args{message} ||= 'PENDING';
     my $revision = $self->result_source->schema->create_revision(\%args);
+
     $revision->add_parent($self->head);
     $self->update( {head => $revision} );
+    
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub commit_revision {
+    my ($self, %args) = @_;
+
+    $self->head->commit(%args);
     $self->write_index;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub assert_revision_open {
+    my ($self) = @_;
+
+    throw "Stack $self is not open for revision"
+      if $self->head->committed;
 
     return $self;
 }

@@ -24,8 +24,8 @@ has start => (
 has queue => (
     isa      => ArrayRef,
     traits   => [ qw(Array) ],
-    handles  => {push => 'push', shift => 'shift'},
-    default  => sub { [ $_[0]->start, $_[0]->start->parents ] },
+    handles  => {enqueue => 'push', dequeue => 'shift'},
+    default  => sub { [ $_[0]->start ] },
     lazy     => 1,
 );
 
@@ -34,12 +34,12 @@ has queue => (
 sub next {
   my ($self) = @_;
 
-    my $next = $self->shift;
+    my $next = $self->dequeue;
 
     return if not $next;
     return if $next->is_root;
 
-    $self->push($next->parents);
+    $self->enqueue($next->parents);
 
     return $next;
 }

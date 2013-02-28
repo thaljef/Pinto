@@ -7,7 +7,7 @@ use MooseX::Types::Moose qw(Bool Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 
-use Pinto::Util qw(sha256);
+use Pinto::Util qw(sha256 current_author_id);
 use Pinto::Types qw(AuthorID FileList StackName StackObject StackDefault);
 use Pinto::Exception qw(throw);
 
@@ -28,7 +28,7 @@ with qw( Pinto::Role::PauseConfig Pinto::Role::Committable );
 has author => (
     is         => 'ro',
     isa        => AuthorID,
-    default    => sub { uc($_[0]->pausecfg->{user} || '') || $_[0]->config->username },
+    default    => sub { uc($_[0]->pausecfg->{user} || '') || current_author_id },
     lazy       => 1,
 );
 
@@ -91,7 +91,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack    = $self->repo->get_stack($self->stack);
+    my $stack    = $self->repo->get_stack($self->stack)->start_revision;
     my @archives = $self->archives;
 
     while (my $archive = shift @archives) {
@@ -117,7 +117,7 @@ sub execute {
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stack => $stack);
-    $stack->commit(message => $message);
+    $stack->commit_revision(message => $message);
 
     return $self->result->changed;
 }

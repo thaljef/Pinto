@@ -12,7 +12,7 @@ use MooseX::Aliases;
 use URI;
 
 use Pinto::Types qw(Dir File Username);
-use Pinto::Util qw(current_username );
+use Pinto::Util qw(current_username);
 
 #------------------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ has username  => (
     is        => 'ro',
     isa       => Username,
     default   => sub { return current_username },
+    lazy      => 1,
 );
 
 

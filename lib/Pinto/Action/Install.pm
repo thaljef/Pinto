@@ -89,7 +89,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
+    my $stack = $self->repo->get_stack($self->stack)->start_revision;
 
     if ($self->pull) {
 
@@ -97,7 +97,7 @@ sub execute {
 
         if ($stack->has_changed and not $self->dryrun) {
             my $message = $self->edit_message(stack => $stack);
-            $stack->commit(message => $message);
+            $stack->commit_revision(message => $message);
             $self->result->changed;
         }
     }

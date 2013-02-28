@@ -51,13 +51,13 @@ has pin => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
+    my $stack = $self->repo->get_stack($self->stack)->start_revision;
     $self->_reindex($_, $stack) for $self->targets;
 
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
     my $message = $self->edit_message(stack => $stack);
-    $stack->commit(message => $message);
+    $stack->commit_revision(message => $message);
     
     return $self->result->changed;
 }
