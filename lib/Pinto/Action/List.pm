@@ -128,6 +128,16 @@ sub execute {
 
     my $rs = $self->repo->db->schema->search_registration($where, $attrs);
 
+    $self->_list($format, $rs);
+
+    return $self->result;
+}
+
+#------------------------------------------------------------------------------
+
+sub _list {
+    my ($self, $format, $rs) = @_;
+
     while( my $reg = $rs->next ) {
 
         my $string = $reg->to_string($format);
@@ -141,8 +151,6 @@ sub execute {
 
         $self->say($reg->to_string($string));
     }
-
-    return $self->result;
 }
 
 #------------------------------------------------------------------------------
