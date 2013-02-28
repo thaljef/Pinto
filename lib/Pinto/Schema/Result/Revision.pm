@@ -47,14 +47,14 @@ __PACKAGE__->table("revision");
   data_type: 'text'
   is_nullable: 0
 
-=head2 timestamp
+=head2 utc_time
 
   data_type: 'integer'
   is_nullable: 0
 
-=head2 tz_offset
+=head2 time_offset
 
-  data_type: 'text'
+  data_type: 'integer'
   is_nullable: 0
 
 =head2 is_committed
@@ -73,10 +73,10 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "username",
   { data_type => "text", is_nullable => 0 },
-  "timestamp",
+  "utc_time",
   { data_type => "integer", is_nullable => 0 },
-  "tz_offset",
-  { data_type => "text", is_nullable => 0 },
+  "time_offset",
+  { data_type => "integer", is_nullable => 0 },
   "is_committed",
   { data_type => "boolean", is_nullable => 0 },
 );
@@ -183,8 +183,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-28 01:19:03
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SUCDVD6cS5B4fE5A8g3OuQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-28 10:50:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:U//3uaLX2xO4B03aawIdmQ
 
 #------------------------------------------------------------------------------
 
@@ -199,7 +199,6 @@ with 'Pinto::Role::Schema::Result';
 use MooseX::Types::Moose qw(Str Bool);
 
 use DateTime;
-use DateTime::TimeZone;
 use String::Format;
 use Digest::SHA;
 
@@ -209,17 +208,6 @@ use Pinto::Util qw(:all);
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
                'eq'  => 'equals' );
-
-#------------------------------------------------------------------------------
-
-# TODO: Make this a Pinto::Global
-my $tz = DateTime::TimeZone->new(name => 'local');
-
-#------------------------------------------------------------------------------
-
-__PACKAGE__->inflate_column('timestamp' => {
-   inflate => sub { DateTime->from_epoch(epoch => $_[0], time_zone => $tz) }
-});
 
 #------------------------------------------------------------------------------
 
@@ -258,6 +246,15 @@ has is_root => (
   lazy        => 1,
 );
 
+
+has datetime => (
+  is         => 'ro',
+  isa        => 'DateTime',
+  default    => sub { DateTime->from_epoch(epoch => $_[0]->utc_time) },
+  init_arg   => undef,
+  lazy       => 1,
+);
+
 #------------------------------------------------------------------------------
 
 sub FOREIGNBUILDARGS {
@@ -265,12 +262,12 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{uuid}         ||= uuid;
-  $args->{message}      ||= '';
   $args->{username}     ||= current_username;
-  $args->{timestamp}    ||= current_time;
-  $args->{tz_offset}    ||= '';
+  $args->{utc_time}     ||= current_utc_time;
+  $args->{time_offset}  ||= current_time_offset;
   $args->{is_committed} ||= 0;
-  
+  $args->{message}      ||= '';
+
   return $args;
 }
 
@@ -300,7 +297,7 @@ sub parents {
   my ($self) = @_;
 
   my $where = {child => $self->id};
-  my $attrs = {join => 'ancestry_parents', order_by => 'me.timestamp'};
+  my $attrs = {join => 'ancestry_parents', order_by => 'me.utc_time'};
 
   return $self->result_source->resultset->search($where, $attrs)->all;
 }
@@ -311,7 +308,7 @@ sub children {
   my ($self) = @_;
 
   my $where = {parent => $self->id};
-  my $attrs = {join => 'ancestry_children', order_by => 'me.timestamp'};
+  my $attrs = {join => 'ancestry_children', order_by => 'me.utc_time'};
 
   return $self->result_source->resultset->search($where, $attrs)->all;
 }
@@ -341,7 +338,7 @@ sub numeric_compare {
 
     return 0 if $revision_a->id == $revision_b->id;
 
-    my $r = ($revision_a->timestamp <=> $revision_b->timestamp);
+    my $r = ($revision_a->utc_time <=> $revision_b->utc_time);
 
     return $r;
 }
@@ -367,7 +364,7 @@ sub to_string {
            i => sub { $self->uuid_prefix               },
            I => sub { $self->uuid                      },
            j => sub { $self->username                  },
-           u => sub { $self->timestamp->strftime('%c') },
+           u => sub { $self->datetime->strftime('%c')  },
            g => sub { $self->message_body              },
            t => sub { $self->message_title             },
            G => sub { indent( $self->message, $_[0] )  },

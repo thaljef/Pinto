@@ -12,7 +12,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
-$t->set_current_time(0); # Freeze time to begining of epoch
+$t->set_current_utc_time(0); # Freeze time to begining of epoch
 
 $t->run_ok(Add  => {stack    => 'master',
 	                archives => make_dist_archive("ME/Foo-0.01 = Foo~0.01") });
@@ -41,8 +41,8 @@ $t->run_ok(Add  => {stack    => 'branch',
   # TODO: Consider adding hook to set username on the Tester;
   like $buffer, qr/User: USERNAME/,     'Log message has correct user';
 
-  # This test might not be portable, based on timezone and locale settings:
-  like $buffer, qr/Date: Dec 31, 1969/, 'Log message has correct date';
+  # This test might not be portable, based on locale settings:
+  like $buffer, qr/Date: Jan 1, 1970/, 'Log message has correct date';
 
 }
 

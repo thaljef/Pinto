@@ -163,10 +163,9 @@ with 'Pinto::Role::Schema::Result';
 use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
-use File::Copy::Recursive ();
 use File::Copy ();
 
-use Pinto::Util qw(itis mksymlink current_time);
+use Pinto::Util qw(itis mksymlink);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
 use Pinto::IndexWriter;
@@ -612,8 +611,8 @@ sub to_string {
            G => sub { $self->head->message                                },
            t => sub { $self->head->message_title                          },
            b => sub { $self->head->message_body                           },
-           J => sub { $self->head->username                               },
-           U => sub { $self->head->timestamp->strftime('%b %e %Y %H:%M')  }, 
+           j => sub { $self->head->username                               },
+           u => sub { $self->head->datetime->strftime('%c')  }, 
     );
 
     $format ||= $self->default_format();

@@ -11,7 +11,6 @@ use File::ShareDir qw(dist_file);
 use Pinto::Schema;
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(current_time current_username);
 
 #-------------------------------------------------------------------------------
 

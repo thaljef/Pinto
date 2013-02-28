@@ -395,10 +395,10 @@ sub stack_url {
 
 #------------------------------------------------------------------------------
 
-sub set_current_time {
+sub set_current_utc_time {
     my ($self, $time) = @_;
 
-    $Pinto::Globals::current_time = $time || 0;
+    $Pinto::Globals::current_utc_time = $time || 0;
 
     return $self;
 }
