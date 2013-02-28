@@ -304,7 +304,7 @@ sub to_string {
          p => sub { $self->package->name                                     },
          P => sub { $self->package->vname                                    },
          v => sub { $self->package->version                                  },
-         y => sub { $self->is_pinned                        ? '*' : ' '      },
+         y => sub { $self->is_pinned                        ? '!' : ' '      },
          m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'      },
          h => sub { $self->package->distribution->path                       },
          H => sub { $self->package->distribution->native_path                },
