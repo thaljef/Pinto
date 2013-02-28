@@ -112,7 +112,9 @@ sub deploy {
 sub create_root_revision {
     my ($self) = @_;
 
-    my $attrs = { uuid => $self->root_revision_uuid, message   => 'root commit' };
+    my $attrs = { uuid         => $self->root_revision_uuid, 
+                  message      => 'root commit', 
+                  is_committed => 1 };
 
     return $self->schema->create_revision($attrs);   
 }

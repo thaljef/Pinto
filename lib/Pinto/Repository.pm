@@ -572,13 +572,13 @@ sub copy_stack {
         throw "Stack $existing already exists"
     } 
 
-    my $copy = $stack->copy(\%args);
-    $stack->copy_registrations(to => $copy);
+    my $dupe = $stack->duplicate(%args);
+    $stack->duplicate_registrations(to => $dupe);
     
-    $copy->make_filesystem;
-    $copy->write_index;
+    $dupe->make_filesystem;
+    $dupe->write_index;
 
-    return $copy;
+    return $dupe;
 }
 
 #-------------------------------------------------------------------------------
@@ -593,6 +593,7 @@ sub rename_stack {
     throw "Stack $new_name already exists"
       if $self->get_stack($new_name, nocroak => 1);
 
+    $stack->rename_filesystem(to => $new_name);
     $stack->rename(to => $new_name);
 
     return $stack;
@@ -606,33 +607,9 @@ sub kill_stack {
     my $stack = $args{stack};
 
     $stack->kill;
+    $stack->kill_filesystem;
 
     return $stack;
-}
-
-#-------------------------------------------------------------------------------
-
-sub commit {
-    my ($self, %args) = @_;
-
-    my $stack       = delete $args{stack};
-    my %commit_args = %args;
-
-    $stack->write_index;
-    $stack->write_registry;
-
-    my $reg_file = $stack->registry_file;
-    $self->vcs->checkout_branch(name => $stack->name) unless $args{as_orphan};
-    $self->vcs->add(file => $reg_file->basename, from => $reg_file);
-
-    # NOTE: Git will create a commit object even if nothing has changed.  The new commit
-    # will just point to the same tree as the last commit.  So it is up to you to check
-    # whether you really need to commit or not.  Use $stack->stack_has_changed().
-
-    my $commit_id = $self->vcs->commit(%commit_args);
-    $stack->update( {last_commit_id => $commit_id} );
-
-    return $self;
 }
 
 #-------------------------------------------------------------------------------

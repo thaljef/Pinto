@@ -26,8 +26,10 @@ use Pinto::Tester;
 
 	my $stack = $t->pinto->repo->get_stack('master');
 	ok defined $stack, 'master stack exists';
-	is $stack->name, 'master', 'master stack has correct name';
-	is $stack->is_default, 1,  'master stack is the default stack';
+	is $stack->name,         'master', 'stack has correct name';
+	is $stack->is_default,          1, 'stack is the default stack';
+	is $stack->head->is_root,       1, 'stack is at root revision';
+	is $stack->head->is_committed,  1, 'root revision is committed';
 
 	my $repo = $t->pinto->repo;
 	is $repo->get_version, $Pinto::Repository::REPOSITORY_VERSION, 'Repo version matches';

@@ -228,6 +228,7 @@ before is_default => sub {
   throw "Cannot directly set is_default.  Use mark_as_default instead" if @args;
 };
 
+
 #------------------------------------------------------------------------------
 
 =method get_distribution( spec => $dist_spec )
@@ -296,16 +297,51 @@ sub make_filesystem {
 
 #------------------------------------------------------------------------------
 
-sub copy {
-    my ($self, $changes) = @_;
+sub rename_filesystem {
+    my ($self, %args) = @_;
 
-    $changes->{is_default} = 0; # Never duplicate the default flag
-    return $self->next::method($changes);
+    my $new_name = $args{to};
+
+    $self->assert_not_locked;
+
+    my $orig_dir = $self->stack_dir;
+    throw "Directory $orig_dir does not exist" if not -e $orig_dir;
+
+    my $new_dir = $self->repo->config->root_dir->subdir($new_name);
+    throw "Directory $new_dir already exists" if -e $new_dir;
+
+    $self->debug("Renaming directory $orig_dir to $new_dir");
+    File::Copy::move($orig_dir, $new_dir) or throw "Rename failed: $!";
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
 
-sub copy_registrations {
+sub kill_filesystem {
+    my ($self) = @_;
+
+    $self->assert_not_locked;
+
+    my $stack_dir = $self->stack_dir;
+    $stack_dir->rmtree or throw "Failed to remove $stack_dir: $!";
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub duplicate {
+    my ($self, %changes) = @_;
+
+    $changes{is_default} = 0; # Never duplicate the default flag
+
+    return $self->copy(\%changes);
+}
+
+#------------------------------------------------------------------------------
+
+sub duplicate_registrations {
     my ($self, %args) = @_;
 
     my $to_stack = $args{to};
@@ -332,15 +368,6 @@ sub rename {
 
     $self->assert_not_locked;
 
-    my $orig_dir = $self->stack_dir;
-    throw "Directory $orig_dir does not exist" if not -e $orig_dir;
-
-    my $new_dir = $self->repo->config->root_dir->subdir($new_name);
-    throw "Directory $new_dir already exists" if -e $new_dir;
-
-    $self->debug("Renaming directory $orig_dir to $new_dir");
-    File::Copy::move($orig_dir, $new_dir) or throw "Rename failed: $!";
-
     $self->update( {name => $new_name} );
 
     return $self
@@ -356,9 +383,6 @@ sub kill {
     throw "Cannot kill the default stack" if $self->is_default;
 
     $self->delete;
-
-    my $stack_dir = $self->stack_dir;
-    $stack_dir->rmtree or throw "Failed to remove $stack_dir: $!";
 
     return $self;
 }
@@ -397,14 +421,16 @@ sub unlock {
 #------------------------------------------------------------------------------
 
 sub start_revision {
-    my ($self, %args) = @_;
+    my ($self) = @_;
 
-    $args{message} ||= 'PENDING';
-    my $revision = $self->result_source->schema->create_revision(\%args);
+    $self->assert_is_committed;
 
+    my $revision = $self->result_source->schema->create_revision( {} );
     $revision->add_parent($self->head);
     $self->update( {head => $revision} );
     
+    $self->assert_is_open;
+
     return $self;
 }
 
@@ -413,19 +439,37 @@ sub start_revision {
 sub commit_revision {
     my ($self, %args) = @_;
 
+    throw "Must specify a message to commit" 
+      if not ($args{message} or $self->head->message);
+
+    $self->assert_is_open;
+
     $self->head->commit(%args);
     $self->write_index;
+
+    $self->assert_is_committed;
 
     return $self;
 }
 
 #------------------------------------------------------------------------------
 
-sub assert_revision_open {
+sub assert_is_committed {
     my ($self) = @_;
 
-    throw "Stack $self is not open for revision"
-      if $self->head->committed;
+    throw "PANIC: Stack $self is open for revision"
+      if not $self->head->refresh->is_committed;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub assert_is_open {
+    my ($self) = @_;
+
+    throw "PANIC: Stack $self is already committed"
+      if $self->head->refresh->is_committed;
 
     return $self;
 }

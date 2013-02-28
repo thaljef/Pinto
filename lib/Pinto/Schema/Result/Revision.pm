@@ -183,8 +183,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 21:43:27
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6aJNDY23GCrkCBy1UmHX+w
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-28 01:19:03
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SUCDVD6cS5B4fE5A8g3OuQ
 
 #------------------------------------------------------------------------------
 
@@ -265,6 +265,7 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{uuid}         ||= uuid;
+  $args->{message}      ||= '';
   $args->{username}     ||= current_username;
   $args->{timestamp}    ||= current_time;
   $args->{tz_offset}    ||= '';
