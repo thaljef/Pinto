@@ -12,16 +12,16 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
-$t->set_current_time(0); # Fix time to the beginning of the epoch
+$t->set_current_time(0); # Freeze time to begining of epoch
 
-$t->run_ok(Add => {stack    => 'master',
-	               archives => make_dist_archive("ME/Foo-0.01 = Foo~0.01") });
+$t->run_ok(Add  => {stack    => 'master',
+	                archives => make_dist_archive("ME/Foo-0.01 = Foo~0.01") });
 
 $t->run_ok(Copy => {from_stack => 'master', 
 	                to_stack   => 'branch'} );
 
-$t->run_ok(Add => {stack    => 'branch',
-				   archives => make_dist_archive("ME/Bar-0.02 = Bar~0.02") });
+$t->run_ok(Add  => {stack    => 'branch',
+				    archives => make_dist_archive("ME/Bar-0.02 = Bar~0.02") });
 
 #------------------------------------------------------------------------------
 
