@@ -20,6 +20,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+with qw( Pinto::Role::Colorable );
+
+#------------------------------------------------------------------------------
+
 has stack => (
     is        => 'ro',
     isa       => StackName | StackAll | StackDefault | StackObject,
@@ -124,8 +128,18 @@ sub execute {
 
     my $rs = $self->repo->db->schema->search_registration($where, $attrs);
 
-    while( my $registration = $rs->next ) {
-        $self->say($registration->to_string($format));
+    while( my $reg = $rs->next ) {
+
+        my $string = $reg->to_string($format);
+
+        if ($reg->is_pinned) {
+            $string = $self->color_3 . $string . $self->color_0;
+        }
+        elsif ($reg->distribution->is_local) {
+            $string = $self->color_1 . $string . $self->color_0;
+        }
+
+        $self->say($reg->to_string($string));
     }
 
     return $self->result;
