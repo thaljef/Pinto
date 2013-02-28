@@ -291,32 +291,21 @@ sub result_not_changed_ok {
 
 #------------------------------------------------------------------------------
 
-sub head_revision_number_is {
-    my ($self, $revnum, $stack_name, $test_name) = @_;
-
-    my $stack = $self->pinto->repo->get_stack($stack_name);
-    my $head  = $stack->head_revision;
-
-    $test_name ||= "Head revision number of stack $stack matches";
-
-    return $self->tb->is_eq($head->number, $revnum, $test_name);
-}
-
-#------------------------------------------------------------------------------
-
 sub repository_clean_ok {
     my ($self) = @_;
 
-    my @dists = $self->pinto->repo->db->schema->distribution_rs->all;
-    $self->tb->is_eq(scalar @dists, 0, 'Database has no distributions');
+    my $dists = $self->pinto->repo->distribution_count;
+    $self->tb->is_eq($dists, 0, 'Repo has no distributions');
 
-    my @pkgs = $self->pinto->repo->db->schema->package_rs->all;
-    $self->tb->is_eq(scalar @pkgs, 0, 'Database has no packages');
+    my $pkgs = $self->pinto->repo->package_count;
+    $self->tb->is_eq($pkgs, 0, 'Repo has no packages');
 
-    my @stacks = $self->pinto->repo->db->schema->stack_rs->all;
-    $self->tb->is_eq(scalar @stacks, 1, 'Database has only one stack');
-    $self->tb->is_eq($stacks[0]->name, 'master',  'The stack is called "master"');
-    $self->tb->is_eq($stacks[0]->is_default, 1,  'The stack is marked as default');
+    my @stacks = $self->pinto->repo->get_all_stacks;
+    $self->tb->is_eq(scalar @stacks, 1, 'Repo has only one stack');
+
+    my $stack = $stacks[0];
+    $self->tb->is_eq($stack->name, 'master',  'The stack is called "master"');
+    $self->tb->is_eq($stack->is_default, 1,  'The stack is marked as default');
 
     my $authors_id_dir = $self->pinto->config->authors_id_dir;
     $self->tb->ok(! -e $authors_id_dir, 'The authors/id dir should be gone');

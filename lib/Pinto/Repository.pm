@@ -593,6 +593,39 @@ sub txn_commit {
 
 #-------------------------------------------------------------------------------
 
+sub svp_begin {
+    my ($self, $name) = @_;
+
+    $self->debug('Beginning db savepoint ($name)');
+    $self->db->schema->svp_begin($name);
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub svp_rollback {
+    my ($self, $name) = @_;
+
+    $self->debug('Rolling back db savepoint ($name)');
+    $self->db->schema->svp_rollback($name);
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+sub svp_release {
+    my ($self, $name) = @_;
+
+    $self->debug('Releasing db savepoint ($name)');
+    $self->db->schema->svp_release($name);
+
+    return $self;
+
+}
+
+#-------------------------------------------------------------------------------
+
 sub create_stack {
     my ($self, %args) = @_;
 
