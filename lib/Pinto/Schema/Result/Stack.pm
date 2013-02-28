@@ -452,13 +452,29 @@ sub commit_revision {
     return $self;
 }
 
-#------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+
+sub package_count {
+    my ($self) = @_;
+
+    return $self->packages->count;
+}
+
+#-------------------------------------------------------------------------------
+
+sub distribution_count {
+    my ($self) = @_;
+
+    return $self->distributions->count;
+}
+
+#-------------------------------------------------------------------------------
 
 sub assert_is_committed {
     my ($self) = @_;
 
     throw "PANIC: Stack $self is open for revision"
-      if not $self->head->refresh->is_committed;
+      if not $self->head->is_committed;
 
     return $self;
 }
@@ -469,7 +485,7 @@ sub assert_is_open {
     my ($self) = @_;
 
     throw "PANIC: Stack $self is already committed"
-      if $self->head->refresh->is_committed;
+      if $self->head->is_committed;
 
     return $self;
 }
