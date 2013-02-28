@@ -185,20 +185,6 @@ sub get_all_stacks {
 
 #-------------------------------------------------------------------------------
 
-=method stack_count()
-
-Returns the total number of stacks that currently exist in the repository.
-
-=cut
-
-sub stack_count {
-    my ($self) = @_;
-
-    return $self->db->schema->stack_rs->count;
-}
-
-#-------------------------------------------------------------------------------
-
 =method get_revision($commit)
 
 =cut
@@ -542,6 +528,71 @@ sub pull_prerequisites {
 
 #-------------------------------------------------------------------------------
 
+sub package_count {
+    my ($self) = @_;
+
+    return $self->db->schema->package_rs->count;
+}
+
+#-------------------------------------------------------------------------------
+
+sub distribution_count {
+    my ($self) = @_;
+
+    return $self->db->schema->distribution_rs->count;
+}
+
+#-------------------------------------------------------------------------------
+
+sub stack_count {
+    my ($self) = @_;
+
+    return $self->db->schema->stack_rs->count;
+}
+
+#-------------------------------------------------------------------------------
+
+sub revision_count {
+    my ($self) = @_;
+
+    return $self->db->schema->revision_rs->count;
+}
+
+#-------------------------------------------------------------------------------
+
+sub txn_begin {
+    my ($self) = @_;
+
+    $self->debug('Beginning db transaction');
+    $self->db->schema->txn_begin;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub txn_rollback {
+    my ($self) = @_;
+
+    $self->debug('Rolling back db transaction');
+    $self->db->schema->txn_rollback;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub txn_commit {
+    my ($self) = @_;
+
+    $self->debug('Committing db transaction');
+    $self->db->schema->txn_commit;
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
 sub create_stack {
     my ($self, %args) = @_;
 
@@ -742,6 +793,7 @@ sub clear_cache {
 
     return $self;
 }
+
 #-------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable;

@@ -45,23 +45,22 @@ requires qw( execute message_title );
 around execute => sub {
     my ($orig, $self, @args) = @_;
 
-    $self->repo->db->schema->txn_begin;
+    $self->repo->txn_begin;
 
     my $result = try   { $self->$orig(@args) }
-                 catch { $self->repo->db->schema->txn_rollback; die $_ };
+                 catch { $self->repo->txn_rollback; die $_ };
 
     if ($self->dryrun) {
         $self->notice('Dryrun -- rolling back database');
-        $self->repo->db->schema->txn_rollback;
+        $self->repo->txn_rollback;
         $self->repo->clean_files;
     }
     elsif (not $result->made_changes) {
         $self->notice('No changes were actually made');
-        $self->repo->db->schema->txn_rollback;
+        $self->repo->txn_rollback;
     }
     else {
-        $self->debug('Committing changes to database');
-        $self->repo->db->schema->txn_commit;
+        $self->repo->txn_commit;
     }
 
     return $self->result;
