@@ -199,6 +199,8 @@ with 'Pinto::Role::Schema::Result';
 use MooseX::Types::Moose qw(Str Bool);
 
 use DateTime;
+use DateTime::TimeZone;
+use DateTime::TimeZone::OffsetOnly;
 use String::Format;
 use Digest::SHA;
 
@@ -250,7 +252,17 @@ has is_root => (
 has datetime => (
   is         => 'ro',
   isa        => 'DateTime',
-  default    => sub { DateTime->from_epoch(epoch => $_[0]->utc_time) },
+  default    => sub { DateTime->from_epoch(epoch => $_[0]->utc_time, time_zone => $_[0]->timezone) },
+  init_arg   => undef,
+  lazy       => 1,
+);
+
+
+has timezone => (
+  is         => 'ro',
+  isa        => 'DateTime::TimeZone',
+  default    => sub { my $offset = DateTime::TimeZone->offset_as_string($_[0]->repo->config->time_offset);
+                      return DateTime::TimeZone::OffsetOnly->new(offset => $offset) },
   init_arg   => undef,
   lazy       => 1,
 );
