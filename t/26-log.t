@@ -12,7 +12,9 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
-$t->set_current_utc_time(0); # Freeze time to begining of epoch
+$Pinto::Globals::current_utc_time    = 0; # Freeze time to begining of epoch
+$Pinto::Globals::current_time_offset = 0; # Freeze local timezone to UTC
+
 
 $t->run_ok(Add  => {stack    => 'master',
 	                archives => make_dist_archive("ME/Foo-0.01 = Foo~0.01") });
