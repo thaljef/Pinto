@@ -239,18 +239,6 @@ sub register {
 
 #------------------------------------------------------------------------------
 
-sub registration {
-    my ($self, %args) = @_;
-
-    my $stack = $args{stack};
-    my $where = {revision => $stack->head->id};
-    my $attrs = {key      => 'revision_package_unique'};
-
-    return $self->find_related(registrations => $where, $attrs);
-}
-
-#------------------------------------------------------------------------------
-
 sub vname {
     my ($self) = @_;
 

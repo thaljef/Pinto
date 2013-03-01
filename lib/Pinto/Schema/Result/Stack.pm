@@ -541,7 +541,7 @@ sub unmark_as_default {
 sub has_changed {
     my ($self) = @_;
 
-    return 1;
+    return $self->head->registration_changes->count > 0;
 }
 
 #------------------------------------------------------------------------------

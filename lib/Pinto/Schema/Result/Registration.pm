@@ -205,34 +205,49 @@ sub FOREIGNBUILDARGS {
 
 #-------------------------------------------------------------------------------
 
-# sub insert {
-#     my ($self) = @_;
+sub update { throw 'PANIC: Update to registrations are not allowed' }
 
-#     my $change = { event        => 'insert',
-#                    revision     => 1,
-#                    package      => $self->package->id,
-#                    package_name => $self->package_name,
-#                    distribution => $self->distribution->id,
-#                    is_pinned    => $self->is_pinned };
+#-------------------------------------------------------------------------------
 
-#     #$self->result_source->schema->create_registration_change($change);
+sub insert {
+    my ($self, @args) = @_;
 
-#     return $self->next::method;
-# }
+    $self->stack->assert_is_open;
+    $self->stack->assert_not_locked;
 
-# #-------------------------------------------------------------------------------
+    my $change = { event        => 'insert',
+                   revision     => $self->stack->head->id,
+                   package      => $self->package->id,
+                   package_name => $self->package_name,
+                   distribution => $self->distribution->id,
+                   is_pinned    => $self->is_pinned };
 
-# sub delete {
-#     my ($self) = @_;
+    my $rs = $self->result_source->schema->registration_change_rs;
+    $rs->update_or_create($change, {key => 'revision_package_name_event_unique'});
 
-#     my $change = { event        => 'delete',
-#                    revision     => 1,
-#                    package_name => $self->package_name };
+    return $self->next::method(@args);
+}
 
-#     #$self->result_source->schema->create_registration_change($change);
+#-------------------------------------------------------------------------------
 
-#     return $self->next::method;
-# }
+sub delete {
+    my ($self, @args) = @_;
+
+    $self->stack->assert_is_open;
+    $self->stack->assert_not_locked;
+
+    my $change = { event        => 'delete',
+                   revision     => $self->stack->head->id,
+                   package      => $self->package->id,
+                   package_name => $self->package_name,
+                   distribution => $self->distribution->id,
+                   is_pinned    => $self->is_pinned };
+
+    my $rs = $self->result_source->schema->registration_change_rs;
+    $rs->update_or_create($change, {key => 'revision_package_name_event_unique'});
+
+    return $self->next::method(@args);
+}
 
 #-------------------------------------------------------------------------------
 
@@ -257,7 +272,6 @@ sub unpin {
 
     $self->delete;
     my $copy = $self->copy({is_pinned => 0});
-
 
     return $copy;
 }

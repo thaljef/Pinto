@@ -353,10 +353,10 @@ sub pin {
     my $stack = $args{stack};
     $stack->assert_not_locked;
 
-    my $rs = $self->registrations( {stack => $stack->id, is_pinned => 0} );
-    throw "Distribution $self is not on stack $stack or is already pinned" unless $rs->count;
+    my @regs = $self->registrations( {stack => $stack->id, is_pinned => 0} )->all;
+    throw "Distribution $self is not on stack $stack or is already pinned" unless @regs;
 
-    $rs->update({is_pinned => 1});
+    $_->pin for @regs;
 
     return $self;
 }
@@ -369,9 +369,10 @@ sub unpin {
     my $stack = $args{stack};
     $stack->assert_not_locked;
  
-    my $rs = $self->registrations( {stack => $stack->id, is_pinned => 1} );
-    throw "Distribution $self is not on stack $stack or is not pinned" unless $rs->count;
-    $rs->update({is_pinned => 0});
+    my @regs = $self->registrations( {stack => $stack->id, is_pinned => 1} )->all;
+    throw "Distribution $self is not on stack $stack or is not pinned" unless @regs;
+
+    $_->unpin for @regs;
 
     return $self;
 }

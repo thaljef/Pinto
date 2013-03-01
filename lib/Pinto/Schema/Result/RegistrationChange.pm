@@ -204,7 +204,7 @@ sub to_string {
 
 
     my %fspec = (
-         A => sub { $self->event eq 'insert'                    ? 'A' : 'D'         },
+         E => sub { $self->event eq 'insert'                    ? '+' : '-'         },
          p => sub { $self->package->name                                            },
          P => sub { $self->package->vname                                           },
          v => sub { $self->package->version                                         },
@@ -220,7 +220,7 @@ sub to_string {
          w => sub { $self->package->distribution->version                           },
          u => sub { $self->package->distribution->url                               },
          j => sub { $self->revision->username                                       },
-         u => sub { $self->revision->timestamp->strftime('%c')                      },
+         t => sub { $self->revision->datetim->strftime('%c')                        },
          y => sub { $self->is_pinned                            ? '*' : ' '         },
     );
 
@@ -234,7 +234,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%A %y %a/%f/%P';
+    return '%E %y %a/%f/%P';
 }
 
 #-------------------------------------------------------------------------------
