@@ -265,6 +265,7 @@ sub register {
     my $did_register = 0;
     my $errors       = 0;
 
+    $stack->assert_is_open;
     $stack->assert_not_locked;
 
     # TODO: This process makes a of trips to the database.  You could
@@ -323,6 +324,7 @@ sub unregister {
   my $did_unregister = 0;
   my $conflicts      = 0;
 
+  $stack->assert_is_open;
   $stack->assert_not_locked;
 
   my $rs = $self->registrations( {stack => $stack->id} );
@@ -350,10 +352,16 @@ sub unregister {
 sub pin {
     my ($self, %args) = @_;
 
+    $DB::single = 1;
     my $stack = $args{stack};
+
+    $stack->assert_is_open;
     $stack->assert_not_locked;
 
-    my @regs = $self->registrations( {stack => $stack->id, is_pinned => 0} )->all;
+    my $where = {stack => $stack->id, is_pinned => 0};
+    my $attrs = {prefetch => [ qw(distribution package stack) ]};
+
+    my @regs = $self->registrations($where, $attrs)->all;
     throw "Distribution $self is not on stack $stack or is already pinned" unless @regs;
 
     $_->pin for @regs;
@@ -366,10 +374,16 @@ sub pin {
 sub unpin {
     my ($self, %args) = @_;
 
+    $DB::single = 1;
     my $stack = $args{stack};
-    $stack->assert_not_locked;
  
-    my @regs = $self->registrations( {stack => $stack->id, is_pinned => 1} )->all;
+    $stack->assert_is_open;
+    $stack->assert_not_locked;
+
+    my $where = {stack => $stack->id, is_pinned => 1};
+    my $attrs = {prefetch => [ qw(distribution package stack) ]};
+
+    my @regs = $self->registrations($where, $attrs)->all;
     throw "Distribution $self is not on stack $stack or is not pinned" unless @regs;
 
     $_->unpin for @regs;

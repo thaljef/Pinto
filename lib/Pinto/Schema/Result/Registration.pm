@@ -212,14 +212,11 @@ sub update { throw 'PANIC: Update to registrations are not allowed' }
 sub insert {
     my ($self, @args) = @_;
 
-    $self->stack->assert_is_open;
-    $self->stack->assert_not_locked;
-
     my $change = { event        => 'insert',
-                   revision     => $self->stack->head->id,
-                   package      => $self->package->id,
+                   revision     => $self->stack->get_column('head'),
+                   package      => $self->get_column('package'),
                    package_name => $self->package_name,
-                   distribution => $self->distribution->id,
+                   distribution => $self->get_column('distribution'),
                    is_pinned    => $self->is_pinned };
 
     my $rs = $self->result_source->schema->registration_change_rs;
@@ -233,14 +230,11 @@ sub insert {
 sub delete {
     my ($self, @args) = @_;
 
-    $self->stack->assert_is_open;
-    $self->stack->assert_not_locked;
-
     my $change = { event        => 'delete',
-                   revision     => $self->stack->head->id,
-                   package      => $self->package->id,
+                   revision     => $self->stack->get_column('head'),
+                   package      => $self->get_column('package'),
                    package_name => $self->package_name,
-                   distribution => $self->distribution->id,
+                   distribution => $self->get_column('distribution'),
                    is_pinned    => $self->is_pinned };
 
     my $rs = $self->result_source->schema->registration_change_rs;

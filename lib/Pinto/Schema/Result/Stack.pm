@@ -251,19 +251,23 @@ sub get_distribution {
     if (my $spec = $args{spec}) {
         if ( itis($spec, 'Pinto::DistributionSpec') ) {
 
-            my $attrs = {prefetch => 'distribution'};
+            my $attrs = {prefetch => [ qw(distribution stack) ], distinct => 1};
             my $where = {'distribution.author'  => $spec->author, 
                          'distribution.archive' => $spec->archive};
 
-            my $reg = $self->find_related(registrations => $where, $attrs) or return;
+            my $reg = $self->search_related(registrations => $where, $attrs)->first;
+            return if not defined $reg;
+
             return $reg->distribution;
         }
         elsif ( itis($spec, 'Pinto::PackageSpec') ) {
 
-            my $attrs = {prefetch => [ qw(package distribution) ]};
+            my $attrs = {prefetch => [ qw(package distribution stack) ] };
             my $where = {package_name => $spec->name};
 
-            my $reg = $self->find_related(registrations => $where) or return;
+            my $reg = $self->find_related(registrations => $where, $attrs);
+            return if not defined $reg;
+
             return if $reg->package->version < $spec->version;
             return $reg->distribution;
         }
@@ -473,7 +477,7 @@ sub assert_is_committed {
     my ($self) = @_;
 
     throw "PANIC: Stack $self is open for revision"
-      if not $self->head->is_committed;
+      if not $self->head->get_column('is_committed');
 
     return $self;
 }
@@ -484,7 +488,7 @@ sub assert_is_open {
     my ($self) = @_;
 
     throw "PANIC: Stack $self is already committed"
-      if $self->head->is_committed;
+      if $self->head->get_column('is_committed');
 
     return $self;
 }
@@ -612,7 +616,7 @@ sub to_string {
            t => sub { $self->head->message_title                          },
            b => sub { $self->head->message_body                           },
            j => sub { $self->head->username                               },
-           u => sub { $self->head->datetime->strftime('%c')  }, 
+           u => sub { $self->head->datetime->strftime('%c')               }, 
     );
 
     $format ||= $self->default_format();

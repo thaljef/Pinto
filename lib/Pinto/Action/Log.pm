@@ -46,7 +46,6 @@ sub execute {
     my $stack  = $self->repo->get_stack($self->stack);
     my $walker = Pinto::RevisionWalker->new(start => $stack->head);
 
-    $DB::single = 1;
     while (my $revision = $walker->next) {
         $self->say( $revision->to_string($self->format) ); 
     }
@@ -63,7 +62,7 @@ sub _build_format {
     my $r = $self->color_0;
 
     return <<"END_FORMAT";
-${c}commit %I${r}
+${c}revision %I${r}
 Date: %u
 User: %j 
 
