@@ -17,13 +17,13 @@ $Pinto::Globals::current_time_offset = 0; # Freeze local timezone to UTC
 
 
 $t->run_ok(Add  => {stack    => 'master',
-	                archives => make_dist_archive("ME/Foo-0.01 = Foo~0.01") });
+	                  archives => make_dist_archive("ME/Foo-0.01 = Foo~0.01") });
 
 $t->run_ok(Copy => {from_stack => 'master', 
-	                to_stack   => 'branch'} );
+	                  to_stack   => 'branch'} );
 
 $t->run_ok(Add  => {stack    => 'branch',
-				    archives => make_dist_archive("ME/Bar-0.02 = Bar~0.02") });
+				            archives => make_dist_archive("ME/Bar-0.02 = Bar~0.02") });
 
 #------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ $t->run_ok(Add  => {stack    => 'branch',
 
   $t->run_ok(Log => {stack => $stack, out => $out});
   
-  my $msgs =()= $buffer =~ m/commit [0-9a-f\-]{36}/g;
+  my $msgs =()= $buffer =~ m/revision [0-9a-f\-]{36}/g;
 
   is $msgs, 1, "Stack $stack has correct message count";
   like $buffer, qr/Foo-0.01.tar.gz/,    'Log message has Foo archive';
@@ -58,7 +58,7 @@ $t->run_ok(Add  => {stack    => 'branch',
 
   $t->run_ok(Log => {stack => $stack, out => $out});
 
-  my $msgs =()= $buffer =~ m/commit [0-9a-f\-]{36}/g;
+  my $msgs =()= $buffer =~ m/revision [0-9a-f\-]{36}/g;
 
   is $msgs, 2, "Stack $stack has correct message count";
   like $buffer, qr/Foo-0.01.tar.gz/, 'Log messages have Foo archive';
