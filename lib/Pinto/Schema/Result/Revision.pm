@@ -373,13 +373,13 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           i => sub { $self->uuid_prefix               },
-           I => sub { $self->uuid                      },
-           j => sub { $self->username                  },
-           u => sub { $self->datetime->strftime('%c')  },
-           g => sub { $self->message_body              },
-           t => sub { $self->message_title             },
-           G => sub { indent( $self->message, $_[0] )  },
+           i => sub { $self->uuid_prefix                     },
+           I => sub { $self->uuid                            },
+           j => sub { $self->username                        },
+           u => sub { $self->datetime->strftime('%c')        },
+           g => sub { $self->message_body                    },
+           t => sub { $self->message_title                   },
+           G => sub { indent( trim($self->message), $_[0] )  },
     );
 
     $format ||= $self->default_format;
