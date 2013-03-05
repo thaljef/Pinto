@@ -69,14 +69,11 @@ sub _build_schema {
     $connected->logger($self->logger);
     $connected->repo($self->repo);
 
-
     # Tune sqlite
     my $dbh = $connected->storage->dbh;
-    $dbh->do('PRAGMA page_size=8192');
-    #$dbh->do('PRAGMA synchronous=0');
-    $dbh->do('PRAGMA cache_size=4000');
-    #$dbh->do('PRAGMA journal_mode=WAL');
-
+    $dbh->do('PRAGMA page_size    = 8192');
+    $dbh->do('PRAGMA cache_size   = 4000');
+    $dbh->do('PRAGMA journal_mode = TRUNCATE');
 
     return $connected;
 }
