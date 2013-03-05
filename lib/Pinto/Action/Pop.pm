@@ -24,7 +24,7 @@ with qw( Pinto::Role::Committable );
 #------------------------------------------------------------------------------
 
 has targets   => (
-    isa      => DistSpecList,
+    isa      => SpecList,
     traits   => [ qw(Array) ],
     handles  => {targets => 'elements'},
     required => 1,
@@ -67,8 +67,8 @@ sub execute {
 sub _pop {
     my ($self, $target, $stack) = @_;
 
-    my $dist  = $stack->get_distribution(spec => $target);
-    throw "Distribution $target is not registered on stack $stack" if not defined $dist;
+    my $dist = $stack->get_distribution(spec => $target);
+    throw "$target is not registered on stack $stack" if not defined $dist;
 
     $dist->unregister(stack => $stack, force => $self->force);
 
