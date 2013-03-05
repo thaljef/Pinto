@@ -29,8 +29,6 @@ my $cpan  = shift or die 'Must specify path to CPAN directory';
 Pinto::Initializer->new(root => "$root")->init(sources => "file://$cpan") unless -e $root;
 my $pinto = Pinto->new(root => "$root");
 
-exit;
-
 #-----------------------------------------------------------------------------
 printf "Searching for distributions beneath %s\n", $cpan;
 
