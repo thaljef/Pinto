@@ -91,17 +91,16 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack    = $self->repo->get_stack($self->stack)->start_revision;
-    my @archives = $self->archives;
+    my $stack = $self->repo->get_stack($self->stack)->start_revision;
 
-    while (my $archive = shift @archives) {
+    for my $archive ($self->archives) {
 
         try   {
             $self->repo->db->schema->storage->svp_begin; 
             $self->_add($archive, $stack);
         }
         catch {
-            die $_ unless $self->nofail && @archives; 
+            die $_ unless $self->nofail; 
 
             $self->repo->db->schema->storage->svp_rollback;
 

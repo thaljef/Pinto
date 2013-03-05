@@ -68,17 +68,16 @@ has nofail => (
 sub execute {
     my ($self) = @_;
 
-    my $stack   = $self->repo->get_stack($self->stack)->start_revision;
-    my @targets = $self->targets;
+    my $stack = $self->repo->get_stack($self->stack)->start_revision;
 
-    while (my $target = shift @targets) {
+    for my $target ($self->targets) {
 
         try   {
             $self->repo->db->schema->storage->svp_begin; 
             $self->_pull($target, $stack) 
         }
         catch {
-            die $_ unless $self->nofail && @targets;
+            die $_ unless $self->nofail;
 
             $self->repo->db->schema->storage->svp_rollback;
 
