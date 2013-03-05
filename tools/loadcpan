@@ -48,7 +48,7 @@ while (@dists) {
 	s|^.*/authors/id/./../|| for @batch;
 
 	my $start = time;
-	$pinto->run(Pull => (targets => \@batch, norecurse => 1, nofail => 1, message => 'Batch'));
+	$pinto->run(Pull => (targets => \@batch, norecurse => 1, nofail => 1, message => ''));
 	printf "Batch %i loaded in %i seconds\n", $n, time - $start;
 
 	$n++;
