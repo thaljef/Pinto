@@ -122,21 +122,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
-=head2 registration_changes
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::RegistrationChange>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.package" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 registrations
 
 Type: has_many
@@ -166,8 +151,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 09:54:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eDCiiSpRr/cp6BQ1/5httQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wYrDViIlHDocM5byRBn1Qg
 
 #------------------------------------------------------------------------------
 
@@ -223,14 +208,10 @@ sub register {
     my $stack = $args{stack};
     my $pin   = $args{pin};
 
-    # HACK: poke inside the object to get our own dist id.
-    # This avoids having to requery the DB for the whole object.
-    my $dist_id = $self->{_column_data}->{distribution};
-
-    my $struct = { stack        => $stack,
+    my $struct = { revision     => $stack->head->id,
                    is_pinned    => $pin,
                    package_name => $self->name,
-                   distribution => $dist_id };
+                   distribution => $self->get_column('distribution') };
 
     $self->create_related( registrations => $struct );
 

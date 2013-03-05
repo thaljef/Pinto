@@ -42,13 +42,10 @@ sub execute {
 	for my $stack (@stacks) {
 		my $string = $stack->to_string($format);
 
-		if ($stack->is_default) {
-			$string = $self->color_1 . $string . $self->color_0;
-		}
-		elsif ($stack->is_locked) {
-			$string = $self->color_3 . $string . $self->color_0;
-		}
+		my $color =   $stack->is_default ? $self->color_1 
+		            : $stack->is_locked  ? $self->color_3 : undef;
 
+		$string = $self->colorize_with_color($string, $color);
 		$self->say( $string ); 
 	}
 

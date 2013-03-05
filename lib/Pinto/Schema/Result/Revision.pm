@@ -139,17 +139,17 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registration_changes
+=head2 registrations
 
 Type: has_many
 
-Related object: L<Pinto::Schema::Result::RegistrationChange>
+Related object: L<Pinto::Schema::Result::Registration>
 
 =cut
 
 __PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
+  "registrations",
+  "Pinto::Schema::Result::Registration",
   { "foreign.revision" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -183,8 +183,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-28 10:50:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:U//3uaLX2xO4B03aawIdmQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bV1TUSpIOhec0ZHfajudbg
 
 #------------------------------------------------------------------------------
 
@@ -335,6 +335,29 @@ sub commit {
     $args{is_committed} = 1;
 
     $self->update(\%args);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub assert_is_open {
+    my ($self) = @_;
+
+    throw "PANIC: Revision $self is already committed"
+      if $self->get_column('is_committed');
+
+    return $self;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub assert_is_committed {
+    my ($self) = @_;
+
+    throw "PANIC: Revision $self is still open"
+      if not $self->get_column('is_committed');
 
     return $self;
 }

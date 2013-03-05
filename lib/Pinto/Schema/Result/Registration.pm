@@ -32,13 +32,7 @@ __PACKAGE__->table("registration");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 stack
-
-  data_type: 'integer'
-  is_foreign_key: 1
-  is_nullable: 0
-
-=head2 package
+=head2 revision
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -47,6 +41,12 @@ __PACKAGE__->table("registration");
 =head2 package_name
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 package
+
+  data_type: 'integer'
+  is_foreign_key: 1
   is_nullable: 0
 
 =head2 distribution
@@ -65,12 +65,12 @@ __PACKAGE__->table("registration");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "stack",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "package",
+  "revision",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package_name",
   { data_type => "text", is_nullable => 0 },
+  "package",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "is_pinned",
@@ -91,11 +91,11 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<stack_package_name_unique>
+=head2 C<revision_package_name_unique>
 
 =over 4
 
-=item * L</stack>
+=item * L</revision>
 
 =item * L</package_name>
 
@@ -103,7 +103,7 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("stack_package_name_unique", ["stack", "package_name"]);
+__PACKAGE__->add_unique_constraint("revision_package_name_unique", ["revision", "package_name"]);
 
 =head1 RELATIONS
 
@@ -137,18 +137,18 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
-=head2 stack
+=head2 revision
 
 Type: belongs_to
 
-Related object: L<Pinto::Schema::Result::Stack>
+Related object: L<Pinto::Schema::Result::Revision>
 
 =cut
 
 __PACKAGE__->belongs_to(
-  "stack",
-  "Pinto::Schema::Result::Stack",
-  { id => "stack" },
+  "revision",
+  "Pinto::Schema::Result::Revision",
+  { id => "revision" },
   { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
@@ -166,8 +166,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-21 23:16:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zPM+eyNERxwrZe7WfmQ5cg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:AkBHZ7hQ0BdZdv0DoCJufA
 
 #------------------------------------------------------------------------------
 
@@ -206,42 +206,6 @@ sub FOREIGNBUILDARGS {
 #-------------------------------------------------------------------------------
 
 sub update { throw 'PANIC: Update to registrations are not allowed' }
-
-#-------------------------------------------------------------------------------
-
-sub insert {
-    my ($self, @args) = @_;
-
-    my $change = { event        => 'insert',
-                   revision     => $self->stack->get_column('head'),
-                   package      => $self->get_column('package'),
-                   package_name => $self->package_name,
-                   distribution => $self->get_column('distribution'),
-                   is_pinned    => $self->is_pinned };
-
-    my $rs = $self->result_source->schema->registration_change_rs;
-    $rs->update_or_create($change, {key => 'revision_package_name_event_unique'});
-
-    return $self->next::method(@args);
-}
-
-#-------------------------------------------------------------------------------
-
-sub delete {
-    my ($self, @args) = @_;
-
-    my $change = { event        => 'delete',
-                   revision     => $self->stack->get_column('head'),
-                   package      => $self->get_column('package'),
-                   package_name => $self->package_name,
-                   distribution => $self->get_column('distribution'),
-                   is_pinned    => $self->is_pinned };
-
-    my $rs = $self->result_source->schema->registration_change_rs;
-    $rs->update_or_create($change, {key => 'revision_package_name_event_unique'});
-
-    return $self->next::method(@args);
-}
 
 #-------------------------------------------------------------------------------
 
@@ -324,7 +288,7 @@ sub to_string {
          D => sub { $self->package->distribution->vname                      },
          V => sub { $self->package->distribution->version                    },
          u => sub { $self->package->distribution->url                        },
-         k => sub { $self->stack->name                                       },
+         i => sub { $self->revision->uuid_prefix                             },
     );
 
     # Some attributes are just undefined, usually because of
@@ -340,7 +304,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%a/%D/%P/%k'; # AUTHOR/DIST_VNAME/PKG_VNAME/STACK
+    return '%a/%D/%P/%i'; # AUTHOR/DIST_VNAME/PKG_VNAME/STACK
 }
 
 #------------------------------------------------------------------------------

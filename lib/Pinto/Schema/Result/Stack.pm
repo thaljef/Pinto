@@ -118,21 +118,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 0, on_delete => "RESTRICT", on_update => "NO ACTION" },
 );
 
-=head2 registrations
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::Registration>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registrations",
-  "Pinto::Schema::Result::Registration",
-  { "foreign.stack" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head1 L<Moose> ROLES APPLIED
 
 =over 4
@@ -147,8 +132,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:35:30
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9gc3N4bjSGe6vlg/a46CKw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+O/IwTdVRx98MHUkJ281lg
 
 #-------------------------------------------------------------------------------
 
@@ -251,21 +236,21 @@ sub get_distribution {
     if (my $spec = $args{spec}) {
         if ( itis($spec, 'Pinto::DistributionSpec') ) {
 
-            my $attrs = {prefetch => [ qw(distribution stack) ], distinct => 1};
+            my $attrs = {prefetch => [ qw(distribution) ], distinct => 1};
             my $where = {'distribution.author'  => $spec->author, 
                          'distribution.archive' => $spec->archive};
 
-            my $reg = $self->search_related(registrations => $where, $attrs)->first;
+            my $reg = $self->head->search_related(registrations => $where, $attrs)->first;
             return if not defined $reg;
 
             return $reg->distribution;
         }
         elsif ( itis($spec, 'Pinto::PackageSpec') ) {
 
-            my $attrs = {prefetch => [ qw(package distribution stack) ] };
+            my $attrs = {prefetch => [ qw(package distribution) ] };
             my $where = {package_name => $spec->name};
 
-            my $reg = $self->find_related(registrations => $where, $attrs);
+            my $reg = $self->head->find_related(registrations => $where, $attrs);
             return if not defined $reg;
 
             return if $reg->package->version < $spec->version;
@@ -347,15 +332,15 @@ sub duplicate {
 sub duplicate_registrations {
     my ($self, %args) = @_;
 
-    my $to_stack = $args{to};
-    $self->info("Copying registrations for stack $self into stack $to_stack");
+    my $rev = $args{to};
+    $self->info("Copying registrations for stack $self to $rev");
 
-    my $where = {stack => $self->id};
+    my $where = {revision => $self->head->id};
     my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
     my $rs = $self->result_source->schema->resultset('Registration');
 
     my @rows = $rs->search($where, $attrs)->all;
-    for (@rows) { delete $_->{id}; $_->{stack} = $to_stack->id; } 
+    for (@rows) { delete $_->{id}; $_->{revision} = $rev->id; } 
 
     $rs->populate(\@rows);
 
@@ -423,14 +408,27 @@ sub unlock {
 
 #------------------------------------------------------------------------------
 
+sub set_head {
+    my ($self, $revision) = @_;
+
+    $self->update( {head => $revision} );
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub start_revision {
     my ($self) = @_;
 
     $self->assert_is_committed;
 
-    my $revision = $self->result_source->schema->create_revision( {} );
-    $revision->add_parent($self->head);
-    $self->update( {head => $revision} );
+    my $old_rev  = $self->head;
+    my $new_rev  = $self->result_source->schema->create_revision( {} );
+
+    $self->duplicate_registrations(to => $new_rev);
+    $new_rev->add_parent($old_rev);
+    $self->set_head($new_rev);
     
     $self->assert_is_open;
 
@@ -460,7 +458,7 @@ sub commit_revision {
 sub package_count {
     my ($self) = @_;
 
-    return $self->packages->count;
+    return $self->head->packages->count;
 }
 
 #-------------------------------------------------------------------------------
@@ -468,18 +466,7 @@ sub package_count {
 sub distribution_count {
     my ($self) = @_;
 
-    return $self->distributions->count;
-}
-
-#-------------------------------------------------------------------------------
-
-sub assert_is_committed {
-    my ($self) = @_;
-
-    throw "PANIC: Stack $self is open for revision"
-      if not $self->head->get_column('is_committed');
-
-    return $self;
+    return $self->head->distributions->count;
 }
 
 #------------------------------------------------------------------------------
@@ -487,10 +474,15 @@ sub assert_is_committed {
 sub assert_is_open {
     my ($self) = @_;
 
-    throw "PANIC: Stack $self is already committed"
-      if $self->head->get_column('is_committed');
+    return $self->head->assert_is_open;
+}
 
-    return $self;
+#------------------------------------------------------------------------------
+
+sub assert_is_committed {
+    my ($self) = @_;
+
+    return $self->head->assert_is_committed;
 }
 
 #------------------------------------------------------------------------------
@@ -545,7 +537,7 @@ sub unmark_as_default {
 sub has_changed {
     my ($self) = @_;
 
-    return $self->head->registration_changes->count > 0;
+    return 1;
 }
 
 #------------------------------------------------------------------------------

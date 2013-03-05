@@ -35,26 +35,13 @@ CREATE TABLE stack (
 
 CREATE TABLE registration (
        id              INTEGER PRIMARY KEY NOT NULL,
-       stack           INTEGER             NOT NULL        REFERENCES stack(id)        ON DELETE CASCADE,
-       package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
-       package_name    TEXT                NOT NULL,
-       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
-       is_pinned       BOOLEAN             NOT NULL,
-
-       UNIQUE(stack, package_name)
-);
-
-
-CREATE TABLE registration_change (
-       id              INTEGER PRIMARY KEY NOT NULL,
-       event           TEXT                NOT NULL,
        revision        INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
-       package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
        package_name    TEXT                NOT NULL,
+       package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
        distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
        is_pinned       BOOLEAN             NOT NULL,
 
-       UNIQUE(revision, package_name, event)
+       UNIQUE(revision, package_name)
 );
 
 
@@ -84,3 +71,14 @@ CREATE TABLE prerequisite (
 
        UNIQUE(distribution, package_name)
 );
+
+--CREATE INDEX idx_package_distribution      ON package(distribution);
+--CREATE INDEX idx_prerequisite_package_name ON prerequisite(package_name);
+--CREATE INDEX idx_registration_package_name ON registration(package_name);
+--CREATE INDEX idx_registration_package      ON registration(package);
+--CREATE INDEX idx_registration_distribution ON registration(distribution);
+
+CREATE INDEX idx_ancestry_parent           ON ancestry(parent);
+CREATE INDEX idx_ancestry_child            ON ancestry(child);
+
+

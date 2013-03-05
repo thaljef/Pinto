@@ -165,21 +165,6 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 registration_changes
-
-Type: has_many
-
-Related object: L<Pinto::Schema::Result::RegistrationChange>
-
-=cut
-
-__PACKAGE__->has_many(
-  "registration_changes",
-  "Pinto::Schema::Result::RegistrationChange",
-  { "foreign.distribution" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 registrations
 
 Type: has_many
@@ -209,8 +194,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-26 09:54:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DiLPdKEnqj5KyFu7MxPvnQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5o3MQdpey2pBAPUoMuPTNQ
 
 #-------------------------------------------------------------------------------
 
@@ -275,7 +260,7 @@ sub register {
     for my $pkg ($self->packages) {
 
       my $where = {package_name => $pkg->name};
-      my $incumbent = $stack->find_related(registrations => $where);
+      my $incumbent = $stack->head->find_related(registrations => $where);
 
       if (not defined $incumbent) {
           $self->debug(sub {"Registering $pkg on stack $stack"} );
@@ -327,7 +312,7 @@ sub unregister {
   $stack->assert_is_open;
   $stack->assert_not_locked;
 
-  my $rs = $self->registrations( {stack => $stack->id} );
+  my $rs = $self->registrations( {revision => $stack->head->id} );
   for my $reg ($rs->all) {
 
     if ($reg->is_pinned and not $force ) {
@@ -352,19 +337,15 @@ sub unregister {
 sub pin {
     my ($self, %args) = @_;
 
-    $DB::single = 1;
     my $stack = $args{stack};
-
-    $stack->assert_is_open;
     $stack->assert_not_locked;
 
-    my $where = {stack => $stack->id, is_pinned => 0};
-    my $attrs = {prefetch => [ qw(distribution package stack) ]};
+    my $rev = $stack->head;
+    $rev->assert_is_open;
 
-    my @regs = $self->registrations($where, $attrs)->all;
-    throw "Distribution $self is not on stack $stack or is already pinned" unless @regs;
-
-    $_->pin for @regs;
+    my $where = {revision => $rev->id, is_pinned => 0};
+    my $regs  = $self->registrations($where);
+    $regs->update( {is_pinned => 1} );
 
     return $self;
 }
@@ -374,19 +355,15 @@ sub pin {
 sub unpin {
     my ($self, %args) = @_;
 
-    $DB::single = 1;
     my $stack = $args{stack};
- 
-    $stack->assert_is_open;
     $stack->assert_not_locked;
 
-    my $where = {stack => $stack->id, is_pinned => 1};
-    my $attrs = {prefetch => [ qw(distribution package stack) ]};
+    my $rev = $stack->head;
+    $rev->assert_is_open;
 
-    my @regs = $self->registrations($where, $attrs)->all;
-    throw "Distribution $self is not on stack $stack or is not pinned" unless @regs;
-
-    $_->unpin for @regs;
+    my $where = {revision => $rev->id, is_pinned => 1};
+    my $regs  = $self->registrations($where);
+    $regs->update( {is_pinned => 0} );
 
     return $self;
 }

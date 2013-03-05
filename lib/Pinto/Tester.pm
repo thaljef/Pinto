@@ -188,7 +188,7 @@ sub registration_ok {
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
     my $stack      = $self->pinto->repo->get_stack($stack_name);
 
-    my $where = { stack => $stack->id, 'package.name' => $pkg_name };
+    my $where = { revision => $stack->head->id, 'package.name' => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
     my $reg = $self->pinto->repo->db->schema->find_registration($where, $attrs);
 
@@ -197,7 +197,7 @@ sub registration_ok {
 
 
     # Test package object...
-    my $pkg = $reg->    package;
+    my $pkg = $reg->package;
     $self->tb->is_eq($pkg->name,    $pkg_name, "Package has correct name");
     $self->tb->is_eq($pkg->version, $pkg_ver,  "Package has correct version");
 

@@ -116,12 +116,12 @@ sub execute {
         # Otherwise, list only the named stack, falling back to
         # the default stack if no stack was named at all.
         my $stack = $self->repo->get_stack($stk_name);
-        $where->{'stack.name'} = $stack->name;
+        $where->{revision} = $stack->head->id;
         $format = $self->format;
     }
 
 
-    my $attrs = {prefetch => ['stack', {package => 'distribution'}],
+    my $attrs = {prefetch => ['revision', {package => 'distribution'}],
                  order_by => [ qw(package.name) ] };
 
     ################################################################

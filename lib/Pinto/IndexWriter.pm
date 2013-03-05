@@ -119,7 +119,7 @@ sub _get_index_records {
     my @selects = qw(package.name package.version distribution.author distribution.archive);
 
     my $attrs   = {join => \@joins, select => \@selects};
-    my $rs      = $stack->search_related('registrations', {}, $attrs);
+    my $rs      = $stack->head->search_related('registrations', {}, $attrs);
     my @records = sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
 
     return @records;

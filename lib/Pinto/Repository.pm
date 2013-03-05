@@ -657,7 +657,6 @@ sub copy_stack {
     } 
 
     my $dupe = $stack->duplicate(%args);
-    $stack->duplicate_registrations(to => $dupe);
     
     $dupe->make_filesystem;
     $dupe->write_index;
