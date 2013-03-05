@@ -26,14 +26,14 @@ has nocolor => (
 has color_0 => (
 	is        => 'ro',
 	isa       => Str,
-	default   => sub { $_[0]->nocolor ? '' : color('reset') },
+	default   => sub { color('reset') },
 );
 
 
 has color_1 => (
 	is        => 'ro',
 	isa       => Str,
-	default   => sub { $_[0]->nocolor ? '' : color($_[0]->user_colors->[0] || 'green') },
+	default   => sub { color($_[0]->user_colors->[0] || 'green') },
 	lazy      => 1,
 );
 
@@ -41,7 +41,7 @@ has color_1 => (
 has color_2 => (
 	is        => 'ro',
 	isa       => Str,
-	default   => sub { $_[0]->nocolor ? '' : color($_[0]->user_colors->[1] || 'yellow') },
+	default   => sub { color($_[0]->user_colors->[1] || 'yellow') },
 	lazy      => 1,
 );
 
@@ -49,7 +49,7 @@ has color_2 => (
 has color_3 => (
 	is        => 'ro',
 	isa       => Str,
-	default   => sub { $_[0]->nocolor ? '' : color($_[0]->user_colors->[2] || 'red') },
+	default   => sub { color($_[0]->user_colors->[2] || 'red') },
 	lazy      => 1,
 );
 
@@ -57,9 +57,46 @@ has color_3 => (
 has user_colors => (
 	is        => 'ro',
 	isa       => ArrayRef,
-	default   => sub { [split m/\s*,\s*/, $ENV{PINTO_COLORS} || ''] },
+	default   => sub { [split m/\s*,\s*/, $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS} || ''] },
 	lazy      => 1,
 );
+
+#-----------------------------------------------------------------------------
+
+sub colorize_with_color {
+	my ($self, $string, $color) = @_;
+
+	return $string if not $color;
+	return $string if $self->nocolor;
+	return $color . $string . $self->color_0;
+}
+
+#-----------------------------------------------------------------------------
+
+sub colorize_with_color_1 {
+	my ($self, $string) = @_;
+
+	return $string if $self->nocolor;
+	return $self->color_1 . $string . $self->color_0;
+}
+
+#-----------------------------------------------------------------------------
+
+sub colorize_with_color_2 {
+	my ($self, $string) = @_;
+
+	return $string if $self->nocolor;
+	return $self->color_2 . $string . $self->color_0;
+}
+
+#-----------------------------------------------------------------------------
+
+sub colorize_with_color_3 {
+	my ($self, $string) = @_;
+
+	return $string if $self->nocolor;
+	return $self->color_3 . $string . $self->color_0;
+}
 
 #-----------------------------------------------------------------------------
 
