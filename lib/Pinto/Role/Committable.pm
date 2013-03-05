@@ -72,7 +72,7 @@ sub edit_message {
     my ($self, %args) = @_;
 
     my $stack   = $args{stack};
-    my $title   = $args{title} || $self->message_title || '';
+    my $title   = $args{title}   || $self->message_title || '';
     my $details = $args{details} || '';
 
     return interpolate($self->message)
