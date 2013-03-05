@@ -41,6 +41,10 @@ has details => (
 sub edit {
     my ($self) = @_;
 
+    # Term::EditorEdit only honors VISUAL or EDITOR (in that order),
+    # So we locally override one of those with PINTO_EDITOR, if set
+    local $ENV{VISUAL} = $ENV{PINTO_EDITOR} if $ENV{PINTO_EDITOR};
+
     my $message = Term::EditorEdit->edit(document => $self->to_string);
     $message =~ s/^ [#] .* $//gmsx;  # Strip comments
 
