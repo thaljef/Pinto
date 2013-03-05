@@ -458,7 +458,7 @@ sub commit_revision {
 sub package_count {
     my ($self) = @_;
 
-    return $self->head->packages->count;
+    return $self->head->registrations->count;
 }
 
 #-------------------------------------------------------------------------------
@@ -466,7 +466,8 @@ sub package_count {
 sub distribution_count {
     my ($self) = @_;
 
-    return $self->head->distributions->count;
+    my $attrs = {select => 'distribution', distinct => 1};
+    return $self->head->registrations({}, $attrs)->count;
 }
 
 #------------------------------------------------------------------------------
