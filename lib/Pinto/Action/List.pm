@@ -121,7 +121,7 @@ sub execute {
     }
 
 
-    my $attrs = {prefetch => ['revision', {package => 'distribution'}],
+    my $attrs = {prefetch => [ qw(revision package distribution) ],
                  order_by => [ qw(package.name) ] };
 
     ################################################################
@@ -139,17 +139,13 @@ sub _list {
     my ($self, $format, $rs) = @_;
 
     while( my $reg = $rs->next ) {
-
         my $string = $reg->to_string($format);
 
-        if ($reg->is_pinned) {
-            $string = $self->color_3 . $string . $self->color_0;
-        }
-        elsif ($reg->distribution->is_local) {
-            $string = $self->color_1 . $string . $self->color_0;
-        }
+        my $color =   $reg->is_pinned              ? $self->color_3 
+                    : $reg->distribution->is_local ? $self->color_1 : undef;
 
-        $self->say($reg->to_string($string));
+        $string = $self->colorize_with_color($string, $color);
+        $self->say($string);
     }
 }
 

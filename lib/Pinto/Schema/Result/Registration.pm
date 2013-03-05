@@ -273,22 +273,22 @@ sub to_string {
     # warn __PACKAGE__ . " stringified from $file at line $line";
 
     my %fspec = (
-         p => sub { $self->package->name                                     },
-         P => sub { $self->package->vname                                    },
-         v => sub { $self->package->version                                  },
-         y => sub { $self->is_pinned                        ? '!' : ' '      },
-         m => sub { $self->package->distribution->is_devel  ? 'd' : 'r'      },
-         h => sub { $self->package->distribution->path                       },
-         H => sub { $self->package->distribution->native_path                },
-         f => sub { $self->package->distribution->archive                    },
-         s => sub { $self->package->distribution->is_local  ? 'l' : 'f'      },
-         S => sub { $self->package->distribution->source                     },
-         a => sub { $self->package->distribution->author                     },
-         d => sub { $self->package->distribution->name                       },
-         D => sub { $self->package->distribution->vname                      },
-         V => sub { $self->package->distribution->version                    },
-         u => sub { $self->package->distribution->url                        },
-         i => sub { $self->revision->uuid_prefix                             },
+         p => sub { $self->package->name                            },
+         P => sub { $self->package->vname                           },
+         v => sub { $self->package->version                         },
+         y => sub { $self->is_pinned               ? '!' : ' '      },
+         m => sub { $self->distribution->is_devel  ? 'd' : 'r'      },
+         h => sub { $self->distribution->path                       },
+         H => sub { $self->distribution->native_path                },
+         f => sub { $self->distribution->archive                    },
+         s => sub { $self->distribution->is_local  ? 'l' : 'f'      },
+         S => sub { $self->distribution->source                     },
+         a => sub { $self->distribution->author                     },
+         d => sub { $self->distribution->name                       },
+         D => sub { $self->distribution->vname                      },
+         V => sub { $self->distribution->version                    },
+         u => sub { $self->distribution->url                        },
+         i => sub { $self->revision->uuid_prefix                    },
     );
 
     # Some attributes are just undefined, usually because of
