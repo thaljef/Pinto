@@ -33,7 +33,7 @@ my $pinto = Pinto->new(root => "$root");
 printf "Searching for distributions beneath %s\n", $cpan;
 
 my @dists;
-my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz)$/ and not /perl/};
+my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz2)$/i and not /perl/ and not /BadExample/};
 File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors id) ));
 @dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
 
