@@ -4,7 +4,6 @@ package Pinto::Config;
 
 use Moose;
 use MooseX::Types::Moose qw(Str Bool Int);
-use MooseX::Types::Log::Dispatch qw(LogLevel);
 use MooseX::MarkAsMethods (autoclean => 1);
 use MooseX::Configuration;
 use MooseX::Aliases;
@@ -50,7 +49,7 @@ has authors_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->pinto_dir->subdir('authors') },
+    default   => sub { return $_[0]->root_dir->subdir('authors') },
     lazy      => 1,
 );
 
@@ -172,12 +171,21 @@ has devel => (
 );
 
 
+has nohistory => (
+    is        => 'ro',
+    isa       => Bool,
+    key       => 'nohistory',
+    default   => 0,
+    documentation => 'Do not record stack history',
+);
+
+
 has sources  => (
     is        => 'ro',
     isa       => Str,
     key       => 'sources',
     default   => 'http://cpan.perl.org http://backpan.perl.org',
-    documentation => 'URLs of repositories for foreign distributions (space delimited)',
+    documentation => 'URLs of upstream repositories (space delimited)',
 );
 
 
