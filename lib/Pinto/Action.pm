@@ -6,7 +6,7 @@ use Moose;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use IO::Pipe;
+use IO::Handle;
 
 use Pinto::Result;
 use Pinto::Exception;
