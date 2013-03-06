@@ -18,7 +18,6 @@ use Pinto::Tester;
 	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
 	$t->path_exists_ok( [qw(.pinto log)] );
-	$t->path_exists_ok( [qw(.pinto vcs)] );
 
 	$t->path_exists_ok( [qw(master modules 02packages.details.txt.gz)] );
 	$t->path_exists_ok( [qw(master modules 03modlist.data.gz)] );
