@@ -40,7 +40,7 @@ sub init {
         if -e $root_dir and $root_dir->children;
 
     # Make directory structure
-    for my $dir ( qw(root config cache log modules authors db vcs) ) {
+    for my $dir ( qw(root config cache log modules authors db) ) {
         my $meth = "${dir}_dir";
         $self->config->$meth->mkpath;
     }
