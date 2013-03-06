@@ -49,7 +49,7 @@ has authors_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->root_dir->subdir('authors') },
+    default   => sub { return $_[0]->pinto_dir->subdir('authors') },
     lazy      => 1,
 );
 
