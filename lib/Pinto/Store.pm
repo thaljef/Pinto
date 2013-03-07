@@ -78,10 +78,11 @@ sub update_checksums {
     my ($self, %args) = @_;
     my $dir = $args{directory};
 
-    #return 0 if not -e $dir;  # Smells fishy
-
-    my @children = grep { ! Pinto::Util::is_vcs_file($_) } $dir->children;
-    return 0 if not @children;
+    return 0 if $ENV{PINTO_NO_CHECKSUMS};
+    return 0 if not -e $dir; # Would be fishy!
+    
+    my @children = $dir->children;
+    return if not @children;
 
     my $cs_file = $dir->file('CHECKSUMS');
 
