@@ -62,6 +62,11 @@ __PACKAGE__->table("revision");
   data_type: 'boolean'
   is_nullable: 0
 
+=head2 has_changes
+
+  data_type: 'boolean'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -78,6 +83,8 @@ __PACKAGE__->add_columns(
   "time_offset",
   { data_type => "integer", is_nullable => 0 },
   "is_committed",
+  { data_type => "boolean", is_nullable => 0 },
+  "has_changes",
   { data_type => "boolean", is_nullable => 0 },
 );
 
@@ -183,8 +190,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bV1TUSpIOhec0ZHfajudbg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-07 12:56:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:u3EeZBioyg8H9+azCHQYNA
 
 #------------------------------------------------------------------------------
 
@@ -225,7 +232,7 @@ has uuid_prefix => (
 has message_title => (
   is          => 'ro',
   isa         => Str,
-  default     => sub { trim( title_text($_[0]->message) ) },
+  default     => sub { trim_text( title_text($_[0]->message) ) },
   init_arg    => undef,
   lazy        => 1,
 );
@@ -234,7 +241,7 @@ has message_title => (
 has message_body => (
   is          => 'ro',
   isa         => Str,
-  default     => sub { trim( body_text($_[0]->message) ) },
+  default     => sub { trim_text( body_text($_[0]->message) ) },
   init_arg    => undef,
   lazy        => 1,
 );
@@ -278,6 +285,7 @@ sub FOREIGNBUILDARGS {
   $args->{utc_time}     ||= current_utc_time;
   $args->{time_offset}  ||= current_time_offset;
   $args->{is_committed} ||= 0;
+  $args->{has_changes}  ||= 0;
   $args->{message}      ||= '';
 
   return $args;
@@ -396,13 +404,14 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           i => sub { $self->uuid_prefix                     },
-           I => sub { $self->uuid                            },
-           j => sub { $self->username                        },
-           u => sub { $self->datetime->strftime('%c')        },
-           g => sub { $self->message_body                    },
-           t => sub { $self->message_title                   },
-           G => sub { indent( trim($self->message), $_[0] )  },
+           i => sub { $self->uuid_prefix                              },
+           I => sub { $self->uuid                                     },
+           j => sub { $self->username                                 },
+           u => sub { $self->datetime->strftime($_[0] || '%c')        },
+           g => sub { $self->message_body                             },
+           G => sub { indent_text( trim_text($self->message), $_[0] ) },
+           t => sub { $self->message_title                            },
+           T => sub { truncate_text( $self->message_title, $_[0] )    },
     );
 
     $format ||= $self->default_format;

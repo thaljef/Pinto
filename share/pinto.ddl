@@ -52,7 +52,8 @@ CREATE TABLE revision (
        username        TEXT                NOT NULL,
        utc_time        INTEGER             NOT NULL,
        time_offset     INTEGER             NOT NULL,
-       is_committed    BOOLEAN             NOT NULL
+       is_committed    BOOLEAN             NOT NULL,
+       has_changes     BOOLEAN             NOT NULL
 );
 
 
@@ -72,7 +73,6 @@ CREATE TABLE prerequisite (
        UNIQUE(distribution, package_name)
 );
 
---CREATE INDEX idx_package_distribution      ON package(distribution);
 --CREATE INDEX idx_prerequisite_package_name ON prerequisite(package_name);
 --CREATE INDEX idx_registration_package_name ON registration(package_name);
 --CREATE INDEX idx_registration_package      ON registration(package);
@@ -81,4 +81,6 @@ CREATE TABLE prerequisite (
 CREATE INDEX idx_ancestry_parent           ON ancestry(parent);
 CREATE INDEX idx_ancestry_child            ON ancestry(child);
 
+CREATE INDEX idx_package_file              ON package(file);
+CREATE INDEX idx_package_sha256            ON package(sha256);
 
