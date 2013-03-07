@@ -50,7 +50,12 @@ sub run {
     my $result = try { 
         $self->repo->assert_sanity_ok;
         $self->repo->assert_version_ok;
-        $self->repo->lock($lock_type); 
+        $self->repo->lock($lock_type);
+
+        # If running under NYTProf, enable it here so we don't
+        # profile all the overhead of loading Moose classes
+        DB::enable_profile() if defined $Devel::NYTProf::VERSION;
+
         $action->execute;
     }
     catch { 
