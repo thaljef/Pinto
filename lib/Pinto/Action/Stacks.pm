@@ -37,7 +37,7 @@ sub execute {
 	my $max_name = max map { length($_->name) } @stacks;
 	my $max_user = max map { length($_->head->username) } @stacks;
 
-	my $format = $self->format || "%M%L %-${max_name}k  %u  %-{$max_user}j  %i: %t";
+	my $format = $self->format || "%M%L %-${max_name}k  %u  %-{$max_user}j  %i: %{40}T";
 
 	for my $stack (@stacks) {
 		my $string = $stack->to_string($format);

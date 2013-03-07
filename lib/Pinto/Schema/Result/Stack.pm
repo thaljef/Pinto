@@ -150,7 +150,7 @@ use MooseX::Types::Moose qw(Bool);
 use String::Format;
 use File::Copy ();
 
-use Pinto::Util qw(itis mksymlink);
+use Pinto::Util qw(:all);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
 use Pinto::IndexWriter;
@@ -631,16 +631,18 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-           k => sub { $self->name                                         },
-           M => sub { $self->is_default                       ? '*' : ' ' },
-           L => sub { $self->is_locked                        ? '!' : ' ' },
-           I => sub { $self->head->uuid                                   },
-           i => sub { $self->head->uuid_prefix                            },
-           G => sub { $self->head->message                                },
-           t => sub { $self->head->message_title                          },
-           b => sub { $self->head->message_body                           },
-           j => sub { $self->head->username                               },
-           u => sub { $self->head->datetime->strftime('%c')               }, 
+           k => sub { $self->name                                           },
+           M => sub { $self->is_default                       ? '*' : ' '   },
+           L => sub { $self->is_locked                        ? '!' : ' '   },
+           I => sub { $self->head->uuid                                     },
+           i => sub { $self->head->uuid_prefix                              },
+           g => sub { $self->head->message                                  },
+           G => sub { indent_text( trim_text($self->head->message), $_[0] ) },
+           t => sub { $self->head->message_title                            },
+           T => sub { truncate_text( $self->head->message_title, $_[0] )    },
+           b => sub { $self->head->message_body                             },
+           j => sub { $self->head->username                                 },
+           u => sub { $self->head->datetime->strftime($_[0] || '%c')        }, 
     );
 
     $format ||= $self->default_format();
