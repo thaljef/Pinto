@@ -16,11 +16,13 @@ use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
 	"$0 %o TARGETS",
-    [ 'root|r=s',    "Root of repository",                            ],
-    [ 'batch|b=i',   "Distributions per commit",  { default => 100  } ],
+    [ 'root|r=s',         "Root of repository",                             ],
+    [ 'batch-size|s=i',   "Distributions per commit",    { default => 100 } ],
+    [ 'batch-number|n=i', "Batch number to start with",  { default => 1   } ],
 );
 
-my $batch = $opt->batch;
+my $batch_size = $opt->batch_szie;
+my $batch_num  = $opt->batch_number;
 my $root  = $opt->root || File::Temp->newdir;
 my $cpan  = shift or die 'Must specify path to CPAN directory';
 
@@ -37,6 +39,9 @@ my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz2)$/i and not /perl/ and not 
 File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors id) ));
 @dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
 
+if ($batch_num - 1 > 0) {
+	@dists = splice @dists, 0, $batch_num * $batch_size, ();
+}
 
 #-----------------------------------------------------------------------------
 printf "Loading %i distributions into repository at %s\n", scalar @dists, $root;
@@ -44,12 +49,18 @@ printf "Loading %i distributions into repository at %s\n", scalar @dists, $root;
 my $n = 1;
 while (@dists) {
 
-	my @batch = splice @dists, 0, $batch, ();
+	my @batch = splice @dists, 0, $batch_size, ();
 	s|^.*/authors/id/./../|| for @batch;
 
 	my $start = time;
 	$pinto->run(Pull => (targets => \@batch, norecurse => 1, nofail => 1, message => ''));
 	printf "Batch %i loaded in %i seconds\n", $n, time - $start;
+
+	if ($n % 10 == 0) {
+		print "Vacuuming database\n";
+		$pinto->repo->db->schema->storage->dbh->do('VACUUM;');
+		$pinto->repo->db->schema->storage->dbh->do('ANALYZE;');
+	}
 
 	$n++;
 }
