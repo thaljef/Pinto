@@ -29,7 +29,6 @@ my $cpan  = shift or die 'Must specify path to CPAN directory';
 #-----------------------------------------------------------------------------
 
 Pinto::Initializer->new(root => "$root")->init(sources => "file://$cpan") unless -e $root;
-my $pinto = Pinto->new(root => "$root");
 
 #-----------------------------------------------------------------------------
 printf "Searching for distributions beneath %s\n", $cpan;
@@ -46,13 +45,15 @@ if ($batch_num - 1 > 0) {
 #-----------------------------------------------------------------------------
 printf "Loading %i distributions into repository at %s\n", scalar @dists, $root;
 
-my $n = 1;
+my $n = $batch_num || 1;
+
 while (@dists) {
 
 	my @batch = splice @dists, 0, $batch_size, ();
 	s|^.*/authors/id/./../|| for @batch;
 
 	my $start = time;
+	my $pinto = Pinto->new(root => "$root");
 	$pinto->run(Pull => (targets => \@batch, norecurse => 1, nofail => 1, message => ''));
 	printf "Batch %i loaded in %i seconds\n", $n, time - $start;
 
