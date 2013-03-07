@@ -21,7 +21,7 @@ my ($opt, $usage) = describe_options(
     [ 'batch-number|n=i', "Batch number to start with",  { default => 1   } ],
 );
 
-my $batch_size = $opt->batch_szie;
+my $batch_size = $opt->batch_size;
 my $batch_num  = $opt->batch_number;
 my $root  = $opt->root || File::Temp->newdir;
 my $cpan  = shift or die 'Must specify path to CPAN directory';
