@@ -16,13 +16,15 @@ use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
 	"$0 %o TARGETS",
-    [ 'root|r=s',         "Root of repository",                             ],
-    [ 'batch-size|s=i',   "Distributions per commit",    { default => 100 } ],
-    [ 'batch-number|n=i', "Batch number to start with",  { default => 1   } ],
+    [ 'root|r=s',          "Root of repository",                             ],
+    [ 'batch-size|s=i',    "Distributions per batch",    { default => 100 } ],
+    [ 'batch-offset|o=i',  "Batch number to start at",   { default => 1   } ],
+    [ 'batch-count|n=i',   "Number of batches to run",   { default => 0   } ],
 );
 
-my $batch_size = $opt->batch_size;
-my $batch_num  = $opt->batch_number;
+my $batch_size   = $opt->batch_size;
+my $batch_offset = $opt->batch_offset;
+my $batch_count  = $opt->batch_count;
 my $root  = $opt->root || File::Temp->newdir;
 my $cpan  = shift or die 'Must specify path to CPAN directory';
 
@@ -38,14 +40,15 @@ my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz2)$/i and not /perl/ and not 
 File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors id) ));
 @dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
 
-if ($batch_num - 1 > 0) {
-	@dists = splice @dists, 0, $batch_num * $batch_size, ();
+if ($batch_offset - 1 > 0) {
+	@dists = splice @dists, 0, $batch_offset * $batch_size, ();
 }
 
 #-----------------------------------------------------------------------------
 printf "Loading %i distributions into repository at %s\n", scalar @dists, $root;
 
-my $n = $batch_num || 1;
+my $n = $batch_offset || 1;
+my $j = 1;
 
 while (@dists) {
 
@@ -64,4 +67,7 @@ while (@dists) {
 	}
 
 	$n++;
+	$j++;
+
+	last if $batch_count and $batch_count >= $j;
 }
