@@ -121,11 +121,9 @@ sub execute {
     }
 
 
-    my $attrs = {prefetch => [ qw(revision package distribution) ],
-                 order_by => [ qw(package.name) ] };
-
     ################################################################
 
+    my $attrs = {prefetch => [ qw(revision package distribution) ]};
     my $rs = $self->repo->db->schema->search_registration($where, $attrs);
 
     $self->_list($format, $rs);
@@ -138,7 +136,13 @@ sub execute {
 sub _list {
     my ($self, $format, $rs) = @_;
 
-    while( my $reg = $rs->next ) {
+    # I'm not sure why, but the results appear to come out sorted by
+    # package name, even though I haven't specified how to order them.
+    # This is fortunate, because adding and "ORDER BY" clause is slow.
+    # I'm guessing it is because there is a UNIQUE INDEX on package_name
+    # in the registration table.
+
+    while ( my $reg = $rs->next ) {
         my $string = $reg->to_string($format);
 
         my $color =   $reg->is_pinned              ? $self->color_3 
