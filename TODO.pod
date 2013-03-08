@@ -2,21 +2,11 @@
 
 =over 4
 
-=item Decide how to check for changes in stack (checksum? object attribute? table column?)
-
 =item Finish FastForward merge (note this is not a committable action)
 
 =item Implement a reset command to move head (also not committable)
 
 =item Implement a diff class.
-
-=item Decide how to do commit digests.
-
-=item Make locks into a column in the stack table
-
-=item Add asserts to prevent modifying a finalized commit
-
-=item Add asserts to ensure a commit is finalized
 
 =item Put username back into the log file
 
@@ -79,8 +69,6 @@
 =item Prettier stack listing and stack prop listing
 
 =item Verify archive checksums during 'verify'
-
-=item VACUUM and ANALYZE db during "clean"
 
 =item Standardize API, using named parameters except where it makes sense not to.
 
