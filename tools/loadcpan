@@ -41,7 +41,7 @@ File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors
 @dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
 
 if ($batch_offset - 1 > 0) {
-	@dists = splice @dists, 0, $batch_offset * $batch_size, ();
+	splice @dists, 0, $batch_offset * $batch_size, ();
 }
 
 #-----------------------------------------------------------------------------
@@ -69,5 +69,5 @@ while (@dists) {
 	$n++;
 	$j++;
 
-	last if $batch_count and $batch_count >= $j;
+	last if $batch_count and $j >= $batch_count;
 }
