@@ -145,14 +145,14 @@ with 'Pinto::Role::Schema::Result';
 
 #-------------------------------------------------------------------------------
 
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Bool Str);
 
 use String::Format;
 use File::Copy ();
 use JSON qw(encode_json decode_json);
 
 use Pinto::Util qw(:all);
-use Pinto::Types qw(Dir File);
+use Pinto::Types qw(Dir File Version);
 use Pinto::Exception qw(throw);
 use Pinto::IndexWriter;
 
@@ -198,6 +198,26 @@ has index_file => (
   isa         => File,
   lazy        => 1,
   default     => sub { $_[0]->modules_dir->file('02packages.details.txt.gz') },
+);
+
+
+has description => (
+  is          => 'ro',
+  isa         => Str,
+  lazy        => 1,
+  default     => sub { $_[0]->get_property('description') },
+  init_arg    => undef,
+);
+
+
+has target_perl_version => (
+  is          => 'ro',
+  isa         => Version,
+  lazy        => 1,
+  default     => sub { $_[0]->get_property('target_perl_version') 
+                       or $_[0]->repo->config->target_perl_version },
+  init_arg    => undef,
+  coerce      => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -694,22 +714,6 @@ sub delete_properties {
     self->update({properties => {}});
 
     return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub get_description {
-    my ($self) = @_;
-
-    return $self->get_property('description');
-}
-
-#-------------------------------------------------------------------------------
-
-sub set_description {
-    my ($self, $desc) = @_;
-
-    return $self->set_property('description', $desc);
 }
 
 #-------------------------------------------------------------------------------

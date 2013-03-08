@@ -520,7 +520,10 @@ sub pull_prerequisites {
         return $dist;
     };
 
-    my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb);
+    my $tpv = $stack->target_perl_version;
+    my $walker = Pinto::PrerequisiteWalker->new(start    => $dist,
+                                                filter   => $tpv, 
+                                                callback => $cb);
     $walker->walk;
 
     return $self;

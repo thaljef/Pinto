@@ -11,9 +11,7 @@ use Dist::Metadata;
 use Module::CoreList;
 
 use Pinto::Exception qw(throw);
-use Pinto::Types qw(File Version);
-
-use version;
+use Pinto::Types qw(File);
 
 #-----------------------------------------------------------------------------
 
@@ -33,15 +31,6 @@ has archive => (
 );
 
 
-has target_perl_version => (
-    is         => 'ro',
-    isa        => Version,
-    default    => sub { version->parse( $] ) },
-    coerce     => 1,
-    lazy       => 1,
-);
-
-
 has dm => (
     is       => 'ro',
     isa      => 'Dist::Metadata',
@@ -49,46 +38,6 @@ has dm => (
     init_arg => undef,
     lazy     => 1,
 );
-
-
-has prereq_filter => (
-    is         => 'ro',
-    isa        => HashRef,
-    builder    => '_build_prereq_filter',
-    lazy       => 1,
-);
-
-#-----------------------------------------------------------------------------
-
-sub BUILD {
-    my ($self) = @_;
-
-    # version.pm doesn't always strip trailing zeros
-    my $tpv = $self->target_perl_version->numify + 0;
-
-    throw "The target_perl_version ($tpv) cannot be greater than this perl ($])"
-        if $tpv > $];
-
-    throw "Unknown version of perl: $tpv"
-        if not exists $Module::CoreList::version{$tpv};  ## no critic (PackageVar)
-
-    return $self;
-}
-
-#-----------------------------------------------------------------------------
-
-sub _build_prereq_filter {
-    my ($self) = @_;
-
-    # version.pm doesn't always strip trailing zeros
-    my $tpv           = $self->target_perl_version->numify + 0;
-    my %core_packages = %{ $Module::CoreList::version{$tpv} };  ## no critic (PackageVar)
-
-    $_ = version->parse($_) for values %core_packages;
-
-    return \%core_packages;
-}
-
 
 #-----------------------------------------------------------------------------
 
@@ -140,12 +89,8 @@ sub requires {
 
     my @prereqs;
     for my $pkg_name (sort keys %prereqs) {
-        next if $pkg_name eq 'perl';
 
         my $pkg_ver = version->parse( $prereqs{$pkg_name} );
-
-        next if exists $self->prereq_filter->{$pkg_name}
-          and $self->prereq_filter->{$pkg_name} >= $pkg_ver;
 
         $self->debug("Archive $archive requires: $pkg_name-$pkg_ver");
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
