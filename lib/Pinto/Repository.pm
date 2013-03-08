@@ -737,6 +737,21 @@ sub clean_files {
 
 #-------------------------------------------------------------------------------
 
+sub optimize_database {
+    my ($self) = @_;
+
+    $self->notice('Removing empty database pages');
+    $self->db->schema->storage->dbh->do('VACUUM;');
+
+    $self->notice('Updating database statistics');
+    $self->db->schema->storage->dbh->do('ANALYZE;');
+
+    return $self;
+
+}
+
+#-------------------------------------------------------------------------------
+
 sub get_version {
     my ($self) = @_;
 

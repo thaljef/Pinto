@@ -18,6 +18,8 @@ extends qw( Pinto::Action );
 sub execute {
     my ($self) = @_;
 
+    $self->repo->optimize_database;
+    
     my $did_delete = $self->repo->clean_files;
 
     $self->result->changed if $did_delete;
