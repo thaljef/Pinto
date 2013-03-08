@@ -46,7 +46,6 @@ sub execute {
     $stack->set_properties($stack->default_properties);
     $stack->mark_as_default if $self->default;
 
-
     return $self->result->changed;
 }
 
