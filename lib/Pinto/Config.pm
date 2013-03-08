@@ -9,8 +9,9 @@ use MooseX::Configuration;
 use MooseX::Aliases;
 
 use URI;
+use English qw(-no_match_vars);
 
-use Pinto::Types qw(Dir File Username);
+use Pinto::Types qw(Dir File Username Version);
 use Pinto::Util qw(current_username current_time_offset);
 
 #------------------------------------------------------------------------------
@@ -176,7 +177,7 @@ has nohistory => (
     isa       => Bool,
     key       => 'nohistory',
     default   => 0,
-    documentation => 'Do not record stack history',
+    documentation => 'Do not record stack history.  Log messages are still recorded',
 );
 
 
@@ -196,6 +197,14 @@ has sources_list => (
     handles    => { sources_list => 'elements' },
     init_arg   => undef,
     lazy       => 1,
+);
+
+
+has target_perl_version => (
+    is        => 'ro',
+    isa       => Version,
+    default   => "$PERL_VERSION",
+    coerce    => 1,
 );
 
 

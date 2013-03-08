@@ -149,15 +149,23 @@ use MooseX::Types::Moose qw(Bool);
 
 use String::Format;
 use File::Copy ();
+use JSON qw(encode_json decode_json);
 
 use Pinto::Util qw(:all);
 use Pinto::Types qw(Dir File);
 use Pinto::Exception qw(throw);
 use Pinto::IndexWriter;
 
+use version;
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
                'cmp' => 'string_compare' );
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->inflate_column( 'properties' => { inflate => sub { decode_json($_[0] || '{}') },
+                                               deflate => sub { encode_json($_[0] || {}) } }
+);
 
 #------------------------------------------------------------------------------
 
@@ -620,6 +628,102 @@ sub write_index {
 }
 
 #------------------------------------------------------------------------------
+
+sub get_property {
+    my ($self, @prop_keys) = @_;
+
+    my %props = %{ $self->get_properties };
+
+    return @props{ map {lc} @prop_keys };
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_properties {
+    my ($self) = @_;
+
+    my %props = %{ $self->properties };  # Making a copy!
+
+    return \%props;
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_property {
+    my ($self, $key, $value) = @_;
+
+    $self->set_properties( {$key => $value} );
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_properties {
+    my ($self, $new_props) = @_;
+
+    my $props = $self->properties;
+    while (my ($key, $value) = each %{$new_props}) {
+        Pinto::Util::validate_property_name($key);
+        $props->{lc $key} = $value;
+    }
+
+    $self->update( {properties => $props} );
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_property {
+    my ($self, @prop_keys) = @_;
+
+    my $props = $self->properties;
+    delete $props->{lc $_} for @prop_keys;
+
+    $self->update({properties => $props});
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub delete_properties {
+    my ($self) = @_;
+
+    self->update({properties => {}});
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub get_description {
+    my ($self) = @_;
+
+    return $self->get_property('description');
+}
+
+#-------------------------------------------------------------------------------
+
+sub set_description {
+    my ($self, $desc) = @_;
+
+    return $self->set_property('description', $desc);
+}
+
+#-------------------------------------------------------------------------------
+
+sub default_properties {
+    my ($self) = @_;
+
+    my $desc = sprintf('The %s stack', $self->name);
+    my $tpv  = $self->repo->config->target_perl_version->stringify;
+
+    return {description => $desc, target_perl_version => $tpv};
+}
+
+#-------------------------------------------------------------------------------
 
 sub numeric_compare {
     my ($stack_a, $stack_b) = @_;

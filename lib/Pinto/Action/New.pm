@@ -43,7 +43,9 @@ sub execute {
     my %attrs = (name => $self->stack);
     my $stack = $self->repo->create_stack(%attrs);
 
+    $stack->set_properties($stack->default_properties);
     $stack->mark_as_default if $self->default;
+
 
     return $self->result->changed;
 }
