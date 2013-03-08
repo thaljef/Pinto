@@ -12,6 +12,7 @@ with    'Pinto::Role::Committable';
 sub execute { 
 	my $self = shift;
 	my $stack = $self->repo->get_stack->start_revision;
+	$stack->head->update({has_changes => 1}); # To bypass assertion
 	$stack->commit_revision(message => $self->edit_message);
 	return $self->result->changed; 
 }
