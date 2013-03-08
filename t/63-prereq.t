@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use feature 'say';
 
 use Test::More;
 
@@ -14,7 +13,7 @@ use Pinto::PrerequisiteFilter::Core;
 #------------------------------------------------------------------------------
 
 # Module::Build was first introduced in perl 5.9.4 as 0.2805
-# Module::Build~0.2808_01 entered in perl 5.10.0
+# Module::Build~0.2808_01 entered perl in 5.10.0
 
 my $t = Pinto::Tester->new;
 $t->populate('AUTHOR/Foo-1 = Foo-1 & Bar~1, perl~5.6.0, strict');
@@ -31,6 +30,7 @@ is scalar @total_prereqs, 3, 'Dist Foo has correct number of prereqs';
 my %test_cases = (
 	'v5.10.0' => {'Bar' => '1'                                },
 	'v5.9.4'  => {'Bar' => '1', 'Module::Build' => '0.2808_01'},
+	'v5.6.0'  => {'Bar' => '1', 'Module::Build' => '0.2808_01'},
 );
 
 while( my($pv, $expect) = each %test_cases) {
@@ -48,7 +48,7 @@ while( my($pv, $expect) = each %test_cases) {
 	$walker->walk;
 
 	# NB: 'perl' itself should never be listed as a prereq
-	my $test_name = "Got expected prereqs for perl version $pv";
+	my $test_name = "Got expected prereqs against perl version $pv";
 	is_deeply $walked_prereqs, $expect, $test_name;
 }
 
