@@ -296,7 +296,9 @@ sub register {
 
     throw "Unable to register distribution $self on stack $stack" if $errors;
 
-    return $did_register;
+    $stack->mark_as_changed if $did_register;
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -329,7 +331,9 @@ sub unregister {
 
   $rs->delete;
 
-  return $did_unregister;
+  $stack->mark_as_changed if $did_unregister;
+
+  return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -346,6 +350,8 @@ sub pin {
     my $where = {revision => $rev->id, is_pinned => 0};
     my $regs  = $self->registrations($where);
     $regs->update( {is_pinned => 1} );
+
+    $stack->mark_as_changed;
 
     return $self;
 }
@@ -364,6 +370,8 @@ sub unpin {
     my $where = {revision => $rev->id, is_pinned => 1};
     my $regs  = $self->registrations($where);
     $regs->update( {is_pinned => 0} );
+
+    $stack->mark_as_changed;
 
     return $self;
 }

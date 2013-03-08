@@ -370,6 +370,17 @@ sub assert_is_committed {
     return $self;
 }
 
+#-------------------------------------------------------------------------------
+
+sub assert_has_changed {
+    my ($self) = @_;
+
+    throw "PANIC: Revision $self has not changed"
+      if not $self->get_column('has_changes');
+
+    return $self;
+}
+
 #------------------------------------------------------------------------------
 
 sub numeric_compare {

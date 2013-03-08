@@ -460,6 +460,7 @@ sub commit_revision {
       if not ($args{message} or $self->head->message);
 
     $self->assert_is_open;
+    $self->assert_has_changed;
 
     $self->head->commit(%args);
     $self->write_index;
@@ -519,6 +520,14 @@ sub assert_is_committed {
 
 #------------------------------------------------------------------------------
 
+sub assert_has_changed {
+    my ($self) = @_;
+
+    return $self->head->assert_has_changed;
+}
+
+#------------------------------------------------------------------------------
+
 sub assert_not_locked {
     my ($self) = @_;
 
@@ -566,10 +575,19 @@ sub unmark_as_default {
 
 #------------------------------------------------------------------------------
 
+sub mark_as_changed {
+    my ($self) = @_;
+
+    $self->head->update( {has_changes => 1} );
+
+    return $self;
+}
+#------------------------------------------------------------------------------
+
 sub has_changed {
     my ($self) = @_;
 
-    return 1;
+    return $self->head->refresh->has_changes;
 }
 
 #------------------------------------------------------------------------------
