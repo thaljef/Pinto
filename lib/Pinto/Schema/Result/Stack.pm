@@ -332,17 +332,25 @@ sub duplicate {
 sub duplicate_registrations {
     my ($self, %args) = @_;
 
-    my $rev = $args{to};
-    $self->info("Copying registrations for stack $self to $rev");
+    my $new_rev = $args{to};
 
-    my $where = {revision => $self->head->id};
-    my $attrs = {result_class => 'DBIx::Class::ResultClass::HashRefInflator'};
-    my $rs = $self->result_source->schema->resultset('Registration');
+    my $new_rev_id = $new_rev->id;
+    my $old_rev_id = $self->head->id;
 
-    my @rows = $rs->search($where, $attrs)->all;
-    for (@rows) { delete $_->{id}; $_->{revision} = $rev->id; } 
+    $self->info("Copying registrations for stack $self to $new_rev");
 
-    $rs->populate(\@rows);
+    # This raw SQL is an optimization.  I was using DBIC's HashReinflator
+    # to fetch all the registrations, change the revision, and then reinsert
+    # them as new records using populate().  But that was too slow if there 
+    # are lots of registrations.
+
+    my $sql = qq{
+      INSERT INTO registration(revision, package, package_name, distribution, is_pinned)
+      SELECT '$new_rev_id', package, package_name, distribution, is_pinned
+      FROM registration WHERE revision = '$old_rev_id';
+    };
+
+    $self->result_source->storage->dbh->do($sql);
 
     return $self;
 }
