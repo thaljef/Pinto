@@ -8,6 +8,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Util qw(itis);
 use Pinto::Exception qw(throw);
+use Pinto::PrerequisiteFilter::None;
 
 #------------------------------------------------------------------------------
 
@@ -38,40 +39,12 @@ has skip_seen => (
 
 has filter => (
     is         => 'ro',
-    isa        => HashRef,
-    default    => sub { {} },
+    isa        => 'Pinto::PrerequisiteFilter',
+    default    => sub { Pinto::PrerequisiteFilter::None->new },
     lazy       => 1,
 );
 
 #-----------------------------------------------------------------------------
-
-around BUILDARGS => sub {
-    my $orig  = shift;
-    my $class = shift;
-
-    my $args = $class->$orig(@_);
-
-    if ( itis($args->{filter}, 'version') ) {
-
-        # version.pm doesn't always strip trailing zeros
-        my $tpv = $args->{filter}->numify + 0;
-
-        throw "The target_perl_version ($tpv) cannot be greater than this perl ($])"
-            if $tpv > $];
-
-        throw "Unknown version of perl: $tpv"
-            if not exists $Module::CoreList::version{$tpv};  ## no critic (PackageVar)
-
-        my %core_packages = %{ $Module::CoreList::version{$tpv} };  ## no critic (PackageVar)
-        $_ = version->parse($_) for values %core_packages;
-
-        $args->{filter} = \%core_packages;
-    }
-
-    return $args;
-};
-
-#------------------------------------------------------------------------------
 
 sub walk {
   my ($self) = @_;
@@ -83,8 +56,7 @@ sub walk {
   PREREQ:
     while (my $prereq = shift @queue) {
 
-        next PREREQ if $self->should_filter($prereq);
-        next PREREQ if $prereq->name eq 'perl';
+        next PREREQ if $self->filter->should_filter($prereq);
 
     	my $dist = $self->callback->($self, $prereq);
     	next PREREQ if !$dist || $visited_dists{$dist->path};
@@ -113,15 +85,6 @@ sub walk {
     }
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub should_filter {
-    my ($self, $prereq) = @_;
-
-    return defined $self->filter->{$prereq->name}
-           && $self->filter->{$prereq->name} >= $prereq->version;
 }
 
 #------------------------------------------------------------------------------

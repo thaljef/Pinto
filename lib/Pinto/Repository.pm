@@ -15,6 +15,7 @@ use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
+use Pinto::PrerequisiteFilter::Core;
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis);
 
@@ -520,10 +521,9 @@ sub pull_prerequisites {
         return $dist;
     };
 
-    my $tpv = $stack->target_perl_version;
-    my $walker = Pinto::PrerequisiteWalker->new(start    => $dist,
-                                                filter   => $tpv, 
-                                                callback => $cb);
+    my $filter = Pinto::PrerequisiteFilter::Core->new(perl_version => $stack->target_perl_version);
+    my $walker = Pinto::PrerequisiteWalker->new(start => $dist, filter => $filter, callback => $cb);
+
     $walker->walk;
 
     return $self;
