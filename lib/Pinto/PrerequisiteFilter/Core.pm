@@ -52,11 +52,11 @@ sub should_filter {
 
     my $pkg_name     = $prereq->name;
     my $perl_version = $self->perl_version->numify + 0;
-    my $core_version = $Module::CoreList::version{$perl_version}->{$pkg_name};  ## no critic (PackageVar)
+    my $core_modules = $Module::CoreList::version{$perl_version};  ## no critic (PackageVar)
 
     return 1 if $pkg_name eq 'perl';
-    return 0 if not defined $core_version;
-    return 1 if $core_version >= $prereq->version;
+    return 0 if not exists $core_modules->{$pkg_name};
+    return 1 if $core_modules->{$pkg_name} >= $prereq->version;
     return 0;
 }
 
