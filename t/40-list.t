@@ -22,18 +22,6 @@ $t->run_ok( 'Add' => {archives => $archive1, stack => 'dev', author => 'JOE'} );
 $t->run_ok( 'Add' => {archives => $archive2, stack => 'qa',  author => 'JOE'} );
 $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 
-{
-  my $buffer = '';
-  my $out = IO::String->new(\$buffer);
-  $t->run_ok( 'List' => {stack => '%', out => $out} );
-  my @lines = split /\n/, $buffer;
-
-  is scalar @lines, 3, 'Got correct number of records in listing';
-  like $lines[0], qr/qa  \s+ Bar \s+ 0.02/x, 'Listing shows Bar~0.02 in qa stack';
-  like $lines[1], qr/qa  \s+ Baz \s+ 0.03/x, 'Listing shows Baz~0.03 in qa stack';
-  like $lines[2], qr/dev \s+ Foo \s+ 0.01/x, 'Listing shows Foo~0.01 in dev stack';
-}
-
 #-----------------------------------------------------------------------------
 
 {
