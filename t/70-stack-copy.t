@@ -54,8 +54,28 @@ my $t = Pinto::Tester->new;
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
 
+  is $qa_stack->get_description, 'Copy of stack dev',
+    'Got correct stack description';
+
   is $qa_stack->head->id, $dev_stack->head->id,
     'Head of copied stack points to head of original stack';
+}
+
+#------------------------------------------------------------------------------
+
+{
+  # Copy with extra stuff
+  my $dev_stk_name = 'dev';
+  my $xtra_stk_name  = 'xtra';
+  $t->run_ok( Copy => { from_stack  => $dev_stk_name, 
+                        to_stack    => $xtra_stk_name,
+                        description => 'custom', 
+                        lock => 1} );
+
+  my $xtra_stack  = $t->pinto->repo->get_stack($xtra_stk_name);
+
+  is $xtra_stack->is_locked, 1, 'Copied stack is locked';
+  is $xtra_stack->description, 'custom', 'Copied stack has custom description';
 }
 
 #------------------------------------------------------------------------------

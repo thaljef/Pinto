@@ -575,6 +575,24 @@ sub assert_not_locked {
 
 #------------------------------------------------------------------------------
 
+sub set_description {
+    my ($self, $description) = @_;
+
+    $self->set_property(description => $description);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub get_description {
+    my ($self, $description) = @_;
+
+    return $self->get_property('description');
+}
+
+#------------------------------------------------------------------------------
+
 sub mark_as_default {
     my ($self) = @_;
 
@@ -618,6 +636,7 @@ sub mark_as_changed {
 
     return $self;
 }
+
 #------------------------------------------------------------------------------
 
 sub has_changed {

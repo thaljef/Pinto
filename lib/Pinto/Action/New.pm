@@ -3,7 +3,7 @@
 package Pinto::Action::New;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Bool Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(StackName);
@@ -35,6 +35,13 @@ has default => (
     default => 0,
 );
 
+
+has description => (
+    is        => 'ro',
+    isa       => Str,
+    predicate => 'has_description',
+);
+
 #------------------------------------------------------------------------------
 
 sub execute {
@@ -44,6 +51,7 @@ sub execute {
     my $stack = $self->repo->create_stack(%attrs);
 
     $stack->set_properties($stack->default_properties);
+    $stack->set_description($self->description) if $self->has_description;
     $stack->mark_as_default if $self->default;
 
     return $self->result->changed;
