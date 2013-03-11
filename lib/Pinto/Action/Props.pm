@@ -1,6 +1,6 @@
-# ABSTRACT: Show or change configuration
+# ABSTRACT: Show or change stack properties
 
-package Pinto::Action::Config;
+package Pinto::Action::Props;
 
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
