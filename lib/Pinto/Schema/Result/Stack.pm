@@ -685,7 +685,13 @@ sub set_properties {
     my $props = $self->properties;
     while (my ($key, $value) = each %{$new_props}) {
         Pinto::Util::validate_property_name($key);
-        $props->{lc $key} = $value;
+        
+        if (defined $value && length $value) {
+          $props->{lc $key} = $value;
+        }
+        else {
+          delete $props->{lc $key};
+        }
     }
 
     $self->update( {properties => $props} );

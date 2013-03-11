@@ -41,6 +41,11 @@ my $t = Pinto::Tester->new;
   ok ! exists $new_stack->get_properties->{'a'},
     'Deleted a prop';
 
+# Delete a property by setting to empty string...
+  $new_stack->set_property(a => '');
+  ok ! exists $new_stack->get_properties->{'a'},
+    'Deleted a prop by setting to empty';
+
   # Invalid property name..
   throws_ok { $new_stack->set_property('foo#bar' => 4) }
     qr{Invalid property name};
