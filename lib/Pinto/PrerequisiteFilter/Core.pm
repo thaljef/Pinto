@@ -1,4 +1,4 @@
-# ABSTRACT: Filters core modules
+# ABSTRACT: Filters core modules based on specific perl version
 
 package Pinto::PrerequisiteFilter::Core;
 
