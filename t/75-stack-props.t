@@ -26,13 +26,13 @@ my $t = Pinto::Tester->new;
   # Set several properties...
   $stack->set_properties({b => 2, c => 3});
   is_deeply $stack->get_properties, { a => 1, b => 2, c => 3 },
-    'get/set many props';
+    'get/set many props at once';
 
   # Copy stack...
   my $new_stack = $t->pinto->repo->copy_stack(stack => $stack, name => 'qa');
   my $new_props = $new_stack->get_properties;
 
-  # All the other properties should be identical
+  # All the copied properties should be identical
   is_deeply $new_props, $stack->get_properties,
     'Copied stack has same properties';
 
