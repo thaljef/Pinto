@@ -155,6 +155,7 @@ use Pinto::Util qw(:all);
 use Pinto::Types qw(Dir File Version);
 use Pinto::Exception qw(throw);
 use Pinto::IndexWriter;
+use Pinto::Difference;
 
 use version;
 use overload ( '""'  => 'to_string',
@@ -589,6 +590,21 @@ sub get_description {
     my ($self, $description) = @_;
 
     return $self->get_property('description');
+}
+
+#------------------------------------------------------------------------------
+
+sub diff {
+    my ($self, %args) = @_;
+
+
+    my $left =   $args{revision} ? $args{revision}
+                : $args{stack}    ? $args{stack}->head
+                : ($self->head->parents)[0];
+
+    my $right = $self->head;
+
+    return Pinto::Difference->new(left => $left, right => $right, nocolor => 1);
 }
 
 #------------------------------------------------------------------------------
