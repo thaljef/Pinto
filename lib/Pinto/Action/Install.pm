@@ -10,6 +10,7 @@ use File::Which qw(which);
 
 use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Exception qw(throw);
+use Pinto::SpecFactory;
 
 #------------------------------------------------------------------------------
 
@@ -89,15 +90,19 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->start_revision;
+    my $stack = $self->repo->get_stack($self->stack);
 
     if ($self->pull) {
 
-        $self->_pull($stack, $_) for $self->targets; 
+        my $old_head = $stack->head;
+        my $new_head = $stack->start_revision;
+
+        my @pulled_dists = map { $self->_pull($stack, $_) } $self->targets; 
 
         if ($stack->has_changed and not $self->dryrun) {
-            my $message = $self->edit_message(stack => $stack);
-            $stack->commit_revision(message => $message);
+            $self->generate_message_title('Pulled', @pulled_dists);
+            $self->generate_message_details($stack, $old_head, $new_head);
+            $stack->commit_revision(message => $self->edit_message);
             $self->result->changed;
         }
     }
@@ -117,15 +122,17 @@ sub _pull {
         return $self;
     }
 
-    my $target_spec = Pinto::SpecFactory->make_spec($target);
-    my ($dist, $did_pull) = $self->repo->find_or_pull(target => $target_spec, stack => $stack);
+    $target = Pinto::SpecFactory->make_spec($target);
 
-    my $did_register = $dist ? $dist->register(stack => $stack) : undef;
-    $did_pull += $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
+    my $dist =         $stack->get_distribution(spec => $target)
+               || $self->repo->get_distribution(spec => $target)
+               || $self->repo->ups_distribution(spec => $target);
 
-    $self->result->changed if $did_pull or $did_register;
 
-    return $self;
+    $dist->register(stack => $stack);
+    $self->repo->pull_prerequisites(dist => $dist, stack => $stack);
+
+    return $dist;
 }
 
 #------------------------------------------------------------------------------

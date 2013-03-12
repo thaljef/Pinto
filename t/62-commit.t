@@ -9,16 +9,18 @@ use Moose;
 extends 'Pinto::Action';
 with    'Pinto::Role::Committable';
 
+
+has '+message_title' => ( 
+	default => 'my title',
+);
+
 sub execute { 
 	my $self = shift;
-	my $stack = $self->repo->get_stack->start_revision;
+	my $stack = $self->repo->get_stack;
+	my $old_head = $stack->start_revision;
 	$stack->head->update({has_changes => 1}); # To bypass assertion
 	$stack->commit_revision(message => $self->edit_message);
 	return $self->result->changed; 
-}
-
-sub message_title { 
-	return 'my title';
 }
 
 no Moose;

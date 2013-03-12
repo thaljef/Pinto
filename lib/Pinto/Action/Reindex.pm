@@ -51,13 +51,16 @@ has pin => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->start_revision;
-    $self->_reindex($_, $stack) for $self->targets;
+    my $stack    = $self->repo->get_stack($self->stack);
+    my $old_head = $stack->head;
+    my $new_head = $stack->start_revision;
 
+    my @reindexed_dists = map { $self->_reindex($_, $stack) } $self->targets;
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    my $message = $self->edit_message(stack => $stack);
-    $stack->commit_revision(message => $message);
+    $self->generate_message_title('Reindexed', @reindexed_dists);
+    $self->generate_message_details($stack, $old_head, $new_head);
+    $stack->commit_revision(message => $self->edit_message);
     
     return $self->result->changed;
 }
@@ -72,18 +75,7 @@ sub _reindex {
 
     $dist->register(stack => $stack, pin => $self->pin);
 
-    return;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $targets  = join ' ', $self->targets;
-    my $pinned   = $self->pin ? ' and pinned' : '';
-
-    return "Reindexed$pinned $targets.";
+    return $dist;
 }
 
 #------------------------------------------------------------------------------

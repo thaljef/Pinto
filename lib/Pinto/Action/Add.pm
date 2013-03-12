@@ -69,6 +69,14 @@ has nofail => (
     default   => 0,
 );
 
+
+has message_title => (
+    is        => 'rw',
+    isa       => Str,
+    init_arg  => undef,
+    default   => '',
+);
+
 #------------------------------------------------------------------------------
 
 sub BUILD {
@@ -91,32 +99,38 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->start_revision;
+    my $stack    = $self->repo->get_stack($self->stack);
+    my $old_head = $stack->head;
+    my $new_head = $stack->start_revision;
 
+    my (@successful, @failed);
     for my $archive ($self->archives) {
 
         try   {
-            $self->repo->db->schema->storage->svp_begin; 
-            $self->_add($archive, $stack);
+            $self->repo->svp_begin; 
+            my $dist = $self->_add($archive, $stack);
+            push @successful, $dist->to_string;
         }
         catch {
             die $_ unless $self->nofail; 
 
-            $self->repo->db->schema->storage->svp_rollback;
+            $self->repo->svp_rollback;
 
             $self->error("$_");
             $self->error("$archive failed...continuing anyway");
+            push @failed, $archive->basename;
         }
         finally {
             my ($error) = @_;
-            $self->repo->db->schema->storage->svp_release unless $error;
+            $self->repo->svp_release unless $error;
         };
     }
 
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    my $message = $self->edit_message(stack => $stack);
-    $stack->commit_revision(message => $message);
+    $self->generate_message_title('Added', @successful);
+    $self->generate_message_details($stack, $old_head, $new_head);
+    $stack->commit_revision(message => $self->edit_message);
 
     return $self->result->changed;
 }
@@ -141,7 +155,7 @@ sub _add {
     $dist->register(stack => $stack, pin => $self->pin);
     $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
     
-    return;
+    return $dist;
 }
 
 #------------------------------------------------------------------------------
@@ -156,18 +170,6 @@ sub _check_for_duplicate {
     return $dupe if $archive->basename eq $dupe->archive;
 
     throw "Archive $archive is the same as $dupe but with different name";
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $archives  = join ', ', map {$_->basename} $self->archives;
-    my $pinned    = $self->pin       ? ' and pinned'            : '';
-    my $prereqs   = $self->norecurse ? ' without prerequisites' : '';
-
-    return "Added${pinned} ${archives}$prereqs.";
 }
 
 #------------------------------------------------------------------------------

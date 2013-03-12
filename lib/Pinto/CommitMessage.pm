@@ -16,13 +16,6 @@ use overload ( q{""} => 'to_string' );
 
 #------------------------------------------------------------------------------
 
-has stack => (
-    is       => 'ro',
-    isa      => 'Pinto::Schema::Result::Stack',
-    required => 1,
-);
-
-
 has title => (
     is      => 'ro',
     isa     => Str,
@@ -57,7 +50,6 @@ sub to_string {
     my ($self) = @_;
 
     my $title   = $self->title;
-    my $stack   = $self->stack;
     my $details = $self->details || 'No details available';
 
     $details =~ s/^/# /gm;
@@ -72,7 +64,7 @@ $title
 # a "#" will be ignored.  To abort the commit, delete the entire message above, 
 # save the file, and close the editor. 
 #
-# Details of the changes to be committed to stack $stack:
+# Details of the changes to be committed:
 #
 $details
 END_MESSAGE

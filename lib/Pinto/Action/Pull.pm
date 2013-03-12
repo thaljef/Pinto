@@ -68,13 +68,23 @@ has nofail => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->start_revision;
+    my $stack    = $self->repo->get_stack($self->stack);
+    my $old_head = $stack->head;
+    my $new_head = $stack->start_revision;
 
+    my (@successful, @failed);
     for my $target ($self->targets) {
+
+        if (itis($target, 'Pinto::PackageSpec') && $self->_is_core_package($target, $stack)) {
+            $self->debug("$target is part of the perl core.  Skipping it");
+            next;
+        }
+
 
         try   {
             $self->repo->db->schema->storage->svp_begin; 
-            $self->_pull($target, $stack) 
+            my $dist = $self->_pull($target, $stack); 
+            push @successful, $dist->to_string;
         }
         catch {
             die $_ unless $self->nofail;
@@ -83,6 +93,7 @@ sub execute {
 
             $self->error("$_");
             $self->error("$target failed...continuing anyway");
+            push @failed, $target->to_string;
         }
         finally {
             my ($error) = @_;
@@ -92,8 +103,9 @@ sub execute {
 
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    my $message = $self->edit_message(stack => $stack);
-    $stack->commit_revision(message => $message);
+    $self->generate_message_title('Pulled', @successful);
+    $self->generate_message_details($stack, $old_head, $new_head);
+    $stack->commit_revision(message => $self->edit_message);
 
     return $self->result->changed;
 }
@@ -102,11 +114,6 @@ sub execute {
 
 sub _pull {
     my ($self, $target, $stack) = @_;
-
-    if (itis($target, 'Pinto::PackageSpec') && $self->_is_core_package($target, $stack)) {
-        $self->debug("$target is part of the perl core.  Skipping it");
-        return;
-    }
 
     $self->notice("Pulling $target");
 
@@ -117,7 +124,7 @@ sub _pull {
     $dist->register(stack => $stack, pin => $self->pin);
     $self->repo->pull_prerequisites(dist => $dist, stack => $stack) if not $self->norecurse;
 
-    return;
+    return $dist;
 }
 
 #------------------------------------------------------------------------------
@@ -132,18 +139,6 @@ sub _is_core_package {
 
     my $core_version = $Module::CoreList::version{ $] }->{$wanted_package};
     return $core_version >= $wanted_version;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $targets  = join ', ', $self->targets;
-    my $pinned   = $self->pin       ? ' and pinned'            : '';
-    my $prereqs  = $self->norecurse ? ' without prerequisites' : '';
-
-    return "Pulled${pinned} ${targets}$prereqs.";
 }
 
 #------------------------------------------------------------------------------

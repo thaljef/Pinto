@@ -36,9 +36,25 @@ has use_default_message => (
     default    => 0,
 );
 
+
+has message_title => (
+    is        => 'rw',
+    isa       => Str,
+    default   => '',
+    lazy      => 1,
+);
+
+
+has message_details => (
+    is        => 'rw',
+    isa       => Str,
+    default   => 'No details available',
+    lazy      => 1,
+);
+
 #------------------------------------------------------------------------------
 
-requires qw( execute message_title );
+requires qw( execute repo );
 
 #------------------------------------------------------------------------------
 
@@ -72,8 +88,8 @@ sub edit_message {
     my ($self, %args) = @_;
 
     my $stack   = $args{stack};
-    my $title   = $args{title}   || $self->message_title || '';
-    my $details = $args{details} || '';
+    my $title   = $args{title}   || $self->message_title   || '';
+    my $details = $args{details} || $self->message_details || '';
 
     return interpolate($self->message)
         if $self->has_message and $self->message =~ /\S+/;
@@ -94,6 +110,29 @@ sub edit_message {
     throw 'Aborting due to empty commit message' if $message !~ /\S+/;
 
     return $message;
+}
+
+#------------------------------------------------------------------------------
+
+sub generate_message_title {
+    my ($self, $verb, @items, $extra) = @_;
+
+    $extra = '' if not defined $extra;
+    my $title = "$verb ". join(', ', @items) . " $extra";
+    $self->message_title($title);
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub generate_message_details {
+    my ($self, $stack, $old_head, $new_head) = @_;
+
+    my $diff = $new_head->diff(revision => $old_head);
+    $self->message_details($diff->to_string);
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
