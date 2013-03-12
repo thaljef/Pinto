@@ -129,7 +129,7 @@ sub generate_message_title {
 sub generate_message_details {
     my ($self, $stack, $old_head, $new_head) = @_;
 
-    my $diff = $new_head->diff(revision => $old_head);
+    my $diff = $new_head->diff($old_head);
     $self->message_details($diff->to_string);
 
     return $self;
