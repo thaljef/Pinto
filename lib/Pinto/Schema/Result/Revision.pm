@@ -383,6 +383,20 @@ sub assert_has_changed {
 
 #------------------------------------------------------------------------------
 
+sub diff {
+  my ($self, %args) = @_;
+
+     my $left =   $args{revision} ? $args{revision}
+                : $args{stack}    ? $args{stack}->head
+                : ($self->parents)[0];
+
+    my $right = $self;
+
+    return Pinto::Difference->new(left => $left, right => $right);
+}
+
+#------------------------------------------------------------------------------
+
 sub numeric_compare {
     my ($revision_a, $revision_b) = @_;
 
