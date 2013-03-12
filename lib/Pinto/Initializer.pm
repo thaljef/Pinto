@@ -161,12 +161,12 @@ sub _create_db {
 sub _create_stack {
     my ($self, %args) = @_;
 
+    my $stack      = $args{stack} || 'master';
     my $is_default = $args{nodefault} ? 0 : 1;
     my $pinto      = Pinto->new(root => $self->config->root);
 
-    $pinto->run( New => (stack   => 'master',
+    $pinto->run( New => (stack   => $stack,
                          default => $is_default) );
-    
     return;
 }
 
