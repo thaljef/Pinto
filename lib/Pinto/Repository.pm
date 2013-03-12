@@ -814,6 +814,9 @@ sub assert_version_ok {
     if ($repo_version != $code_version) {
         my $msg = "Repository version ($repo_version) and Pinto version ($code_version) do not match.\n";
 
+        # For really old repositories, the version is undefined and there is no automated
+        # migration process.  If the version is defined, then automatic migration should work.
+        
         $msg .= defined $repo_version ? "Use the 'migrate' command to bring the repo up to date"
                                       : "Contact thaljef\@cpan.org for migration instructions";
         throw $msg;
