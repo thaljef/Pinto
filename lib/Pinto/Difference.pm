@@ -63,7 +63,7 @@ around BUILDARGS => sub {
     my $class = shift;
     my $args  = $class->$orig(@_);
 
-    # The left and right attributes can also be Stack or Revision  
+    # The left and right attributes can also be Stack or Revision
     # objects.  In that case, we just convert it to the right thing.
 
     for my $side ( qw(left right) ) {
