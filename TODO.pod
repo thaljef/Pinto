@@ -6,8 +6,6 @@
 
 =item Implement a reset command to move head (also not committable)
 
-=item Implement a diff class.
-
 =item Put username back into the log file
 
 =item Test cases for Pop, Reindex, Delete
@@ -49,8 +47,6 @@
 =item Create command to verify prereqs on a stack
 
 =item Create command to list outdated packages
-
-=item Stack property: target perl version
 
 =item Stack property: source repositories
 
