@@ -40,14 +40,19 @@ has right_stack => (
 sub execute {
     my ($self) = @_;
 
-    my $left_rev  = $self->repo->get_stack($self->left_stack)->head;
-    my $right_rev = $self->repo->get_stack($self->right_stack)->head;
+    my $left  = $self->repo->get_stack($self->left_stack);
+    my $right = $self->repo->get_stack($self->right_stack);
 
-    my $diff = Pinto::Difference->new( left    => $left_rev, 
-                                       right   => $right_rev,
-                                       nocolor => $self->nocolor );
+    my $diff  = Pinto::Difference->new(left => $left, right => $right);
 
-    $self->say($diff->to_string);
+    my $cb = sub {
+        my ($op, $reg) = @_;
+        my $color  = $op eq '+' ? $self->color_1 : $self->color_3;
+        my $string = $op . $reg->to_string('%m%s%y %-40p %12v %a/%f');
+        $self->say( $self->colorize_with_color($string, $color) );
+    };
+
+    $diff->foreach($cb);
 
     return $self->result;
 }
