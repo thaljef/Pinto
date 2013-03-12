@@ -25,13 +25,13 @@ with qw( Pinto::Role::Colorable );
 has left_stack => (
     is       => 'ro',
     isa      => StackName | StackDefault | StackObject,
-    required => 1,
+    default  => undef,
 );
 
 
 has right_stack => (
     is       => 'ro',
-    isa      => StackName | StackDefault | StackObject,
+    isa      => StackName | StackObject,
     required => 1,
 );
 
