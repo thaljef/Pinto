@@ -1,4 +1,4 @@
-# ABSTRACT: Migrate an existing Pinto repository to a new version
+# ABSTRACT: Migrate an existing repository to a new version
 
 package Pinto::Migrator;
 
@@ -27,13 +27,14 @@ sub migrate {
     my $repo_version = $pinto->repo->get_version;
     my $code_version = $Pinto::Repository::REPOSITORY_VERSION;
 
-    die "This repository is too old to migrate\n"
-      if not defined $repo_version;
+    die "This repository is too old to migrate.\n" .
+        "Contact thaljef\@cpan.org for a migration plan.\n"
+      if not $repo_version;
 
-    die "This repository is up to date\n"
+    die "This repository is already up to date.\n"
       if $repo_version == $code_version;
 
-    die "This repository too new.  Upgrade Pinto instead\n"
+    die "This repository too new.  Upgrade Pinto instead.\n"
       if $repo_version > $code_version;
 
     die "Migration is not implemented yet\n";
