@@ -1,6 +1,6 @@
 # ABSTRACT: Register packages from existing archives on a stack
 
-package Pinto::Action::Reindex;
+package Pinto::Action::Register;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
@@ -55,10 +55,10 @@ sub execute {
     my $old_head = $stack->head;
     my $new_head = $stack->start_revision;
 
-    my @reindexed_dists = map { $self->_reindex($_, $stack) } $self->targets;
+    my @dists = map { $self->_register($_, $stack) } $self->targets;
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    $self->generate_message_title('Reindexed', @reindexed_dists);
+    $self->generate_message_title('Registered', @dists);
     $self->generate_message_details($stack, $old_head, $new_head);
     $stack->commit_revision(message => $self->edit_message);
     
@@ -67,7 +67,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _reindex {
+sub _register {
     my ($self, $spec, $stack) = @_;
 
     my $dist  = $self->repo->get_distribution(spec => $spec);

@@ -29,21 +29,21 @@ use Pinto::Tester::Util qw(make_dist_archive);
 	$t->run_throws_ok(Unpin => {targets => 'Foo'},
 			          qr/is locked/, 'Cannot Unpin on locked stack');
 
-	$t->run_throws_ok(Pop => {targets => 'AUTHOR/Foo-1.tar.gz'},
-			          qr/is locked/, 'Cannot Pop from locked stack');
+	$t->run_throws_ok(Unregister => {targets => 'AUTHOR/Foo-1.tar.gz'},
+			          qr/is locked/, 'Cannot Unregister from locked stack');
 
-	$t->run_throws_ok(Reindex => {targets => 'AUTHOR/Foo-1.tar.gz'},
-			          qr/is locked/, 'Cannot Reindex on locked stack');
+	$t->run_throws_ok(Register => {targets => 'AUTHOR/Foo-1.tar.gz'},
+			          qr/is locked/, 'Cannot Register on locked stack');
 
 
 	$t->run_ok(Unlock => {});
 	is $stack->refresh->is_locked, 0, 'Stack is unlocked';
 
-	$t->run_ok(Add     => {archives => $archive});
-	$t->run_ok(Pin     => {targets  => 'Foo'});
-	$t->run_ok(Unpin   => {targets  => 'Foo'});
-	$t->run_ok(Pop     => {targets  => 'AUTHOR/Foo-2.tar.gz'});
-	$t->run_ok(Reindex => {targets  => 'AUTHOR/Foo-2.tar.gz'});
+	$t->run_ok(Add        => {archives => $archive});
+	$t->run_ok(Pin        => {targets  => 'Foo'});
+	$t->run_ok(Unpin      => {targets  => 'Foo'});
+	$t->run_ok(Unregister => {targets  => 'AUTHOR/Foo-2.tar.gz'});
+	$t->run_ok(Register   => {targets  => 'AUTHOR/Foo-2.tar.gz'});
 }
 
 #------------------------------------------------------------------------------

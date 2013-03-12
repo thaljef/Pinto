@@ -1,6 +1,6 @@
 # ABSTRACT: Unregister packages from a stack
 
-package Pinto::Action::Pop;
+package Pinto::Action::Unregister;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool);
@@ -55,10 +55,10 @@ sub execute {
     my $old_head = $stack->head;
     my $new_head = $stack->start_revision;
 
-    my @popped_dists = map { $self->_pop($_, $stack) } $self->targets;
+    my @dists = map { $self->_unregister($_, $stack) } $self->targets;
     return $self->result if $self->dryrun or $stack->has_not_changed;
 
-    $self->generate_message_title('Popped', @popped_dists);
+    $self->generate_message_title('Unregistered', @dists);
     $self->generate_message_details($stack, $old_head, $new_head);
     $stack->commit_revision(message => $self->edit_message);
 
@@ -67,7 +67,7 @@ sub execute {
 
 #------------------------------------------------------------------------------
 
-sub _pop {
+sub _unregister {
     my ($self, $target, $stack) = @_;
 
     my $dist = $stack->get_distribution(spec => $target);
