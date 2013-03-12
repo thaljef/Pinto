@@ -57,7 +57,7 @@ while (@dists) {
 
 	my $start = time;
 	my $pinto = Pinto->new(root => "$root");
-	$pinto->run(Pull => (targets => \@batch, norecurse => 1, nofail => 1, message => ''));
+	$pinto->run(Pull => (targets => \@batch, no_recurse => 1, no_fail => 1, message => ''));
 	printf "Batch %i loaded in %i seconds\n", $n, time - $start;
 
 	if ($n % 10 == 0) {

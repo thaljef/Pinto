@@ -44,10 +44,10 @@ while (my $archive = $rule->match) {
     my $msg = "Importing $dist_path from CPAN";
     print "$counter: $now: $msg\n";
 
-    my %args = ( archives  => [$archive],
-                 author    => $author,
-                 message   => $msg,
-                 norecurse => 1 );
+    my %args = ( archives   => [$archive],
+                 author     => $author,
+                 message    => $msg,
+                 no_recurse => 1 );
 
     try   { $pinto->run(Add => %args) }
     catch { s/(\n.*)//msg; print {$log_fh} "$archive: $_\n" };

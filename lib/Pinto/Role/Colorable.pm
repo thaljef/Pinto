@@ -16,7 +16,7 @@ use Pinto::Exception qw(throw);
 
 #-----------------------------------------------------------------------------
 
-has nocolor => (
+has no_color => (
     is         => 'ro',
     isa        => Bool,
     default    => sub { $ENV{PINTO_NO_COLOR} || $ENV{PINTO_NO_COLOUR} || 0 },
@@ -67,7 +67,7 @@ sub colorize_with_color {
 	my ($self, $string, $color) = @_;
 
 	return $string if not $color;
-	return $string if $self->nocolor;
+	return $string if $self->no_color;
 	return $color . $string . $self->color_0;
 }
 
@@ -76,7 +76,7 @@ sub colorize_with_color {
 sub colorize_with_color_1 {
 	my ($self, $string) = @_;
 
-	return $string if $self->nocolor;
+	return $string if $self->no_color;
 	return $self->color_1 . $string . $self->color_0;
 }
 
@@ -85,7 +85,7 @@ sub colorize_with_color_1 {
 sub colorize_with_color_2 {
 	my ($self, $string) = @_;
 
-	return $string if $self->nocolor;
+	return $string if $self->no_color;
 	return $self->color_2 . $string . $self->color_0;
 }
 
@@ -94,7 +94,7 @@ sub colorize_with_color_2 {
 sub colorize_with_color_3 {
 	my ($self, $string) = @_;
 
-	return $string if $self->nocolor;
+	return $string if $self->no_color;
 	return $self->color_3 . $string . $self->color_0;
 }
 

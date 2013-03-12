@@ -162,7 +162,7 @@ sub _create_stack {
     my ($self, %args) = @_;
 
     my $stack      = $args{stack} || 'master';
-    my $is_default = $args{nodefault} ? 0 : 1;
+    my $is_default = $args{no_default} ? 0 : 1;
     my $pinto      = Pinto->new(root => $self->config->root);
 
     $pinto->run( New => (stack   => $stack,

@@ -16,7 +16,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
   my $archive =  make_dist_archive('Dist-1=PkgA~1');
 
   # Put archive on the master stack.
-  $t->run_ok(Add => {archives => $archive, author => 'JOHN', norecurse => 1});
+  $t->run_ok(Add => {archives => $archive, author => 'JOHN', no_recurse => 1});
   $t->registration_ok('JOHN/Dist-1/PkgA~1/master');
 
   # Copy the "master" stack to "dev" and make it the default

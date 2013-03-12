@@ -361,10 +361,10 @@ sub populate {
         my $archive = make_dist_archive($struct);
         my $message = "Populated repository with $spec";
 
-        my $args = { norecurse => 1,
-                     archives  => $archive,
-                     author    => $struct->{cpan_author},
-                     message   => $message };
+        my $args = { no_recurse => 1,
+                     archives   => $archive,
+                     author     => $struct->{cpan_author},
+                     message    => $message };
 
         my $r = $self->run_ok('Add', $args, $message);
         croak 'Population failed. Aborting test' unless $r->was_successful;

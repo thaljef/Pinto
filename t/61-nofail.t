@@ -47,11 +47,11 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
 }
 
 #------------------------------------------------------------------------------
-# If the nofail flag is set, then only the failed ones should be rollback...
+# If the no_fail flag is set, then only the failed ones should be rollback...
 
 {
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
-  $local->run_ok(Pull => {targets => [qw(PkgA PkgB PkgC)], nofail => 1});
+  $local->run_ok(Pull => {targets => [qw(PkgA PkgB PkgC)], no_fail => 1});
 
   # We should see a log message saying that B failed, because E was missing...
   $local->log_like( qr/Cannot find PkgE~1 anywhere/);

@@ -39,7 +39,7 @@ use Pinto::Tester;
 
 {
 
-	my $t = Pinto::Tester->new( init_args => {nodefault => 1} );
+	my $t = Pinto::Tester->new( init_args => {no_default => 1} );
 
 	my $stack = $t->pinto->repo->get_stack('master');
 	ok defined $stack, 'master stack exists';

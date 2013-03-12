@@ -56,14 +56,14 @@ has pin => (
 );
 
 
-has norecurse => (
+has no_recurse => (
     is        => 'ro',
     isa       => Bool,
     default   => 0,
 );
 
 
-has nofail => (
+has no_fail => (
     is        => 'ro',
     isa       => Bool,
     default   => 0,
@@ -112,7 +112,7 @@ sub execute {
             push @successful, $dist->to_string;
         }
         catch {
-            die $_ unless $self->nofail; 
+            die $_ unless $self->no_fail; 
 
             $self->repo->svp_rollback;
 
@@ -153,7 +153,7 @@ sub _add {
     }
 
     $dist->register(stack => $stack, pin => $self->pin);
-    $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->norecurse;
+    $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->no_recurse;
     
     return $dist;
 }
