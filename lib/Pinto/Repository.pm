@@ -810,8 +810,14 @@ sub assert_version_ok {
     my $repo_version = $self->get_version;
     my $code_version = $REPOSITORY_VERSION;
 
-    throw "Repository version ($repo_version) and Pinto version ($code_version) do not match"
-        if $repo_version != $code_version;
+    no warnings qw(uninitialized);
+    if ($repo_version != $code_version) {
+        my $msg = "Repository version ($repo_version) and Pinto version ($code_version) do not match.\n";
+
+        $msg .= defined $repo_version ? "Use the 'migrate' command to bring the repo up to date"
+                                      : "Contact thaljef\@cpan.org for migration instructions";
+        throw $msg;
+    }
 
     return;
 }
@@ -822,7 +828,6 @@ sub assert_sanity_ok {
     my ($self) = @_;
 
     unless (    -e $self->config->db_file
-             && -e $self->config->version_file
              && -e $self->config->modules_dir
              && -e $self->config->authors_dir ) {
 
