@@ -474,18 +474,18 @@ sub start_revision {
 
     $self->assert_is_committed;
 
-    my $old_rev  = $self->head;
-    my $new_rev  = $self->result_source->schema->create_revision( {} );
+    my $old_head  = $self->head;
+    my $new_head  = $self->result_source->schema->create_revision( {} );
 
     my $method = ($self->should_keep_history ? 'duplicate' : 'move') . '_registrations';
-    $self->$method(to => $new_rev);
+    $self->$method(to => $new_head);
 
-    $new_rev->add_parent($old_rev);
-    $self->set_head($new_rev);
+    $new_head->add_parent($old_head);
+    $self->set_head($new_head);
     
     $self->assert_is_open;
 
-    return $self;
+    return $new_head;
 }
 
 #------------------------------------------------------------------------------
