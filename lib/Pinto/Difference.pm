@@ -1,4 +1,4 @@
-# ABSTRACT: Compute difference between two revisions
+# ABSTRACT: Compute difference between two sets of registrations
 
 package Pinto::Difference;
 
@@ -62,6 +62,9 @@ around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
     my $args  = $class->$orig(@_);
+
+    # The left and right attributes can also be Stack or Revision  
+    # objects.  In that case, we just convert it to the right thing.
 
     for my $side ( qw(left right) ) {
         my $arg = $args->{$side};
