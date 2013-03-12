@@ -1,4 +1,4 @@
-# ABSTRACT: Show the difference between two stacks or revisions
+# ABSTRACT: Show the difference between two stacks
 
 package Pinto::Action::Diff;
 
