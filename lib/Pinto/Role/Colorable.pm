@@ -19,7 +19,7 @@ use Pinto::Exception qw(throw);
 has nocolor => (
     is         => 'ro',
     isa        => Bool,
-    default    => sub { $ENV{PINTO_NOCOLOR} || 0 },
+    default    => sub { $ENV{PINTO_NO_COLOR} || $ENV{PINTO_NO_COLOUR} || 0 },
 );
 
 
