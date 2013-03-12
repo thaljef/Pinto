@@ -13,7 +13,7 @@ use Getopt::Long::Descriptive;
 
 #-----------------------------------------------------------------------------
 
-my @ops = qw(pin unpin pop reindex);
+my @ops = qw(pin unpin unregister register);
 
 my ($opt, $usage) = describe_options(
 	"$0 %o TARGETS",
@@ -49,10 +49,10 @@ for my $i (1..$iters) {
 
 	my $start = time;
 	my $pinto = Pinto->new(root => "$root");
-	$pinto->run(Pin     => (targets => \@targets, message => 'pin'))     if $ops{pin};
-	$pinto->run(Unpin   => (targets => \@targets, message => 'unpin'))   if $ops{unpin};
-	$pinto->run(Pop     => (targets => \@targets, message => 'pop'))     if $ops{pop};
-	$pinto->run(Reindex => (targets => \@targets, message => 'reindex')) if $ops{reindex};
+	$pinto->run(Pin         => (targets => \@targets, message => 'pin'))   if $ops{pin};
+	$pinto->run(Unpin       => (targets => \@targets, message => 'unpin')) if $ops{unpin};
+	$pinto->run(Unregister  => (targets => \@targets, message => 'unreg')) if $ops{unregister};
+	$pinto->run(Register    => (targets => \@targets, message => 'reg'))   if $ops{register};
 	my $elapsed = time - $start;
 
 	print "$elapsed seconds\n";
