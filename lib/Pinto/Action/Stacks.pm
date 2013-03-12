@@ -34,8 +34,8 @@ sub execute {
 
     my @stacks = sort {$a cmp $b} $self->repo->get_all_stacks;
 
-	my $max_name = max map { length($_->name) } @stacks;
-	my $max_user = max map { length($_->head->username) } @stacks;
+	my $max_name = max(map { length($_->name) } @stacks)           || 0;
+	my $max_user = max(map { length($_->head->username) } @stacks) || 0;
 
 	my $format = $self->format || "%M%L %-${max_name}k  %u  %-{$max_user}j  %i: %{40}T";
 
