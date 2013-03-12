@@ -48,7 +48,7 @@ sub execute {
     my $cb = sub {
         my ($op, $reg) = @_;
         my $color  = $op eq '+' ? $self->color_1 : $self->color_3;
-        my $string = $op . $reg->to_string('%m%s%y %-40p %12v %a/%f');
+        my $string = $op . $reg->to_string('[%F] %-40p %12v %a/%f');
         $self->say( $self->colorize_with_color($string, $color) );
     };
 

@@ -56,7 +56,7 @@ has distributions => (
 has format => (
     is        => 'ro',
     isa       => Str,
-    default   => '%m%s%y %-40p %12v %a/%f',
+    default   => '[%F] %-40p %12v %a/%f',
     lazy      => 1,
 );
 

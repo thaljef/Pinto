@@ -133,7 +133,7 @@ sub to_string {
     my ($self) = @_;
 
     my $string = '';
-    my $format = "%m%s%y %-40p %12v %a/%f\n";
+    my $format = "[%F] %-40p %12v %a/%f\n";
     my $cb = sub { $string .= $_[0] . $_[1]->to_string($format)};
     $self->foreach($cb);
 

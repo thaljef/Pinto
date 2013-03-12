@@ -266,6 +266,15 @@ sub string_compare {
 
 #------------------------------------------------------------------------------
 
+sub flags {
+    my ($self) = @_;
+
+    my $format = '%m%s%y';
+    return $self->to_string($format);
+}
+
+#------------------------------------------------------------------------------
+
 sub to_string {
     my ($self, $format) = @_;
 
@@ -276,7 +285,7 @@ sub to_string {
          p => sub { $self->package->name                            },
          P => sub { $self->package->vname                           },
          v => sub { $self->package->version                         },
-         y => sub { $self->is_pinned               ? '!' : ' '      },
+         y => sub { $self->is_pinned               ? '!' : '-'      },
          m => sub { $self->distribution->is_devel  ? 'd' : 'r'      },
          h => sub { $self->distribution->path                       },
          H => sub { $self->distribution->native_path                },
@@ -289,6 +298,7 @@ sub to_string {
          V => sub { $self->distribution->version                    },
          u => sub { $self->distribution->url                        },
          i => sub { $self->revision->uuid_prefix                    },
+         F => sub { $self->flags                                    },
     );
 
     # Some attributes are just undefined, usually because of
