@@ -595,16 +595,13 @@ sub get_description {
 #------------------------------------------------------------------------------
 
 sub diff {
-    my ($self, %args) = @_;
+    my ($self, $other) = @_;
 
+    my $left  = $other || ($self->head->parents)[0];
+    my $right = $self;
 
-    my $left =   $args{revision} ? $args{revision}
-                : $args{stack}    ? $args{stack}->head
-                : ($self->head->parents)[0];
-
-    my $right = $self->head;
-
-    return Pinto::Difference->new(left => $left, right => $right, nocolor => 1);
+    require Pinto::Difference;
+    return  Pinto::Difference->new(left => $left, right => $right);
 }
 
 #------------------------------------------------------------------------------

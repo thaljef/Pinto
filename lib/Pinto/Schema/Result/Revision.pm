@@ -384,15 +384,13 @@ sub assert_has_changed {
 #------------------------------------------------------------------------------
 
 sub diff {
-  my ($self, %args) = @_;
+  my ($self, $other) = @_;
 
-     my $left =   $args{revision} ? $args{revision}
-                : $args{stack}    ? $args{stack}->head
-                : ($self->parents)[0];
-
+    my $left  = $other || ($self->parents)[0];
     my $right = $self;
 
-    return Pinto::Difference->new(left => $left, right => $right);
+    require Pinto::Difference;
+    return  Pinto::Difference->new(left => $left, right => $right);
 }
 
 #------------------------------------------------------------------------------
