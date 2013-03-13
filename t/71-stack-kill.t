@@ -10,8 +10,8 @@ use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
-{
 
+{
   my $t = Pinto::Tester->new;
 
   # Check that master stack dir exists in the first place
@@ -36,8 +36,8 @@ use Pinto::Tester::Util qw(make_dist_archive);
 }
 
 #------------------------------------------------------------------------------
-{
 
+{
   my $t = Pinto::Tester->new;
 
   # Make sure master is the default
@@ -49,13 +49,11 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
   # Is stack still there?
   $t->stack_exists_ok('master');
-
 }
 
 #------------------------------------------------------------------------------
 
 {
-
   my $t = Pinto::Tester->new(init_args => {no_default => 1});
   $t->no_default_stack_ok;
 
@@ -75,8 +73,8 @@ use Pinto::Tester::Util qw(make_dist_archive);
   
   # Is stack still there?
   $t->stack_not_exists_ok('master');
-
 }
+
 #------------------------------------------------------------------------------
 
 done_testing;
