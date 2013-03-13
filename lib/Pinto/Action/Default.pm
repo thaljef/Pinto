@@ -41,16 +41,17 @@ sub execute {
 
    	if ($self->none) {
    		my $default_stack = $self->repo->get_stack;
-   		$default_stack->unmark_as_default;
-   		$self->result->changed;
+      return $self->result if not defined $default_stack;
+      $default_stack->unmark_as_default;
+
    	}
    	else {
-    	my $stack    = $self->repo->get_stack($self->stack);
-    	my $did_mark = $stack->mark_as_default;
-	    $self->result->changed if $did_mark;
-	}
-
-    return $self->result;
+    	my $stack = $self->repo->get_stack($self->stack);
+      return $self->result if $stack->is_default;
+      $stack->mark_as_default;
+	  }
+  
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

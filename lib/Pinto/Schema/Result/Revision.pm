@@ -281,9 +281,9 @@ sub FOREIGNBUILDARGS {
 
   $args ||= {};
   $args->{uuid}         ||= uuid;
-  $args->{username}     ||= current_username;
-  $args->{utc_time}     ||= current_utc_time;
-  $args->{time_offset}  ||= current_time_offset;
+  $args->{username}     ||= '';
+  $args->{utc_time}     ||= 0;
+  $args->{time_offset}  ||= 0;
   $args->{is_committed} ||= 0;
   $args->{has_changes}  ||= 0;
   $args->{message}      ||= '';
@@ -296,6 +296,7 @@ sub FOREIGNBUILDARGS {
 sub add_parent {
     my ($self, $parent) = @_;
 
+    # TODO: Figure out how to do merges
     $self->create_related(ancestry_children => {parent => $parent->id});
 
     return;
@@ -306,6 +307,7 @@ sub add_parent {
 sub add_child {
     my ($self, $child) = @_;
 
+    # TODO: Figure out how to do merges
     $self->create_related(ancestry_parents => {child => $child->id});
 
     return;
@@ -340,7 +342,10 @@ sub commit {
 
     throw "Must specify a message to commit" if not $args{message};
 
-    $args{is_committed} = 1;
+    $args{is_committed}   = 1;
+    $args{username}     ||= $self->repo->config->username;
+    $args{time_offset}  ||= $self->repo->config->time_offset;
+    $args{utc_time}     ||= current_utc_time;
 
     $self->update(\%args);
 

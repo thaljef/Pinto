@@ -33,9 +33,8 @@ has stack => (
 has index_file  => (
     is      => 'ro',
     isa     => File,
+    default => sub { $_[0]->stack->modules_dir->file('02packages.details.txt.gz') },
     lazy    => 1,
-    default => sub { file( $_[0]->config->root, $_[0]->stack->name,
-                           qw(modules 02packages.details.txt.gz)) }
 );
 
 #------------------------------------------------------------------------------

@@ -19,9 +19,13 @@ use Pinto::Tester;
 	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
 	$t->path_exists_ok( [qw(.pinto log)] );
 
-	$t->path_exists_ok( [qw(master modules 02packages.details.txt.gz)] );
-	$t->path_exists_ok( [qw(master modules 03modlist.data.gz)] );
-	$t->path_exists_ok( [qw(master authors 01mailrc.txt.gz)] );
+	$t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
+	$t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
+	$t->path_exists_ok( [qw(authors 01mailrc.txt.gz)] );
+
+	$t->path_exists_ok( [qw(stacks master modules 02packages.details.txt.gz)] );
+	$t->path_exists_ok( [qw(stacks master modules 03modlist.data.gz)] );
+	$t->path_exists_ok( [qw(stacks master authors 01mailrc.txt.gz)] );
 
 	my $stack = $t->pinto->repo->get_stack('master');
 	ok defined $stack, 'master stack exists';
@@ -38,15 +42,16 @@ use Pinto::Tester;
 # Test repository created without default stack
 
 {
-
 	my $t = Pinto::Tester->new( init_args => {no_default => 1} );
+	$t->no_default_stack_ok;
+}
 
-	my $stack = $t->pinto->repo->get_stack('master');
-	ok defined $stack, 'master stack exists';
-	is $stack->is_default, 0, 'master stack is not default';
+#------------------------------------------------------------------------------
+# Test repository created with custom stack name
 
-	throws_ok {$t->pinto->repo->get_stack} qr/default stack has not been set/,
-		'get_stack(undef) throws exception when there is no default';
+{
+	my $t = Pinto::Tester->new( init_args => {stack => 'custom'} );
+	$t->stack_is_default_ok('custom');
 }
 
 #------------------------------------------------------------------------------

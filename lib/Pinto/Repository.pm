@@ -17,7 +17,7 @@ use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
 use Pinto::PrerequisiteFilter::Core;
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis);
+use Pinto::Util qw(itis mksymlink);
 
 use version;
 
@@ -700,6 +700,41 @@ sub kill_stack {
 
 #-------------------------------------------------------------------------------
 
+sub link_modules_dir {
+    my ($self, %args) = @_;
+
+    my $target_dir  = $args{to};
+    my $modules_dir = $self->config->modules_dir;
+    my $root_dir    = $self->config->root_dir;
+
+    if (-e $modules_dir or -l $modules_dir) {
+        $self->debug("Unlinking $modules_dir");
+        unlink $modules_dir or die $!;
+    }
+
+    $self->debug("Linking $modules_dir to $target_dir");
+    mksymlink($modules_dir => $target_dir->relative($root_dir));
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
+sub unlink_modules_dir {
+    my ($self) = @_;
+
+    my $modules_dir = $self->config->modules_dir;
+
+    if (-e $modules_dir or -l $modules_dir) {
+        $self->debug("Unlinking $modules_dir");
+        unlink $modules_dir or die $!;
+    }
+
+    return $self;
+}
+
+#-------------------------------------------------------------------------------
+
 =method clean_files()
 
 Deletes all distribution archives that are on the filesystem but not
@@ -831,7 +866,6 @@ sub assert_sanity_ok {
     my ($self) = @_;
 
     unless (    -e $self->config->db_file
-             && -e $self->config->modules_dir
              && -e $self->config->authors_dir ) {
 
         my $root_dir = $self->config->root_dir;

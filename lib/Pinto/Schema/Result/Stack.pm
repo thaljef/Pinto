@@ -147,6 +147,7 @@ with 'Pinto::Role::Schema::Result';
 
 use MooseX::Types::Moose qw(Bool Str);
 
+use PerlIO::gzip;
 use String::Format;
 use File::Copy ();
 use JSON qw(encode_json decode_json);
@@ -174,7 +175,7 @@ has stack_dir => (
   is          => 'ro',
   isa         => Dir,
   lazy        => 1,
-  default     => sub { $_[0]->repo->root_dir->subdir( $_[0]->name ) },
+  default     => sub { $_[0]->repo->config->stacks_dir->subdir( $_[0]->name ) },
 );
 
 
@@ -191,14 +192,6 @@ has authors_dir => (
   isa         => Dir,
   lazy        => 1,
   default     => sub { $_[0]->stack_dir->subdir( 'authors' ) },
-);
-
-
-has index_file => (
-  is          => 'ro',
-  isa         => File,
-  lazy        => 1,
-  default     => sub { $_[0]->modules_dir->file('02packages.details.txt.gz') },
 );
 
 
@@ -305,9 +298,9 @@ sub make_filesystem {
     my $shared_authors_dir = $self->repo->config->authors_dir->relative($stack_dir);
     mksymlink($stack_authors_dir => $shared_authors_dir);
 
-    my $stack_modlist_file  = $stack_modules_dir->file('03modlist.data.gz');
-    my $shared_modlist_file = $self->repo->config->modlist_file->relative($stack_modules_dir);
-    mksymlink($stack_modlist_file => $shared_modlist_file);
+    require Pinto::File::Modlist;
+    my $modlist = Pinto::File::Modlist->new(stack => $self);
+    $modlist->write_modlist;
 
   return $self;
 }
@@ -324,7 +317,7 @@ sub rename_filesystem {
     my $orig_dir = $self->stack_dir;
     throw "Directory $orig_dir does not exist" if not -e $orig_dir;
 
-    my $new_dir = $self->repo->config->root_dir->subdir($new_name);
+    my $new_dir = $self->repo->config->stacks_dir->subdir($new_name);
     throw "Directory $new_dir already exists" if -e $new_dir;
 
     $self->debug("Renaming directory $orig_dir to $new_dir");
@@ -408,6 +401,10 @@ sub rename {
     $self->assert_not_locked;
 
     $self->update( {name => $new_name} );
+
+    $self->refresh; # Causes moose attributes to be reinitialized
+
+    $self->repo->link_modules_dir(to => $self->modules_dir) if $self->is_default;
 
     return $self
 }
@@ -586,14 +583,6 @@ sub set_description {
 
 #------------------------------------------------------------------------------
 
-sub get_description {
-    my ($self, $description) = @_;
-
-    return $self->get_property('description');
-}
-
-#------------------------------------------------------------------------------
-
 sub diff {
     my ($self, $other) = @_;
 
@@ -621,6 +610,8 @@ sub mark_as_default {
     $self->notice("Marking stack $self as default");
     $self->update( {is_default => 1} );
 
+    $self->repo->link_modules_dir(to => $self->modules_dir);
+
     return 1;
 }
 
@@ -634,8 +625,10 @@ sub unmark_as_default {
         return 0;
     }
 
-    $self->notice("Un marking stack $self as default");
+    $self->notice("Unmarking stack $self as default");
     $self->update( {is_default => 0} );
+
+    $self->repo->unlink_modules_dir;
 
     return 1;
 }

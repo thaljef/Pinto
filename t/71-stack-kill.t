@@ -13,31 +13,26 @@ use Pinto::Tester::Util qw(make_dist_archive);
 {
 
   my $t = Pinto::Tester->new;
-  my $archive =  make_dist_archive('Dist-1=PkgA~1');
+
+  # Check that master stack dir exists in the first place
+  $t->path_exists_ok( [qw(stacks master)] );
 
   # Put archive on the master stack.
+  my $archive =  make_dist_archive('Dist-1=PkgA~1');
   $t->run_ok(Add => {archives => $archive, author => 'JOHN', no_recurse => 1});
   $t->registration_ok('JOHN/Dist-1/PkgA~1/master');
 
   # Copy the "master" stack to "dev" and make it the default
   $t->run_ok(Copy => {from_stack => 'master', to_stack => 'dev', default => 1});
   $t->registration_ok('JOHN/Dist-1/PkgA~1/dev');
-
-  # Make sure "dev" is now the default
-  ok($t->pinto->repo->get_stack('dev')->is_default, 'dev stack is default');
+  $t->stack_is_default_ok('dev');
 
   # Delete the "master" stack.
   $t->run_ok(Kill => {stack => 'master'});
-  throws_ok { $t->pinto->repo->get_stack('master') } qr/does not exist/;
+  $t->stack_not_exists_ok('master');
   
   # The dev stack should still be the same
   $t->registration_ok('JOHN/Dist-1/PkgA~1/dev');
-
-  # Check that master stack was removed from filesystem
-  $t->path_not_exists_ok( [qw(master)] );
-
-  # TODO: check that branch is gone too
-
 }
 
 #------------------------------------------------------------------------------
@@ -55,7 +50,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
   # Now make master not the default
   $t->run_ok(Default => {none => 1});
-  is $stack->refresh->is_default, 0, 'Stack master is not the default';
+  $t->no_default_stack_ok;
 
   # Try killing locked stack
   $t->run_ok(Lock => {stack => 'master'});
@@ -69,7 +64,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
     'Stack maser still exists in DB';
 
   # Check the filesystem
-  $t->path_exists_ok( [qw(master)] );
+  $t->path_exists_ok( [qw(stacks master)] );
 
   # Try killing locked stack with force
   $t->run_ok(Kill => {stack => 'master', force => 1});

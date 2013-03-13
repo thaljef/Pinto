@@ -54,7 +54,7 @@ my $t = Pinto::Tester->new;
   is $qa_stack->name, $qa_stk_name,
     'Got correct stack name';
 
-  is $qa_stack->get_description, 'Copy of stack dev',
+  is $qa_stack->description, 'Copy of stack dev',
     'Got correct stack description';
 
   is $qa_stack->head->id, $dev_stack->head->id,
@@ -113,7 +113,7 @@ my $t = Pinto::Tester->new;
   ok $t->pinto->repo->get_stack('mixedcase'), 
     'Got stack using name with different case';
 
-  $t->path_exists_ok( ['MixedCase'], 
+  $t->path_exists_ok( [ qw( stacks MixedCase) ], 
     'Stack directory name has mixed-case name too' );
 
 }

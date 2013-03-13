@@ -46,11 +46,20 @@ has time_offset  => (
 );
 
 
+has stacks_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->root_dir->subdir('stacks') },
+    lazy      => 1,
+);
+
+
 has authors_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->pinto_dir->subdir('authors') },
+    default   => sub { return $_[0]->root_dir->subdir('authors') },
     lazy      => 1,
 );
 
@@ -68,7 +77,7 @@ has modules_dir => (
     is        => 'ro',
     isa       => Dir,
     init_arg  => undef,
-    default   => sub { return $_[0]->pinto_dir->subdir('modules') },
+    default   => sub { return $_[0]->root_dir->subdir('modules') },
     lazy      => 1,
 );
 

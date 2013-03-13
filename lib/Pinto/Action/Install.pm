@@ -143,7 +143,9 @@ sub _install {
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
     $opts->{'mirror-only'} = '';
-    $opts->{mirror} = 'file://' . $self->repo->root->absolute . "/$stack";
+
+    my $stack_dir = defined $stack ? "/stacks/$stack" : '';
+    $opts->{mirror} = 'file://' . $self->repo->root->absolute . $stack_dir;
 
     # Process other cpanm options
     my @cpanm_opts;
@@ -161,15 +163,6 @@ sub _install {
       or throw "Installation failed.  See the cpanm build log for details";
 
     return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $targets  = join ', ', $self->targets;
-    return "Pulled ${targets}.";
 }
 
 #------------------------------------------------------------------------------

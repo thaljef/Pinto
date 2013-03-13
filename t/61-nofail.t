@@ -30,14 +30,14 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
   $local->registration_not_ok('AUTHOR/DistD-1/PkgD~1/master');
 
   # The filesystem is not transactional, so the archive for A will still be there...
-  $local->path_exists_ok( [qw(master authors id A AU AUTHOR DistA-1.tar.gz)] );
+  $local->path_exists_ok( [qw(stacks master authors id A AU AUTHOR DistA-1.tar.gz)] );
 
   # And so will the archives for B and D...
-  $local->path_exists_ok( [qw(master authors id A AU AUTHOR DistB-1.tar.gz)] );
-  $local->path_exists_ok( [qw(master authors id A AU AUTHOR DistD-1.tar.gz)] );
+  $local->path_exists_ok( [qw(stacks master authors id A AU AUTHOR DistB-1.tar.gz)] );
+  $local->path_exists_ok( [qw(stacks master authors id A AU AUTHOR DistD-1.tar.gz)] );
 
   # But C should not be there because we never got to pull it...
-  $local->path_not_exists_ok( [qw(master authors id A AU AUTHOR DistC-1.tar.gz)] );
+  $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistC-1.tar.gz)] );
 
   # If we clean up those files...
   $local->pinto->repo->clean_files;
@@ -72,15 +72,17 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
   is $DistD, undef, 'Depedency of failed target is gone completely';
 
   # However, the archive for B and its prereq D will still be on the filesystem...
-  $local->path_exists_ok( [qw(master authors id A AU AUTHOR DistB-1.tar.gz)] );
-  $local->path_exists_ok( [qw(master authors id A AU AUTHOR DistD-1.tar.gz)] );
+  my @dist_B = qw(stacks master authors id A AU AUTHOR DistB-1.tar.gz);
+  my @dist_D = qw(stacks master authors id A AU AUTHOR DistD-1.tar.gz);
+  $local->path_exists_ok( \@dist_B );
+  $local->path_exists_ok( \@dist_D );
 
   # If we clean up those files...
   $local->pinto->repo->clean_files;
 
   # Then they should both be gone...
-  $local->path_not_exists_ok( [qw(master authors id A AU AUTHOR DistB-1.tar.gz)] );
-  $local->path_not_exists_ok( [qw(master authors id A AU AUTHOR DistD-1.tar.gz)] );
+  $local->path_not_exists_ok( \@dist_B );
+  $local->path_not_exists_ok( \@dist_D );
 }
 
 #-----------------------------------------------------------------------------

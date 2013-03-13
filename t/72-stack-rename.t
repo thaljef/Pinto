@@ -27,13 +27,13 @@ use Pinto::Tester::Util qw(make_dist_archive);
   throws_ok { $t->pinto->repo->get_stack('master') } qr/does not exist/;
 
   # Renamed stack should still be the default
-  ok($t->pinto->repo->get_stack('dev')->is_default, 'dev stack is default');
+  $t->stack_is_default_ok('dev', 'after renaming stack');
 
   # Check the filesystem
-  $t->path_not_exists_ok( [qw(master)] );
-  $t->path_exists_ok( [qw(dev modules 02packages.details.txt.gz)] );
-  $t->path_exists_ok( [qw(dev modules 03modlist.data.gz)] );
-  $t->path_exists_ok( [qw(dev authors 01mailrc.txt.gz)] );
+  $t->path_not_exists_ok( [qw(stacks master)] );
+  $t->path_exists_ok( [qw(stacks dev modules 02packages.details.txt.gz)] );
+  $t->path_exists_ok( [qw(stacks dev modules 03modlist.data.gz)] );
+  $t->path_exists_ok( [qw(stacks dev authors 01mailrc.txt.gz)] );
 
 }
 
