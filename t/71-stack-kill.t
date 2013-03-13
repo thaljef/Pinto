@@ -41,41 +41,40 @@ use Pinto::Tester::Util qw(make_dist_archive);
   my $t = Pinto::Tester->new;
 
   # Make sure master is the default
-  my $stack = $t->pinto->repo->get_stack('master');
-  is $stack->is_default, 1, 'Stack master is the default';
+  $t->stack_is_default_ok('master');
 
   # Try killing the default stack
   $t->run_throws_ok(Kill => {stack => 'master'}, qr/Cannot kill the default stack/, 
     'Killing default stack throws exception');
 
-  # Now make master not the default
-  $t->run_ok(Default => {none => 1});
+  # Is stack still there?
+  $t->stack_exists_ok('master');
+
+}
+
+#------------------------------------------------------------------------------
+
+{
+
+  my $t = Pinto::Tester->new(init_args => {no_default => 1});
   $t->no_default_stack_ok;
 
-  # Try killing locked stack
+  # Lock the master stack
   $t->run_ok(Lock => {stack => 'master'});
-  is $stack->refresh->is_locked, 1, 'Stack master is now locked';
+  $t->stack_is_locked_ok('master');
 
+  # Try killing the locked stack
   $t->run_throws_ok(Kill => {stack => 'master'}, qr/is locked/, 
     'Killing locked stack throws exception');
 
   # Is stack still there?
-  ok defined $t->pinto->repo->get_stack('master'), 
-    'Stack maser still exists in DB';
-
-  # Check the filesystem
-  $t->path_exists_ok( [qw(stacks master)] );
+  $t->stack_exists_ok('master');
 
   # Try killing locked stack with force
   $t->run_ok(Kill => {stack => 'master', force => 1});
   
   # Is stack still there?
-  ok not (defined $t->pinto->repo->get_stack('master', nocroak => 1)), 'Stack is gone from DB';
-
-  # Check the filesystem
-  $t->path_not_exists_ok( [qw(master)] );
-
-  # TODO: check that branch is gone too
+  $t->stack_not_exists_ok('master');
 
 }
 #------------------------------------------------------------------------------

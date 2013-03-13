@@ -426,13 +426,13 @@ sub stack_exists_ok {
 
     $test_name ||= '';
 
-    my $stack = eval { $self->repo->get_stack($stack_name) };
-    $self->ok($stack, "Stack $stack_name exists $test_name");
+    my $stack = $self->pinto->repo->get_stack($stack_name);
+    $self->ok($stack, "Stack $stack_name exists in DB $test_name");
 
-    my $stack_dir = $stack->stack_dir;
+    my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
     $self->ok(-e $stack_dir, "Directory for $stack_name exists $test_name");
 
-    return;
+    return $stack;
 }
 
 #------------------------------------------------------------------------------
@@ -442,11 +442,39 @@ sub stack_not_exists_ok {
 
     $test_name ||= '';
 
-    my $stack = eval { $self->repo->get_stack($stack_name) };
-    $self->ok(!$stack, "Stack $stack_name does not exist $test_name");
+    my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
+    $self->ok(!$stack, "Stack $stack_name does not exist in DB $test_name");
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
     $self->ok(!-e $stack_dir, "Directory for $stack_name does not exist $test_name");
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub stack_is_locked_ok {
+    my ($self, $stack_name, $test_name) = @_;
+
+    $test_name ||= '';
+
+    my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
+    $self->ok($stack, "Stack $stack_name exists in DB $test_name") or return;
+    $self->ok($stack->is_locked, "Stack $stack_name is locked");
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub stack_is_not_locked_ok {
+    my ($self, $stack_name, $test_name) = @_;
+
+    $test_name ||= '';
+
+    my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
+    $self->ok($stack, "Stack $stack_name exists in DB $test_name") or return;
+    $self->ok(!$stack->is_locked, "Stack $stack_name is not locked");
 
     return;
 }
