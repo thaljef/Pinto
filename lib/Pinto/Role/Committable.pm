@@ -18,7 +18,7 @@ use Pinto::Util qw(is_interactive interpolate);
 
 #------------------------------------------------------------------------------
 
-has dryrun => (
+has dry_run => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
@@ -66,8 +66,8 @@ around execute => sub {
     my $result = try   { $self->$orig(@args) }
                  catch { $self->repo->txn_rollback; die $_ };
 
-    if ($self->dryrun) {
-        $self->notice('Dryrun -- rolling back database');
+    if ($self->dry_run) {
+        $self->notice('Dry run -- rolling back database');
         $self->repo->txn_rollback;
         $self->repo->clean_files;
     }

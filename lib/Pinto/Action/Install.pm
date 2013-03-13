@@ -99,7 +99,7 @@ sub execute {
 
         my @pulled_dists = map { $self->_pull($stack, $_) } $self->targets; 
 
-        if ($stack->has_changed and not $self->dryrun) {
+        if ($stack->has_changed and not $self->dry_run) {
             $self->generate_message_title('Pulled', @pulled_dists);
             $self->generate_message_details($stack, $old_head, $new_head);
             $stack->commit_revision(message => $self->edit_message);
