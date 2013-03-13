@@ -392,7 +392,7 @@ sub stack_is_not_default_ok {
     my $stack_modules_dir = $stack->modules_dir;
     my $repo_modules_dir  = $self->pinto->repo->config->modules_dir;
 
-    -e $repo_modules_dir or return; # Might not be any default
+    -l $repo_modules_dir or return; # Might not be any default
 
     my $inode1 = $repo_modules_dir->stat->ino;
     my $inode2 = $stack_modules_dir->stat->ino;
