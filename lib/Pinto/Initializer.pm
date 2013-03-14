@@ -5,10 +5,11 @@ package Pinto::Initializer;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto;
-use Pinto::File::Mailrc;
+use IO::Zlib;
+use Path::Class;
 
-use autodie;
+use Pinto;
+use Pinto::Config;
 
 #------------------------------------------------------------------------------
 
@@ -16,50 +17,18 @@ use autodie;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
-
-#------------------------------------------------------------------------------
-
-# TODO: Can we use proper Moose attributes here, rather than passing a big
-# hash of attributes to the init() method?  I seem to remember that I needed
-# to do this so I would have something to give to $config->write.  But I'm
-# not convinced this was the right solution.  It would probably be better
-# to just put all the config attributes into repository props anyway.
-
-#------------------------------------------------------------------------------
-
-
 sub init {
     my ($self, %args) = @_;
 
-    # Sanity checks
-    my $root_dir = $self->config->root_dir;
-    die "Directory $root_dir must be empty to create a repository there\n"
-        if -e $root_dir and $root_dir->children;
+    die "Must specify a root\n" 
+        if not $args{root};
 
-    # Make directory structure
-    for my $dir ( qw(root config cache log authors db) ) {
-        my $meth = "${dir}_dir";
-        $self->config->$meth->mkpath;
-    }
-
-    # Write config file
+    $self->_check_sanity(%args);
+    $self->_make_dirs(%args);
     $self->_write_config(%args);
-
-    # Write authors index
-    $self->_write_mailrc;
-
-    # Establish version
-    $self->_set_version;
-
-    # Set up database
-    $self->_create_db;
-
-    # Log message for posterity
-    $self->notice("Created new repository at $root_dir");
-
-    # Create initial stack
+    $self->_write_mailrc(%args);
+    $self->_set_version(%args);
+    $self->_create_db(%args);
     $self->_create_stack(%args);
 
     return $self;
@@ -67,21 +36,54 @@ sub init {
 
 #------------------------------------------------------------------------------
 
+sub _check_sanity {
+    my ($self, %args) = @_;
+
+    my $root_dir = dir($args{root});
+    die "Directory $root_dir must be empty to create a repository there\n"
+        if -e $root_dir and $root_dir->children;
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub _make_dirs {
+    my ($self, %args) = @_;
+
+    my $config = Pinto::Config->new(root => $args{root});
+
+    for my $dir ( qw(root config cache log authors db) ) {
+        my $method = "${dir}_dir";
+        $config->$method->mkpath;
+    }
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
 sub _write_config {
     my ($self, %args) = @_;
 
-    my $config_file = $self->config->config_dir->file( $self->config->basename );
-    $self->config->write_config_file( file => $config_file, values => \%args );
+    my $config = Pinto::Config->new(root => $args{root});
+
+    my $config_file = $config->config_dir->file( $config->basename );
+    $config->write_config_file( file => $config_file, values => \%args );
+
+    return;
 };
 
 #------------------------------------------------------------------------------
 
 sub _write_mailrc {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    my $pinto  = Pinto->new(root => $self->config->root);
-    my $mailrc = Pinto::File::Mailrc->new(repo => $pinto->repo);
-    $mailrc->write_mailrc;
+    my $config = Pinto::Config->new(root => $args{root});
+
+    my $fh = IO::Zlib->new($config->mailrc_file->stringify, 'wb') or die $!;
+    print {$fh} ''; # File will be empty, but have gzip headers
+    close $fh or throw $!;
 
     return;
 }
@@ -90,9 +92,9 @@ sub _write_mailrc {
 
 
 sub _set_version {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    my $pinto = Pinto->new(root => $self->config->root);
+    my $pinto = Pinto->new(root => $args{root});
 
     $pinto->repo->set_version;
 
@@ -102,9 +104,9 @@ sub _set_version {
 #------------------------------------------------------------------------------
 
 sub _create_db {
-    my ($self) = @_;
+    my ($self, %args) = @_;
 
-    my $pinto = Pinto->new(root => $self->config->root);
+    my $pinto = Pinto->new(root => $args{root});
 
     $pinto->repo->db->deploy;
 
@@ -118,10 +120,10 @@ sub _create_stack {
 
     my $stack      = $args{stack} || 'master';
     my $is_default = $args{no_default} ? 0 : 1;
-    my $pinto      = Pinto->new(root => $self->config->root);
+    my $pinto      = Pinto->new(root => $args{root});
 
-    $pinto->run( New => (stack   => $stack,
-                         default => $is_default) );
+    $pinto->run(New => (stack => $stack, default => $is_default));
+
     return;
 }
 
