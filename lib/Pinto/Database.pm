@@ -77,7 +77,7 @@ sub _build_schema {
     # These may be unhelpful or unwise...
     #$dbh->do('PRAGMA temp_store   = MEMORY');
     #$dbh->do('PRAGMA journal_mode = WAL');
-    $dbh->do('PRAGMA synchronous  = OFF');
+    #$dbh->do('PRAGMA synchronous  = OFF');
 
     return $connected;
 }
