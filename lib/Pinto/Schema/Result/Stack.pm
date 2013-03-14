@@ -509,7 +509,7 @@ sub should_keep_history {
   my ($self) = @_;
 
   # Is this repo configured to keep history?
-  return 1 if not $self->repo->config->nohistory;
+  return 1 unless $self->repo->config->no_history;
 
   # Is this revision referenced by other stacks?
   return 1 if $self->head->stacks->count > 1;
