@@ -30,7 +30,7 @@ my $iters   = $opt->iterations;
 #-----------------------------------------------------------------------------
 
 {
-	Pinto::Initializer->new(root => "$root")->init(stack => 'master') unless -e $root;
+	Pinto::Initializer->new->init(root => $root) unless -e $root;
 	my $pinto = Pinto->new(root => "$root");
 
 	for my $target (@targets) {
