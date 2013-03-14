@@ -147,7 +147,6 @@ with 'Pinto::Role::Schema::Result';
 
 use MooseX::Types::Moose qw(Bool Str);
 
-use PerlIO::gzip;
 use String::Format;
 use File::Copy ();
 use JSON qw(encode_json decode_json);

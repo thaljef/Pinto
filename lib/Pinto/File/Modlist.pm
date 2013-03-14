@@ -5,7 +5,8 @@ package Pinto::File::Modlist;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use PerlIO::gzip;
+use IO::Zlib;
+use HTTP::Date qw(time2str);
 
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
@@ -35,7 +36,7 @@ has modlist_file  => (
 sub write_modlist {
     my ($self) = @_;
 
-    open my $fh, '>:gzip', $self->modlist_file or throw $!;
+    my $fh = IO::Zlib->new($self->modlist_file->stringify, 'wb') or throw $!;
     print {$fh} $self->modlist_data;
     close $fh or throw $!;
 
@@ -45,28 +46,27 @@ sub write_modlist {
 #------------------------------------------------------------------------------
 
 sub modlist_data {
+    my ($self) = @_;
 
-    my $template = <<'END_MODLIST';
+    my $writer   = ref $self;
+    my $version  = $self->VERSION || 'UNKNOWN';
+    my $package  = 'CPAN::Modulelist';
+    my $date     = time2str(time);
+
+    return <<"END_MODLIST";
 File:        03modlist.data
 Description: This a placeholder for CPAN.pm
 Modcount:    0
-Written-By:  Id: %s
-Date:        %s
+Written-By:  $writer version $version
+Date:        $date
 
-package %s;
+package $package;
 
 sub data { {} }
 
 1;
 END_MODLIST
 
-    # If we put "package CPAN::Modulelist" in the above string, it
-    # fools the PAUSE indexer into thinking that we provide the
-    # CPAN::Modulelist package.  But we don't.  To get around this,
-    # I'm going to inject the string "CPAN::Modulelist" into the
-    # template.
-
-    return sprintf $template, $0, scalar localtime, 'CPAN::Modulelist';
 }
 
 #------------------------------------------------------------------------------

@@ -5,7 +5,7 @@ package Pinto::File::Mailrc;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use PerlIO::gzip;
+use IO::Zlib;
 
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
@@ -35,7 +35,7 @@ has mailrc_file  => (
 sub write_mailrc {
     my ($self) = @_;
 
-    open my $fh, '>:gzip', $self->mailrc_file or throw $!;
+    my $fh = IO::Zlib->new($self->mailrc_file->stringify, 'wb') or throw $!;
     print {$fh} ''; # File will be empty, but have gzip headers
     close $fh or throw $!;
 

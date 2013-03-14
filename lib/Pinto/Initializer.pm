@@ -5,8 +5,6 @@ package Pinto::Initializer;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use PerlIO::gzip;
-
 use Pinto;
 use Pinto::File::Mailrc;
 

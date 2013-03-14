@@ -5,7 +5,7 @@ package Pinto::IndexWriter;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use PerlIO::gzip;
+use IO::Zlib;
 use Path::Class qw(file);
 use HTTP::Date qw(time2str);
 
@@ -46,10 +46,12 @@ sub write_index {
     my $stack = $self->stack;
 
     $self->info("Writing index for stack $stack at $index_file");
-    open my $handle, '>:gzip', $index_file or throw "Cannot open $index_file: $!";
+
+    my $handle = IO::Zlib->new($index_file->stringify, 'wb') 
+        or throw "Cannot open $index_file: $!";
 
     my @records = $self->_get_index_records($stack);
-    my $count = @records;
+    my $count   = scalar @records;
 
     $self->_write_header($handle, $index_file, $count);
     $self->_write_records($handle, @records);
@@ -65,7 +67,10 @@ sub _write_header {
 
     my $base    = $filename->basename;
     my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
-    my $version = $Pinto::IndexWriter::VERSION || 'UNKNOWN VERSION';
+
+    my $writer  = ref $self;
+    my $version = $self->VERSION || 'UNKNOWN';
+    my $date    = time2str(time);
 
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $base
@@ -73,9 +78,9 @@ URL:          $url
 Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
-Written-By:   Pinto::IndexWriter $version
+Written-By:   $writer version $version
 Line-Count:   $line_count
-Last-Updated: @{[ time2str(time) ]}
+Last-Updated: $date
 
 END_PACKAGE_HEADER
 
