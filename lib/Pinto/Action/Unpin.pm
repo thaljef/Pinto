@@ -46,10 +46,11 @@ sub execute {
     my $old_head = $stack->head;
     my $new_head = $stack->start_revision;
 
+    $DB::single = 1;
     my @unpinned_dists = map { $self->_unpin($_, $stack) } $self->targets;
     return $self->result if $self->dry_run or $stack->has_not_changed;
 
-    $self->generate_message_title('Pinned', @unpinned_dists);
+    $self->generate_message_title('Unpinned', @unpinned_dists);
     $self->generate_message_details($stack, $old_head, $new_head);
     $stack->commit_revision(message => $self->edit_message);
 
@@ -69,7 +70,7 @@ sub _unpin {
 
     $dist->unpin(stack => $stack);
 
-    return;
+    return $dist;
 }
 
 #------------------------------------------------------------------------------
