@@ -14,19 +14,13 @@
 
 =item Heirarchy of exception classes
 
-=item Write more test cases for Stack operations
-
 =item Re-examine log mechanism
 
 =item Create a hook mechanism to do stuff before or after an Action
 
 =item Create command to populate repository from current modules in @INC
 
-=item Create command to diff two stacks or revisions
-
 =item Create command to undo one or more specific revisions
-
-=item Refactor the Initializer class
 
 =back
 
@@ -61,8 +55,6 @@
 =item Repo property: default devel option
 
 =item Profile and look for performance optimizations.
-
-=item Prettier stack listing and stack prop listing
 
 =item Verify archive checksums during 'verify'
 
