@@ -18,8 +18,7 @@ use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
+with qw( Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 

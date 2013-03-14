@@ -1,6 +1,6 @@
 # ABSTRACT: Generates a stub 03modlist.data.gz file
 
-package Pinto::File::Modlist;
+package Pinto::ModlistWriter;
 
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
@@ -14,6 +14,10 @@ use Pinto::Exception qw(throw);
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+
+with qw( Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
@@ -36,7 +40,12 @@ has modlist_file  => (
 sub write_modlist {
     my ($self) = @_;
 
-    my $fh = IO::Zlib->new($self->modlist_file->stringify, 'wb') or throw $!;
+    my $stack = $self->stack;
+    my $modlist_file = $self->modlist_file;
+
+    $self->info("Writing module list for stack $stack at $modlist_file");
+
+    my $fh = IO::Zlib->new($modlist_file->stringify, 'wb') or throw $!;
     print {$fh} $self->modlist_data;
     close $fh or throw $!;
 

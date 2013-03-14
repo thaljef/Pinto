@@ -154,8 +154,6 @@ use JSON qw(encode_json decode_json);
 use Pinto::Util qw(:all);
 use Pinto::Types qw(Dir File Version);
 use Pinto::Exception qw(throw);
-use Pinto::IndexWriter;
-use Pinto::Difference;
 
 use version;
 use overload ( '""'  => 'to_string',
@@ -297,9 +295,7 @@ sub make_filesystem {
     my $shared_authors_dir = $self->repo->config->authors_dir->relative($stack_dir);
     mksymlink($stack_authors_dir => $shared_authors_dir);
 
-    require Pinto::File::Modlist;
-    my $modlist = Pinto::File::Modlist->new(stack => $self);
-    $modlist->write_modlist;
+    $self->write_modlist;
 
   return $self;
 }
@@ -663,14 +659,26 @@ sub has_not_changed {
 sub write_index {
     my ($self) = @_;
 
+    require Pinto::IndexWriter;
     my $writer = Pinto::IndexWriter->new( stack  => $self,
-                                          logger => $self->repo->logger,
-                                          config => $self->repo->config );
+                                          logger => $self->logger );
     $writer->write_index;
 
     return $self;
 }
 
+#------------------------------------------------------------------------------
+
+sub write_modlist {
+    my ($self) = @_;
+
+    require Pinto::ModlistWriter;
+    my $writer = Pinto::ModlistWriter->new( stack  => $self,
+                                            logger => $self->logger );
+    $writer->write_modlist;
+
+    return $self;
+}
 #------------------------------------------------------------------------------
 
 sub get_property {

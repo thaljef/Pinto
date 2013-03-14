@@ -3,7 +3,7 @@
 package Pinto::Config;
 
 use Moose;
-use MooseX::Types::Moose qw(Str Bool Int);
+use MooseX::Types::Moose qw(Str Bool Int ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 use MooseX::Configuration;
 use MooseX::Aliases;
@@ -87,15 +87,6 @@ has mailrc_file => (
     isa       => File,
     init_arg  => undef,
     default   => sub { return $_[0]->authors_dir->file('01mailrc.txt.gz') },
-    lazy      => 1,
-);
-
-
-has modlist_file => (
-    is        => 'ro',
-    isa       => File,
-    init_arg  => undef,
-    default   => sub { return $_[0]->modules_dir->file('03modlist.data.gz') },
     lazy      => 1,
 );
 
@@ -191,7 +182,7 @@ has sources  => (
 
 
 has sources_list => (
-    isa        => 'ArrayRef[URI]',
+    isa        => ArrayRef['URI'],
     builder    => '_build_sources_list',
     traits     => ['Array'],
     handles    => { sources_list => 'elements' },
@@ -203,7 +194,7 @@ has sources_list => (
 has target_perl_version => (
     is        => 'ro',
     isa       => Version,
-    default   => "$PERL_VERSION",
+    default   => sub { $PERL_VERSION },
     coerce    => 1,
 );
 
@@ -248,7 +239,7 @@ sub _build_sources_list {
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->meta->make_immutable();
+__PACKAGE__->meta->make_immutable;
 
 #------------------------------------------------------------------------------
 
