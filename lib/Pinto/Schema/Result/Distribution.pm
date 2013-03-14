@@ -298,7 +298,7 @@ sub register {
 
     $stack->mark_as_changed if $did_register;
 
-    return $self;
+    return $did_register;
 }
 
 #------------------------------------------------------------------------------
@@ -333,7 +333,7 @@ sub unregister {
 
   $stack->mark_as_changed if $did_unregister;
 
-  return $self;
+  return $did_unregister;
 }
 
 #------------------------------------------------------------------------------
@@ -349,11 +349,16 @@ sub pin {
 
     my $where = {revision => $rev->id, is_pinned => 0};
     my $regs  = $self->registrations($where);
-    $regs->update( {is_pinned => 1} );
+    
+    if (! $regs->count) {
+      $self->warning("Distribution $self is already pinned on stack $stack");
+      return 0;
+    }
 
+    $regs->update( {is_pinned => 1} );
     $stack->mark_as_changed;
 
-    return $self;
+    return 1;
 }
 
 #------------------------------------------------------------------------------
@@ -369,11 +374,16 @@ sub unpin {
 
     my $where = {revision => $rev->id, is_pinned => 1};
     my $regs  = $self->registrations($where);
-    $regs->update( {is_pinned => 0} );
 
+    if (! $regs->count) {
+      $self->warning("Distribution $self is not pinned on stack $stack");
+      return 0;
+    }
+
+    $regs->update( {is_pinned => 0} );
     $stack->mark_as_changed;
 
-    return $self;
+    return 1;
 }
 
 #------------------------------------------------------------------------------

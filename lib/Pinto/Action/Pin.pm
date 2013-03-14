@@ -67,9 +67,9 @@ sub _pin {
 
     $self->notice("Pinning distribution $dist to stack $stack");
 
-    $dist->pin(stack => $stack);
+    my $did_pin = $dist->pin(stack => $stack);
 
-    return $dist;
+    return $did_pin ? $dist : ();
 }
 
 #------------------------------------------------------------------------------

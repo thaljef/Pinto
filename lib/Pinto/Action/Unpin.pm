@@ -46,7 +46,6 @@ sub execute {
     my $old_head = $stack->head;
     my $new_head = $stack->start_revision;
 
-    $DB::single = 1;
     my @unpinned_dists = map { $self->_unpin($_, $stack) } $self->targets;
     return $self->result if $self->dry_run or $stack->has_not_changed;
 
@@ -68,9 +67,9 @@ sub _unpin {
 
     $self->notice("Unpinning distribution $dist from stack $stack");
 
-    $dist->unpin(stack => $stack);
+    my $did_unpin = $dist->unpin(stack => $stack);
 
-    return $dist;
+    return $did_unpin ? $dist : ();
 }
 
 #------------------------------------------------------------------------------
