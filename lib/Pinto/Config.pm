@@ -172,20 +172,11 @@ has log_level  => (
 );
 
 
-has devel => (
-    is        => 'ro',
-    isa       => Bool,
-    key       => 'devel',
-    default   => 0,
-    documentation => 'Include development releases in the index',
-);
-
-
-has nohistory => (
-    is        => 'ro',
-    isa       => Bool,
-    key       => 'nohistory',
-    default   => 0,
+has no_history => (
+    is         => 'ro',
+    isa        => Bool,
+    key        => 'no_history',
+    default    => 0,
     documentation => 'Do not record stack history.  Log messages are still recorded',
 );
 

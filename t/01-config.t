@@ -17,9 +17,9 @@ use Pinto::Config;
 
 {
     my %default_cases = (
-        root      => 'nowhere',
-        sources   => 'http://cpan.perl.org http://backpan.perl.org',
-        devel     => 0,
+        root       => 'nowhere',
+        sources    => 'http://cpan.perl.org http://backpan.perl.org',
+        no_history => 0,
     );
 
     my $cfg = Pinto::Config->new(root => 'nowhere');
@@ -29,9 +29,9 @@ use Pinto::Config;
     }
 
    my %custom_cases = (
-        root      => 'nowhere',
-        sources   => 'http://cpan.pair.com  http://metacpan.org',
-        devel     => 1
+        root       => 'nowhere',
+        sources    => 'http://cpan.pair.com  http://metacpan.org',
+        no_history => 1
     );
 
     $cfg = Pinto::Config->new(%custom_cases);
