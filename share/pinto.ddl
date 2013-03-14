@@ -73,14 +73,6 @@ CREATE TABLE prerequisite (
        UNIQUE(distribution, package_name)
 );
 
---CREATE INDEX idx_prerequisite_package_name ON prerequisite(package_name);
---CREATE INDEX idx_registration_package_name ON registration(package_name);
---CREATE INDEX idx_registration_package      ON registration(package);
---CREATE INDEX idx_registration_distribution ON registration(distribution);
-
 CREATE INDEX idx_ancestry_parent           ON ancestry(parent);
 CREATE INDEX idx_ancestry_child            ON ancestry(child);
-
-CREATE INDEX idx_package_file              ON package(file);
 CREATE INDEX idx_package_sha256            ON package(sha256);
-
