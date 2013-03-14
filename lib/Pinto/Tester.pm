@@ -101,13 +101,11 @@ sub BUILD { $_[0]->pinto }
 sub _build_pinto {
     my ($self) = @_;
 
-    my %defaults     = ( root    => $self->root() );
-    my %log_defaults = ( log_handler => Test::Log::Dispatch->new(),
-                         verbose     => 3, );
+    my %defaults     = ( root => $self->root );
+    my %log_defaults = ( log_handler => Test::Log::Dispatch->new, verbose => 3 );
 
-
-    my $initializer = Pinto::Initializer->new(%defaults, %log_defaults);
-    $initializer->init( $self->init_args );
+    my $initializer = Pinto::Initializer->new;
+    $initializer->init( %defaults, %log_defaults, $self->init_args );
 
     my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args);
     return $pinto;
