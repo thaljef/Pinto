@@ -168,7 +168,7 @@ has log_level  => (
     isa        => Str,
     key        => 'log_level',
     default    => 'notice',
-    documentation => 'Minimum logging level for the log file',
+    documentation => 'Minimum log level for the internal log file',
 );
 
 
@@ -177,7 +177,7 @@ has no_history => (
     isa        => Bool,
     key        => 'no_history',
     default    => 0,
-    documentation => 'Do not record stack history.  Log messages are still recorded',
+    documentation => 'Do not keep stack snapshots at each revision',
 );
 
 
