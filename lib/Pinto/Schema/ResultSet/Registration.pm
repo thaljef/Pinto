@@ -41,8 +41,8 @@ sub with_revision {
 sub as_hash {
 	my ($self, $cb) = @_;
 
-	$cb ||= sub {return $_[0]->id};
-	my %hash = map { ($cb->($_) => $_)  } $self->all;
+	$cb ||= sub {return ($_[0]->id => $_[0]) };
+	my %hash = map { $cb->($_)  } $self->all;
 
     return wantarray ? %hash : \%hash;
 }
