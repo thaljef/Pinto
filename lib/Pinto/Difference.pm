@@ -18,14 +18,14 @@ use overload ( q{""} => 'to_string' );
 
 has left => (
     is       => 'ro',
-    isa      => 'Pinto::Schema::ResultSet::Registration',
+    isa      => 'Pinto::Schema::Result::Revision',
     required => 1,
 );
 
 
 has right => (
     is       => 'ro',
-    isa      => 'Pinto::Schema::ResultSet::Registration',
+    isa      => 'Pinto::Schema::Result::Revision',
     required => 1,
 );
 
@@ -67,12 +67,8 @@ around BUILDARGS => sub {
     # objects.  In that case, we just convert it to the right thing.
 
     for my $side ( qw(left right) ) {
-        my $arg = $args->{$side};
-        if (itis($arg, 'Pinto::Schema::Result::Revision')) {
-            $args->{$side} = $arg->registrations->with_package->with_distribution;
-        }
-        elsif (itis($arg, 'Pinto::Schema::Result::Stack')) {
-            $args->{$side} = $arg->head->registrations->with_package->with_distribution;
+        if ($args->{$side}->isa('Pinto::Schema::Result::Stack')) {
+            $args->{$side} = $args->{$side}->head;
         }
     }
 
@@ -84,31 +80,56 @@ around BUILDARGS => sub {
 sub _build_diffs {
     my ($self) = @_;
 
+
+    # We want to find the registrations that are "different" in either 
+    # side.  Two registrations are the same if they have the same values in
+    # the package, distribution, and is_pinned columns.  So we use these
+    # columns to construct the keys of a hash.  The value is the id of
+    # the registration.
+
+    my @fields = qw(distribution package is_pinned);
+
     my $cb = sub {
-        my ($self) = @_;
-        my @fields = qw(distribution package is_pinned);
-        return join '|', map {$self->get_column($_)} @fields;
+        my $value = $_[0]->id;
+        my $key   = join '|', map {$_[0]->get_column($_)} @fields;
+        return ($key => $value);
     };
 
-    # Compute left and right sets as hashes
-    my %left  = $self->left->as_hash($cb);
-    my %right = $self->right->as_hash($cb);
+    $DB::single = 1;
+    my $attrs = {select => ['id', @fields]};
+    my %left  = $self->left->registrations({},  $attrs)->as_hash($cb);
+    my %right = $self->right->registrations({}, $attrs)->as_hash($cb);
 
-    # Compute differences between left and right sets
-    my @added   = @right{ grep { not exists $left{$_}  } keys %right };
-    my @deleted = @left{  grep { not exists $right{$_} } keys %left  };
+    # Now that we have hashes representing the left and right, we use
+    # the keys as "sets" and compute the difference between them.  Keys
+    # present on the right but not on the left have been added.  And
+    # those present on left but not on the right have been deleted.
 
-    # Construct an ordered list of differences
-    my @adds = map { ['+' => $_] } @added;
-    my @dels = map { ['-' => $_] } @deleted;
+    my @added_ids   = @right{ grep { not exists $left{$_}  } keys %right };
+    my @deleted_ids = @left{  grep { not exists $right{$_} } keys %left  };
+
+    # Now we have the ids of all the registrations that were added or
+    # deleted between the left and right revisions.  We use those ids to
+    # requery the database and get full objects for each of them.  Since
+    # the number of changed registrations is usually much less than the
+    # total number of registrations in either revision, this is much
+    # quicker than querying full o
+
+    my $where1     = {'me.id' => {in => \@added_ids}};
+    my $added_rs   = $self->right->registrations($where1);
+    my @adds = map { ['+' => $_] } $added_rs->with_distribution->with_package;
+
+
+    my $where2     = {'me.id' => {in => \@deleted_ids}};
+    my $deleted_rs = $self->left->registrations($where2);
+    my @dels = map { ['-' => $_] } $deleted_rs->with_distribution->with_package;
 
     # Strictly speaking, the registrations are an unordered list.  But
-    # the diff is more readable if we group related registrations together.
-    # So we sort them by distribution and package name.
+    # the diff is more readable if we group registrations together by
+    # distribution name.
 
-    my @diffs = sort {    
-        ($a->[1]->distribution  cmp $b->[1]->distribution) || 
-        ($a->[1]->package_name  cmp $b->[1]->package_name)        
+    my @diffs = sort {
+        ($a->[1]->distribution->name  cmp $b->[1]->distribution->name) 
     } @adds, @dels;
 
     return \@diffs;
