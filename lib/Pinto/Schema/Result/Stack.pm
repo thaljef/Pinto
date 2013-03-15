@@ -477,7 +477,7 @@ sub start_revision {
     
     $self->assert_is_open;
 
-    return $new_head;
+    return $self;
 }
 
 #------------------------------------------------------------------------------

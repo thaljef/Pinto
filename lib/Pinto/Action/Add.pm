@@ -99,9 +99,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack    = $self->repo->get_stack($self->stack);
-    my $old_head = $stack->head;
-    my $new_head = $stack->start_revision;
+    my $stack = $self->repo->get_stack($self->stack)->start_revision;
 
     my (@successful, @failed);
     for my $archive ($self->archives) {
@@ -109,7 +107,7 @@ sub execute {
         try   {
             $self->repo->svp_begin; 
             my $dist = $self->_add($archive, $stack);
-            push @successful, $dist->to_string;
+            push @successful, $dist;
         }
         catch {
             die $_ unless $self->no_fail; 
@@ -118,7 +116,7 @@ sub execute {
 
             $self->error("$_");
             $self->error("$archive failed...continuing anyway");
-            push @failed, $archive->basename;
+            push @failed, $archive;
         }
         finally {
             my ($error) = @_;
@@ -128,9 +126,10 @@ sub execute {
 
     return $self->result if $self->dry_run or $stack->has_not_changed;
 
-    $self->generate_message_title('Added', @successful);
-    $self->generate_message_details($stack, $old_head, $new_head);
-    $stack->commit_revision(message => $self->edit_message);
+    my $msg_title = $self->generate_message_title(@successful);
+    my $msg = $self->compose_message(stack => $stack, title => $msg_title);
+
+    $stack->commit_revision(message => $msg);
 
     return $self->result->changed;
 }

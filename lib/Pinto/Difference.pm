@@ -105,8 +105,8 @@ sub _build_diffs {
     # present on the right but not on the left have been added.  And
     # those present on left but not on the right have been deleted.
 
-    my @added_ids   = @right{ grep { not exists $left{$_}  } keys %right };
-    my @deleted_ids = @left{  grep { not exists $right{$_} } keys %left  };
+    my @add_ids = @right{ grep { not exists $left{$_}  } keys %right };
+    my @del_ids = @left{  grep { not exists $right{$_} } keys %left  };
 
     # Now we have the ids of all the registrations that were added or
     # deleted between the left and right revisions.  We use those ids to
@@ -115,14 +115,14 @@ sub _build_diffs {
     # total number of registrations in either revision, this is much
     # quicker than querying full o
 
-    my $where1     = {'me.id' => {in => \@added_ids}};
-    my $added_rs   = $self->right->registrations($where1);
-    my @adds = map { ['+' => $_] } $added_rs->with_distribution->with_package;
+    my $where1     = {'me.id' => {in => \@add_ids}};
+    my $add_rs     = $self->right->registrations($where1);
+    my @adds = map { ['+' => $_] } $add_rs->with_distribution->with_package;
 
 
-    my $where2     = {'me.id' => {in => \@deleted_ids}};
-    my $deleted_rs = $self->left->registrations($where2);
-    my @dels = map { ['-' => $_] } $deleted_rs->with_distribution->with_package;
+    my $where2     = {'me.id' => {in => \@del_ids}};
+    my $del_rs     = $self->left->registrations($where2);
+    my @dels = map { ['-' => $_] } $del_rs->with_distribution->with_package;
 
     # Strictly speaking, the registrations are an unordered list.  But
     # the diff is more readable if we group registrations together by

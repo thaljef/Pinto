@@ -36,22 +36,6 @@ has use_default_message => (
     default    => 0,
 );
 
-
-has message_title => (
-    is        => 'rw',
-    isa       => Str,
-    default   => '',
-    lazy      => 1,
-);
-
-
-has message_details => (
-    is        => 'rw',
-    isa       => Str,
-    default   => 'No details available',
-    lazy      => 1,
-);
-
 #------------------------------------------------------------------------------
 
 requires qw( execute repo );
@@ -84,12 +68,12 @@ around execute => sub {
 
 #------------------------------------------------------------------------------
 
-sub edit_message {
+sub compose_message {
     my ($self, %args) = @_;
 
-    my $stack   = $args{stack};
-    my $title   = $args{title}   || $self->message_title   || '';
-    my $details = $args{details} || $self->message_details || '';
+    my $title   = $args{title} || '';
+    my $stack   = $args{stack} || throw "Must specify a stack";
+    my $diff    = $args{diff}  || $stack->diff;
 
     return interpolate($self->message)
         if $self->has_message and $self->message =~ /\S+/;
@@ -103,10 +87,9 @@ sub edit_message {
     return $title
         if not is_interactive;
 
-    my $message = Pinto::CommitMessage->new( stack   => $stack, 
-                                             title   => $title, 
-                                             details => $details)->edit;
-
+    my $cm = Pinto::CommitMessage->new(title => $title, details => $diff->to_string); 
+    my $message = $cm->edit;
+                                            
     throw 'Aborting due to empty commit message' if $message !~ /\S+/;
 
     return $message;
@@ -115,24 +98,13 @@ sub edit_message {
 #------------------------------------------------------------------------------
 
 sub generate_message_title {
-    my ($self, $verb, @items, $extra) = @_;
+    my ($self, @items, $extra) = @_;
 
-    $extra = '' if not defined $extra;
-    my $title = "$verb ". join(', ', @items) . " $extra";
-    $self->message_title($title);
+    my $class    = ref $self;
+    my ($action) = $class =~ m/ ( [^:]* ) $/x;
+    my $title    = "$action ". join(', ', @items) . ($extra ? " $extra" : '');
 
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
-sub generate_message_details {
-    my ($self, $stack, $old_head, $new_head) = @_;
-
-    my $diff = $new_head->diff($old_head);
-    $self->message_details($diff->to_string);
-
-    return $self;
+    return $title;
 }
 
 #------------------------------------------------------------------------------

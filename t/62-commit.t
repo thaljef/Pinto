@@ -9,17 +9,16 @@ use Moose;
 extends 'Pinto::Action';
 with    'Pinto::Role::Committable';
 
-
-has '+message_title' => ( 
-	default => 'my title',
-);
-
 sub execute { 
-	my $self = shift;
-	my $stack = $self->repo->get_stack;
-	my $old_head = $stack->start_revision;
+	my $self  = shift;
+	my $stack = $self->repo->get_stack->start_revision;
+
+	my $msg_title = $self->generate_message_title(qw(Foo Bar Baz));
+	my $msg = $self->compose_message(stack => $stack, title => $msg_title);
+
 	$stack->head->update({has_changes => 1}); # To bypass assertion
-	$stack->commit_revision(message => $self->edit_message);
+	$stack->commit_revision(message => $msg);
+
 	return $self->result->changed; 
 }
 
@@ -41,47 +40,59 @@ use Pinto::Globals;
 local $Pinto::Globals::current_username = 'ME';
 
 my $t = Pinto::Tester->new;
+my $faked_title = 'Fake Foo, Bar, Baz';
 
 #------------------------------------------------------------------------------
 
 {
+	note "Specified nothing";
+
 	$t->run_ok(Fake => {});
 	my $stack    = $t->pinto->repo->get_stack;
 	my $revision = $stack->head;
 
-	is ($revision->username, 'ME', 'Revision was committed by ME');
-	is ($revision->message, 'my title', 'Message is title only no commit message specified');
-	is ($revision->message_body, '', 'Message body is empty when no commit message specified');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->username,      'ME',         'Revision was committed by ME');
+	is ($revision->message_title, $faked_title, 'Message has correct title');
+	is ($revision->message_body,  '',           'Message body is empty');
+	is ($revision->message,       $faked_title, 'Message is title only');
 }
 
 #------------------------------------------------------------------------------
 
 {
+	note "Specified use_default_message";
+
 	$t->run_ok(Fake => {use_default_message => 1});
 	my $stack    = $t->pinto->repo->get_stack;
 	my $revision = $stack->head;
 
-	is ($revision->message, 'my title', 'Message is title only when use_default_message');
-	is ($revision->message_body, '', 'Message body is empty when use_default_message');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->username,      'ME',         'Revision was committed by ME');
+	is ($revision->message_title, $faked_title, 'Message has correct title');
+	is ($revision->message_body,  '',           'Message body is empty');
+	is ($revision->message,       $faked_title, 'Message is title only');
 }
 
 #------------------------------------------------------------------------------
 
 {
+	note "Specified message is empty (or whitespace) string";
+
 	$t->run_ok(Fake => {message => '  '});
 	my $stack    = $t->pinto->repo->get_stack;
 	my $revision = $stack->head;
 
-	is ($revision->message, 'my title', 'Message is title only when specified message was whitespace or empty');
-	is ($revision->message_body, '', 'Message body is empty when specified message was whitespace or empty');
-	is ($revision->message_title, 'my title', 'Got message title');
+	is ($revision->username,      'ME',         'Revision was committed by ME');
+	is ($revision->message_title, $faked_title, 'Message has correct title');
+	is ($revision->message_body,  '',           'Message body is empty');
+	is ($revision->message,       $faked_title, 'Message is title only');
 }
 
 #------------------------------------------------------------------------------
 
 {
+
+	note "Specified custom (non-empty) message";
+
 	$t->run_ok(Fake => {message => 'my message'});
 	my $stack    = $t->pinto->repo->get_stack;
 	my $revision = $stack->head;
@@ -94,6 +105,8 @@ my $t = Pinto::Tester->new;
 #------------------------------------------------------------------------------
 
 {
+	note "Specified custom message containing title and body regions";
+
 	$t->run_ok(Fake => {message => "  my title  \n\nmy body  "});
 	my $stack    = $t->pinto->repo->get_stack;
 	my $revision = $stack->head;
