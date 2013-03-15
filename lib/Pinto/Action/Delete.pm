@@ -45,8 +45,9 @@ sub execute {
     my ($self) = @_;
 
     for my $target ( $self->targets ) {
+        $DB::single = 1;
         my $dist = $self->repo->get_distribution(spec => $target);
-        throw "Distribution $target is not in the repository" if not $dist;
+        throw "Distribution $target is not in the repository" if not defined $dist;
         $self->repo->delete_distribution(distribution => $dist, force => $self->force);
     }
 
