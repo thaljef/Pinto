@@ -47,21 +47,10 @@ sub execute {
     for my $target ( $self->targets ) {
         my $dist = $self->repo->get_distribution(spec => $target);
         throw "Distribution $target is not in the repository" if not $dist;
-        $self->repo->delete(dist => $dist, force => $self->force);
+        $self->repo->delete_distribution(distribution => $dist, force => $self->force);
     }
 
     return $self->result->changed;
-}
-
-#------------------------------------------------------------------------------
-
-sub message_title {
-    my ($self) = @_;
-
-    my $targets  = join ' ', $self->targets;
-    my $force    = $self->force ? ' with force' : '';
-
-    return "Deleted$force $targets.";
 }
 
 #------------------------------------------------------------------------------

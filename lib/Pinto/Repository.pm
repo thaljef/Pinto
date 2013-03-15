@@ -503,6 +503,30 @@ sub fetch_distribution {
 
 #------------------------------------------------------------------------------
 
+sub delete_distribution {
+    my ($self, %args) = @_;
+
+    my $dist  = $args{distribution};
+    my $force = $args{force};
+    my $errors = 0;
+
+    for my $reg ($dist->registrations) {
+        if ($reg->is_pinned and not $force) {
+            my $stack = $reg->stack;
+            $self->error("$reg is pinned to stack $stack and cannot be deleted");
+            $errors++;
+        }
+
+        $dist->delete unless $errors;
+    }
+
+    throw "Unable to delete $dist" if $errors;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub pull_prerequisites {
     my ($self, %args) = @_;
 
