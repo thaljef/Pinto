@@ -1,82 +1,35 @@
 {{$NEXT}}
 
-     Important:
+    !! DEVELOPER RELEASE !!
 
-     This version of Pinto is not compatible with repositories that
-     were created with prior versions.  Please contact
-     thaljef@cpan.org if you need to migrate an old repository.
-     However, Pinto now uses DBIx::Class::DeploymentHandler to perform
-     schema migrations, so you'll be able to smoothly upgrade to
-     future versions of Pinto.
+     This requires App::Pinto 0.065_01 for the front end.
+     It is not compatible with Pinto::Server at the moment.
+     
+     IMPORTANT:
 
-     New Actions:
+     Bad news:  This version of pinto is not compatible with
+     *existing* repositories.  To migrate, you'll need to create a new
+     repository (using this version of pinto) and then "pull" all the
+     distributons from your old repository into the new one.  Repeat
+     this process for each stack.  Unfortunatley, you will loose your 
+     revision history.  If you bug me about it, I'll write a script to 
+     automate this for you.  I am thaljef@cpan.org.
 
-     * Kill: Deletes a stack.  This was originally done by the Delete
-       action, but that action has been repurposed (see next item).
+     Good news:  This version of pinto has hooks to do future migrations 
+     automatically.  So any repository you create with *this version* 
+     of pinto can be easily migrated to any future versions. I'm also pretty 
+     confident that the schema is now stable, so a migration will not be 
+     required for a while.
 
-     * Delete: Permanently removes an archive from the repository and
-       removes any reference to it from history.  This action cannot
-       be undone.  Highly experimental!
+     Also: Several classes have been renamed or removed.  I strongly 
+     recommend removing your current installation of Pinto and App::Pinto 
+     before installing this one.  This will remove things that are no 
+     longer supported. 
 
-     * Pop: Removes packages from a stack, but does not cause the
-       archive to be removed.
-
-     * Reindex: Adds packages from an existing archive to a stack.  At
-       present, this command does not recurse into prereqs, but it
-       might in the future.
-
-     * Config: Sets and shows configuration properties for either a
-       stack or the whole repository.  This action takes the place of
-       Props and Edit, which are now gone.
-
-     * Default: Sets or unsets the default stack.  This action takes
-       the place of the 'default' argument on the (now defunct) Edit
-       action.
-
-     * Lock: Locks a stack to prevent future changes.  This is useful
-       for creating a read-only copy of stack (like a "tag").  Any
-       Action that modfies a the package registrations will fail if
-       called on a stack that is locked.
-
-     * Unlock: Unlocks a stack to allow future changes.  You might
-       want to use this to make hotfixes to a stack that has already
-       been locked and delployed.
-
-     Interface Changes:
-
-     * You are no longer required to have a default stack.  If you
-       choose not to have a default stack, then all Actions will
-       require an explicit stack argument.  You can also delete the
-       default stack if you desire.
-
-     * I decided that there really isn't a suitable default name for
-       the initial stack.  So now you must specify the initial stack
-       name when you create the repository.  Otherwise, you'll get a
-       bare repository with no stacks.
-
-     * If you Add an archive that is identical to one that is already
-       in the repository (i.e. has the same SHA-256 hash and same base
-       file name) then Pinto simply re-registers the archive that it
-       already has on the target stack.  If archives are identical but
-       the file base names do not match, then an error will be thrown.
-
-     * When you copy a stack, its entire history is copied as well.
-       This means that you can view the logs and revert the copied
-       stack back to revisions that happened before the point of the
-       copy.
-
-     * Copying a stack is no longer a committable event, so it does
-       not require a log message.
-
-
-     Other Improvements:
-
-     * Copying a stack is now much, much faster.  On my machine,
-       copying a stack with ~200 distributions went from 1 minute to 3
-       seconds.
-
-     * Reverting a stack is also much faster.  But if you revert over
-       several revisions, it can still be a pretty slow process.
+     Finally: A *lot* has changed in this release.  But none of it is
+     documented here because the internals of Pinto are all private.
+     Instead, Please see the Changes file in App-Pinto-0.065.tar.gz 
+     for a description of the public changes.
 
 
 0.065     2012-11-14 09:55:54 America/Los_Angeles
