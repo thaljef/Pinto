@@ -506,7 +506,7 @@ sub fetch_distribution {
 sub delete_distribution {
     my ($self, %args) = @_;
 
-    my $dist  = $args{distribution};
+    my $dist  = $args{dist};
     my $force = $args{force};
 
     for my $reg ($dist->registrations) {
