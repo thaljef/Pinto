@@ -510,6 +510,7 @@ sub delete_distribution {
     my $force = $args{force};
 
     for my $reg ($dist->registrations) {
+        # TODO: say which stack it is pinned to
         throw "$dist is pinned to a stack and cannot be deleted" 
             if $reg->is_pinned and not $force;
     }
