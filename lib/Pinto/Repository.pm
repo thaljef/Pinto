@@ -516,6 +516,8 @@ sub delete_distribution {
     }
 
     $dist->delete;
+    my $basedir = $self->config->authors_id_dir;
+    $self->store->remove_archive($dist->native_path($basedir));
 
     return $self;
 }
