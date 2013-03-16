@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+     The Delete action didn't actually delete the archive.
+     Now it does!  Added some more tests too.
+
 0.065_01  2013-03-15 16:19:38 America/Los_Angeles
 
     !! DEVELOPER RELEASE !!
