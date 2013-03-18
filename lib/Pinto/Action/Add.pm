@@ -3,12 +3,13 @@
 package Pinto::Action::Add;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::StrictConstructor;
+use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 
 use Pinto::Util qw(sha256 current_author_id);
-use Pinto::Types qw(AuthorID FileList StackName StackObject StackDefault);
+use Pinto::Types qw(AuthorID FileList);
 use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
@@ -18,10 +19,6 @@ use Pinto::Exception qw(throw);
 #------------------------------------------------------------------------------
 
 extends qw( Pinto::Action );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::PauseConfig Pinto::Role::Committable );
 
 #------------------------------------------------------------------------------
 
@@ -42,40 +39,15 @@ has archives  => (
 );
 
 
-has stack => (
-    is       => 'ro',
-    isa      => StackName | StackDefault | StackObject,
-    default  => undef,
-);
-
-
-has pin => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
-);
-
-
-has no_recurse => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
-);
-
-
 has no_fail => (
     is        => 'ro',
     isa       => Bool,
     default   => 0,
 );
 
+#------------------------------------------------------------------------------
 
-has message_title => (
-    is        => 'rw',
-    isa       => Str,
-    init_arg  => undef,
-    default   => '',
-);
+with qw( Pinto::Role::PauseConfig Pinto::Role::Committable Pinto::Role::Puller );
 
 #------------------------------------------------------------------------------
 
@@ -99,15 +71,13 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->start_revision;
-
     my (@successful, @failed);
     for my $archive ($self->archives) {
 
         try   {
             $self->repo->svp_begin; 
-            my $dist = $self->_add($archive, $stack);
-            push @successful, $dist;
+            my $dist = $self->_add($archive);
+            push @successful, $dist ? $dist : ();
         }
         catch {
             die $_ unless $self->no_fail; 
@@ -124,20 +94,13 @@ sub execute {
         };
     }
 
-    return $self->result if $self->dry_run or $stack->has_not_changed;
-
-    my $msg_title = $self->generate_message_title(@successful);
-    my $msg = $self->compose_message(stack => $stack, title => $msg_title);
-
-    $stack->commit_revision(message => $msg);
-
-    return $self->result->changed;
+    return @successful;
 }
 
 #------------------------------------------------------------------------------
 
 sub _add {
-    my ($self, $archive, $stack) = @_;
+    my ($self, $archive) = @_;
     
     $self->notice("Adding $archive");
 
@@ -151,8 +114,7 @@ sub _add {
         $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
     }
 
-    $dist->register(stack => $stack, pin => $self->pin);
-    $self->repo->pull_prerequisites(dist => $dist, stack => $stack) unless $self->no_recurse;
+    $self->pull(target => $dist);
     
     return $dist;
 }

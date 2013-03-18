@@ -524,34 +524,6 @@ sub delete_distribution {
 
 #------------------------------------------------------------------------------
 
-sub pull_prerequisites {
-    my ($self, %args) = @_;
-
-    my $dist  = $args{dist};
-    my $stack = $args{stack};
-
-    my $cb = sub {
-        my ($walker, $prereq) = @_;
-
-        my $dist =   $stack->get_distribution(spec => $prereq)
-                   || $self->get_distribution(spec => $prereq) 
-                   || $self->ups_distribution(spec => $prereq);
-
-        return if not defined $dist;
-        $dist->register(stack => $stack);
-        return $dist;
-    };
-
-    my $filter = Pinto::PrerequisiteFilter::Core->new(perl_version => $stack->target_perl_version);
-    my $walker = Pinto::PrerequisiteWalker->new(start => $dist, filter => $filter, callback => $cb);
-
-    $walker->walk;
-
-    return $self;
-}
-
-#-------------------------------------------------------------------------------
-
 sub package_count {
     my ($self) = @_;
 

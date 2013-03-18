@@ -42,7 +42,7 @@ $t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
   my $sandbox = File::Temp->newdir;
   my $p5_dir = dir($sandbox, qw(lib perl5));
   my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
-  $t->run_ok('Install' => {targets => ['PkgA'], %cpanm_opts, out => \$buffer});
+  $t->run_ok(Install => {targets => ['PkgA'], %cpanm_opts, out => \$buffer});
   file_exists_ok($p5_dir->file('PkgA.pm'));
   file_exists_ok($p5_dir->file('PkgB.pm'));
   file_exists_ok($p5_dir->file('PkgC.pm'));
@@ -61,12 +61,12 @@ $t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
   my $sandbox = File::Temp->newdir;
   my $p5_dir = dir($sandbox, qw(lib perl5));
   my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
-  $t->run_ok('Install' => {targets => ['PkgC'], stack => 'dev', %cpanm_opts, out => \$buffer});
+  $t->run_ok(Install => {targets => ['PkgC'], stack => 'dev', %cpanm_opts, out => \$buffer});
 
   file_exists_ok($p5_dir->file('PkgC.pm'));
 
 
-  $t->run_throws_ok('Install' => {targets => ['PkgA'], stack => 'dev', %cpanm_opts},
+  $t->run_throws_ok(Install => {targets => ['PkgA'], stack => 'dev', %cpanm_opts},
                     qr/Installation failed/);
 }
 

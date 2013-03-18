@@ -11,15 +11,11 @@ with    'Pinto::Role::Committable';
 
 sub execute { 
 	my $self  = shift;
-	my $stack = $self->repo->get_stack->start_revision;
 
-	my $msg_title = $self->generate_message_title(qw(Foo Bar Baz));
-	my $msg = $self->compose_message(stack => $stack, title => $msg_title);
+	# To bypass assert_has_changed() when committed
+	$self->stack->head->update({has_changes => 1});
 
-	$stack->head->update({has_changes => 1}); # To bypass assertion
-	$stack->commit_revision(message => $msg);
-
-	return $self->result->changed; 
+	return qw(Foo Bar Baz); 
 }
 
 no Moose;

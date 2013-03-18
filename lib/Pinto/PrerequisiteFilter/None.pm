@@ -3,6 +3,7 @@
 package Pinto::PrerequisiteFilter::None;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 #------------------------------------------------------------------------------

@@ -38,14 +38,14 @@ while( my($pv, $expect) = each %test_cases) {
 	my $walked_prereqs = {};
 
 	my $cb  = sub { 
-		my ($walker, $prereq) = @_;
+		my ($prereq) = @_;
 		$walked_prereqs->{$prereq->name} = $prereq->version;
 	    return $t->pinto->repo->get_distribution(spec => $prereq);
 	};
 
 	my $filter = Pinto::PrerequisiteFilter::Core->new(perl_version => $pv);
 	my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb, filter => $filter);
-	$walker->walk;
+	while ($walker->next) {};
 
 	# NB: 'perl' itself should never be listed as a prereq
 	my $test_name = "Got expected prereqs against perl version $pv";

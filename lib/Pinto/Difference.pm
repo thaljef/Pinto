@@ -95,7 +95,6 @@ sub _build_diffs {
         return ($key => $value);
     };
 
-    $DB::single = 1;
     my $attrs = {select => ['id', @fields]};
     my %left  = $self->left->registrations({},  $attrs)->as_hash($cb);
     my %right = $self->right->registrations({}, $attrs)->as_hash($cb);
