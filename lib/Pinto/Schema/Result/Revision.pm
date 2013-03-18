@@ -358,6 +358,7 @@ sub commit {
 sub assert_is_open {
     my ($self) = @_;
 
+    # TODO: mark column dirty rather than refresh whole object.
     throw "PANIC: Revision $self is already committed"
       if $self->refresh->get_column('is_committed');
 
@@ -370,6 +371,7 @@ sub assert_is_open {
 sub assert_is_committed {
     my ($self) = @_;
 
+    # TODO: mark column dirty rather than refresh whole object.
     throw "PANIC: Revision $self is still open"
       if not $self->refresh->get_column('is_committed');
 
@@ -381,6 +383,7 @@ sub assert_is_committed {
 sub assert_has_changed {
     my ($self) = @_;
 
+    # TODO: mark column dirty rather than refresh whole object.
     throw "PANIC: Revision $self has not changed"
       if not $self->refresh->get_column('has_changes');
 
