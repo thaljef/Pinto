@@ -78,6 +78,8 @@ sub recurse {
     my $pkg_name = $prereq->name;
     my $pkg_vers = $prereq->version;
 
+    # version sees undef and 0 as equal, so we must also check definedness 
+    # when deciding if we've seen this version (or newer) of the packge
     return if defined($latest{$pkg_name}) && $pkg_vers <= $latest{$pkg_name};
     return if not my $dist = $self->find(target => $prereq);
 
