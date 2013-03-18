@@ -114,7 +114,7 @@ sub _add {
         $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
     }
 
-    $self->pull(target => $dist, stack => $self->stack);
+    $self->pull(target => $dist);
     
     return $dist;
 }
