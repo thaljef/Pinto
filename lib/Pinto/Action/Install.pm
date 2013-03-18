@@ -3,7 +3,7 @@
 package Pinto::Action::Install;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool HashRef ArrayRef Maybe Str);
+use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::SpecFactory;
