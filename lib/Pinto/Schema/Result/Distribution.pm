@@ -208,7 +208,7 @@ use Path::Class;
 use CPAN::DistnameInfo;
 use String::Format;
 
-use Pinto::Util qw(itis debug);
+use Pinto::Util qw(itis debug whine);
 use Pinto::Exception qw(throw);
 use Pinto::DistributionSpec;
 
@@ -248,7 +248,6 @@ sub register {
     my $stack  = $args{stack};
     my $pin    = $args{pin};
     my $did_register = 0;
-    my $errors       = 0;
 
     $stack->assert_is_open;
     $stack->assert_not_locked;
@@ -280,21 +279,18 @@ sub register {
 
       if ( $incumbent->is_pinned ) {
         my $pkg_name = $pkg->name;
-        $self->error("Cannot add $pkg to stack $stack because $pkg_name is pinned to $incumbent_pkg");
-        $errors++;
-        next;
+        throw "Unable to register distribution $self: package $pkg_name is pinned to $incumbent_pkg";
       }
 
-      my ($log_as, $direction) = ($incumbent_pkg > $pkg) ? ('warning', 'Downgrading')
-                                                         : ('notice',  'Upgrading');
+      whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
+        if $incumbent_pkg > $pkg;
+ 
 
       $incumbent->delete;
-      #$self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
       $pkg->register(stack => $stack, pin => $pin);
       $did_register++;
     }
 
-    throw "Unable to register distribution $self on stack $stack" if $errors;
 
     $stack->mark_as_changed if $did_register;
 
@@ -319,7 +315,7 @@ sub unregister {
 
     if ($reg->is_pinned and not $force ) {
       my $pkg = $reg->package;
-      $self->warning("Cannot unregister package $pkg because it is pinned to stack $stack");
+      whine "Cannot unregister package $pkg because it is pinned to stack $stack";
       $conflicts++;
       next;
     }
@@ -350,10 +346,7 @@ sub pin {
     my $where = {revision => $rev->id, is_pinned => 0};
     my $regs  = $self->registrations($where);
     
-    if (! $regs->count) {
-      $self->warning("Distribution $self is already pinned on stack $stack");
-      return 0;
-    }
+    return 0 if not $regs->count;
 
     $regs->update( {is_pinned => 1} );
     $stack->mark_as_changed;
@@ -375,10 +368,7 @@ sub unpin {
     my $where = {revision => $rev->id, is_pinned => 1};
     my $regs  = $self->registrations($where);
 
-    if (! $regs->count) {
-      $self->warning("Distribution $self is not pinned on stack $stack");
-      return 0;
-    }
+    return 0 if not $regs->count;
 
     $regs->update( {is_pinned => 0} );
     $stack->mark_as_changed;

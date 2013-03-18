@@ -56,6 +56,8 @@ sub _unpin {
 
     my $did_unpin = $dist->unpin(stack => $stack);
 
+    $self->warning("Distribution $dist is not pinned to stack $stack") unless $did_unpin;
+
     return $did_unpin ? $dist : ();
 }
 

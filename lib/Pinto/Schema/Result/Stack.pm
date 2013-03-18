@@ -286,11 +286,11 @@ sub make_filesystem {
     my ($self) = @_;
 
     my $stack_dir = $self->stack_dir;
-    debug("Making stack directory at $stack_dir");
+    debug "Making stack directory at $stack_dir";
     $stack_dir->mkpath;
 
     my $stack_modules_dir = $self->modules_dir;
-    debug("Making modules directory at $stack_dir");
+    debug "Making modules directory at $stack_modules_dir";
     $stack_modules_dir->mkpath;
 
     my $stack_authors_dir  = $self->authors_dir;
@@ -317,7 +317,7 @@ sub rename_filesystem {
     my $new_dir = $self->repo->config->stacks_dir->subdir($new_name);
     throw "Directory $new_dir already exists" if -e $new_dir;
 
-    debug("Renaming directory $orig_dir to $new_dir");
+    debug "Renaming directory $orig_dir to $new_dir";
     File::Copy::move($orig_dir, $new_dir) or throw "Rename failed: $!";
 
     return $self;
@@ -356,7 +356,7 @@ sub duplicate_registrations {
     my $new_rev_id = $new_rev->id;
     my $old_rev_id = $self->head->id;
 
-    debug("Copying registrations for stack $self to $new_rev");
+    debug "Copying registrations for stack $self to $new_rev";
 
     # This raw SQL is an optimization.  I was using DBIC's HashReinflator
     # to fetch all the registrations, change the revision, and then reinsert
@@ -381,7 +381,7 @@ sub move_registrations {
 
     my $rev = $args{to};
 
-    debug("Moving registrations for stack $self to $rev");
+    debug "Moving registrations for stack $self to $rev";
 
     my $rs = $self->head->registrations;
     $rs->update({revision => $rev->id});
@@ -426,13 +426,13 @@ sub kill {
 sub lock {
     my ($self) = @_;
 
-    throw "Stack $self is already locked" if $self->is_locked;
+    return $self if $self->is_locked;
 
-    debug("Locking stack $self");
+    debug "Locking stack $self";
 
     $self->update( {is_locked => 1} );
 
-    return 1;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -440,13 +440,13 @@ sub lock {
 sub unlock {
     my ($self) = @_;
 
-    throw "Stack $self is not locked" if not $self->is_locked;
+    return $self if not $self->is_locked;
 
-    debug("Unlocking stack $self");
+    debug "Unlocking stack $self";
 
     $self->update( {is_locked => 0} );
 
-    return 1;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -454,7 +454,7 @@ sub unlock {
 sub set_head {
     my ($self, $revision) = @_;
 
-    debug( sub {"Setting head of stack $self to revision $revision"} );
+    debug sub {"Setting head of stack $self to revision $revision"};
 
     $self->update( {head => $revision} );
 
@@ -466,7 +466,7 @@ sub set_head {
 sub start_revision {
     my ($self) = @_;
 
-    debug("Starting revision on stack $self");
+    debug "Starting revision on stack $self";
 
     $self->assert_is_committed;
 
@@ -597,13 +597,13 @@ sub diff {
 sub mark_as_default {
     my ($self) = @_;
 
-    throw "Stack $self is already the default" if $self->is_default;
+    return $self if $self->is_default;
 
-    debug('Marking all stacks as non-default');
+    debug 'Marking all stacks as non-default';
     my $rs = $self->result_source->resultset->search;
     $rs->update_all( {is_default => 0} );
 
-    debug("Marking stack $self as default");
+    debug "Marking stack $self as default";
     $self->update( {is_default => 1} );
 
     $self->repo->link_modules_dir(to => $self->modules_dir);
@@ -616,9 +616,10 @@ sub mark_as_default {
 sub unmark_as_default {
     my ($self) = @_;
 
-    throw "Stack $self is not the default" if not $self->is_default;
+    return $self if not $self->is_default;
 
-    debug("Unmarking stack $self as default");
+    debug "Unmarking stack $self as default";
+
     $self->update( {is_default => 0} );
 
     $self->repo->unlink_modules_dir;
@@ -631,7 +632,8 @@ sub unmark_as_default {
 sub mark_as_changed {
     my ($self) = @_;
 
-    debug("Marking stack $self as changed");
+    debug "Marking stack $self as changed";
+
     $self->head->update( {has_changes => 1} );
 
     return $self;

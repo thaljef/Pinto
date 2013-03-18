@@ -17,7 +17,7 @@ use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
 use Pinto::PrerequisiteFilter::Core;
 use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis mksymlink);
+use Pinto::Util qw(itis debug mksymlink);
 
 use version;
 
@@ -32,7 +32,6 @@ Readonly::Scalar our $REPOSITORY_VERSION => 1;
 #-------------------------------------------------------------------------------
 
 with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable
          Pinto::Role::FileFetcher );
 
 #-------------------------------------------------------------------------------
@@ -442,6 +441,7 @@ sub add_distribution {
                         sha256   => Pinto::Util::sha256($archive) };
 
     my $extractor = Pinto::PackageExtractor->new( archive => $archive );
+    
     # Add provided packages...
     my @provides = $extractor->provides;
     $dist_struct->{packages} = \@provides;
@@ -452,7 +452,7 @@ sub add_distribution {
 
     my $p = scalar @provides;
     my $r = scalar @requires;
-    $self->info("Distribution $archive provides $p and requires $r packages");
+    debug "Distribution $archive provides $p and requires $r packages";
 
     # Update database *before* moving the archive into the
     # repository, so if there is an error in the DB, we can stop and
@@ -554,7 +554,7 @@ sub revision_count {
 sub txn_begin {
     my ($self) = @_;
 
-    $self->debug('Beginning db transaction');
+    debug 'Beginning db transaction';
     $self->db->schema->txn_begin;
 
     return $self;
@@ -565,7 +565,7 @@ sub txn_begin {
 sub txn_rollback {
     my ($self) = @_;
 
-    $self->debug('Rolling back db transaction');
+    debug 'Rolling back db transaction';
     $self->db->schema->txn_rollback;
 
     return $self;
@@ -576,7 +576,7 @@ sub txn_rollback {
 sub txn_commit {
     my ($self) = @_;
 
-    $self->debug('Committing db transaction');
+    debug 'Committing db transaction';
     $self->db->schema->txn_commit;
 
     return $self;
@@ -587,7 +587,7 @@ sub txn_commit {
 sub svp_begin {
     my ($self, $name) = @_;
 
-    $self->debug('Beginning db savepoint ($name)');
+    debug 'Beginning db savepoint';
     $self->db->schema->svp_begin($name);
 
     return $self;
@@ -598,7 +598,7 @@ sub svp_begin {
 sub svp_rollback {
     my ($self, $name) = @_;
 
-    $self->debug('Rolling back db savepoint ($name)');
+    debug 'Rolling back db savepoint';
     $self->db->schema->svp_rollback($name);
 
     return $self;
@@ -608,7 +608,7 @@ sub svp_rollback {
 sub svp_release {
     my ($self, $name) = @_;
 
-    $self->debug('Releasing db savepoint ($name)');
+    debug 'Releasing db savepoint';
     $self->db->schema->svp_release($name);
 
     return $self;
@@ -696,11 +696,11 @@ sub link_modules_dir {
     my $root_dir    = $self->config->root_dir;
 
     if (-e $modules_dir or -l $modules_dir) {
-        $self->debug("Unlinking $modules_dir");
+        debug "Unlinking $modules_dir";
         unlink $modules_dir or die $!;
     }
 
-    $self->debug("Linking $modules_dir to $target_dir");
+    debug "Linking $modules_dir to $target_dir";
     mksymlink($modules_dir => $target_dir->relative($root_dir));
 
     return $self;
@@ -714,7 +714,7 @@ sub unlink_modules_dir {
     my $modules_dir = $self->config->modules_dir;
 
     if (-e $modules_dir or -l $modules_dir) {
-        $self->debug("Unlinking $modules_dir");
+        debug "Unlinking $modules_dir";
         unlink $modules_dir or die $!;
     }
 
@@ -749,13 +749,13 @@ sub clean_files {
         return if $archive eq '01mailrc.txt.gz';
         return if exists $known_dists{"$author/$archive"};
 
-        $self->info("Removing orphaned archive at $path");
+        debug "Removing orphaned archive at $path";
         $self->store->remove_archive($path);
         $deleted++;
     };
 
     my $authors_dir = $self->config->authors_dir;
-    $self->notice("Cleaning orphaned archives beneath $authors_dir");
+    debug "Cleaning orphaned archives beneath $authors_dir";
     File::Find::find({no_chdir => 1, wanted => $callback}, $authors_dir);
 
     return $deleted;
@@ -766,10 +766,10 @@ sub clean_files {
 sub optimize_database {
     my ($self) = @_;
 
-    $self->notice('Removing empty database pages');
+    debug 'Removing empty database pages';
     $self->db->schema->storage->dbh->do('VACUUM;');
 
-    $self->notice('Updating database statistics');
+    debug 'Updating database statistics';
     $self->db->schema->storage->dbh->do('ANALYZE;');
 
     return $self;

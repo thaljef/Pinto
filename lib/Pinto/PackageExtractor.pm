@@ -61,8 +61,6 @@ sub provides {
     @provides = $self->__common_sense_workaround($archive->basename)
       if @provides == 0 and $archive->basename =~ m/^ common-sense /x;
 
-    #$self->warning("$archive provides no packages") if not @provides;
-
     return @provides;
 }
 

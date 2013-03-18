@@ -56,6 +56,8 @@ sub _pin {
 
     my $did_pin = $dist->pin(stack => $stack);
 
+    $self->warning("Distribution $dist is already pinned to stack $stack") unless $did_pin;
+
     return $did_pin ? $dist : ();
 }
 

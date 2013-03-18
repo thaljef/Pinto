@@ -58,9 +58,14 @@ sub _register {
     my ($self, $spec, $stack) = @_;
 
     my $dist  = $self->repo->get_distribution(spec => $spec);
+
     throw "Distribution $spec is not in the repository" if not defined $dist;
 
+    $self->notice("Registering distribution $dist on stack $stack");
+
     my $did_register = $dist->register(stack => $stack, pin => $self->pin);
+
+    $self->warning("Distribution $dist is already registered on stack $stack");
 
     return $did_register ? $dist : ();
 }
