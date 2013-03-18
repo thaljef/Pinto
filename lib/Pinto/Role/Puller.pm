@@ -27,7 +27,7 @@ has pin => (
 
 #-----------------------------------------------------------------------------
 
-# We should reqire a stack() attribute, but I can't get it to work 
+# We should require a stack() attribute, but I can't get it to work 
 # when composing with the Committable role which provides it.
 # requires qw(stack);
 
@@ -75,11 +75,14 @@ sub recurse {
   my $cb = sub {
     my ($prereq) = @_;
 
-    return if $prereq->version <= $latest{$prereq->name};
-    return unless my $dist = $self->find(target => $prereq);
+    my $pkg_name = $prereq->name;
+    my $pkg_vers = $prereq->version;
+
+    return if defined($latest{$pkg_name}) && $pkg_vers <= $latest{$pkg_name};
+    return if not my $dist = $self->find(target => $prereq);
 
     $dist->register(stack => $stack);
-    $latest{$prereq->name} = $prereq->version;
+    $latest{$pkg_name} = $pkg_vers;
 
     return $dist;
   };
