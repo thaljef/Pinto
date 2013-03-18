@@ -3,6 +3,7 @@
 package Pinto::Action;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
@@ -48,6 +49,10 @@ has result => (
     init_arg => undef,
     lazy     => 1,
 );
+
+#------------------------------------------------------------------------------
+
+sub BUILD {}
 
 #------------------------------------------------------------------------------
 

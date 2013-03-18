@@ -343,6 +343,7 @@ sub commit {
     throw "Must specify a message to commit" if not $args{message};
 
     $args{is_committed}   = 1;
+    $args{has_changes}    = 0;
     $args{username}     ||= $self->repo->config->username;
     $args{time_offset}  ||= $self->repo->config->time_offset;
     $args{utc_time}     ||= current_utc_time;
@@ -358,7 +359,7 @@ sub assert_is_open {
     my ($self) = @_;
 
     throw "PANIC: Revision $self is already committed"
-      if $self->get_column('is_committed');
+      if $self->refresh->get_column('is_committed');
 
     return $self;
 }
@@ -370,7 +371,7 @@ sub assert_is_committed {
     my ($self) = @_;
 
     throw "PANIC: Revision $self is still open"
-      if not $self->get_column('is_committed');
+      if not $self->refresh->get_column('is_committed');
 
     return $self;
 }
@@ -381,7 +382,7 @@ sub assert_has_changed {
     my ($self) = @_;
 
     throw "PANIC: Revision $self has not changed"
-      if not $self->get_column('has_changes');
+      if not $self->refresh->get_column('has_changes');
 
     return $self;
 }

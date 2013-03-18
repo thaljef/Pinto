@@ -3,9 +3,10 @@
 package Pinto::Action::Unpin;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto::Types qw(SpecList StackName StackDefault StackObject);
+use Pinto::Types qw(SpecList);
 use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
@@ -18,10 +19,6 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Committable );
-
-#------------------------------------------------------------------------------
-
 has targets => (
     isa      => SpecList,
     traits   => [ qw(Array) ],
@@ -30,29 +27,20 @@ has targets => (
     coerce   => 1,
 );
 
+#------------------------------------------------------------------------------
 
-has stack => (
-    is        => 'ro',
-    isa       => StackName | StackDefault | StackObject,
-    default   => undef,
-);
+with qw( Pinto::Role::Committable );
 
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack)->start_revision;
+    my $stack = $self->stack;
 
     my @dists = map { $self->_unpin($_, $stack) } $self->targets;
-    return $self->result if $self->dry_run or $stack->has_not_changed;
 
-    my $msg_title = $self->generate_message_title(@dists);
-    my $msg = $self->compose_message(stack => $stack, title => $msg_title);
-
-    $stack->commit_revision(message => $msg);
-
-    return $self->result->changed;
+    return @dists;
 }
 
 #------------------------------------------------------------------------------

@@ -3,12 +3,11 @@
 package Pinto::PrerequisiteWalker;
 
 use Moose;
-use MooseX::Types::Moose qw(Bool CodeRef HashRef);
+use MooseX::StrictConstructor;
+use MooseX::Types::Moose qw(CodeRef ArrayRef HashRef Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto::Util qw(itis);
-use Pinto::Exception qw(throw);
-use Pinto::PrerequisiteFilter::None;
+use Pinto::PrerequisiteFilter;
 
 #------------------------------------------------------------------------------
 
@@ -30,61 +29,48 @@ has callback => (
 );
 
 
-has skip_seen => (
-	is      => 'ro',
-	isa     => Bool,
-	default => 1,
+has filter => (
+  is        => 'ro',
+  isa       => 'Pinto::PrerequisiteFilter',
+  default   => sub { Pinto::PrerequisiteFilter::None->new },
+  lazy      => 1,
 );
 
 
-has filter => (
-    is         => 'ro',
-    isa        => 'Pinto::PrerequisiteFilter',
-    default    => sub { Pinto::PrerequisiteFilter::None->new },
-    lazy       => 1,
+has queue => (
+  isa       => ArrayRef['Pinto::PackageSpec'],
+  traits    => [ qw(Array) ],
+  handles   => {enqueue => 'push', dequeue => 'shift'},
+  default   => sub { return [ $_[0]->filter->apply($_[0]->start->prerequisite_specs) ] },
+  init_arg  => undef,
+  lazy      => 1,
+);
+
+
+has seen => (
+  is       => 'ro',
+  isa      => HashRef,
+  default  => sub { return { $_[0]->start->path => 1 } },
+  init_arg => undef,
+  lazy     => 1,
 );
 
 #-----------------------------------------------------------------------------
 
-sub walk {
+sub next {
   my ($self) = @_;
 
-	my @queue = $self->start->prerequisite_specs;
-    my %visited_dists = ($self->start->path => 1);
-    my %latest_pkgs;
+  my $prereq = $self->dequeue or return;
+  my $dist   = $self->callback->($prereq);
 
-  PREREQ:
-    while (my $prereq = shift @queue) {
+  if (defined $dist) {
+    my $path    = $dist->path;
+    my @prereqs = $self->filter->apply($dist->prerequisite_specs);
+    $self->enqueue(@prereqs) unless $self->seen->{$path};
+    $self->seen->{$path} = 1;
+  }
 
-        next PREREQ if $self->filter->should_filter($prereq);
-
-    	my $dist = $self->callback->($self, $prereq);
-    	next PREREQ if !$dist || $visited_dists{$dist->path};
-
-      NEW_PREREQ:
-        for my $new_prereq ( $dist->prerequisite_specs ) {
-
-        	my $name = $new_prereq->name;
-
-            # Add this prereq to the queue only if greater than the ones we already got
-            if (! exists $latest_pkgs{$name} or $new_prereq->{version} >= $latest_pkgs{$name} ) {
-
-            	# Take any prior versions of this prereq out of the queue
-            	@queue = grep { $_->{name} ne $name } @queue if $self->skip_seen;
-
-            	# Note that this is the latest version of this prereq we've seen so far
-            	$latest_pkgs{$name} = $new_prereq->{version};
-
-            	# Push the prereq onto the queue
-            	push @queue, $new_prereq;
-            }
-
-        }
-
-        $visited_dists{$dist->path} = 1;
-    }
-
-    return $self;
+  return $prereq;
 }
 
 #------------------------------------------------------------------------------
