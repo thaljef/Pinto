@@ -208,7 +208,7 @@ use Path::Class;
 use CPAN::DistnameInfo;
 use String::Format;
 
-use Pinto::Util qw(itis);
+use Pinto::Util qw(itis debug);
 use Pinto::Exception qw(throw);
 use Pinto::DistributionSpec;
 
@@ -263,7 +263,7 @@ sub register {
       my $incumbent = $stack->head->find_related(registrations => $where);
 
       if (not defined $incumbent) {
-          $self->debug(sub {"Registering $pkg on stack $stack"} );
+          debug( sub {"Registering $pkg on stack $stack"} );
           $pkg->register(stack => $stack, pin => $pin);
           $did_register++;
           next;
@@ -272,7 +272,7 @@ sub register {
       my $incumbent_pkg = $incumbent->package;
 
       if ( $incumbent_pkg == $pkg ) {
-        $self->debug( sub {"Package $pkg is already on stack $stack"} );
+        debug( sub {"Package $pkg is already on stack $stack"} );
         $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
         next;
       }
@@ -289,7 +289,7 @@ sub register {
                                                          : ('notice',  'Upgrading');
 
       $incumbent->delete;
-      $self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
+      #$self->$log_as("$direction package $incumbent_pkg to $pkg in stack $stack");
       $pkg->register(stack => $stack, pin => $pin);
       $did_register++;
     }

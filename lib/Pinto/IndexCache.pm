@@ -3,6 +3,7 @@
 package Pinto::IndexCache;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Package::Locator;
@@ -25,8 +26,7 @@ has locator => (
 #-------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
+with qw( Pinto::Role::Configurable );
 
 #-------------------------------------------------------------------------------
 

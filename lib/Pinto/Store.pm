@@ -3,11 +3,13 @@
 package Pinto::Store;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 use CPAN::Checksums;
 
+use Pinto::Util qw(debug);
 use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
@@ -17,9 +19,7 @@ use Pinto::Exception qw(throw);
 #------------------------------------------------------------------------------
 # Roles
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable
-         Pinto::Role::FileFetcher );
+with qw( Pinto::Role::Configurable Pinto::Role::FileFetcher );
 
 #------------------------------------------------------------------------------
 # TODO: Use named arguments here...
@@ -64,7 +64,7 @@ sub remove_path {
 
     while (my $dir = $path->parent) {
         last if $dir->children;
-        $self->debug("Removing empty directory $dir");
+        debug("Removing empty directory $dir");
         $dir->remove or throw "Failed to remove directory $dir: $!";
         $path = $dir;
     }
@@ -91,7 +91,7 @@ sub update_checksums {
         return 0;
     }
 
-    $self->debug("Generating $cs_file");
+    debug("Generating $cs_file");
 
     try   { CPAN::Checksums::updatedir($dir) }
     catch { throw "CHECKSUM generation failed for $dir: $_" };

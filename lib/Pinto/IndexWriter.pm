@@ -3,22 +3,20 @@
 package Pinto::IndexWriter;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use IO::Zlib;
 use Path::Class qw(file);
 use HTTP::Date qw(time2str);
 
+use Pinto::Util qw(debug);
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
 # VERSION
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
@@ -44,13 +42,15 @@ sub write_index {
     my $index_file  = $self->index_file;
     my $stack = $self->stack;
 
-    $self->info("Writing index for stack $stack at $index_file");
+    debug("Writing index for stack $stack at $index_file");
 
     my $handle = IO::Zlib->new($index_file->stringify, 'wb') 
         or throw "Cannot open $index_file: $!";
 
     my @records = $self->_get_index_records($stack);
     my $count   = scalar @records;
+
+    debug("Index for stack $stack has $count records");
 
     $self->_write_header($handle, $index_file, $count);
     $self->_write_records($handle, @records);

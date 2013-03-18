@@ -3,11 +3,13 @@
 package Pinto::Locker;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Path::Class;
 use File::NFSLock;
 
+use Pinto::Util qw(debug);
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
 
@@ -31,8 +33,7 @@ has _lock => (
 
 #-----------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
+with qw( Pinto::Role::Configurable );
 
 #-----------------------------------------------------------------------------
 
@@ -60,7 +61,8 @@ sub lock {                                   ## no critic qw(Homonym)
     my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
         or throw 'Unable to lock the repository -- please try later';
 
-    $self->debug("Process $$ got $lock_type lock on $root_dir");
+    debug("Process $$ got $lock_type lock on $root_dir");
+
     $self->_lock($lock);
 
     return $self;
@@ -80,11 +82,13 @@ sub unlock {
 
     return $self if not $self->_is_locked;
 
+    # I'm not sure if failure to unlock is really a problem
     $self->_lock->unlock or warn 'Unable to unlock repository';
+
     $self->_clear_lock;
 
     my $root_dir = $self->config->root_dir;
-    $self->debug("Process $$ released the lock on $root_dir");
+    debug("Process $$ released the lock on $root_dir");
 
     return $self;
 }

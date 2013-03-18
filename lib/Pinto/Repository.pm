@@ -46,7 +46,6 @@ has db => (
     isa        => 'Pinto::Database',
     lazy       => 1,
     default    => sub { Pinto::Database->new( config => $_[0]->config,
-                                              logger => $_[0]->logger,
                                               repo   => $_[0] ) },
 );
 
@@ -58,8 +57,7 @@ has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
     lazy       => 1,
-    default    => sub { Pinto::Store->new( config => $_[0]->config,
-                                           logger => $_[0]->logger ) },
+    default    => sub { Pinto::Store->new( config => $_[0]->config ) },
 );
 
 =attr cache
@@ -76,8 +74,7 @@ has cache => (
     lazy       => 1,
     handles    => [ qw(locate) ],
     clearer    => '_clear_cache',
-    default    => sub { Pinto::IndexCache->new( config => $_[0]->config,
-                                                logger => $_[0]->logger ) },
+    default    => sub { Pinto::IndexCache->new( config => $_[0]->config ) },
 );
 
 =attr locker
@@ -93,8 +90,7 @@ has locker  => (
     isa        => 'Pinto::Locker',
     lazy       => 1,
     handles    => [ qw(lock unlock) ],
-    default    => sub { Pinto::Locker->new( config => $_[0]->config,
-                                            logger => $_[0]->logger ) },
+    default    => sub { Pinto::Locker->new( config => $_[0]->config ) },
 );
 
 #-------------------------------------------------------------------------------
@@ -445,8 +441,7 @@ sub add_distribution {
                         md5      => Pinto::Util::md5($archive),
                         sha256   => Pinto::Util::sha256($archive) };
 
-    my $extractor = Pinto::PackageExtractor->new( logger  => $self->logger,
-                                                  archive => $archive );
+    my $extractor = Pinto::PackageExtractor->new( archive => $archive );
     # Add provided packages...
     my @provides = $extractor->provides;
     $dist_struct->{packages} = \@provides;

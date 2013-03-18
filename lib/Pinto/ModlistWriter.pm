@@ -3,21 +3,19 @@
 package Pinto::ModlistWriter;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use IO::Zlib;
 use HTTP::Date qw(time2str);
 
+use Pinto::Util qw(debug);
 use Pinto::Types qw(File);
 use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
 # VERSION
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Loggable );
 
 #------------------------------------------------------------------------------
 
@@ -43,7 +41,7 @@ sub write_modlist {
     my $stack = $self->stack;
     my $modlist_file = $self->modlist_file;
 
-    $self->info("Writing module list for stack $stack at $modlist_file");
+    debug("Writing module list for stack $stack at $modlist_file");
 
     my $fh = IO::Zlib->new($modlist_file->stringify, 'wb') or throw $!;
     print {$fh} $self->modlist_data;

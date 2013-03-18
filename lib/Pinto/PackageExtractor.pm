@@ -3,22 +3,20 @@
 package Pinto::PackageExtractor;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(HashRef Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 use Dist::Metadata;
 
+use Pinto::Util qw(debug);
 use Pinto::Exception qw(throw);
 use Pinto::Types qw(File);
 
 #-----------------------------------------------------------------------------
 
 # VERSION
-
-#-----------------------------------------------------------------------------
-
-with qw( Pinto::Role::Loggable );
 
 #-----------------------------------------------------------------------------
 
@@ -44,7 +42,7 @@ sub provides {
     my ($self) = @_;
 
     my $archive = $self->archive;
-    $self->info("Extracting packages provided by archive $archive");
+    debug("Extracting packages provided by archive $archive");
 
     my $mod_info =   try { $self->dm->module_info( {checksum => 'sha256'} )     }
                    catch { throw "Unable to extract packages from $archive: $_" };
@@ -54,7 +52,7 @@ sub provides {
 
         my $info = $mod_info->{$pkg_name};
         my $pkg_ver = version->parse( $info->{version} );
-        $self->debug("Archive $archive provides: $pkg_name-$pkg_ver");
+        debug("Archive $archive provides: $pkg_name-$pkg_ver");
 
         push @provides, { name => $pkg_name,     version => $pkg_ver, 
                           file => $info->{file}, sha256  => $info->{sha256} };
@@ -63,7 +61,7 @@ sub provides {
     @provides = $self->__common_sense_workaround($archive->basename)
       if @provides == 0 and $archive->basename =~ m/^ common-sense /x;
 
-    $self->warning("$archive provides no packages") if not @provides;
+    #$self->warning("$archive provides no packages") if not @provides;
 
     return @provides;
 }
@@ -74,7 +72,7 @@ sub requires {
     my ($self) = @_;
 
     my $archive = $self->archive;
-    $self->info("Extracting packages required by archive $archive");
+    debug("Extracting packages required by archive $archive");
 
     my $prereqs_meta =   try { $self->dm->meta->prereqs }
                        catch { throw "Unable to extract prereqs from $archive: $_" };
@@ -91,7 +89,7 @@ sub requires {
 
         my $pkg_ver = version->parse( $prereqs{$pkg_name} );
 
-        $self->debug("Archive $archive requires: $pkg_name-$pkg_ver");
+        debug("Archive $archive requires: $pkg_name-$pkg_ver");
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
     }
 

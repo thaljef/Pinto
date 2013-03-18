@@ -3,6 +3,7 @@
 package Pinto::ActionFactory;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 

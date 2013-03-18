@@ -1,4 +1,4 @@
-# ABSTRACT: Interface for terminal-based interaction.
+# ABSTRACT: Interface for terminal-based interaction
 
 package Pinto::Chrome;
 
