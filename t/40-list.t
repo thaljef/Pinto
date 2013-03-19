@@ -25,10 +25,9 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-  my $buffer = '';
-  my $out = IO::String->new(\$buffer);
-  $t->run_ok( 'List' => {stack => 'dev', out => $out} );
-  my @lines = split /\n/, $buffer;
+  $t->clear_buffers;
+  $t->run_ok( 'List' => {stack => 'dev'} );
+  my @lines = split /\n/, ${ $t->outstr };
 
   is scalar @lines, 1, 'Got correct number of records in listing';
   like $lines[0], qr/Foo \s+ 0.01/x, 'Listing for dev stack';
@@ -37,10 +36,10 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-  my $buffer = '';
-  my $out = IO::String->new(\$buffer);
-  $t->run_ok( 'List' => {stack => 'qa', out => $out, packages => 'Bar'} );
-  my @lines = split /\n/, $buffer;
+
+  $t->clear_buffers;
+  $t->run_ok( 'List' => {stack => 'qa', packages => 'Bar'} );
+  my @lines = split /\n/, ${ $t->outstr };
 
   is scalar @lines, 1, 'Got correct number of records in listing';
   like $lines[0], qr/Bar \s+ 0.02/x, 'Listing for packages matching %Bar% on qa stack';
@@ -49,10 +48,9 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-  my $buffer = '';
-  my $out = IO::String->new(\$buffer);
-  $t->run_ok( 'List' => {stack => 'qa', out => $out, distributions => 'Baz'} );
-  my @lines = split /\n/, $buffer;
+  $t->clear_buffers;
+  $t->run_ok( 'List' => {stack => 'qa', distributions => 'Baz'} );
+  my @lines = split /\n/, ${ $t->outstr };
 
   is scalar @lines, 1, 'Got correct number of records in listing';
   like $lines[0], qr/Baz \s+ 0.03/x, 'Listing for dists matching %Baz% on qa stack';
@@ -61,10 +59,10 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-  my $buffer = '';
-  my $out = IO::String->new(\$buffer);
-  $t->run_ok( 'List' => {stack => 'qa', out => $out, author => 'BOB'} );
-  my @lines = split /\n/, $buffer;
+
+  $t->clear_buffers;
+  $t->run_ok( 'List' => {stack => 'qa', author => 'BOB'} );
+  my @lines = split /\n/, ${ $t->outstr };
 
   is scalar @lines, 1, 'Got correct number of records in listing';
   like $lines[0], qr/Baz \s+ 0.03/x, 'Listing where author == BOB on qa stack';

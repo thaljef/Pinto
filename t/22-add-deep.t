@@ -62,12 +62,15 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 {
   my $local = Pinto::Tester->new;
 
-  my $foo1 = make_dist_archive('Foo-1 = Foo~1');
   my $foo2 = make_dist_archive('Foo-2 = Foo~2');
+  my $foo1 = make_dist_archive('Foo-1 = Foo~1');
 
   $local->run_ok(Add => {author => 'ME', archives => $foo2});
   $local->run_ok(Add => {author => 'ME', archives => $foo1});
   
+  # Notice we added Foo~1 and *then* Foo~1.  So we are downgrading
+  $local->stderr_like(qr{Downgrading package ME/Foo-2/Foo~2 to ME/Foo-1/Foo~1} );
+
   # Repository now contains both Foo~1 and Foo~2, but only the 
   # older Foo~1 is actually registered on the stack.
 

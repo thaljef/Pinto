@@ -10,14 +10,14 @@ use Carp;
 use IO::String;
 use Path::Class;
 use File::Temp qw(tempdir);
-use Test::Log::Dispatch;
 use Test::Exception;
 
 use Pinto;
 use Pinto::Util;
 use Pinto::Globals;
 use Pinto::Initializer;
-use Pinto::Tester::Util qw(make_dist_struct make_dist_archive parse_reg_spec);
+use Pinto::Chrome::Term;
+use Pinto::Tester::Util qw(:all);
 use Pinto::Types qw(Uri Dir);
 
 #------------------------------------------------------------------------------
@@ -81,6 +81,20 @@ has root => (
 );
 
 
+has outstr => (
+    is      => 'rw',
+    isa     => ScalarRef,
+    default => sub { my $str = ''; return \$str },
+);
+
+
+has errstr => (
+    is      => 'rw',
+    isa     => ScalarRef,
+    default => sub { my $str = ''; return \$str },
+);
+
+
 has tb => (
    is       => 'ro',
    isa      => 'Test::Builder',
@@ -101,14 +115,16 @@ sub BUILD { $_[0]->pinto }
 sub _build_pinto {
     my ($self) = @_;
 
-    my %defaults     = ( root => $self->root );
-    my %log_defaults = ( log_handler => Test::Log::Dispatch->new, verbose => 3 );
+    my $chrome = Pinto::Chrome::Term->new( verbose => 2, 
+                                           stdout  => $self->outstr,
+                                           stderr  => $self->errstr );
+
+    my %defaults = ( root => $self->root );
 
     my $initializer = Pinto::Initializer->new;
-    $initializer->init( %defaults, %log_defaults, $self->init_args );
+    $initializer->init( %defaults, $self->init_args );
 
-    my $pinto = Pinto->new(%defaults, %log_defaults, $self->pinto_args);
-    return $pinto;
+    return Pinto->new(%defaults, chrome => $chrome, $self->pinto_args);
 }
 
 #------------------------------------------------------------------------------
@@ -170,7 +186,7 @@ sub run_throws_ok {
     my $ok = throws_ok { $self->pinto->run($action_name, %{$args}) }
         $error_regex, $test_name;
 
-    $self->diag_log_contents if not $ok;
+    $self->diag_stderr if not $ok;
 
     return $ok;
 }
@@ -251,7 +267,7 @@ sub result_ok {
 
     $test_name ||= 'Result indicates action was succesful';
     my $ok = $self->ok($result->was_successful, $test_name);
-    $self->diag_log_contents if not $ok;
+    $self->diag_stderr if not $ok;
 
     return $ok;
 }
@@ -263,7 +279,7 @@ sub result_not_ok {
 
     $test_name ||= 'Result indicates action was not succesful';
     my $ok = $self->ok(!$result->was_successful, $test_name);
-    $self->diag_log_contents if not $ok;
+    $self->diag_stderr if not $ok;
 
     return;
 }
@@ -275,7 +291,7 @@ sub result_changed_ok {
 
     $test_name ||= 'Result indicates changes were made';
     my $ok = $self->ok( $result->made_changes, $test_name );
-    $self->diag_log_contents if not $ok;
+    $self->diag_stderr if not $ok;
 
     return $ok;
 }
@@ -287,7 +303,7 @@ sub result_not_changed_ok {
 
     $test_name ||= 'Result indicates changes were not made';
     my $ok = $self->ok( !$result->made_changes, $test_name );
-    $self->diag_log_contents if not $ok;
+    $self->diag_stderr if not $ok;
 
     return $ok;
 }
@@ -318,40 +334,66 @@ sub repository_clean_ok {
 
 #------------------------------------------------------------------------------
 
-sub diag_log_contents {
+sub diag_stderr {
     my ($self) = @_;
-    my $msgs = $self->pinto->logger->log_handler->msgs;
+    my $errs = ${ $self->errstr };
     $self->diag('Log messages are...');
-    $self->diag($_->{message}) for @$msgs;
-    $self->diag('No log messages seen') if not @$msgs;
+    $self->diag($errs)
 }
 
 #------------------------------------------------------------------------------
 
-sub log_like {
+sub stdout_like {
     my ($self, $rx, $name) = @_;
 
-    $name ||= 'Log output matches';
-
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-
-    $self->pinto->logger->log_handler->contains_ok($rx, $name);
+    $name ||= 'stdout output matches';
+    $self->tb->like(${ $self->outstr }, $rx, $name);
 
     return;
 }
 
 #------------------------------------------------------------------------------
 
-sub log_unlike {
+sub stdout_unlike {
     my ($self, $rx, $name) = @_;
 
-    $name ||= 'Log output does not match';
-
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-
-    $self->pinto->logger->log_handler->does_not_contain_ok($rx, $name);
+    $name ||= 'stdout does not match';
+    $self->tb->unlike(${ $self->outstr }, $rx, $name);
 
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub stderr_like {
+    my ($self, $rx, $name) = @_;
+
+    $name ||= 'stderr output matches';
+    $self->tb->like(${ $self->errstr }, $rx, $name);
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub stderr_unlike {
+    my ($self, $rx, $name) = @_;
+
+    $name ||= 'stderr does not match';
+    $self->tb->unlike(${ $self->errstr }, $rx, $name);
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub clear_buffers {
+    my ($self) = @_;
+
+    $self->pinto->chrome->stderr->truncate;
+    $self->pinto->chrome->stdout->truncate;
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

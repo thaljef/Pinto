@@ -37,11 +37,10 @@ $local->populate('MARK/DistB-1 = PkgB~1 & PkgA~1');
 #------------------------------------------------------------------------------
 
 {
-  my $buffer = '';
   my $sandbox = File::Temp->newdir;
   my $p5_dir = dir($sandbox, qw(lib perl5));
   my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
-  $local->run_ok(Install => {targets => ['PkgB'], %cpanm_opts, out => \$buffer, do_pull =>1});
+  $local->run_ok(Install => {targets => ['PkgB'], %cpanm_opts, do_pull =>1});
 
   file_exists_ok($p5_dir->file('PkgA.pm'));
   file_exists_ok($p5_dir->file('PkgB.pm'));

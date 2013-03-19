@@ -27,7 +27,7 @@ my $bar_and_baz = make_dist_archive('BarAndBaz-2 = Bar~2,Baz~2');
 $t->run_throws_ok('Add', {author => 'ME', archives => $bar_and_baz},
                  qr{Unable to register}, 'Cannot upgrade pinned package');
 
-$t->log_like(qr{Bar is pinned});
+$t->stderr_like(qr{Bar is pinned});
 
 # Now unpin the FooAndBar dist...
 $t->run_ok('Unpin',  {targets => 'Foo'});
@@ -56,7 +56,7 @@ $t->registration_not_ok( 'ME/FooAndBar-1/Bar~1/master' );
 
 # So if I pull all of FooAndBar back onto the stack...
 $t->run_ok('Pull', {targets => 'ME/FooAndBar-1.tar.gz'});
-$t->log_like(qr{Downgrading package ME/BarAndBaz-2/Bar~2 to ME/FooAndBar-1/Bar~1});
+$t->stderr_like(qr{Downgrading package ME/BarAndBaz-2/Bar~2 to ME/FooAndBar-1/Bar~1});
 
 # The old Foo-1 should still be pinned...
 $t->registration_ok( 'ME/FooAndBar-1/Foo~1/master/*' );

@@ -61,7 +61,7 @@ $local->clear_cache; # Make sure we get new index from CPAN
 $local->run_throws_ok('Pull', {targets => 'MARK/DistC-1.tar.gz'}, qr{Unable to register});
 
 # DistC-1 requires PkgB-2, but were are still pinned at PkgB-1...
-$local->log_like(qr{Unable to register .* PkgB is pinned to FRED/DistB-1/PkgB~1});
+$local->stderr_like(qr{Unable to register .* PkgB is pinned to FRED/DistB-1/PkgB~1});
 
 # After a while, we fix our code to work with PkgB-2, so we unpin...
 $local->run_ok('Unpin', {targets => 'PkgB'});

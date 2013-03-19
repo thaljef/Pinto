@@ -37,6 +37,10 @@ requires qw( execute targets  );
 
 #-----------------------------------------------------------------------------
 
+with qw( Pinto::Role::Plated );
+
+#-----------------------------------------------------------------------------
+
 sub BUILD {
     my ($self) = @_;
 
@@ -81,7 +85,7 @@ after execute => sub {
     }
 
     # Run cpanm
-    $self->debug(join ' ', 'Running:', $self->cpanm_exe, @cpanm_opts);
+    $self->info(join ' ', 'Running:', $self->cpanm_exe, @cpanm_opts);
     0 == system($self->cpanm_exe, @cpanm_opts, $self->targets)
       or throw "Installation failed.  See the cpanm build log for details";
 };

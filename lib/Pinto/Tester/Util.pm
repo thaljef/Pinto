@@ -28,6 +28,8 @@ our @EXPORT_OK = qw( make_dist_obj
                      parse_dist_spec
                      parse_reg_spec );
 
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
+
 #-------------------------------------------------------------------------------
 
 sub make_pkg_obj {

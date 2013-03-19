@@ -3,11 +3,13 @@
 package Pinto::Action::Stacks;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use List::Util qw(max);
 
+use Pinto::Constants qw(:color);
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -15,10 +17,6 @@ use List::Util qw(max);
 #------------------------------------------------------------------------------
 
 extends 'Pinto::Action';
-
-#------------------------------------------------------------------------------
-
-with 'Pinto::Role::Colorable';
 
 #------------------------------------------------------------------------------
 
@@ -42,11 +40,10 @@ sub execute {
 	for my $stack (@stacks) {
 		my $string = $stack->to_string($format);
 
-		my $color =   $stack->is_default ? $self->color_1 
-		            : $stack->is_locked  ? $self->color_3 : undef;
+		my $color =   $stack->is_default ? $PINTO_COLOR_0 
+		            : $stack->is_locked  ? $PINTO_COLOR_2 : undef;
 
-		$string = $self->colorize_with_color($string, $color);
-		$self->say( $string ); 
+		$self->show($string, {color => $color}); 
 	}
 
 

@@ -6,6 +6,7 @@ use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 use MooseX::Types::Moose qw(HashRef Str Bool);
 
+use Pinto::Constants qw(:color);
 use Pinto::Types qw(AuthorID StackName StackDefault StackObject);
 
 #------------------------------------------------------------------------------
@@ -15,10 +16,6 @@ use Pinto::Types qw(AuthorID StackName StackDefault StackObject);
 #------------------------------------------------------------------------------
 
 extends qw( Pinto::Action );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Colorable );
 
 #------------------------------------------------------------------------------
 
@@ -114,11 +111,11 @@ sub execute {
     while ( my $reg = $rs->next ) {
         my $string = $reg->to_string($self->format);
 
-        my $color =   $reg->is_pinned              ? $self->color_3 
-                    : $reg->distribution->is_local ? $self->color_1 : undef;
+        my $color =   $reg->is_pinned              ? $PINTO_COLOR_1
+                    : $reg->distribution->is_local ? $PINTO_COLOR_0 
+                    : undef;
 
-        $string = $self->colorize_with_color($string, $color);
-        $self->say($string);
+        $self->show($string, {color => $color});
     }
 
     return $self->result;

@@ -154,15 +154,6 @@ has log_file => (
 );
 
 
-has log_level  => (
-    is         => 'ro',
-    isa        => Str,
-    key        => 'log_level',
-    default    => 'notice',
-    documentation => 'Minimum log level for the internal log file',
-);
-
-
 has no_history => (
     is         => 'ro',
     isa        => Bool,

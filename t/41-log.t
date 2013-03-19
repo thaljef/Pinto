@@ -29,22 +29,20 @@ $t->run_ok(Add  => {stack    => 'branch',
 
 {
 
-  my $buffer = '';
-  my $stack  = 'master';
-  my $out    = IO::String->new(\$buffer);
-
-  $t->run_ok(Log => {stack => $stack, out => $out});
+  $t->clear_buffers;
+  my $stack = 'master';
+  $t->run_ok(Log => {stack => $stack});
   
-  my $msgs =()= $buffer =~ m/revision [0-9a-f\-]{36}/g;
-
+  my $msgs =()= ${ $t->outstr } =~ m/revision [0-9a-f\-]{36}/g;
   is $msgs, 1, "Stack $stack has correct message count";
-  like $buffer, qr/Foo-0.01.tar.gz/,    'Log message has Foo archive';
+
+  $t->stdout_like(qr/Foo-0.01.tar.gz/, 'Log message has Foo archive');
 
   # TODO: Consider adding hook to set username on the Tester;
-  like $buffer, qr/User: USERNAME/,     'Log message has correct user';
+  $t->stdout_like(qr/User: USERNAME/,  'Log message has correct user');
 
   # This test might not be portable, based on locale settings:
-  like $buffer, qr/Date: Jan 1, 1970/, 'Log message has correct date';
+  $t->stdout_like(qr/Date: Jan 1, 1970/, 'Log message has correct date');
 
 }
 
@@ -52,17 +50,15 @@ $t->run_ok(Add  => {stack    => 'branch',
 
 {
 
-  my $buffer = '';
-  my $stack  = 'branch';
-  my $out    = IO::String->new(\$buffer);
+  $t->clear_buffers;
+  my $stack = 'branch';
+  $t->run_ok(Log => {stack => $stack});
 
-  $t->run_ok(Log => {stack => $stack, out => $out});
-
-  my $msgs =()= $buffer =~ m/revision [0-9a-f\-]{36}/g;
-
+  my $msgs =()= ${ $t->outstr } =~ m/revision [0-9a-f\-]{36}/g;
   is $msgs, 2, "Stack $stack has correct message count";
-  like $buffer, qr/Foo-0.01.tar.gz/, 'Log messages have Foo archive';
-  like $buffer, qr/Bar-0.02.tar.gz/, 'Log messages have Bar archive';
+
+  $t->stdout_like(qr/Foo-0.01.tar.gz/, 'Log messages have Foo archive');
+  $t->stdout_like(qr/Bar-0.02.tar.gz/, 'Log messages have Bar archive');
 
 }
 

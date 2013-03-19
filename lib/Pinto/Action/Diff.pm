@@ -6,6 +6,7 @@ use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Difference;
+use Pinto::Constants qw(:color);
 use Pinto::Types qw(StackName StackDefault StackObject RevisionID);
 
 #------------------------------------------------------------------------------
@@ -15,10 +16,6 @@ use Pinto::Types qw(StackName StackDefault StackObject RevisionID);
 #------------------------------------------------------------------------------
 
 extends qw( Pinto::Action );
-
-#------------------------------------------------------------------------------
-
-with qw( Pinto::Role::Colorable );
 
 #------------------------------------------------------------------------------
 
@@ -47,9 +44,9 @@ sub execute {
 
     my $cb = sub {
         my ($op, $reg) = @_;
-        my $color  = $op eq '+' ? $self->color_1 : $self->color_3;
+        my $color  = $op eq '+' ? $PINTO_COLOR_0 : $PINTO_COLOR_2;
         my $string = $op . $reg->to_string('[%F] %-40p %12v %a/%f');
-        $self->say( $self->colorize_with_color($string, $color) );
+        $self->show($string, {color => $color});
     };
 
     $diff->foreach($cb);

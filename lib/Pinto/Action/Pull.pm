@@ -51,7 +51,8 @@ sub execute {
     for my $target ($self->targets) {
 
         try   {
-            $self->repo->svp_begin; 
+            $self->repo->svp_begin;
+            $self->notice("Pulling $target"); 
             my $dist = $self->pull(target => $target); 
             push @successful, $dist ? $dist : ();
         }

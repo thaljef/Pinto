@@ -1,12 +1,12 @@
-# ABSTRACT: Interface for terminal-based interaction
+# ABSTRACT: Base class for interactive interfaces
 
 package Pinto::Chrome;
 
 use Moose;
-use MooseX::Types::Moose qw(Int);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Types::Moose qw(Int Bool);
 
-use Carp;
+use Pinto::Util qw(user_colors);
+use Pinto::Exception qw(throw);
 
 #-----------------------------------------------------------------------------
 
@@ -17,57 +17,57 @@ use Carp;
 has verbose => (
     is      => 'ro',
     isa     => Int,
-    default => 3,
+    default => 0,
 );
 
 
-has stdout => (
+has quiet   => (
     is      => 'ro',
-    isa     => IO,
-    default => sub { [fileno(STDOUT), '>'] },
-    lazy    => 1,
-);
-
-
-has stderr => (
-    is      => 'ro',
-    isa     => IO,
-    default => sub { [fileno(STDERR), '>'] },
-    lazy    => 1,
+    isa     => Bool,
+    default => 0,
 );
 
 #-----------------------------------------------------------------------------
 
-sub speak { 
-    my ($self, $msg, $opts) = @_;
+sub show { throw 'Abstract method' }
 
-    my $nl = $opts{no_newline} ? '' : "\n";
+#-----------------------------------------------------------------------------
 
-    print { $self->stdout } $msg . $nl or croak $!;
+sub diag { throw 'Abstract method' }
 
-    return $self
+#-----------------------------------------------------------------------------
+
+sub should_display {
+    my ($self, $level) = @_;
+
+    return 1 if $level == 0;           # Always, always display errors
+    return 0 if $self->quiet;          # Don't display anything else if quiet
+    return $self->verbose + 1 >= $level;
 }
 
 #-----------------------------------------------------------------------------
 
-my @levels = qw(debug info notice warn error critical);
-__generate_method($levels[$i], $i) for (0..$#levels);
+sub levels { return qw(error warning notice info) }
+
+#-----------------------------------------------------------------------------
+
+my @levels = __PACKAGE__->levels;
+__generate_method($levels[$_], $_) for (0..$#levels);
 
 #-----------------------------------------------------------------------------
 
 sub __generate_method {
     my ($name, $level) = @_;
 
-    eval <<"END_METHOD";
-sub $name {
-    my (\$self, \$msg) = \@_;
-    return if \$self->verbose < $level;
-
-    \$msg = \$msg->() if ref \$msg eq 'CODE';
-    print { \$self->stderr }  $msg . "\\n";
+    my $template = <<'END_METHOD';
+sub %s {
+    my ($self, $msg, $opts) = @_;
+    return unless $self->should_display(%s);
+    $self->diag($msg, $opts);
 }
 END_METHOD
 
+    eval sprintf $template, $name, $level;
     croak $@ if $@;
 }
 

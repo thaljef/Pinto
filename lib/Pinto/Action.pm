@@ -11,7 +11,6 @@ use IO::Handle;
 
 use Pinto::Result;
 use Pinto::Exception;
-use Pinto::Types qw(Io);
 use Pinto::Util qw(is_interactive);
 
 #------------------------------------------------------------------------------
@@ -20,8 +19,7 @@ use Pinto::Util qw(is_interactive);
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::Loggable );
+with qw( Pinto::Role::Configurable Pinto::Role::Plated );
 
 #------------------------------------------------------------------------------
 
@@ -30,15 +28,6 @@ has repo  => (
     is       => 'ro',
     isa      => 'Pinto::Repository',
     required => 1,
-);
-
-
-has out => (
-    is      => 'ro',
-    isa     => Io,
-    coerce  => 1,
-    lazy    => 1,
-    builder => '_build_out',
 );
 
 
@@ -57,37 +46,6 @@ sub BUILD {}
 #------------------------------------------------------------------------------
 
 sub execute { throw 'Abstract method' }
-
-#------------------------------------------------------------------------------
-
-sub say {
-    my ($self, $message) = @_;
-    return print {$self->out} $message . "\n";
-}
-
-#------------------------------------------------------------------------------
-
-sub chat {
-    my ($self, $message) = @_;
-    return print {$self->out} $message;
-}
-
-#------------------------------------------------------------------------------
-
-sub _build_out {
-    my ($self) = @_;
-
-    my $stdout = [fileno(STDOUT), '>'];
-    my $pager = $ENV{PINTO_PAGER} || $ENV{PAGER};
-
-    return $stdout if not is_interactive;
-    return $stdout if not $pager;
-
-    open my $pager_fh, q<|->, $pager
-        or throw "Failed to open pipe to pager $pager: $!";
-
-    return bless $pager_fh, 'IO::Handle'; # HACK!
-}
 
 #------------------------------------------------------------------------------
 

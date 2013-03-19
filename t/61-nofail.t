@@ -54,8 +54,8 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
   $local->run_ok(Pull => {targets => [qw(PkgA PkgB PkgC)], no_fail => 1});
 
   # We should see a log message saying that B failed, because E was missing...
-  $local->log_like( qr/Cannot find PkgE~1 anywhere/);
-  $local->log_like( qr/PkgB~0 failed...continuing/);
+  $local->stderr_like( qr/Cannot find PkgE~1 anywhere/);
+  $local->stderr_like( qr/PkgB~0 failed...continuing/);
 
   # Both A and C should be registered...
   $local->registration_ok('AUTHOR/DistA-1/PkgA~1/master', 'Target before failure ok');
