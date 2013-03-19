@@ -98,7 +98,7 @@ has errstr => (
 has tb => (
    is       => 'ro',
    isa      => 'Test::Builder',
-   handles  => [ qw(ok is_eq isnt_eq diag) ],
+   handles  => [ qw(ok is_eq isnt_eq diag like unlike) ],
    default  => sub { my $tb = __PACKAGE__->builder; $tb->level(2); return $tb },
    init_arg => undef,
 );
@@ -129,21 +129,11 @@ sub _build_pinto {
 
 #------------------------------------------------------------------------------
 
-sub reset_log {
-    my ($self) = @_;
-
-    $self->pinto->logger->log_handler->clear;
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub path_exists_ok {
     my ($self, $path, $name) = @_;
 
     $path = file( $self->root(), @{$path} );
-    $name ||= "Path $path exists";
+    $name ||= "Path $path should exist";
 
     $self->ok(-e $path, $name);
 
@@ -168,9 +158,11 @@ sub path_not_exists_ok {
 sub run_ok {
     my ($self, $action_name, $args, $test_name) = @_;
 
-    my $result = $self->pinto->run($action_name, %{ $args });
     local $Pinto::Globals::is_interactive = 0;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    $self->clear_buffers;
+    my $result = $self->pinto->run($action_name, %{ $args });
     $self->result_ok($result, $test_name);
 
     return $result;
@@ -183,6 +175,8 @@ sub run_throws_ok {
 
     local $Pinto::Globals::is_interactive = 0;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    $self->clear_buffers;
     my $ok = throws_ok { $self->pinto->run($action_name, %{$args}) }
         $error_regex, $test_name;
 
@@ -263,21 +257,21 @@ sub registration_not_ok {
 #------------------------------------------------------------------------------
 
 sub result_ok {
-    my ($self, $result, $test_name) = @_;
+    my ($self, $result) = @_;
 
-    $test_name ||= 'Result indicates action was succesful';
+    my $test_name = 'Result indicates action was succesful';
     my $ok = $self->ok($result->was_successful, $test_name);
     $self->diag_stderr if not $ok;
 
-    return $ok;
+    return;
 }
 
 #------------------------------------------------------------------------------
 
 sub result_not_ok {
-    my ($self, $result, $test_name) = @_;
+    my ($self, $result) = @_;
 
-    $test_name ||= 'Result indicates action was not succesful';
+    my $test_name = 'Result indicates action was not succesful';
     my $ok = $self->ok(!$result->was_successful, $test_name);
     $self->diag_stderr if not $ok;
 
@@ -287,25 +281,25 @@ sub result_not_ok {
 #------------------------------------------------------------------------------
 
 sub result_changed_ok {
-    my ($self, $result, $test_name) = @_;
+    my ($self, $result) = @_;
 
-    $test_name ||= 'Result indicates changes were made';
+    my $test_name = 'Result indicates changes were made';
     my $ok = $self->ok( $result->made_changes, $test_name );
     $self->diag_stderr if not $ok;
 
-    return $ok;
+    return;
 }
 
 #------------------------------------------------------------------------------
 
 sub result_not_changed_ok {
-    my ($self, $result, $test_name) = @_;
+    my ($self, $result) = @_;
 
-    $test_name ||= 'Result indicates changes were not made';
+    my $test_name = 'Result indicates changes were not made';
     my $ok = $self->ok( !$result->made_changes, $test_name );
     $self->diag_stderr if not $ok;
 
-    return $ok;
+    return;
 }
 
 #------------------------------------------------------------------------------
@@ -347,7 +341,7 @@ sub stdout_like {
     my ($self, $rx, $name) = @_;
 
     $name ||= 'stdout output matches';
-    $self->tb->like(${ $self->outstr }, $rx, $name);
+    $self->like(${ $self->outstr }, $rx, $name);
 
     return;
 }
@@ -358,7 +352,7 @@ sub stdout_unlike {
     my ($self, $rx, $name) = @_;
 
     $name ||= 'stdout does not match';
-    $self->tb->unlike(${ $self->outstr }, $rx, $name);
+    $self->unlike(${ $self->outstr }, $rx, $name);
 
     return;
 }
@@ -369,7 +363,7 @@ sub stderr_like {
     my ($self, $rx, $name) = @_;
 
     $name ||= 'stderr output matches';
-    $self->tb->like(${ $self->errstr }, $rx, $name);
+    $self->like(${ $self->errstr }, $rx, $name);
 
     return;
 }
@@ -380,20 +374,9 @@ sub stderr_unlike {
     my ($self, $rx, $name) = @_;
 
     $name ||= 'stderr does not match';
-    $self->tb->unlike(${ $self->errstr }, $rx, $name);
+    $self->unlike(${ $self->errstr }, $rx, $name);
 
     return;
-}
-
-#------------------------------------------------------------------------------
-
-sub clear_buffers {
-    my ($self) = @_;
-
-    $self->pinto->chrome->stderr->truncate;
-    $self->pinto->chrome->stdout->truncate;
-
-    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -418,7 +401,7 @@ sub stack_is_default_ok {
 
     $self->is_eq($inode1, $inode2, "The modules dir is linked to $stack $test_name");
 
-    return;
+    return $stack;
 }
 
 #------------------------------------------------------------------------------
@@ -440,21 +423,19 @@ sub stack_is_not_default_ok {
     $test_name ||= "The modules dir is not linked to stack $stack";
     $self->isnt_eq($inode1, $inode2, $test_name);
 
-    return;
+    return $stack;
 }
 
 #------------------------------------------------------------------------------
 
 sub no_default_stack_ok {
-    my ($self, $test_name) = @_;
-
-    $test_name ||= '';
+    my ($self) = @_;
 
     my $stack = eval { $self->pinto->repo->get_stack };
-    $self->ok(!$stack, "No stack is marked as default $test_name");
+    $self->ok(!$stack, "No stack is marked as default");
 
     my $modules_dir = $self->pinto->repo->config->modules_dir; 
-    $self->ok(! -l $modules_dir, "The modules dir is not linked anywhere $test_name");
+    $self->ok(! -l $modules_dir, "The modules dir is not linked anywhere");
 
     return;
 }
@@ -462,15 +443,13 @@ sub no_default_stack_ok {
 #------------------------------------------------------------------------------
 
 sub stack_exists_ok {
-    my ($self, $stack_name, $test_name) = @_;
-
-    $test_name ||= '';
+    my ($self, $stack_name) = @_;
 
     my $stack = $self->pinto->repo->get_stack($stack_name);
-    $self->ok($stack, "Stack $stack_name exists in DB $test_name");
+    $self->ok($stack, "Stack $stack_name should exist in DB");
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
-    $self->ok(-e $stack_dir, "Directory for $stack_name exists $test_name");
+    $self->ok(-e $stack_dir, "Directory for $stack_name should exist");
 
     return $stack;
 }
@@ -478,15 +457,13 @@ sub stack_exists_ok {
 #------------------------------------------------------------------------------
 
 sub stack_not_exists_ok {
-    my ($self, $stack_name, $test_name) = @_;
-
-    $test_name ||= '';
+    my ($self, $stack_name) = @_;
 
     my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
-    $self->ok(!$stack, "Stack $stack_name does not exist in DB $test_name");
+    $self->ok(!$stack, "Stack $stack_name should not exist in DB");
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
-    $self->ok(!-e $stack_dir, "Directory for $stack_name does not exist $test_name");
+    $self->ok(!-e $stack_dir, "Directory for $stack_name should not exist");
 
     return;
 }
@@ -494,13 +471,11 @@ sub stack_not_exists_ok {
 #------------------------------------------------------------------------------
 
 sub stack_is_locked_ok {
-    my ($self, $stack_name, $test_name) = @_;
-
-    $test_name ||= '';
+    my ($self, $stack_name) = @_;
 
     my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
-    $self->ok($stack, "Stack $stack_name exists in DB $test_name") or return;
-    $self->ok($stack->is_locked, "Stack $stack_name is locked");
+    $self->ok($stack, "Stack $stack_name should exist in DB") or return;
+    $self->ok($stack->is_locked, "Stack $stack_name should be locked");
 
     return;
 }
@@ -508,13 +483,11 @@ sub stack_is_locked_ok {
 #------------------------------------------------------------------------------
 
 sub stack_is_not_locked_ok {
-    my ($self, $stack_name, $test_name) = @_;
-
-    $test_name ||= '';
+    my ($self, $stack_name) = @_;
 
     my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
-    $self->ok($stack, "Stack $stack_name exists in DB $test_name") or return;
-    $self->ok(!$stack->is_locked, "Stack $stack_name is not locked");
+    $self->ok($stack, "Stack $stack_name should exist in DB") or return;
+    $self->ok(!$stack->is_locked, "Stack $stack_name should not be locked");
 
     return;
 }
@@ -547,6 +520,17 @@ sub clear_cache {
     my ($self) = @_;
 
     $self->pinto->repo->clear_cache;
+
+    return $self;
+}
+
+#------------------------------------------------------------------------------
+
+sub clear_buffers {
+    my ($self) = @_;
+
+    $self->pinto->chrome->stderr->truncate;
+    $self->pinto->chrome->stdout->truncate;
 
     return $self;
 }
