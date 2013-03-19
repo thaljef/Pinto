@@ -32,6 +32,7 @@ sub execute {
     my $stack = $self->repo->get_stack($self->stack);
 
     my $stats = Pinto::Statistics->new(stack => $stack);
+    
     $self->show($stats->to_string);
 
     return $self->result;
