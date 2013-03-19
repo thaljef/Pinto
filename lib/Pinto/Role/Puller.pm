@@ -6,6 +6,8 @@ use Moose::Role;
 use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Pinto::Exception qw(throw);
+
 #-----------------------------------------------------------------------------
 
 # VERSION
@@ -42,9 +44,27 @@ sub pull {
 
 	my $target = $args{target};
 	my $stack  = $self->stack;
+  my $dist;
 
-  my $dist = $target->isa('Pinto::Schema::Result::Distribution') ?
-    $target : $self->find(target => $target);
+  if ($target->isa('Pinto::Schema::Result::Distribution')) {
+    $dist = $target;
+  }
+  elsif ($target->isa('Pinto::DistributionSpec')) {
+    $dist = $self->find(target => $target);
+  }
+  elsif ($target->isa('Pinto::PackageSpec')) {
+
+    my $tpv = $stack->target_perl_version;
+    if ($target->is_core(in => $tpv)) {
+      $self->warning("Skipping $target: included in perl $tpv core");
+      return;
+    }
+
+    $dist = $self->find(target => $target);
+  }
+  else {
+    throw "Illeagal arguments";
+  }
 
   $dist->register(stack => $stack, pin => $self->pin);
   $self->recurse(start => $dist) unless $self->no_recurse;
@@ -107,10 +127,9 @@ sub recurse {
   };
 
   require Pinto::PrerequisiteWalker;
-  require Pinto::PrerequisiteFilter::Core;
 
   my $tpv    = $stack->target_perl_version;
-  my $filter = Pinto::PrerequisiteFilter::Core->new(perl_version => $tpv);
+  my $filter = sub { $_[0]->is_perl || $_[0]->is_core(in => $tpv) };
   my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb, filter => $filter);
   
   $self->notice("Descending into prerequisites for $dist");
