@@ -16,7 +16,6 @@ use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
-use Pinto::PrerequisiteFilter::Core;
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis debug mksymlink);
 use Pinto::Types qw(Dir);
