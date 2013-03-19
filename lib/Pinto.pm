@@ -239,4 +239,14 @@ without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
 the L</SYNOPSIS> are your public user interface.
 
+=head1 SEE ALSO
+
+L<pinto> to create and manage a Pinto repository.
+
+L<pintod> to allow remote access to your Pinto repository.
+
+L<Pinto::Manual> for general information on using Pinto.
+
+L<Stratopan|http://stratopan.com> for hosting your Pinto repository in the cloud.
+
 =cut
