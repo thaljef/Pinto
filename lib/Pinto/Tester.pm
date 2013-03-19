@@ -205,7 +205,9 @@ sub registration_ok {
         if not $reg;
 
 
+    #-------------------------------------
     # Test package object...
+
     my $pkg = $reg->package;
     $self->is_eq($pkg->name,    $pkg_name, "Package has correct name");
     $self->is_eq($pkg->version, $pkg_ver,  "Package has correct version");
@@ -221,9 +223,11 @@ sub registration_ok {
     $self->ok(!$reg->is_pinned, "Registration $reg should not be pinned") 
         if not $is_pinned;
 
-
+    #-------------------------------------
     # Test file paths...
+    
     local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
 
     # Reach file through the stack's authors/id directory
