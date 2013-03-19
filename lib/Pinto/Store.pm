@@ -1,4 +1,4 @@
-# ABSTRACT: Base class for storage of a Pinto repository
+# ABSTRACT: Storage for distribution archives
 
 package Pinto::Store;
 
@@ -17,9 +17,17 @@ use Pinto::Exception qw(throw);
 # VERSION
 
 #------------------------------------------------------------------------------
-# Roles
 
-with qw( Pinto::Role::Configurable Pinto::Role::FileFetcher );
+with qw( Pinto::Role::FileFetcher );
+
+#------------------------------------------------------------------------------
+
+has repo => (
+   is         => 'ro',
+   isa        => 'Pinto::Repository',
+   weak_ref   => 1,
+   required   => 1,
+);
 
 #------------------------------------------------------------------------------
 # TODO: Use named arguments here...
@@ -45,7 +53,7 @@ sub remove_archive {
 
     $self->remove_path( path => $archive_file );
 
-    $self->update_checksums( directory => $archive_file->parent() );
+    $self->update_checksums( directory => $archive_file->parent );
 
     return $self;
 }

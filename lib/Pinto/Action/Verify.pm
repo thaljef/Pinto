@@ -22,11 +22,8 @@ sub execute {
 
     while ( my $dist = $dist_rs->next ) {
 
-    	my $authors_id_dir = $self->repo->config->authors_id_dir;
-        my $archive = $dist->native_path( $authors_id_dir );
-
-        if (not -e $archive) {
-	        $self->say("Missing distribution $dist");
+        if (not -e $dist->native_path) {
+	        $self->warning("Missing distribution $dist");
 	        $self->result->failed;
 	    }
     }

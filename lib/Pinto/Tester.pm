@@ -132,7 +132,7 @@ sub _build_pinto {
 sub path_exists_ok {
     my ($self, $path, $name) = @_;
 
-    $path = file( $self->root(), @{$path} );
+    $path = ref $path eq 'ARRAY' ? file( $self->root, @{$path} ) : $path;
     $name ||= "Path $path should exist";
 
     $self->ok(-e $path, $name);
@@ -145,7 +145,7 @@ sub path_exists_ok {
 sub path_not_exists_ok {
     my ($self, $path, $name) = @_;
 
-    $path = file( $self->root(), @{$path} );
+    $path = ref $path eq 'ARRAY' ? file( $self->root, @{$path} ) : $path;
     $name ||= "Path $path should not exist";
 
     $self->ok(! -e $path, $name);
@@ -225,8 +225,12 @@ sub registration_ok {
     # Test file paths...
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     $self->path_exists_ok( [qw(authors id), $author_dir, 'CHECKSUMS'] );
-    $self->path_exists_ok( ['stacks', $stack_name, qw(authors id), $dist->native_path] );
-    $self->path_exists_ok( [ qw(authors id), $dist->native_path ] );
+
+    # Reach file through the stack's authors/id directory
+    $self->path_exists_ok( $dist->native_path($stack->authors_dir->subdir('id')) );
+
+    # Reach file through the top authors/id directory 
+    $self->path_exists_ok( $dist->native_path );
 
     return;
 }
@@ -320,7 +324,7 @@ sub repository_clean_ok {
     $self->is_eq($stack->name, 'master',  'The stack is called "master"');
     $self->is_eq($stack->is_default, 1,  'The stack is marked as default');
 
-    my $authors_id_dir = $self->pinto->config->authors_id_dir;
+    my $authors_id_dir = $self->pinto->repo->config->authors_id_dir;
     $self->ok(! -e $authors_id_dir, 'The authors/id dir should be gone');
 
     return;

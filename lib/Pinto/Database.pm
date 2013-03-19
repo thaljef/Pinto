@@ -19,7 +19,14 @@ use Pinto::Exception qw(throw);
 # VERSION
 
 #-------------------------------------------------------------------------------
-# Attributes
+
+has repo => (
+   is         => 'ro',
+   isa        => 'Pinto::Repository',
+   weak_ref   => 1,
+   required   => 1,
+);
+
 
 has schema => (
    is         => 'ro',
@@ -27,14 +34,6 @@ has schema => (
    builder    => '_build_schema',
    init_arg   => undef,
    lazy       => 1,
-);
-
-
-has repo => (
-   is         => 'ro',
-   isa        => 'Pinto::Repository',
-   weak_ref   => 1,
-   required   => 1,
 );
 
 
@@ -47,19 +46,13 @@ has ddl_file => (
 );
 
 #-------------------------------------------------------------------------------
-# Roles
-
-with qw( Pinto::Role::Configurable );
-
-#-------------------------------------------------------------------------------
-# Builders
 
 sub _build_schema {
     my ($self) = @_;
 
     my $schema = Pinto::Schema->new;
 
-    my $db_file = $self->config->db_file;
+    my $db_file = $self->repo->config->db_file;
     my $dsn     = "dbi:SQLite:$db_file";
     my $xtra    = {on_connect_call => 'use_foreign_keys'};
     my @args    = ($dsn, undef, undef, $xtra);
@@ -103,7 +96,7 @@ sub _build_schema {
 sub deploy {
     my ($self) = @_;
 
-    my $db_dir = $self->config->db_dir;
+    my $db_dir = $self->repo->config->db_dir;
     debug("Makding db directory at $db_dir");
     $db_dir->mkpath;
 

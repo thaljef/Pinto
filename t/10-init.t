@@ -60,7 +60,7 @@ use Pinto::Tester;
 {
 	my $config = {sources => 'MySource'};
 	my $t = Pinto::Tester->new(init_args => $config);
-	is $t->pinto->config->sources,  'MySource', 'Got custom source';
+	is $t->pinto->repo->config->sources,  'MySource', 'Got custom source';
 }
 
 #------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ has repo => (
 sub total_distributions {
     my ($self) = @_;
 
-    return $self->repo->db->schema->distribution_rs->count;
+    return $self->stack->repo->distribution_count;
 }
 
 #------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ sub stack_distributions {
 sub total_packages {
     my ($self) = @_;
 
-    return $self->repo->db->schema->package_rs->count;
+    return $self->stack->repo->package_count;
 }
 
 #------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ sub stack_packages {
 
 #------------------------------------------------------------------------------
 
-sub to_formatted_string {
+sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (

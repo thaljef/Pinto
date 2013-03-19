@@ -23,6 +23,14 @@ our $LOCKFILE_TIMEOUT = $ENV{PINTO_LOCKFILE_TIMEOUT} || 50; # Seconds
 
 #-----------------------------------------------------------------------------
 
+has repo => (
+   is         => 'ro',
+   isa        => 'Pinto::Repository',
+   weak_ref   => 1,
+   required   => 1,
+);
+
+
 has _lock => (
     is         => 'rw',
     isa        => 'File::NFSLock',
@@ -30,10 +38,6 @@ has _lock => (
     clearer    => '_clear_lock',
     init_arg   => undef,
 );
-
-#-----------------------------------------------------------------------------
-
-with qw( Pinto::Role::Configurable );
 
 #-----------------------------------------------------------------------------
 
@@ -56,7 +60,7 @@ sub lock {                                   ## no critic qw(Homonym)
     local $File::NFSLock::LOCK_EXTENSION = '';
     local @File::NFSLock::CATCH_SIGS = ();
 
-    my $root_dir  = $self->root_dir;
+    my $root_dir  = $self->repo->config->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
     my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
         or throw 'Unable to lock the repository -- please try later';
@@ -87,7 +91,7 @@ sub unlock {
 
     $self->_clear_lock;
 
-    my $root_dir = $self->config->root_dir;
+    my $root_dir = $self->repo->config->root_dir;
     debug("Process $$ released the lock on $root_dir");
 
     return $self;

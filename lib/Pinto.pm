@@ -11,6 +11,7 @@ use Class::Load;
 use Pinto::Result;
 use Pinto::Repository;
 use Pinto::Chrome::Term;
+use Pinto::Types qw(Dir);
 use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
@@ -19,15 +20,23 @@ use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable Pinto::Role::Plated );
+with qw( Pinto::Role::Plated );
 
 #------------------------------------------------------------------------------
+
+has root => (
+    is       => 'ro',
+    isa      => Dir,
+    default  => $ENV{PINTO_REPOSITORY_ROOT},
+    coerce   => 1,
+);
+
 
 has repo  => (
     is         => 'ro',
     isa        => 'Pinto::Repository',
+    default    => sub { Pinto::Repository->new( root => $_[0]->root ) },
     lazy       => 1,
-    default    => sub { Pinto::Repository->new( config => $_[0]->config ) },
 );
 
 #------------------------------------------------------------------------------
@@ -84,7 +93,7 @@ sub run {
 sub create_action {
     my ($self, $action_name, %action_args) = @_;
 
-    @action_args{qw(config chrome repo)} = ($self->config, $self->chrome, $self->repo);
+    @action_args{qw(chrome repo)} = ($self->chrome, $self->repo);
     my $action_class = $self->load_class_for_action(name => $action_name);
     my $action = $action_class->new(%action_args);
 

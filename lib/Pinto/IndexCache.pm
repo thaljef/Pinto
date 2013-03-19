@@ -13,7 +13,14 @@ use Package::Locator;
 # VERSION
 
 #-------------------------------------------------------------------------------
-# Attributes
+
+has repo => (
+   is         => 'ro',
+   isa        => 'Pinto::Repository',
+   weak_ref   => 1,
+   required   => 1,
+);
+
 
 has locator => (
     is         => 'ro',
@@ -24,18 +31,14 @@ has locator => (
 );
 
 #-------------------------------------------------------------------------------
-# Roles
-
-with qw( Pinto::Role::Configurable );
-
-#-------------------------------------------------------------------------------
 
 sub _build_locator {
     my ($self) = @_;
 
-    my @urls    = $self->config->sources_list();
-    my $locator = Package::Locator->new( repository_urls => \@urls,
-                                         cache_dir       => $self->config->cache_dir() );
+    my @urls      = $self->repo->config->sources_list;
+    my $cache_dir = $self->repo->config->cache_dir;
+    my $locator   = Package::Locator->new(repository_urls => \@urls,
+                                          cache_dir       => $cache_dir);
 
     return $locator;
 }

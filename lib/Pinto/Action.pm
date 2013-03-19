@@ -19,7 +19,7 @@ use Pinto::Util qw(is_interactive);
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable Pinto::Role::Plated );
+with qw( Pinto::Role::Plated );
 
 #------------------------------------------------------------------------------
 

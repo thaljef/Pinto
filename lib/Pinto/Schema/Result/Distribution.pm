@@ -404,10 +404,12 @@ has is_devel => (
 sub path {
     my ($self) = @_;
 
-    return join '/', substr($self->author, 0, 1),
-                     substr($self->author, 0, 2),
-                     $self->author,
-                     $self->archive;
+    return join '/', (
+        substr($self->author, 0, 1),
+        substr($self->author, 0, 2),
+        $self->author,
+        $self->archive
+    );
 }
 
 #------------------------------------------------------------------------------
@@ -415,11 +417,15 @@ sub path {
 sub native_path {
     my ($self, @base) = @_;
 
-    return Path::Class::file( @base,
-                              substr($self->author, 0, 1),
-                              substr($self->author, 0, 2),
-                              $self->author,
-                              $self->archive );
+    @base = ($self->repo->config->authors_id_dir) if not @base;
+
+    return Path::Class::file(
+        @base,
+        substr($self->author, 0, 1),
+        substr($self->author, 0, 2),
+        $self->author,
+        $self->archive 
+    );
 }
 
 #------------------------------------------------------------------------------
@@ -523,21 +529,21 @@ sub to_string {
     my ($self, $format) = @_;
 
     my %fspec = (
-         'd' => sub { $self->name()                           },
-         'D' => sub { $self->vname()                          },
-         'V' => sub { $self->version()                        },
-         'm' => sub { $self->is_devel()   ? 'd' : 'r'         },
-         'h' => sub { $self->path()                           },
-         'H' => sub { $self->native_path()                    },
-         'f' => sub { $self->archive()                        },
-         's' => sub { $self->is_local()   ? 'l' : 'f'         },
-         'S' => sub { $self->source()                         },
-         'a' => sub { $self->author()                         },
-         'u' => sub { $self->url()                            },
-         'c' => sub { $self->package_count()                  },
+         'd' => sub { $self->name                           },
+         'D' => sub { $self->vname                          },
+         'V' => sub { $self->version                        },
+         'm' => sub { $self->is_devel   ? 'd' : 'r'         },
+         'h' => sub { $self->path                           },
+         'H' => sub { $self->native_path                    },
+         'f' => sub { $self->archive                        },
+         's' => sub { $self->is_local   ? 'l' : 'f'         },
+         'S' => sub { $self->source                         },
+         'a' => sub { $self->author                         },
+         'u' => sub { $self->url                            },
+         'c' => sub { $self->package_count                  },
     );
 
-    $format ||= $self->default_format();
+    $format ||= $self->default_format;
     return String::Format::stringf($format, %fspec);
 }
 

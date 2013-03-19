@@ -10,6 +10,7 @@ use File::Find;
 use Path::Class;
 
 use Pinto::Store;
+use Pinto::Config;
 use Pinto::Locker;
 use Pinto::Database;
 use Pinto::IndexCache;
@@ -18,6 +19,7 @@ use Pinto::PrerequisiteWalker;
 use Pinto::PrerequisiteFilter::Core;
 use Pinto::Exception qw(throw);
 use Pinto::Util qw(itis debug mksymlink);
+use Pinto::Types qw(Dir);
 
 use version;
 
@@ -31,10 +33,31 @@ Readonly::Scalar our $REPOSITORY_VERSION => 1;
 
 #-------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable
-         Pinto::Role::FileFetcher );
+with qw( Pinto::Role::FileFetcher );
 
 #-------------------------------------------------------------------------------
+
+=attr root
+
+=cut
+
+has root => (
+    is       => 'ro',
+    isa      => Dir,
+    required => 1,
+    coerce   => 1,
+);
+
+=attr config
+
+=cut
+
+has config => (
+    is         => 'ro',
+    isa        => 'Pinto::Config',
+    default    => sub { Pinto::Config->new(root => $_[0]->root) },
+    lazy       => 1,
+);
 
 =attr db
 
@@ -43,9 +66,8 @@ with qw( Pinto::Role::Configurable
 has db => (
     is         => 'ro',
     isa        => 'Pinto::Database',
+    default    => sub { Pinto::Database->new(repo => $_[0]) },
     lazy       => 1,
-    default    => sub { Pinto::Database->new( config => $_[0]->config,
-                                              repo   => $_[0] ) },
 );
 
 =attr store
@@ -55,8 +77,8 @@ has db => (
 has store => (
     is         => 'ro',
     isa        => 'Pinto::Store',
+    default    => sub { Pinto::Store->new(repo => $_[0]) },
     lazy       => 1,
-    default    => sub { Pinto::Store->new( config => $_[0]->config ) },
 );
 
 =attr cache
@@ -70,10 +92,10 @@ has store => (
 has cache => (
     is         => 'ro',
     isa        => 'Pinto::IndexCache',
-    lazy       => 1,
     handles    => [ qw(locate) ],
     clearer    => '_clear_cache',
-    default    => sub { Pinto::IndexCache->new( config => $_[0]->config ) },
+    default    => sub { Pinto::IndexCache->new(repo => $_[0]) },
+    lazy       => 1,
 );
 
 =attr locker
@@ -87,9 +109,9 @@ has cache => (
 has locker  => (
     is         => 'ro',
     isa        => 'Pinto::Locker',
-    lazy       => 1,
     handles    => [ qw(lock unlock) ],
-    default    => sub { Pinto::Locker->new( config => $_[0]->config ) },
+    default    => sub { Pinto::Locker->new(repo => $_[0]) },
+    lazy       => 1,
 );
 
 #-------------------------------------------------------------------------------
@@ -458,10 +480,8 @@ sub add_distribution {
     # repository, so if there is an error in the DB, we can stop and
     # the repository will still be clean.
 
-    my $dist = $self->db->schema->create_distribution( $dist_struct );
-    my $basedir = $self->config->authors_id_dir;
-    my $destination = $dist->native_path( $basedir );
-    $self->store->add_archive( $archive => $destination );
+    my $dist = $self->db->schema->create_distribution($dist_struct);
+    $self->store->add_archive($archive => $dist->native_path);
 
     return $dist;
 }

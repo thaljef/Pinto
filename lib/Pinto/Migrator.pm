@@ -5,7 +5,7 @@ package Pinto::Migrator;
 use Moose;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto;
+use Pinto::Types qw(Dir);
 use Pinto::Repository;
 
 #------------------------------------------------------------------------------
@@ -14,17 +14,21 @@ use Pinto::Repository;
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::Configurable );
+has root => (
+    is       => 'ro',
+    isa      => Dir,
+    default  => $ENV{PINTO_REPOSITORY_ROOT},
+    coerce   => 1,
+);
 
 #------------------------------------------------------------------------------
-
 
 sub migrate {
     my ($self) = @_;
 
-    my $pinto = Pinto->new(root => $self->config->root);
+    my $repo = Pinto::Repository->new(root => $self->root);
 
-    my $repo_version = $pinto->repo->get_version;
+    my $repo_version = $repo->get_version;
     my $code_version = $Pinto::Repository::REPOSITORY_VERSION;
 
     die "This repository is too old to migrate.\n" .
