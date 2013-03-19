@@ -102,19 +102,18 @@ sub execute {
 sub _add {
     my ($self, $archive) = @_;
     
-    $self->notice("Adding $archive");
-
     my $dist;
     if (my $dupe = $self->_check_for_duplicate($archive)) {
-        $self->warning("Archive $archive is the same as $dupe -- using $dupe instead");
+        $self->warning("$archive is the same as $dupe -- using $dupe instead");
         $dist = $dupe;
     }
     else {
-        $self->notice("Adding distribution archive $archive");
+        $self->info("Adding $archive to the repository");
         $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
     }
 
-    $self->pull(target => $dist);
+    $self->notice("Registering $dist on stack " . $self->stack);
+    $self->pull(target => $dist); # Registers dist and pulls prereqs
     
     return $dist;
 }

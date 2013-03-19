@@ -52,7 +52,7 @@ sub execute {
 
         try   {
             $self->repo->svp_begin;
-            $self->notice("Pulling $target"); 
+            $self->notice("Pulling target $target to stack " . $self->stack);
             my $dist = $self->pull(target => $target); 
             push @successful, $dist ? $dist : ();
         }
@@ -61,7 +61,7 @@ sub execute {
 
             $self->repo->svp_rollback;
 
-            $self->error("$_");
+            $self->error($_);
             $self->error("$target failed...continuing anyway");
             push @failed, $target;
         }

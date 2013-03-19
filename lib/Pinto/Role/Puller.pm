@@ -60,10 +60,20 @@ sub find {
   my $target = $args{target};
   my $stack  = $self->stack;
 
-  my $dist = $stack->get_distribution(spec => $target)
-    || $stack->repo->get_distribution(spec => $target)
-    || $stack->repo->ups_distribution(spec => $target);
+  my $dist;
+  my $msg;
 
+  if    ($dist = $stack->get_distribution(spec => $target) ) {
+    $msg = "Found $target on stack $stack in $dist";
+  }
+  elsif ($dist = $stack->repo->get_distribution(spec => $target) ) {
+    $msg = "Found $target in $dist";
+  }
+  elsif ($dist = $stack->repo->ups_distribution(spec => $target) ) {
+    $msg = "Found $target in " . $dist->source;
+  }
+
+  $self->info($msg) if defined $msg;
   return $dist;
 }
 
@@ -102,8 +112,10 @@ sub recurse {
   my $tpv    = $stack->target_perl_version;
   my $filter = Pinto::PrerequisiteFilter::Core->new(perl_version => $tpv);
   my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb, filter => $filter);
-    
-  while ($walker->next){}  # We just want the side effects of the callback
+  
+  $self->notice("Descending into prerequisites for $dist");
+
+  while ($walker->next){ }; # We just want the side effects
 
   return $self;
 }
