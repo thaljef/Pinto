@@ -12,22 +12,14 @@ use String::Format;
 # VERSION
 
 #------------------------------------------------------------------------------
-# Attributes
 
 has stack => (
-    is      => 'ro',
-    isa     => 'Pinto::Schema::Result::Stack',
-);
-
-
-has repo => (
     is       => 'ro',
-    isa      => 'Pinto::Repository',
+    isa      => 'Pinto::Schema::Result::Stack',
     required => 1,
 );
 
 #------------------------------------------------------------------------------
-# Methods
 
 sub total_distributions {
     my ($self) = @_;
