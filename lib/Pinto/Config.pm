@@ -136,24 +136,6 @@ has cache_dir => (
 );
 
 
-has log_dir => (
-    is        => 'ro',
-    isa       => Dir,
-    init_arg  => undef,
-    default   => sub { return $_[0]->pinto_dir->subdir('log') },
-    lazy      => 1,
-);
-
-
-has log_file => (
-    is        => 'ro',
-    isa       => File,
-    init_arg  => undef,
-    default   => sub { return $_[0]->log_dir->file('pinto.log') },
-    lazy      => 1,
-);
-
-
 has no_history => (
     is         => 'ro',
     isa        => Bool,
@@ -207,7 +189,6 @@ has basename => (
 );
 
 #------------------------------------------------------------------------------
-# Builders
 
 sub _build_config_file {
     my ($self) = @_;
@@ -228,6 +209,19 @@ sub _build_sources_list {
     return \@source_urls;
 }
 
+#------------------------------------------------------------------------------
+
+sub directories {
+    my ($self) = @_;
+
+    return ( 
+        $self->root_dir,
+        $self->config_dir,
+        $self->cache_dir,
+        $self->authors_dir,
+        $self->db_dir
+    );
+}
 #------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable;

@@ -10,6 +10,7 @@ use Path::Class;
 
 use Pinto;
 use Pinto::Config;
+use Pinto::Util qw(debug);
 
 #------------------------------------------------------------------------------
 
@@ -53,9 +54,9 @@ sub _make_dirs {
 
     my $config = Pinto::Config->new(root => $args{root});
 
-    for my $dir ( qw(root config cache log authors db) ) {
-        my $method = "${dir}_dir";
-        $config->$method->mkpath;
+    for my $dir ( $config->directories ) {
+        debug "Making directory $dir";
+        $dir->mkpath;
     }
 
     return;

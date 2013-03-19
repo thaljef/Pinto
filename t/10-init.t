@@ -15,9 +15,9 @@ use Pinto::Tester;
 	my $t = Pinto::Tester->new;
 
 	$t->path_exists_ok( [qw(.pinto version)] );
+	$t->path_exists_ok( [qw(.pinto cache)]   );
 	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
-	$t->path_exists_ok( [qw(.pinto log)] );
 
 	$t->path_exists_ok( [qw(modules 02packages.details.txt.gz)] );
 	$t->path_exists_ok( [qw(modules 03modlist.data.gz)] );
@@ -58,10 +58,8 @@ use Pinto::Tester;
 # Test custom config
 
 {
-	my $config = {sources => 'MySource', log_level => 'debug'};
+	my $config = {sources => 'MySource'};
 	my $t = Pinto::Tester->new(init_args => $config);
-
-	is $t->pinto->config->log_level,   'debug', 'Got custom log_level';
 	is $t->pinto->config->sources,  'MySource', 'Got custom source';
 }
 
