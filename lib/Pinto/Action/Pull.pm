@@ -69,6 +69,8 @@ sub execute {
         };
     }
 
+    $self->chrome->progress_done;
+
     return @successful;
 }
 

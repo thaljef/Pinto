@@ -93,7 +93,9 @@ sub find {
     $msg = "Found $target in " . $dist->source;
   }
 
+  $self->chrome->show_progress;
   $self->info($msg) if defined $msg;
+  
   return $dist;
 }
 
