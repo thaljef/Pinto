@@ -7,8 +7,6 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(CodeRef ArrayRef HashRef Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto::PrerequisiteFilter;
-
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -31,9 +29,8 @@ has callback => (
 
 has filter => (
   is        => 'ro',
-  isa       => 'Pinto::PrerequisiteFilter',
-  default   => sub { Pinto::PrerequisiteFilter::None->new },
-  lazy      => 1,
+  isa       => CodeRef,
+  predicate => 'has_filter',
 );
 
 
@@ -41,7 +38,7 @@ has queue => (
   isa       => ArrayRef['Pinto::PackageSpec'],
   traits    => [ qw(Array) ],
   handles   => {enqueue => 'push', dequeue => 'shift'},
-  default   => sub { return [ $_[0]->filter->apply($_[0]->start->prerequisite_specs) ] },
+  default   => sub { return [ $_[0]->apply_filter($_[0]->start->prerequisite_specs) ] },
   init_arg  => undef,
   lazy      => 1,
 );
@@ -65,12 +62,22 @@ sub next {
 
   if (defined $dist) {
     my $path    = $dist->path;
-    my @prereqs = $self->filter->apply($dist->prerequisite_specs);
+    my @prereqs = $self->apply_filter($dist->prerequisite_specs);
     $self->enqueue(@prereqs) unless $self->seen->{$path};
     $self->seen->{$path} = 1;
   }
 
   return $prereq;
+}
+
+#------------------------------------------------------------------------------
+
+sub apply_filter {
+  my ($self, @prereqs) = @_;
+
+  return @prereqs if not $self->has_filter;
+
+  return grep { ! $self->filter->($_) } @prereqs;
 }
 
 #------------------------------------------------------------------------------
