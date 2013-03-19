@@ -1,6 +1,32 @@
 {{$NEXT}}
 
+     !! DEVELOPER RELEASE !!
+
+     This requires App::Pinto 0.065_02 for the front end.
+     Still not compatible with any existing Pinto::Remote.
+
+     The interface with the terminal has been completely redesigned.
+     You'll see fewer (but hopefully better) diagnostic messages
+     when running in verbose mode.  And if not verbose, then
+     you'll see a progress meter.  If you still want to see all
+     the gory details, then set the PINTO_DEBUG environment variable.
+
+     The logger has been completely removed, so Pinto no longer
+     records diagnostic messages.  Recording them never proved to
+     be useful anyway.  All the important changes to the stacks are 
+     still recorded in the revision log though.
+
+     Still works with any repository created with Pinto 0.065_01
+     or later.  So no migration required for those.  For older
+     repositories, see the IMPORTANT note down below under the 0.065_01 
+     release.
+
 0.065_02  2013-03-15 23:39:27 America/Los_Angeles
+
+     !! DEVELOPER RELEASE !!
+
+     This requires App::Pinto 0.065_01 for the front end.
+     Still not compatible with any existing Pinto::Remote.
 
      The Delete action didn't actually delete the archive.
      Now it does!  Added some more tests too.
