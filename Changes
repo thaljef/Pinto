@@ -2,7 +2,7 @@
 
      !! DEVELOPER RELEASE !!
 
-     This requires App::Pinto 0.065_02 for the front end.
+     This requires App::Pinto 0.065_03 for the front end.
      Still not compatible with any existing Pinto::Remote.
 
      Switched from using LWP to HTTP::Tiny to reduce non-core
@@ -10,6 +10,8 @@
 
      Fixed bug that would cause Pinto to blow up when generating
      very large diffs.
+
+     Redesigned exception handling.
 
      Most classes now use MooseX::StrictConstructor now.
 
