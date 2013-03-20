@@ -79,7 +79,7 @@ around execute => sub {
         $self->repo->clean_files;
     }
     elsif ($stack->refresh->has_not_changed) {
-        $self->notice('No changes were actually made');
+        $self->warning('No changes were actually made');
         $self->repo->txn_rollback;
     }
     else {
