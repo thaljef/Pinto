@@ -66,6 +66,14 @@ has init_args => (
 );
 
 
+has root => (
+   is       => 'ro',
+   isa      => Dir,
+   default  => sub { dir( tempdir(CLEANUP => 1) ) },
+   lazy     => 1,
+);
+
+
 has pinto => (
     is       => 'ro',
     isa      => 'Pinto',
@@ -74,11 +82,12 @@ has pinto => (
 );
 
 
-has root => (
-   is       => 'ro',
-   isa      => Dir,
-   default  => sub { dir( tempdir(CLEANUP => 1) ) },
-   lazy     => 1,
+has repo => (
+    is       => 'ro',
+    isa      => 'Pinto::Repository',
+    default  => sub { $_[0]->pinto->repo },
+    init_arg => undef,
+    lazy     => 1,
 );
 
 
@@ -126,6 +135,14 @@ sub _build_pinto {
     $initializer->init( %defaults, $self->init_args );
 
     return Pinto->new(%defaults, chrome => $chrome, $self->pinto_args);
+}
+
+#------------------------------------------------------------------------------
+
+sub get_stack {
+    my ($self, $stack) = @_;
+
+    return $self->repo->get_stack($stack);
 }
 
 #------------------------------------------------------------------------------
@@ -196,7 +213,7 @@ sub registration_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($dist_archive)->as_foreign('Unix');
-    my $stack      = $self->pinto->repo->get_stack($stack_name);
+    my $stack      = $self->get_stack($stack_name);
 
     my $where = { revision => $stack->head->id, 'package.name' => $pkg_name };
     my $attrs = { prefetch => {package => 'distribution' }};
@@ -250,7 +267,7 @@ sub registration_not_ok {
 
     my $author_dir = Pinto::Util::author_dir($author);
     my $dist_path  = $author_dir->file($archive)->as_foreign('Unix');
-    my $stack      = $self->pinto->repo->get_stack($stack_name);
+    my $stack      = $self->get_stack($stack_name);
 
     my $where = { stack                 => $stack->id, 
                  'package.name'         => $pkg_name, 
@@ -397,7 +414,7 @@ sub stack_is_default_ok {
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $stack = $self->get_stack($stack_name);
     $self->ok($stack->is_default, "Stack $stack is marked as default $test_name");
 
     my $stack_modules_dir = $stack->modules_dir;
@@ -418,7 +435,7 @@ sub stack_is_default_ok {
 sub stack_is_not_default_ok {
     my ($self, $stack_name, $test_name) = @_;
 
-    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $stack = $self->get_stack($stack_name);
     $self->ok(!$stack->is_default, "Stack $stack not marked as default");
 
     my $stack_modules_dir = $stack->modules_dir;
@@ -440,7 +457,7 @@ sub stack_is_not_default_ok {
 sub no_default_stack_ok {
     my ($self) = @_;
 
-    my $stack = eval { $self->pinto->repo->get_stack };
+    my $stack = eval { $self->get_stack };
     $self->ok(!$stack, "No stack is marked as default");
 
     my $modules_dir = $self->pinto->repo->config->modules_dir; 
@@ -454,7 +471,7 @@ sub no_default_stack_ok {
 sub stack_exists_ok {
     my ($self, $stack_name) = @_;
 
-    my $stack = $self->pinto->repo->get_stack($stack_name);
+    my $stack = $self->get_stack($stack_name);
     $self->ok($stack, "Stack $stack_name should exist in DB");
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
@@ -468,7 +485,7 @@ sub stack_exists_ok {
 sub stack_not_exists_ok {
     my ($self, $stack_name) = @_;
 
-    my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
+    my $stack = eval { $self->get_stack($stack_name) };
     $self->ok(!$stack, "Stack $stack_name should not exist in DB");
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
@@ -482,7 +499,7 @@ sub stack_not_exists_ok {
 sub stack_is_locked_ok {
     my ($self, $stack_name) = @_;
 
-    my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
+    my $stack = eval { $self->get_stack($stack_name) };
     $self->ok($stack, "Stack $stack_name should exist in DB") or return;
     $self->ok($stack->is_locked, "Stack $stack_name should be locked");
 
@@ -494,7 +511,7 @@ sub stack_is_locked_ok {
 sub stack_is_not_locked_ok {
     my ($self, $stack_name) = @_;
 
-    my $stack = eval { $self->pinto->repo->get_stack($stack_name) };
+    my $stack = eval { $self->get_stack($stack_name) };
     $self->ok($stack, "Stack $stack_name should exist in DB") or return;
     $self->ok(!$stack->is_locked, "Stack $stack_name should not be locked");
 
