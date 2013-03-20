@@ -40,17 +40,15 @@ sub execute {
 
     my $left  = $self->repo->get_stack($self->left_stack);
     my $right = $self->repo->get_stack($self->right_stack);
-
     my $diff  = Pinto::Difference->new(left => $left, right => $right);
 
-    my $cb = sub {
-        my ($op, $reg) = @_;
+    for my $entry ($diff->diffs) {
+        my $op     = $entry->op;
+        my $reg    = $entry->registration;
         my $color  = $op eq '+' ? $PINTO_COLOR_0 : $PINTO_COLOR_2;
         my $string = $op . $reg->to_string('[%F] %-40p %12v %a/%f');
         $self->show($string, {color => $color});
-    };
-
-    $diff->foreach($cb);
+    }
 
     return $self->result;
 }

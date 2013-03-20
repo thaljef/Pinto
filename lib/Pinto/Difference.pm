@@ -32,8 +32,9 @@ has right => (
 
 
 has diffs => (
-    is       => 'ro',
-    isa      => ArrayRef,
+    traits   => [ qw(Array) ],
+    handles  => {diffs => 'elements'},
+    isa      => ArrayRef['Pinto::DifferenceEntry'],
     builder  => '_build_diffs',
     init_arg => undef,
     lazy     => 1,
@@ -41,18 +42,22 @@ has diffs => (
 
 
 has adds => (
-    is       => 'ro',
+    traits   => [ qw(Array) ],
+    handles  => {adds => 'elements'},
     isa      => ArrayRef['Pinto::Schema::Result::Registration'],
-    default  => sub { map { $_->[1] } grep {$_->[0] eq '+'} @{ $_[0]->diffs } }, 
+    default  => sub { [ map  { $_->registrations } 
+                        grep {$_->op eq '+'} $_[0]->diffs ] }, 
     init_arg => undef,
     lazy     => 1,
 );
 
 
-has dels => (
-    is       => 'ro',
+has deletes => (
+    traits   => [ qw(Array) ],
+    handles  => {deletes => 'elements'},
     isa      => ArrayRef['Pinto::Schema::Result::Registration'],
-    default  => sub { map { $_->[1] } grep {$_->[0] eq '-'} @{ $_[0]->diffs } }, 
+    default  => sub { [ map  { $_->registrations } 
+                        grep {$_->op eq '-'} $_[0]->diffs ] }, 
     init_arg => undef,
     lazy     => 1,
 );
@@ -64,8 +69,8 @@ around BUILDARGS => sub {
     my $class = shift;
     my $args  = $class->$orig(@_);
 
-    # The left and right attributes can also be Stack or Revision
-    # objects.  In that case, we just convert it to the right thing.
+    # The left and right attributes can also be Stack objects.  
+    # In those cases, we just use the head revision of the Stack
 
     for my $side ( qw(left right) ) {
         if ($args->{$side}->isa('Pinto::Schema::Result::Stack')) {
@@ -110,29 +115,47 @@ sub _build_diffs {
 
     # Now we have the ids of all the registrations that were added or
     # deleted between the left and right revisions.  We use those ids to
-    # requery the database and get full objects for each of them.  Since
-    # the number of changed registrations is usually much less than the
-    # total number of registrations in either revision, this is much
-    # quicker than querying full o
+    # requery the database and construct full objects for each of them.  
 
-    my $where1     = {'me.id' => {in => \@add_ids}};
-    my $add_rs     = $self->right->registrations($where1);
-    my @adds = map { ['+' => $_] } $add_rs->with_distribution->with_package;
-
-
-    my $where2     = {'me.id' => {in => \@del_ids}};
-    my $del_rs     = $self->left->registrations($where2);
-    my @dels = map { ['-' => $_] } $del_rs->with_distribution->with_package;
+    my @adds = $self->_create_entries('+', $self->right, \@add_ids);
+    my @dels = $self->_create_entries('-', $self->left,  \@del_ids);
 
     # Strictly speaking, the registrations are an unordered list.  But
     # the diff is more readable if we group registrations together by
     # distribution name.
 
-    my @diffs = sort {
-        ($a->[1]->distribution->name  cmp $b->[1]->distribution->name) 
-    } @adds, @dels;
+    my @diffs = sort @adds, @dels;
 
     return \@diffs;
+}
+
+#------------------------------------------------------------------------------
+
+sub _create_entries {
+    my ($self, $type, $side, $ids) = @_;
+
+    # The number of ids is potentially pretty big (1000's) and we
+    # can't use that many values in an IN clause.  So we insert all
+    # those ids into a temporary table.
+
+    my $tmp_tbl = "__diff_${$}__";
+    my $dbh = $self->right->result_source->schema->storage->dbh;
+    $dbh->do("CREATE TEMP TABLE $tmp_tbl (reg INTEGER NOT NULL)");
+
+    my $sth = $dbh->prepare("INSERT INTO $tmp_tbl VALUES( ? )");
+    $sth->execute($_) for @{ $ids };
+
+    # Now fetch the actual Registration objects (with all their
+    # related objects) for each id in the temp table.  Finally,
+    # map all the Registrations into DifferenceEntry objects.
+
+    my $where   = {'me.id' => {in => \"SELECT reg from $tmp_tbl"}};
+    my $reg_rs  = $side->registrations($where)->with_distribution->with_package;
+    my @entries = map { Pinto::DifferenceEntry->new(op => $type, registration => $_) } $reg_rs->all;
+
+    $dbh->do("DROP TABLE $tmp_tbl");
+
+    return @entries;
 }
 
 #------------------------------------------------------------------------------
@@ -140,10 +163,7 @@ sub _build_diffs {
 sub foreach {
     my ($self, $cb) = @_;
 
-    for my $diff ( @{ $self->diffs } ){
-        my ($op, $reg) = @{$diff};
-        $cb->($op, $reg); 
-    }
+    $cb->($_) for $self->diffs; 
 
     return $self;
 }
@@ -153,12 +173,63 @@ sub foreach {
 sub to_string {
     my ($self) = @_;
 
-    my $string = '';
-    my $format = "[%F] %-40p %12v %a/%f\n";
-    my $cb = sub { $string .= $_[0] . $_[1]->to_string($format)};
-    $self->foreach($cb);
+    return join '', $self->diffs;
+}
 
-    return $string;
+#------------------------------------------------------------------------------
+
+__PACKAGE__->meta->make_immutable;
+
+###############################################################################
+###############################################################################
+
+package Pinto::DifferenceEntry;
+
+use Moose;
+use MooseX::StrictConstructor;
+use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Types::Moose qw(Str);
+
+use overload (
+    q{""}    =>  'to_string',
+    'cmp'    =>  'string_compare',
+);
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+
+has op  => (
+    is       => 'ro', 
+    isa      => Str, 
+    required => 1
+);
+
+
+has registration => (
+    is        => 'ro', 
+    isa       => 'Pinto::Schema::Result::Registration', 
+    required  => 1,
+);
+
+#------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+
+    my $format = "[%F] %-40p %12v %a/%f\n";
+    return $self->op . $self->registration->to_string($format);
+}
+
+#------------------------------------------------------------------------------
+
+sub string_compare {
+    my ($self, $other) = @_;
+
+    return ( $self->registration->distribution->name 
+             cmp $other->registration->distribution->name ); 
 }
 
 #------------------------------------------------------------------------------
