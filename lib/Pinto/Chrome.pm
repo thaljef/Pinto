@@ -62,7 +62,8 @@ sub should_render_diag {
 
     return 1 if $level == 0;           # Always, always display errors
     return 0 if $self->quiet;          # Don't display anything else if quiet
-    return $self->verbose + 1 >= $level;
+    return 1 if $self->verbose + 1 >= $level;
+    return 0;
 }
 
 #-----------------------------------------------------------------------------
