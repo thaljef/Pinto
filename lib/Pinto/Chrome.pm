@@ -6,7 +6,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Int Bool);
 
-use Pinto::Util qw(user_colors);
+use Pinto::Util qw(is_interactive);
 use Pinto::Exception qw(throw);
 
 #-----------------------------------------------------------------------------
@@ -30,23 +30,34 @@ has quiet   => (
 
 #-----------------------------------------------------------------------------
 
-sub show { throw 'Abstract method' }
+sub show { return shift }
 
 #-----------------------------------------------------------------------------
 
-sub diag { throw 'Abstract method' }
+sub diag { return shift }
 
 #-----------------------------------------------------------------------------
 
-sub show_progress { throw 'Abstract method' }
+sub show_progress { return shift }
 
 #-----------------------------------------------------------------------------
 
-sub progress_done { throw 'Abstract method' }
+sub progress_done { return shift }
 
 #-----------------------------------------------------------------------------
 
-sub should_display {
+sub should_render_progress {
+    my ($self) = @_;
+
+    return 0 if not is_interactive;
+    return 0 if $self->verbose;
+    return 0 if $self->quiet;
+    return 1;
+};
+
+#-----------------------------------------------------------------------------
+
+sub should_render_diag {
     my ($self, $level) = @_;
 
     return 1 if $level == 0;           # Always, always display errors
@@ -71,7 +82,7 @@ sub __generate_method {
     my $template = <<'END_METHOD';
 sub %s {
     my ($self, $msg, $opts) = @_;
-    return unless $self->should_display(%s);
+    return unless $self->should_render_diag(%s);
     $self->diag($msg, $opts);
 }
 END_METHOD

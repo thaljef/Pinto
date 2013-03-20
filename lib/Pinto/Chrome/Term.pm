@@ -128,21 +128,10 @@ sub diag {
 
 #-----------------------------------------------------------------------------
 
-sub should_show_progress {
-    my ($self) = @_;
-
-    return 0 if not is_interactive;
-    return 0 if $self->verbose;
-    return 0 if $self->quiet;
-    return 1;
-};
-
-#-----------------------------------------------------------------------------
-
 sub show_progress {
     my ($self) = @_;
 
-    return if not $self->should_show_progress;
+    return if not $self->should_render_progress;
 
     # Make sure pipes are hot
     $self->stderr->autoflush;
@@ -154,7 +143,7 @@ sub show_progress {
 sub progress_done {
     my ($self) = @_;
 
-    return unless $self->should_show_progress;
+    return unless $self->should_render_progress;
 
     print {$self->stderr} "\n" or croak $!;
 }
