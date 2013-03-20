@@ -29,7 +29,6 @@ $t->run_ok(Add  => {stack    => 'branch',
 
 {
 
-  $t->clear_buffers;
   my $stack = 'master';
   $t->run_ok(Log => {stack => $stack});
   
@@ -50,7 +49,6 @@ $t->run_ok(Add  => {stack    => 'branch',
 
 {
 
-  $t->clear_buffers;
   my $stack = 'branch';
   $t->run_ok(Log => {stack => $stack});
 

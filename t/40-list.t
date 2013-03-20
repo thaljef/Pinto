@@ -25,7 +25,6 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-  $t->clear_buffers;
   $t->run_ok( 'List' => {stack => 'dev'} );
   my @lines = split /\n/, ${ $t->outstr };
 
@@ -36,8 +35,6 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-
-  $t->clear_buffers;
   $t->run_ok( 'List' => {stack => 'qa', packages => 'Bar'} );
   my @lines = split /\n/, ${ $t->outstr };
 
@@ -48,7 +45,6 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-  $t->clear_buffers;
   $t->run_ok( 'List' => {stack => 'qa', distributions => 'Baz'} );
   my @lines = split /\n/, ${ $t->outstr };
 
@@ -59,8 +55,6 @@ $t->run_ok( 'Add' => {archives => $archive3, stack => 'qa',  author => 'BOB'} );
 #-----------------------------------------------------------------------------
 
 {
-
-  $t->clear_buffers;
   $t->run_ok( 'List' => {stack => 'qa', author => 'BOB'} );
   my @lines = split /\n/, ${ $t->outstr };
 
