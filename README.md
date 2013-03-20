@@ -98,7 +98,7 @@ there are some important differences:
     such permission system.  All activity is logged so you can identify
     the culprit, but Pinto expects you to be accountable for your actions.
 
-- Pinto is not (always) secure
+- Pinto does not enforce security
 
     PAUSE requires authors to authenticate themselves before they can
     upload or remove modules.  Pinto does not require authentication, so
