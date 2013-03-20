@@ -41,22 +41,22 @@ has diffs => (
 );
 
 
-has adds => (
+has additions => (
     traits   => [ qw(Array) ],
-    handles  => {adds => 'elements'},
+    handles  => {additions => 'elements'},
     isa      => ArrayRef['Pinto::Schema::Result::Registration'],
-    default  => sub { [ map  { $_->registrations } 
+    default  => sub { [ map  { $_->registration } 
                         grep {$_->op eq '+'} $_[0]->diffs ] }, 
     init_arg => undef,
     lazy     => 1,
 );
 
 
-has deletes => (
+has deletions => (
     traits   => [ qw(Array) ],
-    handles  => {deletes => 'elements'},
+    handles  => {deletions => 'elements'},
     isa      => ArrayRef['Pinto::Schema::Result::Registration'],
-    default  => sub { [ map  { $_->registrations } 
+    default  => sub { [ map  { $_->registration } 
                         grep {$_->op eq '-'} $_[0]->diffs ] }, 
     init_arg => undef,
     lazy     => 1,
