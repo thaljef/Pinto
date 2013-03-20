@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.065_05  2013-03-20 16:21:57 America/Los_Angeles
+
      Fixed bug that caused lots of "uninitialized" warnings.
 
 0.065_04  2013-03-20 16:06:15 America/Los_Angeles
