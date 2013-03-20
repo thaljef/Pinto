@@ -131,7 +131,7 @@ sub _fetch_remote {
 
     my $rsp = eval { $self->ua->mirror($url, $to) } or throw $@;
 
-    return $rsp->{code} == 304 ? 1 : 0 if $rsp->{success}; # Modified ?
+    return $rsp->{status} == 304 ? 1 : 0 if $rsp->{success}; # Modified ?
 
     throw "Failed to fetch $url: " . $rsp->{reason};
 }
