@@ -314,7 +314,7 @@ sub to_string {
 
 sub default_format {
 
-    return '%a/%D/%P/%i'; # AUTHOR/DIST_VNAME/PKG_VNAME/STACK
+    return '%a/%D/%P/%y'; # AUTHOR/DIST_VNAME/PKG_VNAME/PIN_STATUS
 }
 
 #------------------------------------------------------------------------------
