@@ -3,6 +3,7 @@
 package Pinto::Action::Unregister;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 

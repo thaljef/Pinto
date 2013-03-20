@@ -3,7 +3,7 @@ package Pinto::Result;
 # ABSTRACT: The result from running an Action
 
 use Moose;
-
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 

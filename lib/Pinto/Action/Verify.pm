@@ -3,6 +3,7 @@
 package Pinto::Action::Verify;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 #------------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 package Pinto::Action::Install;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 

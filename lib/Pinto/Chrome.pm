@@ -3,6 +3,7 @@
 package Pinto::Chrome;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Int Bool);
 
 use Pinto::Util qw(user_colors);

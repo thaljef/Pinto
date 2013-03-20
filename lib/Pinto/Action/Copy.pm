@@ -3,6 +3,7 @@
 package Pinto::Action::Copy;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 

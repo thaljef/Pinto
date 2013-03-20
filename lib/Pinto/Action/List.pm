@@ -3,6 +3,7 @@
 package Pinto::Action::List;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 use MooseX::Types::Moose qw(HashRef Str Bool);
 

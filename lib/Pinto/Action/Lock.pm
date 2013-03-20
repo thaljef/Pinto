@@ -3,6 +3,7 @@
 package Pinto::Action::Lock;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(StackName StackDefault StackObject);

@@ -4,6 +4,7 @@ package Pinto::Tester;
 
 use Moose;
 use MooseX::NonMoose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(ScalarRef HashRef);
 
 use Carp;

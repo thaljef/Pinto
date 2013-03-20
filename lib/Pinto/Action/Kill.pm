@@ -3,6 +3,7 @@
 package Pinto::Action::Kill;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 

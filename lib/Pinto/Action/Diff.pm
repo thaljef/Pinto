@@ -3,6 +3,7 @@
 package Pinto::Action::Diff;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Difference;

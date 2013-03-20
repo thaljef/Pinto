@@ -3,6 +3,7 @@
 package Pinto::Action::Statistics;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Types qw(StackName StackDefault StackObject);

@@ -3,6 +3,7 @@
 package Pinto::RevisionWalker;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
