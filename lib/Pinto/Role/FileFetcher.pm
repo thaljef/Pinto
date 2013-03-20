@@ -7,10 +7,12 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use File::Temp;
 use Path::Class;
-use LWP::UserAgent;
+use HTTP::Tiny;
+use File::Copy;
+use URI;
 
-use Pinto::Util qw(itis debug);
 use Pinto::Exception qw(throw);
+use Pinto::Util qw(itis debug mtime);
 
 #------------------------------------------------------------------------------
 
@@ -21,9 +23,11 @@ use Pinto::Exception qw(throw);
 
 has ua => (
     is      => 'ro',
-    isa     => 'LWP::UserAgent',
+    isa     => 'HTTP::Tiny',
+    default => sub { my $class = ref $_[0];
+                     my $version = $_[0]->VERSION || 'UNKNOWN';
+                     HTTP::Tiny->new(agent => "$class/$version") },
     lazy    => 1,
-    builder => '_build_ua',
 );
 
 #------------------------------------------------------------------------------
@@ -50,7 +54,8 @@ sub fetch {
     my $from_uri = _make_uri($from);
     my $to       = itis($args{to}, 'Path::Class') ? $args{to} : file($args{to});
 
-    debug("Skipping $from: already fetched to $to") and return 0 if -e $to;
+    # FIX ME: This next line makes no sense to me...
+    debug "Skipping $from: already fetched to $to" and return 0 if -e $to;
 
     $to->parent->mkpath if not -e $to->parent;
     my $has_changed = $self->_fetch($from_uri, $to);
@@ -74,10 +79,12 @@ sub fetch_temporary {
     my ($self, %args) = @_;
 
     my $url  = URI->new($args{url})->canonical();
-    my $path = Path::Class::file( $url->path() );
-    return $path if $url->scheme() eq 'file';
+    my $path = Path::Class::file( $url->path );
 
-    my $base     = $path->basename();
+    # FIX ME: This next line makes no sense to me...
+    return $path if $url->scheme eq 'file';
+
+    my $base     = $path->basename;
     my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
     my $tempfile = Path::Class::file($tempdir, $base);
 
@@ -91,36 +98,43 @@ sub fetch_temporary {
 sub _fetch {
     my ($self, $url, $to) = @_;
 
-    debug("Fetching $url");
+    debug "Fetching $url to $to" ;
 
-    my $result = eval { $self->ua->mirror($url, $to) }
-        or throw $@;
+    # We switched form LWP to HTTP::Tiny to reduce our dependencies.
+    # But HTTP::Tiny does not support the file:// scheme.  So we have
+    # to handle those ourselves by copying the local file directly.
 
-    if ($result->is_success()) {
-        return 1;
-    }
-    elsif ($result->code() == 304) {
-        return 0;
-    }
-    else {
-        throw "Failed to fetch $url: " . $result->status_line;
-    }
-
-    # Should never get here
+    return $url->scheme eq 'file' ? $self->_fetch_local($url, $to)
+                                  : $self->_fetch_remote($url, $to);
 }
 
 #------------------------------------------------------------------------------
 
-sub _build_ua {
-    my ($self) = @_;
+sub _fetch_local {
+    my ($self, $url, $to) = @_;
 
-    # TODO: Do we need to make some of this configurable?
-    my $agent = sprintf "%s/%s", ref $self, 'VERSION';
-    my $ua = LWP::UserAgent->new( agent      => $agent,
-                                  env_proxy  => 1,
-                                  keep_alive => 5 );
+    my $from = $url->path;
+    throw "$url does not exist" unless -e $from;
+    throw "$url is unreadable"  unless -r $from;
 
-    return $ua;
+    # Emmulate behavior of HTTP::Tiny->mirror
+    return 0 if -e $to and mtime($to) >= mtime($from);
+
+    File::Copy::copy($from, $to) or throw "Failed to copy $url: $!";
+
+    return 1;
+}
+
+#------------------------------------------------------------------------------
+
+sub _fetch_remote {
+    my ($self, $url, $to) = @_;
+
+    my $rsp = eval { $self->ua->mirror($url, $to) } or throw $@;
+
+    return $rsp->{code} == 304 ? 1 : 0 if $rsp->{success}; # Modified ?
+
+    throw "Failed to fetch $url: " . $rsp->{reason};
 }
 
 #------------------------------------------------------------------------------
