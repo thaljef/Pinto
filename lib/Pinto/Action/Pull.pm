@@ -57,6 +57,7 @@ sub execute {
         }
         catch {
             throw $_ unless $self->no_fail;
+            $self->result->failed(because => $_);
 
             $self->repo->svp_rollback;
 
