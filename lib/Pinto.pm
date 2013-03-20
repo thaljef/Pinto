@@ -63,13 +63,13 @@ around BUILDARGS => sub {
 sub run {
     my ($self, $action_name, @action_args) = @_;
 
-    my $action    = $self->create_action($action_name => @action_args);
-    my $lock_type = $action->does('Pinto::Role::Committable') ? 'EX' : 'SH';
+    # Divert all warnings through our chrome 
+    local $SIG{__WARN__} = sub { $self->warning(@_) };
 
     my $result = try {
 
-        # Divert all warnings through our chrome 
-        local $SIG{__WARN__} = sub { $self->warning(@_) };
+        my $action = $self->create_action($action_name => @action_args);
+        my $lock_type = $action->lock_type;
 
         $self->repo->assert_sanity_ok;
         $self->repo->assert_version_ok;

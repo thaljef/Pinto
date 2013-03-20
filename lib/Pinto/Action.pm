@@ -12,6 +12,7 @@ use IO::Handle;
 use Pinto::Result;
 use Pinto::Exception;
 use Pinto::Util qw(is_interactive);
+use Pinto::Constants qw($PINTO_LOCK_TYPE_SHARED);
 
 #------------------------------------------------------------------------------
 
@@ -37,6 +38,14 @@ has result => (
     default  => sub { Pinto::Result->new },
     init_arg => undef,
     lazy     => 1,
+);
+
+
+has lock_type => (
+    is        => 'ro',
+    isa       => Str,
+    default   => $PINTO_LOCK_TYPE_SHARED,
+    init_arg  => undef,
 );
 
 #------------------------------------------------------------------------------

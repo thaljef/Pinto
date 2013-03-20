@@ -10,6 +10,7 @@ use Try::Tiny;
 
 use Pinto::CommitMessage;
 use Pinto::Exception qw(throw);
+use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
 use Pinto::Types qw(StackName StackDefault StackObject);
 use Pinto::Util qw(is_interactive interpolate);
 
@@ -45,6 +46,14 @@ has use_default_message => (
     is         => 'ro',
     isa        => Bool,
     default    => 0,
+);
+
+
+has lock_type => (
+    is        => 'ro',
+    isa       => Str,
+    default   => $PINTO_LOCK_TYPE_EXCLUSIVE,
+    init_arg  => undef,
 );
 
 #------------------------------------------------------------------------------
