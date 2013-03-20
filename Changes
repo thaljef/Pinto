@@ -8,6 +8,9 @@
      Switched from using LWP to HTTP::Tiny to reduce non-core
      depencencies.  Let me know if you see problems using https
 
+     Fixed bug that would cause Pinto to blow up when generating
+     very large diffs.
+
      Most classes now use MooseX::StrictConstructor now.
 
 0.065_03  2013-03-19 15:52:24 America/Los_Angeles
