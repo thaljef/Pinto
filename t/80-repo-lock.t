@@ -12,7 +12,6 @@ use Pinto::Tester;
 # Setup a repository...
 
 my $t = Pinto::Tester->new;
-$t->pinto; # Just to kick lazy initializers
 
 #------------------------------------------------------------------------------
 
@@ -33,7 +32,7 @@ $t->pinto; # Just to kick lazy initializers
 
       local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
       $t->run_throws_ok('Nop', {}, qr/Unable to lock/,
-          'Operation deined when exclusive lock is in place');
+          'Operation denied when exclusive lock is in place');
 
       my $kid = wait; # Let the child finish
       is($kid, $pid, "reaped correct child");
@@ -47,12 +46,14 @@ $t->pinto; # Just to kick lazy initializers
       # child
       print "Starting child: $$\n";
 
-      no warnings qw(redefine once);
       require Pinto::Action::Pull;
+
+      no warnings qw(redefine once);
       # Override the execute method to just sit and idle
       local *Pinto::Action::Pull::execute = sub { sleep 12; return $_[0]->result };
 
       my $result = $t->pinto->run('Pull', targets => 'whatever');
+
       exit $result->exit_status;
   }
 }
@@ -90,12 +91,14 @@ $t->pinto; # Just to kick lazy initializers
       # child
       print "Starting child: $$\n";
 
-      no warnings qw(redefine once);
       require Pinto::Action::List;
+
+      no warnings qw(redefine once);
       # Override the execute method to just sit and idle
       local *Pinto::Action::List::execute = sub { sleep 15; return $_[0]->result };
 
       my $result = $t->pinto->run('List');
+
       exit $result->exit_status;
   }
 
