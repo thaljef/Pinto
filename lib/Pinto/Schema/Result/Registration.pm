@@ -179,11 +179,9 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
-use Carp;
 use String::Format;
 
-use Pinto::Util qw(itis);
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(itis throw);
 
 use overload ( '""'     => 'to_string',
                'cmp'    => 'string_compare',

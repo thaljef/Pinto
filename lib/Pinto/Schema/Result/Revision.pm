@@ -211,7 +211,6 @@ use DateTime::TimeZone::OffsetOnly;
 use String::Format;
 use Digest::SHA;
 
-use Pinto::Exception qw(throw);
 use Pinto::Util qw(:all);
 
 use overload ( '""'  => 'to_string',

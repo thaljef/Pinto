@@ -7,6 +7,8 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 
+use Pinto::Util qw(throw);
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -23,7 +25,7 @@ around execute => sub {
     $self->repo->txn_begin;
 
     my $result = try   { $self->$orig(@args); $self->repo->txn_commit }
-                 catch { $self->repo->txn_rollback; die $_            };
+                 catch { $self->repo->txn_rollback; throw $_          };
 
     return $self->result;
 };

@@ -9,9 +9,8 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use Path::Class;
 use File::NFSLock;
 
-use Pinto::Util qw(debug);
+use Pinto::Util qw(debug throw);
 use Pinto::Types qw(File);
-use Pinto::Exception qw(throw);
 
 #-----------------------------------------------------------------------------
 

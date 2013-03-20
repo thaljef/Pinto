@@ -9,10 +9,9 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 
 use Pinto::CommitMessage;
-use Pinto::Exception qw(throw);
 use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
 use Pinto::Types qw(StackName StackDefault StackObject);
-use Pinto::Util qw(is_interactive interpolate);
+use Pinto::Util qw(is_interactive interpolate throw);
 
 #------------------------------------------------------------------------------
 
@@ -80,7 +79,7 @@ around execute => sub {
     my $stack = $self->stack->start_revision;
 
     my @ok = try   { $self->$orig(@args) }
-             catch { $self->repo->txn_rollback; die $_ };
+             catch { $self->repo->txn_rollback; throw $_ };
 
     if ($self->dry_run) {
         $self->notice('Dry run -- rolling back database');

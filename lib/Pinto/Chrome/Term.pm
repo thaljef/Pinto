@@ -7,12 +7,10 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Carp;
 use Term::ANSIColor ();
 
 use Pinto::Types qw(Io);
-use Pinto::Exception qw(throw);
-use Pinto::Util qw(user_colors is_interactive itis);
+use Pinto::Util qw(user_colors is_interactive itis throw);
 
 #-----------------------------------------------------------------------------
 
@@ -118,6 +116,7 @@ sub diag {
         $msg = $ENV{PINTO_DEBUG} ? $msg->as_string : $msg->message;
     }
 
+    chomp $msg;
 
     $msg = $self->colorize($msg, $opts->{color});
 
@@ -133,8 +132,8 @@ sub show_progress {
 
     return if not $self->should_render_progress;
 
-    # Make sure pipes are hot
-    $self->stderr->autoflush;
+    $self->stderr->autoflush; # Make sure pipes are hot
+
     print {$self->stderr} '.' or croak $!;
 }
 

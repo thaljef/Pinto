@@ -25,8 +25,7 @@ __PACKAGE__->load_namespaces;
 
 use MooseX::SetOnce;
 
-use Pinto::Exception qw(throw);
-use Pinto::Util qw(decamelize);
+use Pinto::Util qw(decamelize throw);
 
 #-------------------------------------------------------------------------------
 

@@ -9,6 +9,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 
+use Pinto::Util qw(throw);
 use Pinto::Types qw(SpecList);
 
 #------------------------------------------------------------------------------
@@ -55,7 +56,7 @@ sub execute {
             push @successful, $dist ? $dist : ();
         }
         catch {
-            die $_ unless $self->no_fail;
+            throw $_ unless $self->no_fail;
 
             $self->repo->svp_rollback;
 

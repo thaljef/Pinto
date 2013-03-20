@@ -9,8 +9,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 use CPAN::Checksums;
 
-use Pinto::Util qw(debug);
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(debug throw);
 
 #------------------------------------------------------------------------------
 

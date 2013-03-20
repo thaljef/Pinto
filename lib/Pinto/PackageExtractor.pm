@@ -10,9 +10,8 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 use Dist::Metadata;
 
-use Pinto::Util qw(debug);
-use Pinto::Exception qw(throw);
 use Pinto::Types qw(File);
+use Pinto::Util qw(debug throw);
 
 #-----------------------------------------------------------------------------
 

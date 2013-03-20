@@ -33,9 +33,15 @@ has stack => (
 sub execute {
     my ($self) = @_;
 
-    my $did_lock = $self->repo->get_stack( $self->stack )->lock;
+    my $stack = $self->repo->get_stack( $self->stack );
 
-    return $did_lock ? $self->result->changed : $self->result;
+    if ($stack->is_locked) {
+    	$self->warning("Stack $stack is already locked");
+    	return $self->result;
+    }
+
+    $stack->lock;
+    return $self->result->changed;
 }
 
 #------------------------------------------------------------------------------

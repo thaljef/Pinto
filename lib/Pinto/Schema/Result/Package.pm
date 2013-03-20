@@ -160,12 +160,11 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
-use Carp;
+
 use String::Format;
 
-use Pinto::Util qw(itis);
-use Pinto::Exception qw(throw);
 use Pinto::PackageSpec;
+use Pinto::Util qw(itis throw);
 
 use overload ( '""'     => 'to_string',
                '<=>'    => 'numeric_compare',
@@ -288,14 +287,14 @@ sub numeric_compare {
 
     return 0 if $pkg_a->id == $pkg_b->id;
 
-    confess "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
+    throw "Cannot compare packages with different names: $pkg_a <=> $pkg_b"
         if $pkg_a->name ne $pkg_b->name;
 
     my $r =   ( $pkg_a->version             <=> $pkg_b->version             )
            || ( $pkg_a->distribution->mtime <=> $pkg_b->distribution->mtime );
 
     # No two non-identical packages can be considered equal!
-    confess "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
+    throw "Unable to determine ordering: $pkg_a <=> $pkg_b" if not $r;
 
     return $r;
 };

@@ -13,7 +13,7 @@ use Pinto::Result;
 use Pinto::Repository;
 use Pinto::Chrome::Term;
 use Pinto::Types qw(Dir);
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(throw);
 
 #------------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ sub run {
     my ($self, $action_name, @action_args) = @_;
 
     # Divert all warnings through our chrome 
-    local $SIG{__WARN__} = sub { $self->warning(@_) };
+    local $SIG{__WARN__} = sub { $self->warning($_) for @_ };
 
     my $result = try {
 
@@ -80,7 +80,8 @@ sub run {
     catch { 
         $self->repo->unlock;
         $self->error($_);
-        die $_;
+
+        Pinto::Result->new->failed(because => $_);
     }
     finally {
         $self->repo->unlock;
@@ -223,7 +224,7 @@ permission of modules to specific people.  Pinto does not have any
 such permission system.  All activity is logged so you can identify
 the culprit, but Pinto expects you to be accountable for your actions.
 
-=item * Pinto is not (always) secure
+=item * Pinto does not enforce security
 
 PAUSE requires authors to authenticate themselves before they can
 upload or remove modules.  Pinto does not require authentication, so

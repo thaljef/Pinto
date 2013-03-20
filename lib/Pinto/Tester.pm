@@ -7,19 +7,17 @@ use MooseX::NonMoose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(ScalarRef HashRef);
 
-use Carp;
-use IO::String;
 use Path::Class;
 use File::Temp qw(tempdir);
 use Test::Exception;
 
 use Pinto;
-use Pinto::Util;
 use Pinto::Globals;
 use Pinto::Initializer;
 use Pinto::Chrome::Term;
 use Pinto::Tester::Util qw(:all);
 use Pinto::Types qw(Uri Dir);
+use Pinto::Util qw(:all);
 
 #------------------------------------------------------------------------------
 
@@ -195,8 +193,10 @@ sub run_throws_ok {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     $self->clear_buffers;
-    my $ok = throws_ok { $self->pinto->run($action_name, %{$args}) }
-        $error_regex, $test_name;
+    my $result = $self->pinto->run($action_name, %{ $args });
+    $self->result_not_ok($result, $test_name);
+
+    my $ok = $self->like($result->to_string, $error_regex, $test_name);
 
     $self->diag_stderr if not $ok;
 
@@ -534,7 +534,7 @@ sub populate {
                      message    => $message };
 
         my $r = $self->run_ok('Add', $args, $message);
-        croak 'Population failed. Aborting test' unless $r->was_successful;
+        throw 'Population failed. Aborting test' unless $r->was_successful;
     }
 
     return $self;

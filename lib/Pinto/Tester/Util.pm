@@ -5,12 +5,12 @@ package Pinto::Tester::Util;
 use strict;
 use warnings;
 
-use Carp;
 use Path::Class;
 use File::Temp qw(tempdir);
 use Module::Faker::Dist;
 
 use Pinto::Schema;
+use Pinto::Util qw(throw);
 
 use base 'Exporter';
 
@@ -101,7 +101,7 @@ sub parse_dist_spec {
 
     $spec =~ s{\s+}{}g;  # Remove any whitespace
     $spec =~ m{ ^ (?: ([^/]+) /)? (.+?) (?: .tar.gz)? = ([^&]+) (?: & (.+) )? $ }mx
-        or confess "Could not parse distribution spec: $spec";
+        or throw "Could not parse distribution spec: $spec";
 
     my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
 
@@ -121,7 +121,7 @@ sub parse_pkg_spec {
 
     # Looks like: "Foo" or "Foo-1" or "Foo-Bar-2.3.4_1"
     $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x
-        or confess "Could not parse spec: $spec";
+        or throw "Could not parse spec: $spec";
 
     return {name => $1, version => $2 || 0};
 }
@@ -138,7 +138,7 @@ sub parse_reg_spec {
     my ($author, $dist_archive, $pkg, $stack_name, $is_pinned) = split m{/}x, $spec;
 
     # Spec must at least have these
-    confess "Could not parse pkg spec: $spec"
+    throw "Could not parse pkg spec: $spec"
        if not ($author and $dist_archive and $pkg);
 
     # Append the usual suffix to the archive

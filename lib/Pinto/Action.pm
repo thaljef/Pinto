@@ -10,8 +10,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use IO::Handle;
 
 use Pinto::Result;
-use Pinto::Exception;
-use Pinto::Util qw(is_interactive);
+use Pinto::Util qw(throw);
 use Pinto::Constants qw($PINTO_LOCK_TYPE_SHARED);
 
 #------------------------------------------------------------------------------

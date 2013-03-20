@@ -10,9 +10,8 @@ use IO::Zlib;
 use Path::Class qw(file);
 use HTTP::Date qw(time2str);
 
-use Pinto::Util qw(debug);
 use Pinto::Types qw(File);
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(debug throw);
 
 #------------------------------------------------------------------------------
 

@@ -8,9 +8,8 @@ use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 
-use Pinto::Util qw(sha256 current_author_id);
+use Pinto::Util qw(sha256 current_author_id throw);
 use Pinto::Types qw(AuthorID FileList);
-use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 
@@ -80,7 +79,7 @@ sub execute {
             push @successful, $dist ? $dist : ();
         }
         catch {
-            die $_ unless $self->no_fail; 
+            throw $_ unless $self->no_fail; 
 
             $self->repo->svp_rollback;
 

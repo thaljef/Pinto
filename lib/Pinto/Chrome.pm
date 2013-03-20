@@ -7,7 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Int Bool);
 
 use Pinto::Util qw(is_interactive);
-use Pinto::Exception qw(throw);
+
 
 #-----------------------------------------------------------------------------
 

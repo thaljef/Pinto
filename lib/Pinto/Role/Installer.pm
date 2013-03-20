@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use File::Which qw(which);
 
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(throw);
 
 #-----------------------------------------------------------------------------
 

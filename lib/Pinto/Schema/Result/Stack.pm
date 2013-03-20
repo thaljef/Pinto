@@ -153,7 +153,6 @@ use JSON qw(encode_json decode_json);
 
 use Pinto::Util qw(:all);
 use Pinto::Types qw(Dir File Version);
-use Pinto::Exception qw(throw);
 
 use version;
 use overload ( '""'  => 'to_string',

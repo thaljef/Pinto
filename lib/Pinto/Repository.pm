@@ -17,8 +17,7 @@ use Pinto::Database;
 use Pinto::IndexCache;
 use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
-use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis debug mksymlink);
+use Pinto::Util qw(itis debug mksymlink throw);
 use Pinto::Types qw(Dir);
 
 use version;
@@ -717,7 +716,7 @@ sub link_modules_dir {
 
     if (-e $modules_dir or -l $modules_dir) {
         debug "Unlinking $modules_dir";
-        unlink $modules_dir or die $!;
+        unlink $modules_dir or throw $!;
     }
 
     debug "Linking $modules_dir to $target_dir";
@@ -735,7 +734,7 @@ sub unlink_modules_dir {
 
     if (-e $modules_dir or -l $modules_dir) {
         debug "Unlinking $modules_dir";
-        unlink $modules_dir or die $!;
+        unlink $modules_dir or throw $!;
     }
 
     return $self;

@@ -6,6 +6,8 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Pinto::Util qw(throw);
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -21,13 +23,16 @@ sub execute {
 
     my $dist_rs = $self->repo->db->schema->distribution_rs;
 
+    my $missing = 0;
     while ( my $dist = $dist_rs->next ) {
 
         if (not -e $dist->native_path) {
-	        $self->warning("Missing distribution $dist");
-	        $self->result->failed;
+	        $self->error("Missing distribution $dist");
+	        $missing++;
 	    }
     }
+
+	throw("$missing archives are missing") if $missing;
 
     return $self->result;
 }

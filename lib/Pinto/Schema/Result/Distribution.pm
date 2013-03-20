@@ -208,8 +208,7 @@ use Path::Class;
 use CPAN::DistnameInfo;
 use String::Format;
 
-use Pinto::Util qw(itis debug whine);
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(itis debug whine throw);
 use Pinto::DistributionSpec;
 
 use overload ( '""'  => 'to_string',
@@ -323,7 +322,7 @@ sub unregister {
     $did_unregister++;
   }
 
-  throw "Unable to unregister distribution $self on stack $stack" if $conflicts;
+  throw "Unable to unregister distribution $self from stack $stack" if $conflicts;
 
   $rs->delete;
 

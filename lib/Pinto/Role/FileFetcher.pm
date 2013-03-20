@@ -11,8 +11,7 @@ use HTTP::Tiny;
 use File::Copy;
 use URI;
 
-use Pinto::Exception qw(throw);
-use Pinto::Util qw(itis debug mtime);
+use Pinto::Util qw(itis debug mtime throw);
 
 #------------------------------------------------------------------------------
 

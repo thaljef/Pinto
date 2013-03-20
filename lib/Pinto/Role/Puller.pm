@@ -6,7 +6,7 @@ use Moose::Role;
 use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(throw);
 
 #-----------------------------------------------------------------------------
 

@@ -6,8 +6,8 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Pinto::Util qw(throw);
 use Pinto::Types qw(SpecList);
-use Pinto::Exception qw(throw);
 
 #------------------------------------------------------------------------------
 

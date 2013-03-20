@@ -10,9 +10,8 @@ use Path::Class qw(file);
 use File::ShareDir qw(dist_file);
 
 use Pinto::Schema;
-use Pinto::Util qw(debug);
 use Pinto::Types qw(File);
-use Pinto::Exception qw(throw);
+use Pinto::Util qw(debug throw);
 
 #-------------------------------------------------------------------------------
 
