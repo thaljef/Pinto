@@ -6,15 +6,11 @@
 
 =item Implement a reset command to move head (also not committable)
 
-=item Put username back into the log file
-
 =item Test cases for Pop, Reindex, Delete
 
 =item Move repository configuration into the DB
 
 =item Heirarchy of exception classes
-
-=item Re-examine log mechanism
 
 =item Create a hook mechanism to do stuff before or after an Action
 
