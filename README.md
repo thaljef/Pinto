@@ -180,7 +180,7 @@ in addition to those websites please use your favorite search engine to discover
 
 # AUTHOR
 
-Jeffrey Ryan Thalhammer <jeff@imaginative-software.com>
+Jeffrey Ryan Thalhammer <jeff@stratopan.com>
 
 # COPYRIGHT AND LICENSE
 
