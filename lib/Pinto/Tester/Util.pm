@@ -26,7 +26,8 @@ our @EXPORT_OK = qw( make_dist_obj
                      make_dist_archive
                      parse_pkg_spec
                      parse_dist_spec
-                     parse_reg_spec );
+                     parse_reg_spec
+                     has_cpanm );
 
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
@@ -154,6 +155,20 @@ sub parse_reg_spec {
     $pkg_version ||= 0;
 
     return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);
+}
+
+#------------------------------------------------------------------------------
+
+sub has_cpanm {
+    my $min_version = shift || 0;
+
+    require File::Which;
+
+    my $cpanm_exe = File::Which::which('cpanm') or return 0;
+
+    my ($cpanm_ver) = qx{$cpanm_exe --version} =~ m{version ([\d._]+)};
+
+    return $cpanm_ver >= $min_version;
 }
 
 #------------------------------------------------------------------------------
