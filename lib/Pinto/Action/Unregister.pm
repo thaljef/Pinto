@@ -59,13 +59,13 @@ sub _unregister {
 
     my $dist = $stack->get_distribution(spec => $target);
 
-    throw "$target is not registered on stack $stack" if not defined $dist;
+    throw "Target $target is not in the repository" if not defined $dist;
 
     $self->notice("Unregistering distribution $dist from stack $stack");
 
-    $dist->unregister(stack => $stack, force => $self->force);
+    my $did_unregister = $dist->unregister(stack => $stack, force => $self->force);
 
-    return $dist;
+    return $did_unregister ? $dist : ();
 }
 
 #------------------------------------------------------------------------------
