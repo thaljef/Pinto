@@ -50,7 +50,7 @@ sub unpack {
     my $archive  = $self->archive;
     my $temp_dir = $self->temp_dir->dirname;
 
-    local $Archive::Extract::PREFER_BIN = 1 if $ENV{PINTO_USE_BIN_TOOLS};
+    local $Archive::Extract::PREFER_BIN = 1;
     my $ae = Archive::Extract->new(archive => $archive);
 
     debug "Unpacking $archive into $temp_dir";
