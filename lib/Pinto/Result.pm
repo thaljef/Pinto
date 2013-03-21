@@ -8,7 +8,6 @@ use MooseX::Types::Moose qw(Bool ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Util qw(itis);
-use Pinto::Exception;
 
 use overload (q{""} => 'to_string');
 
@@ -57,6 +56,8 @@ sub failed {
         # then it will be really ugly.  God I wish Perl had
         # sane native exeptions.
 
+        require Pinto::Exception;
+        
         $reason = Pinto::Exception->new(message => $reason) 
             if not itis($reason, 'Pinto::Exception');
 
