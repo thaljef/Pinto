@@ -9,8 +9,11 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Try::Tiny;
 use Dist::Metadata;
+use Path::Class qw(dir);
+use File::Temp qw(tempdir);
+use Archive::Extract;
 
-use Pinto::Types qw(File);
+use Pinto::Types qw(File Dir);
 use Pinto::Util qw(debug throw);
 
 #-----------------------------------------------------------------------------
@@ -27,10 +30,29 @@ has archive => (
 );
 
 
+has dist_dir => (
+    is       => 'ro',
+    isa      => Dir,
+    default  => sub { 
+                       my $self = shift;
+                       my $dist = $self->archive;
+                       my $work_dir = dir(tempdir(CLEANUP => 1));
+                       local $Archive::Extract::PREFER_BIN = 1;
+                       my $ae = Archive::Extract->new( archive => $dist );
+                       $ae->extract(to => $work_dir) or croak $ae->error;
+
+                       my @children = $work_dir->children;
+                       return @children == 1 ? $children[0] : $work_dir;
+                    },
+    init_arg => undef,
+    lazy     => 1,
+);
+
+
 has dm => (
     is       => 'ro',
     isa      => 'Dist::Metadata',
-    default  => sub { Dist::Metadata->new(file => $_[0]->archive->stringify) },
+    default  => sub { Dist::Metadata->new(dir => $_[0]->dist_dir) },
     init_arg => undef,
     lazy     => 1,
 );
