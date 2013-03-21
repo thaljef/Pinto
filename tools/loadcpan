@@ -33,12 +33,8 @@ my $cpan  = shift or die 'Must specify path to CPAN directory';
 Pinto::Initializer->new(root => "$root")->init(sources => "file://$cpan") unless -e $root;
 
 #-----------------------------------------------------------------------------
-printf "Searching for distributions beneath %s\n", $cpan;
 
-my @dists;
-my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz2)$/i and not /perl/ and not /BadExample/};
-File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors id) ));
-@dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
+my @dists = $ARGV[0] eq '-' ? <STDIN> : search_for_dists($cpan);
 
 if ($batch_offset - 1 > 0) {
 	splice @dists, 0, $batch_offset * $batch_size, ();
@@ -70,4 +66,19 @@ while (@dists) {
 	$j++;
 
 	last if $batch_count and $j >= $batch_count;
+}
+
+#-----------------------------------------------------------------------------
+
+sub search_for_dists {
+	my ($cpan) = @_;
+
+	printf "Searching for distributions beneath %s\n", $cpan;
+
+	my @dists;
+	my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz2)$/i and not /perl/ and not /BadExample/};
+	File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors id) ));
+	@dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
+
+	return @dists;
 }
