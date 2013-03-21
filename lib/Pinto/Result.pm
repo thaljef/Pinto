@@ -57,7 +57,7 @@ sub failed {
         # sane native exeptions.
 
         require Pinto::Exception;
-        
+
         $reason = Pinto::Exception->new(message => $reason) 
             if not itis($reason, 'Pinto::Exception');
 
@@ -90,13 +90,13 @@ sub exit_status {
 sub to_string {
     my ($self) = @_;
 
-    return 'OK' if $self->was_successful;
+    return 'ok' if $self->was_successful;
 
     if (my @exceptions = $self->exceptions) {
         return join "\n", map { $ENV{PINTO_DEBUG} ? "$_" : $_->message } @exceptions;
     }
 
-    return 'Unknown error';
+    return 'unknown error';
 }
 
 #-----------------------------------------------------------------------------
