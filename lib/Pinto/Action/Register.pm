@@ -65,8 +65,6 @@ sub _register {
 
     my $did_register = $dist->register(stack => $stack, pin => $self->pin);
 
-    $self->warning("Distribution $dist is already registered on stack $stack");
-
     return $did_register ? $dist : ();
 }
 
