@@ -15,6 +15,7 @@ use Archive::Extract;
 
 use Pinto::Types qw(File Dir);
 use Pinto::Util qw(debug throw);
+use Pinto::ArchiveUnpacker;
 
 #-----------------------------------------------------------------------------
 
@@ -30,20 +31,10 @@ has archive => (
 );
 
 
-has dist_dir => (
+has unpacker => (
     is       => 'ro',
-    isa      => Dir,
-    default  => sub { 
-                       my $self = shift;
-                       my $dist = $self->archive;
-                       my $work_dir = dir(tempdir(CLEANUP => 1));
-                       local $Archive::Extract::PREFER_BIN = 1;
-                       my $ae = Archive::Extract->new( archive => $dist );
-                       $ae->extract(to => $work_dir) or croak $ae->error;
-
-                       my @children = $work_dir->children;
-                       return @children == 1 ? $children[0] : $work_dir;
-                    },
+    isa      => 'Pinto::ArchiveUnpacker',
+    default  => sub { Pinto::ArchiveUnpacker->new(archive => $_[0]->archive) }, 
     init_arg => undef,
     lazy     => 1,
 );
@@ -52,7 +43,7 @@ has dist_dir => (
 has dm => (
     is       => 'ro',
     isa      => 'Dist::Metadata',
-    default  => sub { Dist::Metadata->new(dir => $_[0]->dist_dir) },
+    default  => sub { Dist::Metadata->new(dir => $_[0]->unpacker->unpack) },
     init_arg => undef,
     lazy     => 1,
 );
