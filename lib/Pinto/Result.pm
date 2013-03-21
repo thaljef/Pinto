@@ -8,6 +8,7 @@ use MooseX::Types::Moose qw(Bool ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Util qw(itis);
+use Pinto::Exception;
 
 use overload (q{""} => 'to_string');
 

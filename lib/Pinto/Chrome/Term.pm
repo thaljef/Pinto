@@ -8,6 +8,7 @@ use MooseX::Types::Moose qw(Bool ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Term::ANSIColor ();
+use Term::EditorEdit;
 
 use Pinto::Types qw(Io);
 use Pinto::Util qw(user_colors is_interactive itis throw);
@@ -145,6 +146,16 @@ sub progress_done {
     return unless $self->should_render_progress;
 
     print {$self->stderr} "\n" or croak $!;
+}
+
+#-----------------------------------------------------------------------------
+
+sub edit {
+    my ($self, $document) = @_;
+
+    local $ENV{VISUAL} = $ENV{PINTO_EDITOR} if $ENV{PINTO_EDITOR};
+
+    return Term::EditorEdit->edit(document => $document);
 }
 
 #-----------------------------------------------------------------------------

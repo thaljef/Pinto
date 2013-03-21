@@ -11,11 +11,15 @@ use Try::Tiny;
 use Pinto::CommitMessage;
 use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
 use Pinto::Types qw(StackName StackDefault StackObject);
-use Pinto::Util qw(is_interactive interpolate throw);
+use Pinto::Util qw(is_interactive throw is_blank is_not_blank);
 
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+
+with qw(Pinto::Role::Plated);
 
 #------------------------------------------------------------------------------
 
@@ -111,11 +115,11 @@ sub compose_message {
     my $stack   = $args{stack} || throw 'Must specify a stack';
     my $diff    = $args{diff}  || $stack->diff;
 
-    return interpolate($self->message)
-        if $self->has_message and $self->message =~ /\S+/;
+    return $self->message
+        if $self->has_message and is_not_blank($self->message);
 
     return $title
-        if $self->has_message and $self->message !~ /\S+/;
+        if $self->has_message and is_blank($self->message);
 
     return $title
         if $self->use_default_message;
@@ -123,10 +127,14 @@ sub compose_message {
     return $title
         if not is_interactive;
 
-    my $cm = Pinto::CommitMessage->new(title => $title, details => $diff->to_string); 
-    my $message = $cm->edit;
+    my $cm = Pinto::CommitMessage->new( title => $title,
+                                        stack => $stack, 
+                                        diff  => $diff );
+
+    my $message = $self->chrome->edit($cm->to_string);
+    $message =~ s/^ [#] .* $//gmsx; # Strip comments
                                             
-    throw 'Aborting due to empty commit message' if $message !~ /\S+/;
+    throw 'Aborting due to empty commit message' if is_blank($message);
 
     return $message;
 }
