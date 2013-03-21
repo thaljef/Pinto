@@ -7,9 +7,11 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use File::Temp;
+use Cwd qw(getcwd);
+use Cwd::Guard qw(cwd_guard);
 use Path::Class qw(dir);
 use Archive::Extract;
+use File::Temp;
 
 use Pinto::Types qw(File);
 use Pinto::Util qw(debug throw);
@@ -47,8 +49,9 @@ has cleanup => (
 sub unpack {
     my ($self) = @_;
 
-    my $archive  = $self->archive;
-    my $temp_dir = $self->temp_dir->dirname;
+    my $archive   = $self->archive;
+    my $temp_dir  = $self->temp_dir->dirname;
+    my $cwd_guard = cwd_guard(getcwd); # Archive::Extract will chdir
 
     local $Archive::Extract::PREFER_BIN = 1;
     local $Archive::Extract::DEBUG = 1 if ($ENV{PINTO_DEBUG} || 0) > 1;
