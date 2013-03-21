@@ -51,7 +51,9 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
 
 {
   my $local = Pinto::Tester->new(init_args => {sources => $source->stack_url});
-  $local->run_ok(Pull => {targets => [qw(PkgA PkgB PkgC)], no_fail => 1});
+
+  $local->run_throws_ok(Pull => {targets => [qw(PkgA PkgB PkgC)], no_fail => 1},
+    qr/Cannot find PkgE~1 anywhere/, 'Result still a failure, even with no_fail');
 
   # We should see a log message saying that B failed, because E was missing...
   $local->stderr_like( qr/Cannot find PkgE~1 anywhere/);
