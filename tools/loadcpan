@@ -16,7 +16,8 @@ use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
 	"$0 %o TARGETS",
-    [ 'root|r=s',          "Root of repository",                             ],
+    [ 'root|r=s',          "Root of repository",                            ],
+    [ 'cpan|c=s',          "Path to a local cpan",                          ],
     [ 'batch-size|s=i',    "Distributions per batch",    { default => 100 } ],
     [ 'batch-offset|o=i',  "Batch number to start at",   { default => 1   } ],
     [ 'batch-count|n=i',   "Number of batches to run",   { default => 0   } ],
@@ -26,19 +27,23 @@ my $batch_size   = $opt->batch_size;
 my $batch_offset = $opt->batch_offset;
 my $batch_count  = $opt->batch_count;
 my $root  = $opt->root || File::Temp->newdir;
-my $cpan  = shift or die 'Must specify path to CPAN directory';
+my $cpan  = $opt->cpan or die "Must specify --cpan";
 
 #-----------------------------------------------------------------------------
 
-Pinto::Initializer->new(root => "$root")->init(sources => "file://$cpan") unless -e $root;
+$ENV{PINTO_NO_HISTORY}   = 1;
+$ENV{PINTO_NO_CHECKSUMS} = 1;
 
 #-----------------------------------------------------------------------------
 
-my @dists = $ARGV[0] eq '-' ? <STDIN> : search_for_dists($cpan);
+my %init_args = (sources => "file://$cpan", root => $root);
+Pinto::Initializer->init(%init_args) unless -e $root;
 
-if ($batch_offset - 1 > 0) {
-	splice @dists, 0, $batch_offset * $batch_size, ();
-}
+#-----------------------------------------------------------------------------
+
+my @dists = ($ARGV[0] || '') eq '-' ? <STDIN> : search_for_dists($cpan);
+splice @dists, 0, $batch_offset * $batch_size, () if $batch_offset - 1 > 0;
+chomp @dists;
 
 #-----------------------------------------------------------------------------
 printf "Loading %i distributions into repository at %s\n", scalar @dists, $root;
