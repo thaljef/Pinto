@@ -31,12 +31,11 @@ my $cpan  = $opt->cpan or die "Must specify --cpan";
 
 #-----------------------------------------------------------------------------
 
-$ENV{PINTO_NO_HISTORY}   = 1;
 $ENV{PINTO_NO_CHECKSUMS} = 1;
 
 #-----------------------------------------------------------------------------
 
-my %init_args = (sources => "file://$cpan", root => $root);
+my %init_args = (sources => "file://$cpan", root => $root, no_history => 1);
 Pinto::Initializer->init(%init_args) unless -e $root;
 
 #-----------------------------------------------------------------------------
