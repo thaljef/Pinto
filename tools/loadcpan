@@ -59,7 +59,7 @@ while (@batches) {
 	my $start = time;
 	my $pinto = Pinto->new(root => "$root");
 	$pinto->run(Pull => (targets => $batch, no_recurse => 1, no_fail => 1, message => ''));
-	printf "Batch %i loaded in %i seconds\n", $n, time - $start;
+	printf "Batch %i loaded in %i seconds at %s\n", $n, time - $start, scalar localtime;
 
 	if ($n % 100 == 0) {
 		print "Vacuuming database\n";
