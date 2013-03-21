@@ -9,7 +9,7 @@ use Path::Class;
 
 #-----------------------------------------------------------------------------
 
-die "Must speciyf a CPAN directory\n" if not @ARGV;
+die "Must specify a CPAN directory\n" if not @ARGV;
 
 my $cpan_dir   = dir(shift);
 my $search_dir = $cpan_dir->subdir( qw(authors id) );
