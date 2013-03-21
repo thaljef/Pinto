@@ -3,10 +3,6 @@
 use strict;
 use warnings;
 
-use Pinto;
-use Pinto::Initializer;
-
-use File::Find;
 use File::Temp;
 use Path::Class;
 use List::Util qw(sum);
@@ -19,7 +15,7 @@ my ($opt, $usage) = describe_options(
     [ 'root|r=s',          "Root of repository",                            ],
     [ 'cpan|c=s',          "Path to a local cpan",                          ],
     [ 'batch-size|s=i',    "Distributions per batch",    { default => 100 } ],
-    [ 'batch-offset|o=i',  "Batch number to start at",   { default => 1   } ],
+    [ 'batch-offset|o=i',  "Batch number to start at",   { default => 0   } ],
     [ 'batch-count|n=i',   "Number of batches to run",   { default => 0   } ],
 );
 
@@ -31,42 +27,38 @@ my $cpan  = $opt->cpan or die "Must specify --cpan";
 
 #-----------------------------------------------------------------------------
 
-$ENV{PINTO_NO_CHECKSUMS} = 1;
+unless (-e $root) {
 
-#-----------------------------------------------------------------------------
+	require Pinto::Initializer;
 
-my %init_args = (sources => "file://$cpan", root => $root, no_history => 1);
-Pinto::Initializer->init(%init_args) unless -e $root;
+	my %init_args = (sources => "file://$cpan", root => $root, no_history => 1);
+	Pinto::Initializer->init(%init_args);
+}
 
 #-----------------------------------------------------------------------------
 
 chomp (my @dists = ($ARGV[0] || '') eq '-' ? <STDIN> : search_for_dists($cpan));
-splice @dists, 0, $batch_offset * $batch_size, () if $batch_offset - 1 > 0;
-
-# my @batches;
-# my $dist_count = 0;
-# while (@dists) { 
-# 	my @batch =  splice @dists, 0, $batch_size, ();
-# 	push @batches, \@batch;
-# 	$dist_count += scalar @batch;
-# }
-
+my @batches = map { [splice @dists, 0, $batch_size, ()] } 1..int (@dists/$batch_size+1);
+splice @batches, 0, $batch_offset, () if $batch_offset;
+splice @batches, $batch_count, $#batches, () if $batch_count;
+my $count = (@batches - 1) * $batch_size + @{ $batches[-1] };
 
 #-----------------------------------------------------------------------------
-printf "Loading %i distributions into repository at %s\n", scalar @dists, $root;
+printf "Loading %i distributions into repository at %s\n", $count, $root;
 
-my $n = $batch_offset || 1;
-my $j = 1;
+require Pinto;
 
+my $n = $batch_offset;
+while (@batches) {
 
-while (@dists) {
+	local $ENV{PINTO_NO_CHECKSUMS} = 1;
 
-	my @batch = splice @dists, 0, $batch_size, ();
-	s|^.*/authors/id/./../|| for @batch;
+	my $batch = shift @batches;
+	s|^.*/authors/id/./../|| for @{ $batch };
 
 	my $start = time;
 	my $pinto = Pinto->new(root => "$root");
-	$pinto->run(Pull => (targets => \@batch, no_recurse => 1, no_fail => 1, message => ''));
+	$pinto->run(Pull => (targets => $batch, no_recurse => 1, no_fail => 1, message => ''));
 	printf "Batch %i loaded in %i seconds\n", $n, time - $start;
 
 	if ($n % 100 == 0) {
@@ -74,11 +66,7 @@ while (@dists) {
 		$pinto->repo->db->schema->storage->dbh->do('VACUUM;');
 		$pinto->repo->db->schema->storage->dbh->do('ANALYZE;');
 	}
-
 	$n++;
-	$j++;
-
-	last if $batch_count and $j >= $batch_count;
 }
 
 
@@ -89,10 +77,14 @@ sub search_for_dists {
 
 	printf "Searching for distributions beneath %s\n", $cpan;
 
+	require File::Find;
+
 	my @dists;
 	my $cb = sub {push @dists, $_ if /[.](gz|tgz|zip|bz2)$/i and not /perl/ and not /BadExample/};
 	File::Find::find( {no_chdir => 1, wanted => $cb}, dir($cpan)->subdir( qw(authors id) ));
 	@dists = map {$_->[0]} sort {$a->[1] <=> $b->[1]} map { [$_ => (stat $_)[9]] } @dists;
+
+	printf "Found %d distributions in total\n", scalar @dists;
 
 	return @dists;
 }
