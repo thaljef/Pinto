@@ -51,6 +51,8 @@ sub unpack {
     my $temp_dir = $self->temp_dir->dirname;
 
     local $Archive::Extract::PREFER_BIN = 1;
+    local $Archive::Extract::DEBUG = 1 if ($ENV{PINTO_DEBUG} || 0) > 1;
+
     my $ae = Archive::Extract->new(archive => $archive);
 
     debug "Unpacking $archive into $temp_dir";
