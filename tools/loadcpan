@@ -44,7 +44,7 @@ splice @batches, $batch_count, $#batches, () if $batch_count;
 my $count = (@batches - 1) * $batch_size + @{ $batches[-1] };
 
 #-----------------------------------------------------------------------------
-printf "Loading %i distributions into repository at %s\n", $count, $root;
+printf "Loading %i distributions (in batches of %i) into repository at %s\n", $count, $batch_size $root;
 
 require Pinto;
 
