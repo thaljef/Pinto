@@ -8,6 +8,9 @@ use Path::Class;
 use List::Util qw(sum);
 use Getopt::Long::Descriptive;
 
+use Devel::Leak::Object qw{ GLOBAL_bless };
+$Devel::Leak::Object::TRACKSOURCELINES = 1;
+
 #-----------------------------------------------------------------------------
 
 my ($opt, $usage) = describe_options(
