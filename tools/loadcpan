@@ -43,7 +43,7 @@ unless (-e $root) {
 chomp (my @dists = ($ARGV[0] || '') eq '-' ? <STDIN> : search_for_dists($cpan));
 my @batches = map { [splice @dists, 0, $batch_size, ()] } 1..int (@dists/$batch_size+1);
 splice @batches, 0, $batch_offset, () if $batch_offset;
-splice @batches, $batch_count, $#batches, () if $batch_count;
+@batches = @batches[0..$batch_count-1] if $batch_count;
 my $count = (@batches - 1) * $batch_size + @{ $batches[-1] };
 
 #-----------------------------------------------------------------------------
