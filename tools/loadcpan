@@ -8,8 +8,14 @@ use Path::Class;
 use List::Util qw(sum);
 use Getopt::Long::Descriptive;
 
-use Devel::Leak::Object qw{ GLOBAL_bless };
-$Devel::Leak::Object::TRACKSOURCELINES = 1;
+#-----------------------------------------------------------------------------
+
+# To diagnose leaks:
+
+# use Pinto::Util;
+# *Pinto::Util::throw = sub { warn ">>> Called my throw"; die "@_" };
+
+# use Devel::Leak::Object qw{ GLOBAL_bless };
 
 #-----------------------------------------------------------------------------
 
@@ -42,14 +48,23 @@ unless (-e $root) {
 
 chomp (my @dists = ($ARGV[0] || '') eq '-' ? <STDIN> : search_for_dists($cpan));
 my @batches = map { [splice @dists, 0, $batch_size, ()] } 1..int (@dists/$batch_size+1);
+
+# Lop off the leading batches, if offset given
+# TODO: make sure batch offset is in range
 splice @batches, 0, $batch_offset, () if $batch_offset;
+
+# Lop off trailing batches, if count is given
+# TODO: make sure count is in range
 @batches = @batches[0..($batch_count-1)] if $batch_count;
+
+# Count the total number of dists
 my $count = (@batches - 1) * $batch_size + @{ $batches[-1] };
 
 #-----------------------------------------------------------------------------
 printf "Loading %i distributions (in batches of %i) into repository at %s\n", $count, $batch_size, $root;
 
 require Pinto;
+my $pinto = Pinto->new(root => "$root");
 
 my $n = $batch_offset;
 while (@batches) {
@@ -60,8 +75,7 @@ while (@batches) {
 	s|^.*/authors/id/./../|| for @{ $batch };
 
 	my $start = time;
-	my $pinto = Pinto->new(root => "$root");
-	$pinto->run(Pull => (targets => $batch, no_recurse => 1, no_fail => 1, message => ''));
+	my $result = $pinto->run(Pull => (targets => $batch, no_recurse => 1, no_fail => 1, message => ''));
 	printf "Batch %i loaded in %i seconds at %s\n", $n, time - $start, scalar localtime;
 
 	if ($n % 100 == 0) {
