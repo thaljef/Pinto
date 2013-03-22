@@ -54,7 +54,7 @@ sub provides {
     my ($self) = @_;
 
     my $archive = $self->archive;
-    debug("Extracting packages provided by archive $archive");
+    debug "Extracting packages provided by archive $archive";
 
     my $mod_info =   try { $self->dm->module_info( {checksum => 'sha256'} )     }
                    catch { throw "Unable to extract packages from $archive: $_" };
@@ -64,7 +64,7 @@ sub provides {
 
         my $info = $mod_info->{$pkg_name};
         my $pkg_ver = version->parse( $info->{version} );
-        debug("Archive $archive provides: $pkg_name-$pkg_ver");
+        debug "Archive $archive provides: $pkg_name-$pkg_ver";
 
         push @provides, { name => $pkg_name,     version => $pkg_ver, 
                           file => $info->{file}, sha256  => $info->{sha256} };
@@ -82,7 +82,7 @@ sub requires {
     my ($self) = @_;
 
     my $archive = $self->archive;
-    debug("Extracting packages required by archive $archive");
+    debug "Extracting packages required by archive $archive";
 
     my $prereqs_meta =   try { $self->dm->meta->prereqs }
                        catch { throw "Unable to extract prereqs from $archive: $_" };
@@ -99,7 +99,7 @@ sub requires {
 
         my $pkg_ver = version->parse( $prereqs{$pkg_name} );
 
-        debug("Archive $archive requires: $pkg_name-$pkg_ver");
+        debug "Archive $archive requires: $pkg_name-$pkg_ver";
         push @prereqs, {name => $pkg_name, version => $pkg_ver};
     }
 
