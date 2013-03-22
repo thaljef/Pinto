@@ -62,7 +62,7 @@ sub execute {
             $self->repo->svp_rollback;
 
             $self->error($_);
-            $self->error("$target failed...continuing anyway");
+            $self->error("Target $target failed...continuing anyway");
             push @failed, $target;
         }
         finally {

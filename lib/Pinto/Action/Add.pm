@@ -85,7 +85,7 @@ sub execute {
             $self->repo->svp_rollback;
 
             $self->error("$_");
-            $self->error("$archive failed...continuing anyway");
+            $self->error("Archive $archive failed...continuing anyway");
             push @failed, $archive;
         }
         finally {
