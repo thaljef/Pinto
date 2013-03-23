@@ -36,7 +36,7 @@ has was_successful => (
 has exceptions => (
     traits    => [ qw(Array) ],
     handles   => {exceptions => 'elements', add_exception => 'push'},
-    isa       => ArrayRef['Pinto::Exception'],
+    isa       => ArrayRef,
     default   => sub { [] },
 );
 
@@ -93,7 +93,7 @@ sub to_string {
     return 'ok' if $self->was_successful;
 
     if (my @exceptions = $self->exceptions) {
-        return join "\n", map { $ENV{PINTO_DEBUG} ? "$_" : $_->message } @exceptions;
+        return join "\n", @exceptions;
     }
 
     return 'unknown error';
