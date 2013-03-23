@@ -1,5 +1,16 @@
 {{$NEXT}}
 
+      Switched from using Archive::Tar to Archive::Extract.  The
+      latter will attempt to use tar(1) to unpack the archive,
+      which works much better with older archives.  This is a bit
+      slower however.  If you don't have tar(1), it falls back
+      to using Archive::Tar internally.
+
+      NB: Archive::Tar also reads the entire archive into memory,
+      so that probably explains why some of you have been getting
+      out-of-memory errors.  The switch to Archive::Extract should
+      help alleviate that problem (as long as you have tar).
+
 0.065_05  2013-03-20 16:21:57 America/Los_Angeles
 
      Fixed bug that caused lots of "uninitialized" warnings.
