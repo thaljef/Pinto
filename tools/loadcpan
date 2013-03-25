@@ -70,6 +70,7 @@ my $n = $batch_offset;
 while (@batches) {
 
 	local $ENV{PINTO_NO_CHECKSUMS} = 1;
+	local $ENV{PINTO_ALLOW_DUPLICATES} = 1;
 
 	my $batch = shift @batches;
 	s|^.*/authors/id/./../|| for @{ $batch };
