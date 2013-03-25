@@ -471,6 +471,10 @@ sub add_distribution {
     my @requires = $extractor->requires;
     $dist_struct->{prerequisites} = \@requires;
 
+    # Add metadata...
+    my $metadata = $extractor->metadata;
+    $dist_struct->{metadata} = $metadata;
+
     my $p = scalar @provides;
     my $r = scalar @requires;
     debug "Distribution $archive provides $p and requires $r packages";

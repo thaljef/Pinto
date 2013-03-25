@@ -6,6 +6,7 @@ CREATE TABLE distribution (
        mtime           INTEGER             NOT NULL,
        sha256          TEXT                NOT NULL        UNIQUE,
        md5             TEXT                NOT NULL        UNIQUE,
+       metadata        TEXT                NOT NULL,
 
        UNIQUE(author, archive)
 );
@@ -66,6 +67,7 @@ CREATE TABLE ancestry (
 
 CREATE TABLE prerequisite (
        id              INTEGER PRIMARY KEY NOT NULL,
+       phase           TEXT                NOT NULL,
        distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
        package_name    TEXT                NOT NULL,
        package_version TEXT                NOT NULL,

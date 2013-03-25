@@ -62,6 +62,11 @@ __PACKAGE__->table("distribution");
   data_type: 'text'
   is_nullable: 0
 
+=head2 metadata
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -78,6 +83,8 @@ __PACKAGE__->add_columns(
   "sha256",
   { data_type => "text", is_nullable => 0 },
   "md5",
+  { data_type => "text", is_nullable => 0 },
+  "metadata",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -194,8 +201,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-04 12:39:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5o3MQdpey2pBAPUoMuPTNQ
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-25 16:26:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jb7dVMvCpgez4U9E1Q+BIw
 
 #-------------------------------------------------------------------------------
 
@@ -204,6 +211,7 @@ with 'Pinto::Role::Schema::Result';
 #-------------------------------------------------------------------------------
 
 use URI;
+use CPAN::Meta;
 use Path::Class;
 use CPAN::DistnameInfo;
 use String::Format;
@@ -217,6 +225,13 @@ use overload ( '""'  => 'to_string',
 #------------------------------------------------------------------------------
 
 # VERSION
+
+#------------------------------------------------------------------------------
+
+__PACKAGE__->inflate_column( 'metadata' => { 
+  inflate => sub { CPAN::Meta->load_json_string($_[0]) },
+  deflate => sub { $_[0]->as_string({version => "2"}) } 
+});
 
 #------------------------------------------------------------------------------
 

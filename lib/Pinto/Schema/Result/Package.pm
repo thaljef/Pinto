@@ -177,10 +177,10 @@ use overload ( '""'     => 'to_string',
 
 #------------------------------------------------------------------------------
 
-
-__PACKAGE__->inflate_column( 'version' => { inflate => sub { version->parse($_[0]) },
-                                            deflate => sub { $_[0]->stringify() } }
-);
+__PACKAGE__->inflate_column( 'version' => { 
+    inflate => sub { version->parse($_[0]) },
+    deflate => sub { $_[0]->stringify() },
+});
 
 #------------------------------------------------------------------------------
 # Schema::Loader does not create many-to-many relationships for us.  So we

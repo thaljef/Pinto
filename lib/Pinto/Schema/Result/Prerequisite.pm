@@ -32,6 +32,11 @@ __PACKAGE__->table("prerequisite");
   is_auto_increment: 1
   is_nullable: 0
 
+=head2 phase
+
+  data_type: 'text'
+  is_nullable: 0
+
 =head2 distribution
 
   data_type: 'integer'
@@ -53,6 +58,8 @@ __PACKAGE__->table("prerequisite");
 __PACKAGE__->add_columns(
   "id",
   { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+  "phase",
+  { data_type => "text", is_nullable => 0 },
   "distribution",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "package_name",
@@ -123,8 +130,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2012-12-01 01:42:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:D0QsMZShrg9ZgENP03Qqlw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-25 16:02:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LymPuQXtJzdbuIx4nmxtQg
 
 #------------------------------------------------------------------------------
 

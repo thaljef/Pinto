@@ -87,23 +87,38 @@ sub requires {
     my $prereqs_meta =   try { $self->dm->meta->prereqs }
                        catch { throw "Unable to extract prereqs from $archive: $_" };
 
-    my %prereqs;
-    for my $phase ( qw( configure build test runtime ) ) {
-        my $p = $prereqs_meta->{$phase} || {};
-        %prereqs = ( %prereqs, %{ $p->{requires} || {} } );
-    }
-
-
     my @prereqs;
-    for my $pkg_name (sort keys %prereqs) {
+    for my $phase ( qw( configure build test runtime ) ) {
 
-        my $pkg_ver = version->parse( $prereqs{$pkg_name} );
+        my $prereqs_for_phase = $prereqs_meta->{$phase} || {};
+        my $required_prereqs  = $prereqs_for_phase->{requires} || {};
 
-        debug "Archive $archive requires: $pkg_name-$pkg_ver";
-        push @prereqs, {name => $pkg_name, version => $pkg_ver};
+        for my $pkg_name (sort keys %{ $required_prereqs }) {
+
+            $DB::single = 1;
+            my $pkg_ver = version->parse( $required_prereqs->{$pkg_name} );
+            debug "Archive $archive requires ($phase): $pkg_name-$pkg_ver";
+
+            my $struct = {phase => $phase, name => $pkg_name, version => $pkg_ver};
+            push @prereqs, $struct;
+        }
     }
 
     return @prereqs;
+}
+
+#-----------------------------------------------------------------------------
+
+sub metadata {
+    my ($self) = @_;
+
+    my $archive = $self->archive;
+    debug "Extracting metadata from archive $archive";
+
+    my $metadata =   try { $self->dm->meta }
+                   catch { throw "Unable to extract metadata from $archive: $_" };
+
+    return $metadata;
 }
 
 #-----------------------------------------------------------------------------
