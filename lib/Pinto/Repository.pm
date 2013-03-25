@@ -838,7 +838,7 @@ sub assert_archive_not_duplicate {
 
     my $sha256 = Pinto::Util::sha256($archive);
     if (my $same_sha = $self->get_distribution(sha256 => $sha256)) {
-        throw "Archive $archive is identical to $same_sha";
+        throw "Archive $archive is identical to $same_sha" unless $ENV{PINTO_ALLOW_DUPLICATES};
     }
 
     return;
