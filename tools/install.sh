@@ -9,7 +9,7 @@ PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
 cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  --local-lib-contained $PINTO_HOME App::Pinto Pinto
 if [ $? -ne 0 ] ; then echo "Installation failed.  See the cpanm build log for details"; exit 1; fi
 
-echo <<END_MSG
+cat <<END_MSG
 pinto has been installed at $PINTO_HOME
 
 Now add the following to your ~/.profile
