@@ -54,7 +54,7 @@ sub failed {
         # violations).  So we have to convert them ourselves.
         # If the message already contains a full stack trace,
         # then it will be really ugly.  God I wish Perl had
-        # sane native exeptions.
+        # sane native exceptions.
 
         require Pinto::Exception;
 
