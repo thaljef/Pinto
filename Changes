@@ -1,105 +1,74 @@
 {{$NEXT}}
 
-0.065_06  2013-03-23 00:22:57 America/Los_Angeles
+     HEADLINES:
 
-      Switched from using Archive::Tar to Archive::Extract.  The
-      latter will attempt to use tar(1) to unpack the archive,
-      which works much better with older archives.  This is a bit
-      slower however.  If you don't have tar(1), it falls back
-      to using Archive::Tar internally.
+     * Your MUST uninstall both Pinto and App::Pinto before installing this.
 
-      NB: Archive::Tar also reads the entire archive into memory,
-      so that probably explains why some of you have been getting
-      out-of-memory errors.  The switch to Archive::Extract should
-      help alleviate that problem (as long as you have tar).
+     * For local repositories, you'll need to have App::Pinto 0.066 or later.
 
-0.065_05  2013-03-20 16:21:57 America/Los_Angeles
+     * This release is not (yet) compatible with any Pinto::Server.
 
-     Fixed bug that caused lots of "uninitialized" warnings.
 
-0.065_04  2013-03-20 16:06:15 America/Los_Angeles
+     IMPORTANT:
 
-     !! DEVELOPER RELEASE !!
+     Bad news:  This version of Pinto is not compatible with *existing* 
+     repositories.  To migrate, you'll need to create a new repository 
+     (using this version of Pinto) and then "pull" all the distributons 
+     from your old repository into the new one.  Repeat this process for 
+     each stack.  Unfortunatley, you will loose your revision history.  If
+     you bug me about it, I'll write a script to automate this for you.  I
+     am thaljef@cpan.org.
 
-     This requires App::Pinto 0.065_03 for the front end.
-     Still not compatible with any existing Pinto::Remote.
+     Good news:  This version of Pinto has hooks to do future migrations
+     automatically.  So any repository you create with *this version*
+     of Pinto can be easily migrated to any future versions. I'm also pretty
+     confident that the schema is now stable, so a migration will not be
+     required for a while.
 
-     Switched from using LWP to HTTP::Tiny to reduce non-core
-     depencencies.  Let me know if you see problems using https
 
-     Fixed bug that would cause Pinto to blow up when generating
-     very large diffs.
+     CHANGES:
 
-     Redesigned exception handling.
+     * Switched from using Archive::Tar to Archive::Extract.  The
+     latter will attempt to use tar(1) to unpack the archive,
+     which works much better with older archives.  This is a bit
+     slower however.  If you don't have tar(1), it falls back
+     to using Archive::Tar internally.
 
-     Most classes now use MooseX::StrictConstructor now.
+     * Switched from using HTTP::UserAgent to HTTP::Tiny.  This cuts out
+     one non-core dependency.  But some of Pinto's upstream dependencies
+     probably still use HTTP::UserAgent, so the net effect is moot.
 
-0.065_03  2013-03-19 15:52:24 America/Los_Angeles
-
-     !! DEVELOPER RELEASE !!
-
-     This requires App::Pinto 0.065_02 for the front end.
-     Still not compatible with any existing Pinto::Remote.
-
-     The interface with the terminal has been completely redesigned.
+     * The version control subsystem has been completely redesigned.
+     Pinto now stores full snaphots of the stack at each revision
+     and organizes them in a directed graph, much like Git does.  Each
+     revision is now identified by a unique non-sequential identifier.
+     
+     * The interface with the terminal has been completely redesigned.
      You'll see fewer (but hopefully better) diagnostic messages
      when running in verbose mode.  And if not verbose, then
      you'll see a progress meter.  If you still want to see all
      the gory details, then set the PINTO_DEBUG environment variable.
 
-     The logger has been completely removed, so Pinto no longer
+     * The logger has been completely removed, so Pinto no longer
      records diagnostic messages.  Recording them never proved to
-     be useful anyway.  All the important changes to the stacks are 
+     be useful anyway.  All the important changes to the stacks are
      still recorded in the revision log though.
 
-     Still works with any repository created with Pinto 0.065_01
-     or later.  So no migration required for those.  For older
-     repositories, see the IMPORTANT note down below under the 0.065_01 
-     release.
+     * Several Action classes have been added, removed, renamed,
+     or repurposed.  The specifics are not described here because the
+     Pinto API is still private.  See the change log for App::Pinto
+     for a description of all the public interface changes.
 
+0.065_06  2013-03-23 00:22:57 America/Los_Angeles
+0.065_05  2013-03-20 16:21:57 America/Los_Angeles
+0.065_04  2013-03-20 16:06:15 America/Los_Angeles
+0.065_03  2013-03-19 15:52:24 America/Los_Angeles
 0.065_02  2013-03-15 23:39:27 America/Los_Angeles
-
-     !! DEVELOPER RELEASE !!
-
-     This requires App::Pinto 0.065_01 for the front end.
-     Still not compatible with any existing Pinto::Remote.
-
-     The Delete action didn't actually delete the archive.
-     Now it does!  Added some more tests too.
-
 0.065_01  2013-03-15 16:19:38 America/Los_Angeles
 
-    !! DEVELOPER RELEASE !!
+     !! DEVELOPER RELEASES !!
 
-     This requires App::Pinto 0.065_01 for the front end.
-     It is not compatible with Pinto::Server at the moment.
-     
-     IMPORTANT:
-
-     Bad news:  This version of pinto is not compatible with
-     *existing* repositories.  To migrate, you'll need to create a new
-     repository (using this version of pinto) and then "pull" all the
-     distributons from your old repository into the new one.  Repeat
-     this process for each stack.  Unfortunatley, you will loose your 
-     revision history.  If you bug me about it, I'll write a script to 
-     automate this for you.  I am thaljef@cpan.org.
-
-     Good news:  This version of pinto has hooks to do future migrations 
-     automatically.  So any repository you create with *this version* 
-     of pinto can be easily migrated to any future versions. I'm also pretty 
-     confident that the schema is now stable, so a migration will not be 
-     required for a while.
-
-     Also: Several classes have been renamed or removed.  I strongly 
-     recommend removing your current installation of Pinto and App::Pinto 
-     before installing this one.  This will remove things that are no 
-     longer supported. 
-
-     Finally: A *lot* has changed in this release.  But none of it is
-     documented here because the internals of Pinto are all private.
-     Instead, Please see the Changes file in App-Pinto-0.065.tar.gz 
-     for a description of the public changes.
-
+     Changes consolidated above under version 0.066.
 
 0.065     2012-11-14 09:55:54 America/Los_Angeles
 
