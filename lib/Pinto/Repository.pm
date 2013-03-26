@@ -819,8 +819,8 @@ sub assert_archive_not_duplicate {
 
     unless ( $self->config->allow_duplicates) {
         my $sha256 = Pinto::Util::sha256($archive);
-        my @dupes = $self->db->schema->search_distribution({sha256 => $sha256});
-        throw "Archive $archive is identical to $dupes[0]" if @dupes;
+        my $dupe = $self->db->schema->search_distribution({sha256 => $sha256})->first;
+        throw "Archive $archive is identical to $dupe" if $dupe;
     }
 
     return;
