@@ -128,9 +128,9 @@ sub _check_for_duplicate {
     return if $self->repo->config->allow_duplicates;
 
     my $sha256 = sha256($archive);
-    my $dupe = $self->db->schema->search_distribution({sha256 => $sha256})->first;
+    my $dupe = $self->repo->db->schema->search_distribution({sha256 => $sha256})->first;
 
-    return if not @dupes;
+    return if not defined $dupe;
     return $dupe if $archive->basename eq $dupe->archive;
 
     throw "Archive $archive is the same as $dupe but with different name";
