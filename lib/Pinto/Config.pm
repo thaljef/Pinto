@@ -146,6 +146,15 @@ has no_history => (
 );
 
 
+has allow_duplicates => (
+    is         => 'ro',
+    isa        => Bool,
+    key        => 'allow_duplicates',
+    default    => 0,
+    documentation => 'Allow this repository to contain duplicate distributions',
+);
+
+
 has sources  => (
     is        => 'ro',
     isa       => Str,

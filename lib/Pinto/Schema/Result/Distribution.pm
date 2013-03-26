@@ -116,30 +116,6 @@ __PACKAGE__->set_primary_key("id");
 
 __PACKAGE__->add_unique_constraint("author_archive_unique", ["author", "archive"]);
 
-=head2 C<md5_unique>
-
-=over 4
-
-=item * L</md5>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("md5_unique", ["md5"]);
-
-=head2 C<sha256_unique>
-
-=over 4
-
-=item * L</sha256>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint("sha256_unique", ["sha256"]);
-
 =head1 RELATIONS
 
 =head2 packages
@@ -201,8 +177,8 @@ __PACKAGE__->has_many(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-25 16:26:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jb7dVMvCpgez4U9E1Q+BIw
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-26 11:05:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vQKIXXk8xddyMmBptwvpUg
 
 #-------------------------------------------------------------------------------
 
@@ -232,16 +208,6 @@ __PACKAGE__->inflate_column( 'metadata' => {
   inflate => sub { CPAN::Meta->load_json_string($_[0]) },
   deflate => sub { $_[0]->as_string({version => "2"}) } 
 });
-
-#------------------------------------------------------------------------------
-
-sub sqlt_deploy_hook {
-    my ($self, $sqlt_table) = @_;
- 
-    $sqlt_table->add_index(name => 'distribution_idx_author', fields => ['author']);
-
-    return;
-}
 
 #------------------------------------------------------------------------------
 

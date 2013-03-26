@@ -4,8 +4,8 @@ CREATE TABLE distribution (
        archive         TEXT                NOT NULL,
        source          TEXT                NOT NULL,
        mtime           INTEGER             NOT NULL,
-       sha256          TEXT                NOT NULL        UNIQUE,
-       md5             TEXT                NOT NULL        UNIQUE,
+       sha256          TEXT                NOT NULL,
+       md5             TEXT                NOT NULL,
        metadata        TEXT                NOT NULL,
 
        UNIQUE(author, archive)
@@ -72,9 +72,10 @@ CREATE TABLE prerequisite (
        package_name    TEXT                NOT NULL,
        package_version TEXT                NOT NULL,
 
-       UNIQUE(distribution, package_name)
+       UNIQUE(distribution, phase, package_name)
 );
 
 CREATE INDEX idx_ancestry_parent           ON ancestry(parent);
 CREATE INDEX idx_ancestry_child            ON ancestry(child);
 CREATE INDEX idx_package_sha256            ON package(sha256);
+CREATE INDEX idx_distribution_sha256       ON distribution(sha256);
