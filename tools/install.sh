@@ -15,7 +15,7 @@ pinto has been installed at $PINTO_HOME
 Now add the following to your ~/.profile
 
   export PINTO_HOME=$PINTO_HOME
-  export PATH=\$PINTO_HOME/:\$PATH
+  export PATH=\$PINTO_HOME/bin:\$PATH
 
 Thank you for trying pinto.  
 Send feedback to thaljef@cpan.org
