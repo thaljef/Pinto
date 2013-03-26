@@ -1,6 +1,6 @@
 #!/bin/sh
 
-${PINTO_HOME:="$HOME/opt/local/pinto"}
+PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 PATH=$PINTO_HOME/bin:$PATH
 
 echo "Installing pinto into $PINTO_HOME"
