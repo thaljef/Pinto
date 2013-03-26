@@ -18,7 +18,7 @@ Now add the following to your ~/.profile
   export PATH=\$PINTO_HOME/:\$PATH
 
 Thank you for trying pinto.  
-Send feeback to thaljef@cpan.org
+Send feedback to thaljef@cpan.org
 END_MSG
 
 exit 0;
