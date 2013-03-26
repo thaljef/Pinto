@@ -70,8 +70,7 @@ sub provides {
                           file => $info->{file}, sha256  => $info->{sha256} };
     }
 
-    @provides = $self->__common_sense_workaround($archive->basename)
-      if @provides == 0 and $archive->basename =~ m/^ common-sense /x;
+    @provides = $self->__apply_workarounds if @provides == 0;
 
     return @provides;
 }
@@ -95,7 +94,6 @@ sub requires {
 
         for my $pkg_name (sort keys %{ $required_prereqs }) {
 
-            $DB::single = 1;
             my $pkg_ver = version->parse( $required_prereqs->{$pkg_name} );
             debug "Archive $archive requires ($phase): $pkg_name-$pkg_ver";
 
@@ -122,21 +120,51 @@ sub metadata {
 }
 
 #-----------------------------------------------------------------------------
-# HACK: The common-sense distribution generates the .pm file at build time.
-# It relies on an unusual feature of PAUSE that scans the __DATA__ section
-# of .PM files for potential packages.  Module::Metdata doesn't have that
-# feature, so to us, it appears that common-sense contains no packages.
-# I've asked the author to use the "provides" field of the META file so
-# that other tools can discover the packages in his distribution, but
-# he has refused to do so.  So we work around it by just assuming the
-# distribution contains a package named "common::sense".
+# HACK: The common-sense and FCGI distributions generate the .pm file at build 
+# time.  It relies on an unusual feature of PAUSE that scans the __DATA__ 
+# section of .PM files for potential packages.  Module::Metdata doesn't have
+# that feature, so to us, it appears that these distributions contain no packages.
+# I've asked the authors to use the "provides" field of the META file so
+# that other tools can discover the packages in the distribution, but then have 
+# not done so.  So we work around it by just assuming the distribution contains a 
+# package named "common::sense" or "FCGI".
+
+
+sub __apply_workarounds {
+    my ($self) = @_;
+
+    return $self->__common_sense_workaround 
+        if $self->archive->basename =~ m/^ common-sense /x;
+
+    return $self->__fcgi_workaround
+        if $self->archive->basename =~ m/^ FCGI-\d /x;
+
+    return;
+}
+
+#-----------------------------------------------------------------------------
+# TODO: Generalize both of these workaround methods into a single method that
+# just guesses the package name and version based on the distribution name.
 
 sub __common_sense_workaround {
-    my ($self, $cs_archive) = @_;
+    my ($self) = @_;
 
-    my ($version) = ($cs_archive =~ m/common-sense- ([\d_.]+) \.tar\.gz/x);
+    my ($version) = ($self->archive->basename =~ m/common-sense- ([\d_.]+) \.tar\.gz/x);
 
     return { name => 'common::sense',
+             version => version->parse($version) };
+}
+
+#-----------------------------------------------------------------------------
+# TODO: Generalize both of these workaround methods into a single method that
+# just guesses the package name and version based on the distribution name.
+
+sub __fcgi_workaround {
+    my ($self) = @_;
+
+    my ($version) = ($self->archive->basename =~ m/FCGI- ([\d_.]+) \.tar\.gz/x);
+
+    return { name => 'FCGI',
              version => version->parse($version) };
 }
 
