@@ -7,17 +7,34 @@ use Test::More;
 use Test::Memory::Cycle;
 
 use Pinto::Tester;
-use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
+note("This test requires a live internet connection to pull stuff from CPAN");
+#------------------------------------------------------------------------------
+
+{
+  my $t = Pinto::Tester->new;
+
+  my $result = $t->run_ok(Pull => {targets => 'Perl::Critic'});
+  memory_cycle_ok($t->pinto);
+  memory_cycle_ok($result);
+}
+
+#------------------------------------------------------------------------------
+
 {
 
-  my $t = Pinto::Tester->new;
-  my $archive = make_dist_archive('Dist-1 = PkgA~1, PkgB~1');
-  $t->run_ok(Add => {archives => $archive, author => 'AUHTOR', no_recurse => 1});
+  # Throwable::Error has a memory leak.  I've submitted a patch (and patched
+  # my own installation) but it hasn't been released yet.
 
+  my $t = Pinto::Tester->new;
+
+  no warnings qw(once redefine);
+  local *Pinto::ArchiveExtractor::requires = sub {die 'FAKE ERROR'};
+
+  my $result = $t->run_ok(Pull => {targets => 'Perl::Critic'});
   memory_cycle_ok($t->pinto);
-  memory_cycle_ok($t->pinto->repo->get_stack);
+  memory_cycle_ok($result);
 }
 
 #------------------------------------------------------------------------------
