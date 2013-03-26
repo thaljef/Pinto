@@ -138,9 +138,17 @@ sub _build_pinto {
 #------------------------------------------------------------------------------
 
 sub get_stack {
-    my ($self, $stack) = @_;
+    my ($self, @args) = @_;
 
-    return $self->repo->get_stack($stack);
+    return $self->repo->get_stack(@args);
+}
+
+#------------------------------------------------------------------------------
+
+sub get_distribution {
+    my ($self, @args) = @_;
+
+    return $self->repo->get_distribution(@args);
 }
 
 #------------------------------------------------------------------------------
