@@ -82,11 +82,13 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<distribution_package_name_unique>
+=head2 C<distribution_phase_package_name_unique>
 
 =over 4
 
 =item * L</distribution>
+
+=item * L</phase>
 
 =item * L</package_name>
 
@@ -95,8 +97,8 @@ __PACKAGE__->set_primary_key("id");
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "distribution_package_name_unique",
-  ["distribution", "package_name"],
+  "distribution_phase_package_name_unique",
+  ["distribution", "phase", "package_name"],
 );
 
 =head1 RELATIONS
@@ -130,8 +132,8 @@ __PACKAGE__->belongs_to(
 with 'Pinto::Role::Schema::Result';
 
 
-# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-25 16:02:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LymPuQXtJzdbuIx4nmxtQg
+# Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-26 11:05:47
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:p++Wil511AYW5fZ8Xoe4Jg
 
 #------------------------------------------------------------------------------
 
@@ -144,16 +146,6 @@ use Pinto::PackageSpec;
 #------------------------------------------------------------------------------
 
 # VERSION
-
-#------------------------------------------------------------------------------
-
-sub sqlt_deploy_hook {
-    my ($self, $sqlt_table) = @_;
- 
-    $sqlt_table->add_index(name => 'prerequisite_idx_package_name', fields => ['package_name']);
-
-    return;
-}
 
 #------------------------------------------------------------------------------
 # NOTE: We often convert a Prerequsite to/from a PackageSpec object. They don't
