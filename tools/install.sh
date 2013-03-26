@@ -6,7 +6,7 @@ PATH=$PINTO_HOME/bin:$PATH
 echo "Installing pinto into $PINTO_HOME"
 
 PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
-cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  --local-lib-contained $PINTO_HOME App::Pinto Pinto
+cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  --local-lib-contained $PINTO_HOME Pinto App::Pinto
 if [ $? -ne 0 ] ; then echo "Installation failed.  See the cpanm build log for details"; exit 1; fi
 
 cat <<END_MSG
