@@ -1,10 +1,9 @@
 #!/bin/sh
 
-export PINTO_HOME=$HOME/usr/local/pinto
-export PATH=$PINTO_HOME/bin:$PATH
+${PINTO_HOME:="$HOME/opt/local/pinto"}
+PATH=$PINTO_HOME/bin:$PATH
 
-echo "Installing pinto into $PINTO_HOME.  This will take a while."
-echo 'You mail tail ~/.cpanm/build.log if you want to follow along.'
+echo "Installing pinto into $PINTO_HOME"
 
 PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
 cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  --local-lib-contained $PINTO_HOME App::Pinto Pinto
