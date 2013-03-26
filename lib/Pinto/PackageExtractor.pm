@@ -87,7 +87,7 @@ sub requires {
                        catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
-    for my $phase ( qw( configure build test runtime ) ) {
+    for my $phase ( qw( develop configure build test runtime ) ) {
 
         my $prereqs_for_phase = $prereqs_meta->{$phase} || {};
         my $required_prereqs  = $prereqs_for_phase->{requires} || {};
