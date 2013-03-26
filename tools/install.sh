@@ -3,7 +3,7 @@
 export PINTO_HOME=$HOME/usr/local/pinto
 export PATH=$PINTO_HOME/bin:$PATH
 
-PINTO_REPO_URL=http://stratopan.com/stratopan/pinto/production
+PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
 cpanm --mirror $PINTO_REPO_URL --mirror-only  --local-lib-contained $PINTO_HOME App::Pinto Pinto
 
 echo <<END_MSG
