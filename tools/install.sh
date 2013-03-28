@@ -60,7 +60,7 @@ cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
 if [ $? -ne 0 ] ; then echo "Installation failed."; exit 1; fi
 
 # Remove all scripts from bin, except pinto
-ls $PINTO_HOME/bin | grep -v pinto | xargs rm
+(cd $PINTO_HOME/bin; ls | grep -v pinto | xargs rm)
 
 cat <<END_MSG
 pinto has been installed at $PINTO_HOME
