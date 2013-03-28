@@ -68,7 +68,9 @@ requires qw( execute repo );
 around BUILD => sub {
     my ($orig, $self) = @_;
 
-    $self->_set_stack( $self->repo->get_stack($self->stack) );
+    my $stack = $self->repo->get_stack($self->stack);
+    $stack->assert_not_locked;
+    $self->_set_stack($stack);
 
     return $self->$orig;
 };
