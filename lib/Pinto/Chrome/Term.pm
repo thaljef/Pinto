@@ -7,7 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Term::ANSIColor ();
+use Term::ANSIColor 2.02 (); #First version with colorvalid()
 use Term::EditorEdit;
 
 use Pinto::Types qw(Io);
