@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      * Only minor refactoring.  No functional or interface changes.
+
+      * Explicitly requires Term::ANSIColor 2.02 or later.  Thanks CPAN Testers!
+
+      * Requires Pinto::Common 0.068, so you'll have better documentation. 
+
 0.066     2013-03-26 16:18:06 America/Los_Angeles
 
      HEADLINES:
