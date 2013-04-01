@@ -11,6 +11,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
+$t->get_stack->set_property(allow_overlapping_distributions => 1);
 
 #------------------------------------------------------------------------------
 

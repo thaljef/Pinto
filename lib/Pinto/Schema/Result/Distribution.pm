@@ -266,7 +266,18 @@ sub register {
         if $incumbent_pkg > $pkg;
  
 
-      $incumbent->delete;
+
+      if ( $stack->is_pure ) {
+        # If the stack is pure, then completely unregister all the
+        # packages in the incumbent distribution, so there is no overlap
+        $incumbent->distribution->unregister(stack => $stack);
+      }
+      else {
+        # Otherwise, just delete this one registration.  The stack may
+        # end up with some packages from one dist and some from another
+        $incumbent->delete;
+      }
+
       $pkg->register(stack => $stack, pin => $pin);
       $did_register++;
     }

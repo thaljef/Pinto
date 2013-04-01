@@ -11,6 +11,8 @@ use Pinto::Difference;
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
+$t->get_stack->set_property(allow_overlapping_distributions => 1);
+
 $t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1');
 $t->populate('AUTHOR/Dist-2 = PkgB~2, PkgC~2');
 
