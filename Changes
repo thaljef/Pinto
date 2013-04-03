@@ -8,6 +8,11 @@
       "allow_overlapping_distributions" stack property to 1.  Thanks to 
       Schwern for suggesting this.
 
+      * Now using Module::Build::CleanInstall, which removes files from the
+      last installation before installing.  This should help prevent build
+      failures for those coming from versions prior to 0.066.  Thanks to
+      Joel Berger for creating the wonderful M::B::CleanInstall!
+
 0.067     2013-03-30 00:23:36 America/Los_Angeles
 
       * Only minor refactoring.  No functional or interface changes.
