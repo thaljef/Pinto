@@ -15,7 +15,6 @@ cover_db
 *.gc??
 test-mydeps-*
 nytprof*
-/inc/
 !.gitignore
 *.sw*
 Pinto-*
