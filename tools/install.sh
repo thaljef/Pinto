@@ -87,7 +87,7 @@ mkdir -p "$PINTO_ETC"
 
 PINTO_BASHRC="$PINTO_ETC/bashrc"
 
-cat >> "$PINTO_BASHRC" <<END_CONFIG
+cat > "$PINTO_BASHRC" <<END_CONFIG
 ###        THIS IS A GENERATED FILE -- DO NOT EDIT         ###
 export PINTO_HOME="$PINTO_HOME"
 export PATH="\$PINTO_HOME/bin:\$PATH"
