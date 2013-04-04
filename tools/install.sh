@@ -88,13 +88,13 @@ mkdir -p "$PINTO_ETC"
 PINTO_BASHRC="$PINTO_ETC/bashrc"
 
 cat >> "$PINTO_BASHRC" <<END_CONFIG
-###          GENERATED FILE -- DO NOT EDIT          ###
+###        THIS IS A GENERATED FILE -- DO NOT EDIT         ###
 export PINTO_HOME="$PINTO_HOME"
 export PATH="\$PINTO_HOME/bin:\$PATH"
 export MANPATH="\$PINTO_HOME/man:\$MANPATH"
 
-###    PUT YOUR CUSTOMIZATIONS IN \$HOME/.pintorc   ###
-[[ -e "\$HOME/.pintorc" ]] && source "\$HOME/.pintorc"
+###        PUT YOUR CUSTOMIZATIONS IN \$HOME/.pintorc      ###
+if [ -f "\$HOME/.pintorc" ]; then source "\$HOME/.pintorc"; fi
 END_CONFIG
 
 #-----------------------------------------------------------------------------
@@ -106,10 +106,11 @@ To activate, give this command:
 
   source $PINTO_HOME/etc/bashrc
 
-To make pinto part of your everyday environment, add that command to your 
-~/.profile or ~/.bashrc file as well.  
+To make pinto part of your everyday environment, add that 
+command to your ~/.profile or ~/.bashrc file as well.  
 
-Thank you for installing pinto.  Send feedback to jeff@stratopan.com
+Thank you for installing pinto. I hope you find it useful.
+Send feedback to jeff@stratopan.com
 END_MSG
 
 #-----------------------------------------------------------------------------
