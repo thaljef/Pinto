@@ -54,7 +54,7 @@ echo "Installing pinto into $PINTO_HOME"
 
 # TODO: check and carp if cpanm is not installed
 cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
-      --local-lib-contained $PINTO_HOME Pinto App::Pinto
+      --man-pages --local-lib-contained $PINTO_HOME Pinto App::Pinto
 
 # TODO: send the build log and `perl -V` back for analysis
 if [ $? -ne 0 ] ; then echo "Installation failed."; exit 1; fi
