@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# THIS IS THE pinto INSTALLER
+# THIS IS THE PINTO INSTALLER
 #
 # This bash script will install pinto as a standalone application.  You must
 # have cpanm installed first.  See http://cpanmin.us to install cpanm.
@@ -27,7 +27,7 @@
 # ~/.profile (or ~/.bashrc, or whatever you prefer) so that pinto runs
 # naturally in your everyday shell environment.
 #
-# All the depndencies for pinto come from a curated repository on 
+# All the depndencies for pinto come from a curated repository on hosted
 # http://stratopan.com.  That repository contains specific versions of all 
 # the modules that pinto needs.  So those may not be the latest versions,
 # but they are versions that I know will work (and that's the whole point
@@ -50,28 +50,69 @@
 PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 
+#-----------------------------------------------------------------------------
+# Make sure we have cpanm
+
+if ! type cpanm >/dev/null 2>&1; then
+  echo You must install cpanm first.  See http://cpanmin.us
+  exit 1
+fi
+
+#-----------------------------------------------------------------------------
+# Do installation
+
 echo "Installing pinto into $PINTO_HOME"
 
-# TODO: check and carp if cpanm is not installed
 cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
-      --man-pages --local-lib-contained $PINTO_HOME Pinto App::Pinto
+      --local-lib-contained $PINTO_HOME --man-pages Pinto App::Pinto
 
 # TODO: send the build log and `perl -V` back for analysis
 if [ $? -ne 0 ] ; then echo "Installation failed."; exit 1; fi
 
-# Remove all scripts from bin, except pinto
-(cd $PINTO_HOME/bin; ls | grep -v pinto | xargs rm)
+#-----------------------------------------------------------------------------
+# Remove scripts and man pages that aren't from pinto
+
+(cd "$PINTO_HOME/bin";      ls | grep -iv pinto | xargs rm)
+(cd "$PINTO_HOME/man/man1"; ls | grep -iv pinto | xargs rm)
+(cd "$PINTO_HOME/man/man3"; ls | grep -iv pinto | xargs rm)
+
+#-----------------------------------------------------------------------------
+# Create the etc/ directory
+
+PINTO_ETC="$PINTO_HOME/etc"
+mkdir -p "$PINTO_ETC"
+
+#-----------------------------------------------------------------------------
+# Write the bash setup file in etc/
+
+PINTO_BASHRC="$PINTO_ETC/bashrc"
+
+cat >> "$PINTO_BASHRC" <<END_CONFIG
+###          GENERATED FILE -- DO NOT EDIT          ###
+export PINTO_HOME="$PINTO_HOME"
+export PATH="\$PINTO_HOME/bin:\$PATH"
+export MANPATH="\$PINTO_HOME/man:\$MANPATH"
+
+###    PUT YOUR CUSTOMIZATIONS IN \$HOME/.pintorc   ###
+[[ -e "\$HOME/.pintorc" ]] && source "\$HOME/.pintorc"
+END_CONFIG
+
+#-----------------------------------------------------------------------------
+# Display instructions
 
 cat <<END_MSG
-pinto has been installed at $PINTO_HOME
+pinto has been installed at $PINTO_HOME.  
+To activate, give this command:
 
-Now add the following to your ~/.profile
+  source $PINTO_HOME/etc/bashrc
 
-  export PINTO_HOME=$PINTO_HOME
-  export PATH=\$PINTO_HOME/bin:\$PATH
+To make pinto part of your everyday environment, add that command to your 
+~/.profile or ~/.bashrc file as well.  
 
-Thank you for installing pinto.  
-Send feedback to jeff@stratopan.com
+Thank you for installing pinto.  Send feedback to jeff@stratopan.com
 END_MSG
+
+#-----------------------------------------------------------------------------
+# Done
 
 exit 0
