@@ -760,18 +760,17 @@ sub default_properties {
     my $desc = sprintf('The %s stack', $self->name);
     my $tpv  = $self->repo->config->target_perl_version->stringify;
 
-    return { description                     => $desc, 
-             target_perl_version             => $tpv,
-             allow_overlapping_distributions => 0 };
+    return { description          => $desc, 
+             target_perl_version  => $tpv };
 }
 
 #-------------------------------------------------------------------------------
 
-sub is_pure {
+sub prohibits_partial_distributions {
     my ($self) = @_;
 
-    return 0 if $self->get_property('allow_overlapping_distributions');
-    return 1;
+    return 1 if $self->get_property('prohibit_partial_distributions');
+    return 0;
 }
 
 #-------------------------------------------------------------------------------

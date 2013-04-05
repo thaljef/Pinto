@@ -267,7 +267,7 @@ sub register {
  
 
 
-      if ( $stack->is_pure ) {
+      if ( $stack->prohibits_partial_distributions ) {
         # If the stack is pure, then completely unregister all the
         # packages in the incumbent distribution, so there is no overlap
         $incumbent->distribution->unregister(stack => $stack);

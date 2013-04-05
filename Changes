@@ -1,17 +1,13 @@
 {{$NEXT}}
 
-      * Pinto now unregisters all packages from an existing distribution
-      when an incoming distribution has any packages that overlap with the 
-      exsting distribution.  This way, your stack will never contain some 
-      package from one distribution and some packages from another.  To get 
-      the old behavior (which is more like PAUSE) then set the 
-      "allow_overlapping_distributions" stack property to 1.  Thanks to 
-      Schwern for suggesting this.
-
       * Now using Module::Build::CleanInstall, which removes files from the
       last installation before installing.  This should help prevent build
       failures for those coming from versions prior to 0.066.  Thanks to
       Joel Berger for creating the wonderful M::B::CleanInstall!
+
+      * Worked around bizzare bug that caused DateTime::TimZone to blow
+      up with a "locate object method" exception on perl 5.14.  Root cause
+      has not been determined.
 
 0.067     2013-03-30 00:23:36 America/Los_Angeles
 
