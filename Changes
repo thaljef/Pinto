@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.068     2013-04-04 22:41:55 America/Los_Angeles
+
       * Now using Module::Build::CleanInstall, which removes files from the
       last installation before installing.  This should help prevent build
       failures for those coming from versions prior to 0.066.  Thanks to
