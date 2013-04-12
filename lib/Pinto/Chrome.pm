@@ -53,7 +53,6 @@ sub progress_done { return 1 }
 sub should_render_progress {
     my ($self) = @_;
 
-    return 0 if not is_interactive;
     return 0 if $self->verbose;
     return 0 if $self->quiet;
     return 1;

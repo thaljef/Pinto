@@ -150,6 +150,15 @@ sub progress_done {
 
 #-----------------------------------------------------------------------------
 
+override should_render_progress => sub {
+    my ($self) = @_;
+
+    return 0 if not -t $self->stderr;
+    return super;
+};
+
+#-----------------------------------------------------------------------------
+
 sub edit {
     my ($self, $document) = @_;
 
