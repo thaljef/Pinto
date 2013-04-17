@@ -17,6 +17,20 @@ use Pinto::Util qw(throw);
 
 #------------------------------------------------------------------------------
 
+# HACK: On perl-5.14.x (and possibly others) Package::Stash::XS has some funky
+# behavior that causes Class::Load to think that certain modules are already
+# loaded when they actually are not.  I don't know why it happens.  But loading
+# those modules here explicitly prevents the problem. The module may or may not
+# actually be used depending on your platform, and forcibly loading it anyway
+# seems  to be innocuous.  We use Class::Load quite a lot in Pinto, so this same
+# bug may manifest in other places too.  For  the moment, this these are the
+# only ones that I'm aware of.
+
+use Devel::StackTrace;
+use DateTime::TimeZone::Local::Unix;
+
+#------------------------------------------------------------------------------
+
 # VERSION
 
 #------------------------------------------------------------------------------
