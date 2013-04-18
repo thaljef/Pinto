@@ -4,7 +4,7 @@ package Pinto::Chrome::Term;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Bool ArrayRef);
+use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Term::ANSIColor 2.02 (); #First version with colorvalid()
@@ -55,6 +55,12 @@ has stderr => (
     lazy    => 1,
 );
 
+
+has diag_prefix => (
+    is      => 'ro',
+    isa     => Str,
+    default => '',
+);
 
 #-----------------------------------------------------------------------------
 
@@ -118,10 +124,13 @@ sub diag {
     }
 
     chomp $msg;
-
-    $msg = $self->colorize($msg, $opts->{color});
-
+    $msg  = $self->colorize($msg, $opts->{color});
     $msg .= "\n" unless $opts->{no_newline};
+
+    # Prepend prefix to each line (not just at the start of the message)
+    # The prefix is used by Pinto::Remote to distinguish between
+    # messages that go to stderr and those that should go to stdout
+    $msg =~ s/^/$self->diag_prefix/gemx if length $self->diag_prefix;
 
     print { $self->stderr } $msg or croak $!;
 }
