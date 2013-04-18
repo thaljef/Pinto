@@ -68,9 +68,9 @@ sub provides {
     my $mod_info = try {
         # Some modules get their VERSION by loading some other
         # module from lib/.  So make sure that lib/ is in @INC
-        my $lib_dir = $self->work_dir->subdir('lib') 
+        my $lib_dir = $self->work_dir->subdir('lib');
         local @INC = ($lib_dir->stringify, @INC);
-        
+
         $self->dm->module_info( {checksum => 'sha256'} );   
     }
     catch { 
