@@ -40,10 +40,19 @@ has unpacker => (
 );
 
 
+has work_dir => (
+    is       => 'ro',
+    isa      => Dir,
+    default  => sub { $_[0]->unpacker->unpack }, 
+    init_arg => undef,
+    lazy     => 1,
+);
+
+
 has dm => (
     is       => 'ro',
     isa      => 'Dist::Metadata',
-    default  => sub { Dist::Metadata->new(dir => $_[0]->unpacker->unpack) },
+    default  => sub { Dist::Metadata->new(dir => $_[0]->work_dir, include_inner_packages => 1) },
     init_arg => undef,
     lazy     => 1,
 );
@@ -56,8 +65,17 @@ sub provides {
     my $archive = $self->archive;
     debug "Extracting packages provided by archive $archive";
 
-    my $mod_info =   try { $self->dm->module_info( {checksum => 'sha256'} )     }
-                   catch { throw "Unable to extract packages from $archive: $_" };
+    my $mod_info = try {
+        # Some modules get their VERSION by loading some other
+        # module from lib/.  So make sure that lib/ is in @INC
+        my $lib_dir = $self->work_dir->subdir('lib') 
+        local @INC = ($lib_dir->stringify, @INC);
+        
+        $self->dm->module_info( {checksum => 'sha256'} );   
+    }
+    catch { 
+         throw "Unable to extract packages from $archive: $_" 
+    };
 
     my @provides;
     for my $pkg_name ( sort keys %{ $mod_info } ) {
@@ -83,7 +101,7 @@ sub requires {
     my $archive = $self->archive;
     debug "Extracting packages required by archive $archive";
 
-    my $prereqs_meta =   try { $self->dm->meta->prereqs }
+    my $prereqs_meta = try   { $self->dm->meta->prereqs }
                        catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
