@@ -162,8 +162,10 @@ sub progress_done {
 override should_render_progress => sub {
     my ($self) = @_;
 
+    return 0 if not super;
+    return 0 if not is_interactive;
     return 0 if not -t $self->stderr;
-    return super;
+    return 1;
 };
 
 #-----------------------------------------------------------------------------
@@ -172,6 +174,16 @@ sub edit {
     my ($self, $document) = @_;
 
     local $ENV{VISUAL} = $ENV{PINTO_EDITOR} if $ENV{PINTO_EDITOR};
+
+    # If this command is reading input from a pipe or file, then
+    # STDIN will not be connected to a terminal.  This causes vim
+    # and emacs to behave oddly (or even segfault).  After searching
+    # the internets, this seems to a portable way to reconnect STDIN
+    # to the actual terminal.  I haven't actually tried it on Windows.
+    # I'm not sure if/how I should be localizing STDIN here.
+
+    my $term = ($^O eq 'MSWin32') ? 'CON' : '/dev/tty';
+    open(STDIN, '<', $term) or throw $!;
 
     return Term::EditorEdit->edit(document => $document);
 }
