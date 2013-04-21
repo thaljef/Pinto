@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/thaljef/Pinto.png)](https://travis-ci.org/thaljef/Pinto)
+
 # NAME
 
 Pinto - Curate a repository of Perl modules
