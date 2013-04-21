@@ -1,0 +1,272 @@
+#!perl
+
+# ABSTRACT: Curate a custom repository of Perl modules
+# PODNAME: pinto
+
+#-----------------------------------------------------------------------------
+
+use strict;
+use warnings;
+
+#-----------------------------------------------------------------------------
+
+# VERSION
+
+#-----------------------------------------------------------------------------
+
+my $home_var = 'PINTO_HOME';
+my $home_dir = $ENV{$home_var};
+
+if ($home_dir) {
+	require File::Spec;
+	my $lib_dir = File::Spec->catfile($home_dir, qw(lib perl5));
+	die "$home_var ($home_dir) does not exist!\n" unless -e $home_dir;
+	eval qq{use lib '$lib_dir'; 1} or die $@; ## no critic (Eval)
+}
+
+unless ( eval {require App::Pinto; 1} ) {
+	die $home_dir ? $@ : $@ . "Do you need to set $home_var?\n";
+}
+
+#-----------------------------------------------------------------------------
+
+exit App::Pinto->run if not caller;
+
+#-----------------------------------------------------------------------------
+1;
+
+__END__
+
+=pod
+
+
+=head1 SYNOPSIS
+
+  pinto --root=REPOSITORY_ROOT [global options] COMMAND [command options] [args]
+
+
+=head1 DESCRIPTION
+
+pinto is a tool for creating and managing a custom CPAN-like
+repository of Perl modules.  The purpose of such a repository is to
+provide a stable, curated stack of dependencies from which you can
+reliably build, test, and deploy your application using the standard
+Perl tool chain.  pinto provides various commands for gathering and
+managing distribution dependencies within the repository, so that you
+can control precisely which dependencies go into your application.
+
+
+=head1 IMPORTANT NOTE
+
+pinto is just a front-end.  To do anything useful, you'll also need
+to install one of the back-ends, which ship separately.  If you need
+to create new repositories and/or work directly with repositories on
+the local disk, then install L<Pinto>.  If you already have a
+repository on a remote host that is running L<pintod>, then install
+L<Pinto::Remote>.  If you're not sure what you need, then install
+L<Task::Pinto> to get the whole kit.
+
+
+=head1 COMMANDS
+
+pinto supports several commands that perform various operations on
+your repository, or report information about your repository.  To get
+a listing of all the available commands:
+
+  $> pinto commands
+
+Each command has its own options and arguments.  To get a brief
+summary:
+
+  $> pinto help COMMAND
+
+To see the complete manual for a command:
+
+  $> pinto manual COMMAND
+
+
+=head1 GLOBAL OPTIONS
+
+The following options are available for all commands.
+
+=over 4
+
+=item  --root DIRECTORY | URL
+
+=item  -r DIRECTORY | URL
+
+Specifies the root of your repository.  This is mandatory for (almost)
+all commands unless you've set the C<PINTO_REPOSITORY_ROOT>
+environment variable to point to your repository.  The root can be a
+path to a local directory, or the URL where a L<pintod> server is
+listening.
+
+=item --no-color
+
+=item --no-colour
+
+Do not colorize command output.
+
+=item --password PASS
+
+=item -p PASS
+
+The password to use for server authentication.  This is only relevant
+if using a remote repository.  If the PASS is "-" then you will
+be prompted for a password.
+
+=item --quiet
+
+=item -q
+
+Report only fatal errors.  This option silently overrides the
+C<--verbose> options.  Also suppresses the progress meter.
+
+=item --username NAME
+
+=item -u NAME
+
+The username to user for server authentication.  This is only relevant
+if using a remote repository.  Defaults to your current login.
+
+=item --verbose
+
+=item -v
+
+Display more diagnostic messages.  This switch can be repeated multiple
+times for greater effect.  Diagnostic messages are always sent to STDERR.
+
+=back
+
+=head1 CONFIGURATION
+
+Each repository has a configuration file that lives inside the repostiory
+at F<.pinto/config/pinto.ini>.  This file is generated for you with default
+values when you create the repository.  You can influence the initial value
+for some of the properties when you run the L<init|App::Pinto::Command::init>
+command.  Thereafter, you can change these properties by editing the
+configuraiton file directly.
+
+The following configuration parameters are supported:
+
+=over 4
+
+=item allow_duplicates = 0|1
+
+!! THIS PROPERTY IS EXPERIMENTAL !!
+
+If set to 1, pinto will allow the repository to contain multiple copies of the
+same distribution but under a different author or archive name.  Normally, pinto 
+prohibits you from having identical distributions with different names.  This 
+should only be used if creating a repository that mirrors another one which might
+have duplicate distributions (for example, mirroring all of CPAN in a Pinto 
+repository).
+
+=item no_history = 0|1
+
+!! THIS PROPERTY IS EXPERIMENTAL !!
+
+If set to 1, pinto will not record the state of the stack at each revision.
+This makes the database smaller and faster.  But it also means you'll never be 
+able to revert, reset, or diff a stack with a prior revision.  However, log 
+messages will still be recorded and can be displayed as usual.  This should 
+only be used if creating an archival repository where you don't really care 
+about the changes in each revision (for example, tracking all of CPAN in a 
+Pinto repository).  The default value is 0.
+
+=item sources = URL1 [URL2 URL3 ...]
+
+This is a space-delimited list of the URLs for the upstream repositories that 
+this repository will pull archives from.  These can point to CPAN mirrors,
+minicpan mirrors, or stacks within other Pinto repositories.  Pinto will search 
+the source repositories in the order they are listed here.  The default value 
+is C<http://cpan.perl.org http://backpan.perl.org>.
+
+=back
+
+B<BEWARE:> The above configuration properties are global -- they affect every
+stack in the repository.  They also have a major affect on how the repository
+behaves.  For these reasons, it is generally unwise to change these parameters 
+once you have established the repository and filled it with content.  If you
+do change them, be sure and notify your team about it.  Each stack also has 
+some stack-specific configuration properties.  Those can be shown or set using 
+the L<props|App::Pinto::Command::props> command.
+
+
+=head1 ENVIRONMENT VARIABLES
+
+The following environment variables influence the behavior of pinto.  If you
+have installed pinto as a stand-alone application as described in
+L<Pinto::Manual::Installing>, then the best place to set these variables
+is in your F<~/.pintorc> file.
+
+=over 4
+
+=item C<PINTO_REPOSITORY_ROOT>
+
+Sets the default path or URL of the pinto repository, if the C<--root>
+is not specified.  The C<--root> is required for almost all commands.
+So if you usually only work with one repository, then setting this
+can save you quite a bit of typing.
+
+=item C<PINTO_EDITOR>
+
+Sets the path to editor application that will be used to compose log
+messages.  If not set, defaults to C<VISUAL> or C<EDITOR>.  At least
+one of these variables must be defined.
+
+=item C<PINTO_NO_COLOR>
+
+=item C<PINTO_NO_COLOUR>
+
+If set to a true value, suppresses color in all command output.
+
+=item C<PINTO_COLORS>
+
+=item C<PINTO_COLOURS>
+
+A comma-separated list of exactly three color names.  Any name supported 
+by L<Term::ANSIColor> is allowed.  These will be the colors that pinto 
+uses to colorize various output.  For example:
+
+  PINTO_COLORS='red, light blue, green on_white'
+
+Listing too many or too few colors will cause an exception, as will using 
+an invalid color name.
+
+=item C<PINTO_USERNAME>
+
+Sets the default username when C<--username> is not specified.  This is only 
+used for authentication with a L<pintod> server.  Defaults to your current
+shell username.
+
+=item C<PINTO_AUTHOR_ID>
+
+Sets the default author identity when the C<--author> option is not specified
+(currently, only used by the L<add|App::Pinto::Commmand::add> command).  Defaults 
+to your current shell username.  By PAUSE convention, all author id's are forced 
+to uppercase.
+
+=item C<PINTO_PAGER>
+
+Sets the path to the pager application that will be used to paginate output from
+each command.  Defaults to C<PAGER>.  If none of these are set, then no pager 
+is used.
+
+=item C<PINTO_DEBUG>
+
+If set to 1, pinto will emit more diagnostic messages to STDERR.  If set to 2, 
+pinto will emit even more diagnostic messages.
+
+=back
+
+
+=head1 SEE ALSO
+
+L<pintod> to allow remote access to your Pinto repository.
+
+L<Pinto::Manual> for general information on using Pinto.
+
+L<Stratopan|http://stratopan.com> for hosting your Pinto repository in the cloud.
+
+=cut
