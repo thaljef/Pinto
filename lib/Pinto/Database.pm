@@ -5,6 +5,7 @@ package Pinto::Database;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Types::Moose qw(Str);
 
 use Path::Class qw(file);
 
@@ -35,11 +36,11 @@ has schema => (
 );
 
 
-has ddl_file => (
+has ddl => (
    is         => 'ro',
-   isa        => File,
+   isa        => Str,
    init_arg   => undef,
-   default    => sub { file( dist_file( qw(Pinto pinto.ddl) ) ) },
+   default    => do { local $/ = undef; <DATA> },
    lazy       => 1,
 );
 
@@ -117,16 +118,6 @@ sub create_database_schema {
     $dbh->do("$_;") for split /;/, $self->ddl;
 
     return $self;
-}
-
-#-------------------------------------------------------------------------------
-
-sub ddl {
-    my ($self) = @_;
-
-    my $ddl = do { local $/ = undef; <DATA> };
-
-    return $ddl;
 }
 
 #-------------------------------------------------------------------------------
