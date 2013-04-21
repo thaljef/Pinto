@@ -1,0 +1,191 @@
+# ABSTRACT: A condensed summary of Pinto
+
+package Pinto::Manual::QuickStart;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+1;
+
+__END__
+
+=pod
+
+=head1 INSTALLING PINTO
+
+  curl -L http://getpinto.stratopan.com | bash
+  source ~/opt/local/pinto/etc/bashrc
+
+=head1 CREATING A REPOSITORY
+
+  # A new repository with default stack named "master"
+  pinto -r /repo/dir
+
+  # A new repository with default stack named "dev"
+  pinto -r /repo/dir dev
+
+=head1 BROWSING A REPOSITORY
+
+  # See all packages in the default stack
+  pinto -r /repo/dir list
+
+  # See all packages in the default stack matching "Foo::Bar"
+  pinto -r /repo/dir list -P Foo::Bar
+
+  # See all packages in the default stack by author "JOE"
+  pinto -r /repo/dir list -A JOE
+
+  # See all packages in the "dev" stack
+  pinto -r /repo/dir list --stack dev
+  pinto -r /repo/dir list dev
+
+=head1 PULLING UPSTREAM DISTRIBUTIONS
+
+  # Pull latest version of Foo::Bar
+  pinto -r /repo/dir pull Foo::Bar
+
+  # Pull version 2.4 or newer of Foo::Bar
+  pinto -r /repo/dir pull Foo~2.4
+
+  # Pull a specific distribution
+  pinto -r /repo/dir pull AUTHOR/Foo-Bar-1.9.tar.gz
+
+  # Pull and pin at the same time
+  pinto -r /repo/dir pull --pin Foo::Bar~2.4
+
+  # Pull many packages or distributions
+  pinto -r /repo/dir pull Foo::Bar Baz::Qux ...
+  pinto -r /repo/dir pull < LIST_OF_PACKAGES
+
+  # Pull everything for a Dist::Zilla project
+  dzil listdeps | pinto -r /repo/dir pull
+
+  # Pull onto the "dev" stack
+  pinto -r /repo/dir pull --stack dev Foo::Bar
+
+=head1 ADDING LOCAL DISTRIBUTIONS
+
+  # Add a local dist to the default stack
+  pinto -r /repo/dir add My-Dist-1.0.tar.gz
+
+  # Assign to a different author
+  pinto -r /repo/dir add --author SHAKESPEARE My-Dist-1.0.tar.gz
+
+  # Add and pin at the same time
+  pinto -r /repo/dir add --pin My-Dist-1.0.tar.gz
+
+  # Add to the "dev" stack
+  pinto -r /repo/dir add --stack dev My-Dist-1.0.tar.gz
+
+=head1 INSTALLING THINGS
+
+  # Install from the default stack using using cpanm
+  cpanm --mirror file:///repo/dir --mirror-only Foo::Bar
+
+  # Install from the "dev" stack using using cpanm
+  cpanm --mirror file:///repo/dir/stacks/dev --mirror-only Foo::Bar
+
+  # Install from the default stack using pinto
+  pinto -r /repo/dir install Foo::Bar
+
+  # Install from the "dev" stack using pinto
+  pinto -r /repo/dir --stack dev install Foo::Bar
+
+  # Install and populate the repository with missing prereqs
+  pinto -r /repo/dir install --pull Foo::Bar
+
+=head1 MANAGING STACKS
+
+  # Create an empty stack named "qa"
+  pinto -r /repo/dir new qa
+
+  # Create a stack by copying "dev" to "qa"
+  pinto -r /repo/dir copy dev qa
+
+  # Delete the dev stack
+  pinto -r /repo/dir kill dev
+
+  # Rename the "dev" stack to "prod"
+  pinto -r /repo/dir rename dev prod
+
+  # Mark the "qa" stack as the default
+  pinto -r /repo/dir default qa
+
+  # Show config properties of the default stack
+  pinto -r /repo/dir props
+
+  # Set config properties of the default stack
+  pinto -r /repo/dir props --property NAME=VALUE
+
+  # Show all the existing stacks
+  pinto -r /repo/dir stacks
+
+=head1 USING PINS
+
+  # Pin a package on the default stack
+  pinto -r /repo/dir pin Foo::Bar
+
+  # Pin a package on the "dev" stack
+  pinto -r /repo/dir pin --stack dev Foo::Bar
+
+  # Pin a distribution
+  pinto -r /repo/dir pin AUTHOR/Foo-Bar-1.0.tar.gz
+
+  # Unpin a package from the default stack
+  pinto -r /repo/dir unpin Fo::Bar
+
+  # Unpin a package from the "dev" stack
+  pinto -r /repo/dir unpin --stack dev Foo::Bar
+
+  # Unpin a distribution
+  pinto -r /repo/dir unpin AUTHOR/Foo-Bar-1.0.tar.gz
+
+=head1 VERSION CONTROL
+
+  # View commit messages for the default stack
+  pinto -r /repo/dir log
+
+  # View commit messages for the "dev" stack
+  pinto -r /repo/dir log dev
+
+  # Compare the heads of the default and "qa" stacks
+  pinto -r /repo/dir diff qa
+
+  # Compare the heads of the "dev" and "qa" stacks
+  pinto -r /repo/dir diff dev qa
+
+=head1 MISCELLANY
+
+  # Report missing distribution archives
+  pinto -r /repo/dir verify
+
+  # Report repo statistics
+  pinto -r /repo/dir stats
+
+  # Remove orphan files and tune the database
+  pinto -r /repo/dir clean
+
+=head1 GETTING MORE HELP
+
+  # Show a list of pinto commands
+  pinto commands
+
+  # Show a brief summary of a COMMAND
+  pinto help COMMAND
+
+  # Show the manual for a COMMAND
+  pinto manual COMMAND
+
+=head1 SEE ALSO
+
+L<Pinto::Manual::Tutorial>
+
+L<Pinto::Manual::Installing>
+
+L<Pinto> (the library)
+
+L<pinto> (the command)
+
+=cut

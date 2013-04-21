@@ -1,0 +1,55 @@
+# ABSTRACT: Entry point for Pinto documentation
+
+package Pinto::Manual;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+1;
+
+__END__
+
+=pod
+
+=for stopwords Stratopan
+
+=head1 TABLE OF CONTENTS
+
+The manual consists of the following documents
+
+=over 4
+
+=item L<Pinto::Manual::Introduction>
+
+Explains the goals, terminology, and concepts in L<Pinto>.
+
+=item L<Pinto::Manual::Installing>
+
+Some suggestions for installing L<Pinto>.
+
+=item L<Pinto::Manual::Tutorial>
+
+Presents a narrative explanation of how to use L<Pinto>.
+
+=item L<Pinto::Manual::QuickStart>
+
+Presents a condensed summary of L<pinto> commands.
+
+=back
+
+=head1 SEE ALSO
+
+L<Stratopan|http://stratopan.com> is a web service built on Pinto.
+Using Stratopan, you can store all your public and private Perl
+modules in the cloud without having to create and manage your own
+Pinto repository.  Stratopan also has facilities for creating teams of
+collaborators, controlling access to your repositories, browsing your
+repository contents or revision history, and visualizing your
+dependency tree.
+
+At the time of this writing, L<Stratopan|http://stratopan.com> is
+still in the alpha stage.  But it definitely worth investigation.
+
+=cut

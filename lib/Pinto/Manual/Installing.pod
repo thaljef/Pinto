@@ -1,0 +1,121 @@
+# ABSTRACT: Tips for installing Pinto
+
+package Pinto::Manual::Installing;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+1;
+
+__END__
+
+=pod
+
+=for stopwords Perlbrew cpanm
+
+=head1 SYNOPSIS
+
+For the impatient...
+
+  curl -L http://getpinto.stratopan.com | bash
+  source ~/opt/local/pinto/etc/bashrc
+
+And then possibly...
+
+  echo source ~/opt/local/pinto/etc/bashrc >> ~/.bashrc
+
+=head1 App::Pinto and Pinto (and Pinto::Remote)
+
+The Pinto suite is divided into several different modules.  L<App::Pinto> is 
+the front-end driver that provides the L<pinto> command-line application. 
+L<Pinto> is the back-end library that does all the work.  These two modules
+are shipped in separate distributions.  But to do anything useful, you will
+need to install both of them.
+
+There is also L<Pinto::Remote>, which is the back-end for using a remote 
+repository (via L<Pinto::Server>) and can be installed instead of Pinto.  But
+as of March 2013, Pinto::Remote and Pinto::Server are broken so I assume you
+won't be using them.  I plan to fix those shorty and will update this 
+documentation when they are released.
+
+=head1 APPLICATION VERSUS LIBRARY
+
+For most situations, Pinto is more like an I<application> than a I<library>.
+It is a tool that you use to develop and deploy your code, but Pinto itself
+is not I<part of> your code.  Pinto also has a lot of dependencies, some of 
+which may conflict with or complicate your code.
+
+=head1 INSTALLING AS AN APPLICATION
+
+For the reasons above, I recommend installing Pinto as a stand-alone 
+application in its own sandbox.  That way, it doesn't pollute your 
+environment with its dependencies.  Nor will you pollute Pinto with changes to
+your environment, so Pinto will function even when your other environment 
+dependencies are broken. And hopefully, you can use Pinto to help fix whatever
+broke!
+
+=head2 Step 1: Run the pinto installer script
+
+The installer script at getpinto.stratopan.com is just a wrapper around 
+cpanm, which installs pinto in a self-contained directory:
+
+   # If you have curl...
+   curl -L http://getpinto.stratopan.com | bash
+
+   # If you use wget...
+   wget -O - http://getpinto.stratopan.com | bash
+
+All the dependent modules will come from a curated repository on 
+L<stratopan.com|http://stratopan.com>.  These aren't always the latest 
+versions of things, but they are versions that I know will work.
+
+=head2 Step 2: Setup the pinto environment
+
+The pinto installer generates a setup script for you.  By default, it
+is located at F<~/opt/local/pinto/etc/bashrc>.  To load that setup into
+your current shell, just give this command:
+
+  source ~/opt/local/pinto/etc/bashrc
+
+To make these settings part of your everyday shell environment, just add 
+that last command to your F<~/.profile> or F<~/.bashrc> or whatever setup 
+file is appropriate for your shell.
+
+If you wish to customize any of the other environment variables that
+pinto uses, you can place those commands in F<~/.pintorc>.  If that file
+exists, the setup script will source them as well.  See L<pinto> for
+a list of the relevant environment variables.
+
+=head1 INSTALLING AS A LIBRARY
+
+If you're going to be hacking on Pinto itself, or want to try building on 
+the API directly, then you can install Pinto straight into your development
+environment, just like you would do for any other module.
+
+Just beware that Pinto has lots of dependencies.  And if you subsequently
+upgrade any of those dependencies to something that breaks Pinto, then
+you might find yourself in a pickle.  The whole point of Pinto is to
+help you manage your dependencies, so if you break Pinto, it won't be able
+to help you.
+
+=head1 OTHER INSTALLATION OPTIONS 
+
+Naturally, installation procedures will vary from one environment to another.
+If this procedure doesn't work for you, or if you'd like to suggest a 
+procedure for a different environment (e.g. Windows, Perlbrew, Strawberry
+Perl, etc.), then please contact me.  Your contributions would be greatly
+appreciated.
+
+=head1 SEE ALSO
+
+L<Pinto::Manual::QuickStart>
+
+L<Pinto::Manual::Tutorial>
+
+L<Pinto> (the library)
+
+L<pinto> (the command)
+
+=cut
