@@ -7,11 +7,10 @@ perl:
    - "5.10"
 
 install:
-   # Deal with all of the DZIL dependancies, quickly and quietly
-   - env
+   - export PERL_CPANM_OPT=''
    - cpanm --quiet --notest --skip-satisfied Dist::Zilla
-   - dzil authordeps | grep -vP '[^\w:]' | cpanm --quiet --notest --skip-satisfied
-   - dzil listdeps   | grep -vP '[^\w:]' | cpanm --quiet --notest
+   - dzil authordeps | cpanm --quiet --notest --skip-satisfied
+   - dzil listdeps   | cpanm --quiet --notest
 
 script:
    - dzil smoke --release --author
