@@ -7,7 +7,6 @@ use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Path::Class qw(file);
-use File::ShareDir qw(dist_file);
 
 use Pinto::Schema;
 use Pinto::Types qw(File);
@@ -112,15 +111,24 @@ sub deploy {
 sub create_database_schema {
     my ($self) = @_;
 
-    my $ddl_file = $self->ddl_file;
-    debug("Creating database schema from $ddl_file");
-
-    my $dbh = $self->schema->storage->dbh;
+    debug("Creating database schema");
     
-    $dbh->do("$_;") for split /;/, $ddl_file->slurp;
+    my $dbh = $self->schema->storage->dbh;
+    $dbh->do("$_;") for split /;/, $self->ddl;
 
     return $self;
 }
+
+#-------------------------------------------------------------------------------
+
+sub ddl {
+    my ($self) = @_;
+
+    my $ddl = do { local $/ = undef; <DATA> };
+
+    return $ddl;
+}
+
 #-------------------------------------------------------------------------------
 
 sub create_root_revision {
@@ -161,4 +169,87 @@ __PACKAGE__->meta->make_immutable;
 
 1;
 
-__END__
+__DATA__
+
+CREATE TABLE distribution (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       author          TEXT                NOT NULL        COLLATE NOCASE,
+       archive         TEXT                NOT NULL,
+       source          TEXT                NOT NULL,
+       mtime           INTEGER             NOT NULL,
+       sha256          TEXT                NOT NULL,
+       md5             TEXT                NOT NULL,
+       metadata        TEXT                NOT NULL,
+
+       UNIQUE(author, archive)
+);
+
+
+CREATE TABLE package (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       name            TEXT                NOT NULL,
+       version         TEXT                NOT NULL,
+       file            TEXT                DEFAULT NULL,
+       sha256          TEXT                DEFAULT NULL,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
+
+       UNIQUE(name, distribution)
+);
+
+
+CREATE TABLE stack (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       name            TEXT                NOT NULL        UNIQUE COLLATE NOCASE,
+       is_default      BOOLEAN             NOT NULL,
+       is_locked       BOOLEAN             NOT NULL,
+       properties      TEXT                NOT NULL,
+       head            INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE RESTRICT
+);
+
+
+CREATE TABLE registration (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       revision        INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
+       package_name    TEXT                NOT NULL,
+       package         INTEGER             NOT NULL        REFERENCES package(id)      ON DELETE CASCADE,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
+       is_pinned       BOOLEAN             NOT NULL,
+
+       UNIQUE(revision, package_name)
+);
+
+
+CREATE TABLE revision (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       uuid            TEXT                NOT NULL        UNIQUE,
+       message         TEXT                NOT NULL,
+       username        TEXT                NOT NULL,
+       utc_time        INTEGER             NOT NULL,
+       time_offset     INTEGER             NOT NULL,
+       is_committed    BOOLEAN             NOT NULL,
+       has_changes     BOOLEAN             NOT NULL
+);
+
+
+CREATE TABLE ancestry (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       parent          INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE,
+       child           INTEGER             NOT NULL        REFERENCES revision(id)     ON DELETE CASCADE
+);
+
+
+CREATE TABLE prerequisite (
+       id              INTEGER PRIMARY KEY NOT NULL,
+       phase           TEXT                NOT NULL,
+       distribution    INTEGER             NOT NULL        REFERENCES distribution(id) ON DELETE CASCADE,
+       package_name    TEXT                NOT NULL,
+       package_version TEXT                NOT NULL,
+
+       UNIQUE(distribution, phase, package_name)
+);
+
+CREATE INDEX idx_ancestry_parent           ON ancestry(parent);
+CREATE INDEX idx_ancestry_child            ON ancestry(child);
+CREATE INDEX idx_package_sha256            ON package(sha256);
+CREATE INDEX idx_distribution_sha256       ON distribution(sha256);
+

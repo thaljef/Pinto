@@ -38,10 +38,6 @@ BEGIN {
     $Pinto::Globals::current_author_id = 'AUTHOR';
     $Pinto::Globals::current_username  = 'USERNAME';
 
-    # So we can run `prove` without having the ddl installed
-    no warnings 'redefine';
-    my $ddl_file = file( qw(share pinto.ddl) );
-    *Pinto::Database::ddl_file = sub { $ddl_file } if -e $ddl_file;
 }
 
 #------------------------------------------------------------------------------
