@@ -17,8 +17,8 @@ use Pinto::Chrome::Term;
     is $chrome->should_render_diag(2), 0, 'Diag level 2 at default vebosity';
     is $chrome->should_render_diag(3), 0, 'Diag level 3 at default vebosity';
 
-    local $Pinto::Globals::is_interactive = 1;
-    is $chrome->should_render_progress, 1, 'Show progress at default verbosity, when interactive';
+    # local $Pinto::Globals::is_interactive = 1;
+    # is $chrome->should_render_progress, 1, 'Show progress at default verbosity, when interactive';
 
     local $Pinto::Globals::is_interactive = 0;
     is $chrome->should_render_progress, 0, 'Hide progress at default verbosity, when not interactive';
