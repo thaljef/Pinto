@@ -1,12 +1,10 @@
-[![Build Status](https://travis-ci.org/thaljef/Pinto.png)](https://travis-ci.org/thaljef/Pinto)
-
 # NAME
 
 Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.080
+version 0.079\_01
 
 # SYNOPSIS
 
