@@ -7,7 +7,7 @@ perl:
    - "5.10"
 
 install:
-   - export PERL_CPANM_OPT=''
+   - unset PERL_CPANM_OPT
    - cpanm --quiet --notest --skip-satisfied Dist::Zilla
    - dzil authordeps | cpanm --quiet --notest --skip-satisfied
    - dzil listdeps   | cpanm --quiet --notest
