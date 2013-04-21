@@ -1,4 +1,5 @@
 language: perl
+
 perl:
    - "5.16"
    - "5.14"
@@ -8,9 +9,8 @@ perl:
 install:
    # Deal with all of the DZIL dependancies, quickly and quietly
    - cpanm --quiet --notest --skip-satisfied Dist::Zilla
-   - dzil authordeps | grep -vP '[^\w:]' | xargs -n 5 -P 10 cpanm --quiet --notest --skip-satisfied
+   - dzil authordeps | grep -vP '[^\w:]' | cpanm --quiet --notest --skip-satisfied
+   - dzil listdeps   | grep -vP '[^\w:]' | cpanm --quiet --notest --skip-satisfied
 
-   - export RELEASE_TESTING=1 AUTOMATED_TESTING=1 AUTHOR_TESTING=1 HARNESS_OPTIONS=j10:c HARNESS_TIMER=1
-   - dzil listdeps | grep -vP '[^\w:]' | cpanm --verbose
 script:
    - dzil smoke --release --author
