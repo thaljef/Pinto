@@ -108,7 +108,7 @@ sub _run_action {
             # always be in the callback when we get the signal.
 
             ## no critic qw(RequireLocalizedPunctuationVars)
-            $SIG{PIPE} = sub { warn "GOT PIPE"; kill 'TERM', $child_pid };
+            $SIG{PIPE} = sub { kill 'TERM', $child_pid };
             $SIG{CHLD} = 'IGNORE';
             ## use critic
 
