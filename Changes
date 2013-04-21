@@ -1,5 +1,23 @@
 {{$NEXT}}
 
+
+      HEADLINES:
+
+      Pinto::Server and Pinto::Remote have been merged into this distribution.
+      So now everything ships together.  By implication, that also means that
+      Pinto::Server and Pinto::Remote are now working again.  Woot!!
+
+      BUG FIXES:
+
+      * pinto(1) will now be installed with a fixed shebang, so that
+      it will always run with the same version of perl, even if you use
+      perlbrew to switch to a differnt perl (thanks @punter)
+
+      * pinto(1) will now show the progress meter when reading input from a
+      file.  The progress meter will be hidden whenever STDERR is not
+      connected to a tty.  Use the --verbose or --quiet option to forcibly
+      hide the progress meter.
+
 0.068     2013-04-04 22:41:55 America/Los_Angeles
 
       * Now using Module::Build::CleanInstall, which removes files from the
