@@ -76,17 +76,6 @@ sub _prompt_for_password {
 
 __END__
 
-=head1 DESCRIPTION
-
-App::Pinto is the command-line driver for Pinto.  It is just a
-front-end.  To do anything useful, you'll also need to install one of
-the back-ends, which ship separately.  If you need to create
-repositories and/or work directly with repositories on the local disk,
-then install L<Pinto>.  If you already have a repository on a remote
-host that is running L<pintod>, then install L<Pinto::Remote>.  If
-you're not sure what you need, then install L<Task::Pinto> to get the
-whole kit.
-
 =head1 SEE ALSO
 
 L<pinto> to create and manage a Pinto repository.

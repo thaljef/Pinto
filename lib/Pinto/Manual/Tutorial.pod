@@ -13,8 +13,6 @@ __END__
 
 =pod
 
-=for stopwords cpan cpanm BackPAN MyApp URI
-
 =head1 INTRODUCTION
 
 This tutorial walks you through some of the typical use cases for a
@@ -22,18 +20,6 @@ L<Pinto> repository.  Along the way, it demonstrates most of the
 L<pinto> commands.  You are encouraged to try the commands as you read
 along.  If you would prefer to get a more condensed summary of
 features and commands, please read the L<Pinto::Manual::QuickStart>
-
-=head1 PREREQUISITES
-
-To perform the operations described in this tutorial, you'll need to
-install L<App::Pinto> (which provides the L<pinto> command line
-application) and L<Pinto> (which provides the back-end libraries for
-managing local repositories).  Both of these ship separately.
-
-You can also perform (almost) all of these operations remotely using
-L<Pinto::Remote>.  But setting up a remote repository is outside the
-scope of this tutorial.  Please see L<Pinto::Server> and L<pintod> for
-more information on that.
 
 =head1 BASIC OPERATIONS
 

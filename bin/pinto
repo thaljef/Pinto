@@ -56,17 +56,6 @@ managing distribution dependencies within the repository, so that you
 can control precisely which dependencies go into your application.
 
 
-=head1 IMPORTANT NOTE
-
-pinto is just a front-end.  To do anything useful, you'll also need
-to install one of the back-ends, which ship separately.  If you need
-to create new repositories and/or work directly with repositories on
-the local disk, then install L<Pinto>.  If you already have a
-repository on a remote host that is running L<pintod>, then install
-L<Pinto::Remote>.  If you're not sure what you need, then install
-L<Task::Pinto> to get the whole kit.
-
-
 =head1 COMMANDS
 
 pinto supports several commands that perform various operations on

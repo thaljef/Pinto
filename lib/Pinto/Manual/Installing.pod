@@ -13,8 +13,6 @@ __END__
 
 =pod
 
-=for stopwords Perlbrew cpanm
-
 =head1 SYNOPSIS
 
 For the impatient...
@@ -25,20 +23,6 @@ For the impatient...
 And then possibly...
 
   echo source ~/opt/local/pinto/etc/bashrc >> ~/.bashrc
-
-=head1 App::Pinto and Pinto (and Pinto::Remote)
-
-The Pinto suite is divided into several different modules.  L<App::Pinto> is 
-the front-end driver that provides the L<pinto> command-line application. 
-L<Pinto> is the back-end library that does all the work.  These two modules
-are shipped in separate distributions.  But to do anything useful, you will
-need to install both of them.
-
-There is also L<Pinto::Remote>, which is the back-end for using a remote 
-repository (via L<Pinto::Server>) and can be installed instead of Pinto.  But
-as of March 2013, Pinto::Remote and Pinto::Server are broken so I assume you
-won't be using them.  I plan to fix those shorty and will update this 
-documentation when they are released.
 
 =head1 APPLICATION VERSUS LIBRARY
 
