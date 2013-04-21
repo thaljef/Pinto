@@ -3,14 +3,13 @@
 package Pinto::Remote::Action::Install;
 
 use Moose;
+use MooseX::MarkAsMethods (autoclean => 1);
 use MooseX::Types::Moose qw(Undef Bool HashRef ArrayRef Maybe Str);
 
 use File::Temp;
 use File::Which qw(which);
 
-use Pinto::Exception qw(throw);
-
-use namespace::autoclean;
+use Pinto::Util qw(throw);
 
 #------------------------------------------------------------------------------
 
