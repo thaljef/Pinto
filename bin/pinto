@@ -111,6 +111,10 @@ be prompted for a password.
 Report only fatal errors.  This option silently overrides the
 C<--verbose> options.  Also suppresses the progress meter.
 
+Note: The progress meter is always suppressed when using a remote 
+repository.  This will hopefully be fixed a future release.
+
+
 =item --username NAME
 
 =item -u NAME
