@@ -17,6 +17,10 @@
       connected to a tty.  Use the --verbose or --quiet option to forcibly
       hide the progress meter.
 
+      * Pinto now indexes "inner packages" so distributions like mod_perl
+      will be indexed (more) correctly.  I had misunderstood how PAUSE
+      worked.  Thanks @miyagawa.
+
 0.068     2013-04-04 22:41:55 America/Los_Angeles
 
       * Now using Module::Build::CleanInstall, which removes files from the
