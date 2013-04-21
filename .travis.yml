@@ -8,6 +8,7 @@ perl:
 
 install:
    # Deal with all of the DZIL dependancies, quickly and quietly
+   - env
    - cpanm --quiet --notest --skip-satisfied Dist::Zilla
    - dzil authordeps | grep -vP '[^\w:]' | cpanm --quiet --notest --skip-satisfied
    - dzil listdeps   | grep -vP '[^\w:]' | cpanm --quiet --notest
