@@ -47,7 +47,7 @@
 #
 ##############################################################################
 
-PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
+PINTO_REPO_URL=${PINTO_REPO_URL:="http://stratopan.com/Stratopan/Pinto/Production"}
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 
 #-----------------------------------------------------------------------------
