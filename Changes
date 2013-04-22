@@ -3,8 +3,8 @@
       HEADLINES:
 
       Pinto::Server and Pinto::Remote have been merged into this distribution.
-      So now everything ships together.  By implication, that also means that
-      Pinto::Server and Pinto::Remote are now working again.  Woot!!
+      So now everything ships together.  That also means Pinto::Server and 
+      Pinto::Remote are now working again.  Woot!!
 
       BUG FIXES:
 
@@ -16,6 +16,10 @@
       file.  The progress meter will be hidden whenever STDERR is not
       connected to a tty.  Use the --verbose or --quiet option to forcibly
       hide the progress meter.
+
+      * pintod(1) now respects the PINTO_HOME environment variable, just
+      like pinto(1).  It also has a fixed shebang so you can switch perls
+      with perlbrew and it will still work.
 
       * Pinto now indexes "inner packages" so distributions like mod_perl
       will be indexed (more) correctly.  I had misunderstood how PAUSE
