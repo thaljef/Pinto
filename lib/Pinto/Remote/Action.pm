@@ -11,7 +11,7 @@ use URI;
 use JSON;
 use HTTP::Request::Common;
 
-use Pinto::Remote::Result;
+use Pinto::Result;
 use Pinto::Constants qw(:server);
 use Pinto::Types qw(Uri);
 
@@ -71,8 +71,7 @@ has ua        => (
 =method execute
 
 Runs this Action on the remote server by serializing itself and
-sending a POST request to the server.  Returns a
-L<Pinto::Remote::Result>.
+sending a POST request to the server.  Returns a L<Pinto::Result>.
 
 =cut
 
@@ -165,10 +164,10 @@ sub _send_request {
 
     if (not $response->is_success) {
         $self->error($response->content);
-        return Pinto::Remote::Result->new(was_successful => 0);
+        return Pinto::Result->new(was_successful => 0);
     }
 
-    return Pinto::Remote::Result->new(was_successful => $status);
+    return Pinto::Result->new(was_successful => $status);
 }
 
 #------------------------------------------------------------------------------

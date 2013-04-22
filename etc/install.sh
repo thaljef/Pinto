@@ -3,8 +3,7 @@
 ##############################################################################
 # THIS IS THE PINTO INSTALLER
 #
-# This bash script will install pinto as a standalone application.  You must
-# have cpanm installed first.  See http://cpanmin.us to install cpanm.
+# This bash script will install pinto as a standalone application.
 #
 # By default, pinto and all of its dependencies will be built into the 
 # ~/opt/local/pinto directory.  You can change this location by setting the
@@ -47,24 +46,40 @@
 #
 ##############################################################################
 
-PINTO_REPO_URL=http://stratopan.com/Stratopan/Pinto/Production
+set -ue
+
+#-----------------------------------------------------------------------------
+# You can set these variables beforehand to override defaults
+
+PINTO_REPO_URL=${PINTO_REPO_URL:="http://stratopan.com/Stratopan/Pinto/Production"}
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 
 #-----------------------------------------------------------------------------
-# Make sure we have cpanm
+# Bootstrap cpanm
 
-if ! type cpanm >/dev/null 2>&1; then
-  echo You must install cpanm first.  See http://cpanmin.us
-  exit 1
+CPANM_URL="http://cpanmin.us"
+PINTO_SBIN="$PINTO_HOME/sbin"
+PINTO_CPANM_EXE="$PINTO_SBIN/cpanm"
+
+mkdir -p "$PINTO_SBIN"
+
+if   type curl > /dev/null 2>&1; then
+	curl --silent --show-error --location $CPANM_URL > "$PINTO_CPANM_EXE"
+elif type wget > /dev/null 2>&1; then 
+	wget --no-verbose --output-document - $CPANM_URL > "$PINTO_CPANM_EXE"
+else
+	echo "Must have curl or wget to install pinto"
 fi
+
+chmod 755 "$PINTO_CPANM_EXE"
 
 #-----------------------------------------------------------------------------
 # Do installation
 
 echo "Installing pinto into $PINTO_HOME"
 
-cpanm --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
-      --local-lib-contained $PINTO_HOME --man-pages Pinto App::Pinto
+"$PINTO_CPANM_EXE" --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
+      --local-lib-contained "$PINTO_HOME" --man-pages Pinto App::Pinto
 
 # TODO: send the build log and `perl -V` back for analysis
 if [ $? -ne 0 ] ; then echo "Installation failed."; exit 1; fi
@@ -72,9 +87,9 @@ if [ $? -ne 0 ] ; then echo "Installation failed."; exit 1; fi
 #-----------------------------------------------------------------------------
 # Remove scripts and man pages that aren't from pinto
 
-(cd "$PINTO_HOME/bin";      ls | grep -iv pinto | xargs rm)
-(cd "$PINTO_HOME/man/man1"; ls | grep -iv pinto | xargs rm)
-(cd "$PINTO_HOME/man/man3"; ls | grep -iv pinto | xargs rm)
+(cd "$PINTO_HOME/bin";      ls | grep -iv pinto | xargs rm -f)
+(cd "$PINTO_HOME/man/man1"; ls | grep -iv pinto | xargs rm -f)
+(cd "$PINTO_HOME/man/man3"; ls | grep -iv pinto | xargs rm -f)
 
 #-----------------------------------------------------------------------------
 # Create the etc/ directory
