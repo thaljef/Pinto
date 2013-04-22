@@ -6,6 +6,7 @@ use Moose::Role;
 use MooseX::Types::Moose qw(Str HashRef Maybe);
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Path::Class qw(dir);
 use File::Which qw(which);
 
 use Pinto::Util qw(throw);
@@ -27,7 +28,7 @@ has cpanm_options => (
 has cpanm_exe => (
     is      => 'ro',
     isa     => Str,
-    default => sub { which('cpanm') || throw 'Could not find cpanm in PATH' },
+    builder => '_build_cpanm_exe',
     lazy    => 1,
 );
 
@@ -41,24 +42,28 @@ with qw( Pinto::Role::Plated );
 
 #-----------------------------------------------------------------------------
 
-sub BUILD {
+sub _build_cpanm_exe {
     my ($self) = @_;
 
-    my $cpanm_exe = $self->cpanm_exe;
+    return dir($ENV{PINTO_HOME})->subdir('sbin')->file('cpanm')->stringify
+        if $ENV{PINTO_HOME};
+
+    my $cpanm_exe = which('cpanm') 
+        or throw 'Could not find cpanm in PATH';
 
     my $cpanm_version_cmd = "$cpanm_exe --version";
     my $cpanm_version_cmd_output = qx{$cpanm_version_cmd};  ## no critic qw(Backtick)
     throw "Could not learn version of cpanm: $!" if $?;
 
     my ($cpanm_version) = $cpanm_version_cmd_output =~ m{version ([\d.]+)}
-      or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
+        or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
 
     my $min_cpanm_version = '1.5013';
     if ($cpanm_version < $min_cpanm_version) {
-      throw "Your cpanm ($cpanm_version) is too old. Must have $min_cpanm_version or newer";
+        throw "Your cpanm ($cpanm_version) is too old. Must have $min_cpanm_version or newer";
     }
 
-    return $self;
+    return $cpanm_exe;
 }
 
 #-----------------------------------------------------------------------------
