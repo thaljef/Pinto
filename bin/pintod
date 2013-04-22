@@ -1,7 +1,9 @@
-#!/usr/bin/env perl
+#!perl
 
 # ABSTRACT: the pinto web server
 # PODNAME: pintod
+
+#-----------------------------------------------------------------------------
 
 use strict;
 use warnings;
