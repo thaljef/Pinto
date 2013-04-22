@@ -63,7 +63,7 @@ PINTO_CPANM_EXE="$PINTO_SBIN/cpanm"
 
 mkdir -p "$PINTO_SBIN"
 
-if   type curls > /dev/null 2>&1; then
+if   type curl > /dev/null 2>&1; then
 	curl --silent --show-error --location $CPANM_URL > "$PINTO_CPANM_EXE"
 elif type wget > /dev/null 2>&1; then 
 	wget --no-verbose --output-document - $CPANM_URL > "$PINTO_CPANM_EXE"
