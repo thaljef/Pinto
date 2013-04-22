@@ -6,11 +6,30 @@
 use strict;
 use warnings;
 
+#-----------------------------------------------------------------------------
+
+BEGIN {
+  my $home_var = 'PINTO_HOME';
+  my $home_dir = $ENV{$home_var};
+
+  if ($home_dir) {
+    require File::Spec;
+    my $lib_dir = File::Spec->catfile($home_dir, qw(lib perl5));
+    die "$home_var ($home_dir) does not exist!\n" unless -e $home_dir;
+    eval qq{use lib '$lib_dir'; 1} or die $@; ## no critic (Eval)
+  }
+
+  unless ( eval {require Pinto::Server; 1} ) {
+    die $home_dir ? $@ : $@ . "Do you need to set $home_var?\n";
+  }
+}
+
+#-----------------------------------------------------------------------------
+
 use Pod::Usage;
-use List::MoreUtils qw(none);
-use Getopt::Long qw(:config pass_through);  # keeps unrecognized options in
 use Plack::Runner;
-use Pinto::Server;
+use List::MoreUtils qw(none);
+use Getopt::Long qw(:config pass_through);  # to retain unrecognized options
 
 #-----------------------------------------------------------------------------
 
@@ -28,6 +47,11 @@ pod2usage(-message => 'Must specify a repository root') if not $opts{root};
 # in our own --port argument, unless the user has specified their own.
 push @ARGV, ('--port' => Pinto::Server->default_port)
   if none { /^ --? p(?: ort)?/x } @ARGV;
+
+# HACK: Wedge in our own --server argument, unless the user has
+# specified one or has set the PLACK_SERVER environment variable
+push @ARGV, ('--server' => 'Starman')
+  if !$ENV{PLACK_SERVER} and none { /^ --? s(?: erver)?/x } @ARGV;
 
 # TODO: Consider sending the server access log into the log directory
 # for the repository by default, so everything is in one place.
@@ -51,7 +75,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pintod --root=/path/to/repository [--daemon] [--port=N]
+  pintod --root=/path/to/repository [--auth key=value] [--port=N]
 
 =head1 DESCRIPTION
 
@@ -70,7 +94,8 @@ you can use it as the backend for L<cpan> or L<cpanm>.
 =item --root=PATH
 
 The path to the root directory of the Pinto repository you wish to
-serve.
+serve.  Alternatively, you may set the C<PINTO_REPOSITORY_ROOT>
+environment variable.
 
 =back
 
@@ -83,10 +108,8 @@ serve.
 Sets an option for the authentication scheme (default is no authentication).
 Each time this is used, a key=value pair must follow; one of them must be 
 'backend', which should correspond to a class in the L<Authen::Simple> 
-namespace, e.g. C<backend=Kerberos> would indicate that Kerberos 
-authentication will be used, with the L<Authen::Simple::Kerberos> backend.
-
-Options that follow will be passed as-is to the authentication backend.
+namespace. The remaining options will be passed as-is to the authentication 
+backend.
 
 For example, this would be a valid configuration for Kerberos:
 
@@ -98,24 +121,45 @@ and this is how the authentication backend will be constructed:
     realm => 'REALM.COMPANY.COM'
   );
 
+C<pintod> ships with L<Authen::Simple::Password>.  If you wish to install
+a different authentication scheme, you'll need to install that separately.
+See also L<"BASIC AUTHENTICATION"> for additional instructions for setting
+up basic HTTP authemtication out-of-the-box.
+
 =item other options
 
 All other options supported by L<plackup> are supported too, such as
 C<--server>, C<--port>, C<--daemonize>, etc.  These will be passed to
-L<Plack::Runner>.
-
-Note that C<--daemonize> only works if the backend server supports it,
-such as C<Starman>.  The default server that ships with L<Plack> does
-not support daemonization.  Use the C<--server> option to select the
-type of backend server, or use the C<PLACK_SERVER> environment variable.
+L<Plack::Runner>.  By default, C<pintod> uses on the L<Starman> for
+the server backend.  Be aware that different servers support different
+options.
 
 =back
+
+=head1 BASIC AUTHENTICATION
+
+The easiest way to run C<pintod> with basic HTTP authentication is to
+create a password file using the C<htpasswd> utility:
+
+  htpasswd -c /path/to/htpasswd USER
+
+You will be prompted to enter the password for C<USER> twice.  Then repeat
+that command B<without the -c option> for each additional user.   You may
+want to put the F<htpasswd> file inside the top of your repository.
+
+Then launch pintod like this:
+
+  pintod -r path/to/repository --auth backend=Password --autho path=/path/to/htpasswd
+
+If you already have an F<htpasswd> file somewhere, you may just point to it
+directly, or create a symlink.  In any case, the F<htpasswd> file needs to
+be readable by the user account will be running C<pintod>.
 
 =head1 DEPLOYMENT
 
 C<pintod> is PSGI compatible, running under L<Plack::Runner> by
 default.  It will use whatever backend you specify on the command line
-or have configured in your environment.
+or have configured in your environment (defaults to L<Starman>).
 
 If you wish to add your own middleware and/or customize the backend in
 other ways, you can use L<Pinto::Server> in a custom .psgi script like
