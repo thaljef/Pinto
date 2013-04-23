@@ -1,4 +1,4 @@
-# ABSTRACT: Iterates through distribution prerequisites
+# ABSTRACT: Iterates through revision history
 
 package Pinto::RevisionWalker;
 
