@@ -5,12 +5,12 @@ package Pinto::Server::Tester;
 use Moose;
 use MooseX::Types::Moose qw(Str Int);
 
+use Carp;
 use IPC::Run;
 use Test::TCP;
 use File::Which;
 use Proc::Fork;
-use Path::Class;
-use Carp;
+use Path::Class qw(dir);
 
 use Pinto::Types qw(File Uri);
 
