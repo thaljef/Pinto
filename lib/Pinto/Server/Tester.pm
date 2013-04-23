@@ -3,12 +3,18 @@
 package Pinto::Server::Tester;
 
 use Moose;
+use MooseX::Types::Moose qw(Str Int);
+
 use IPC::Run;
 use Test::TCP;
 use File::Which;
+use Proc::Fork;
+use Path::Class;
 use Carp;
 
-use Pinto::Types qw(File);
+use Pinto::Types qw(File Uri);
+
+use HTTP::Server::PSGI;  # just to make sure we have it
 
 #-------------------------------------------------------------------------------
 
@@ -29,8 +35,8 @@ construction, defaults to a randomly generated but open port.
 
 has server_port => (
   is         => 'ro',
-  isa        => 'Int',
-  default    => sub { empty_port },
+  isa        => Int,
+  default    => sub { empty_port() },
 );
 
 
@@ -42,10 +48,11 @@ Sets the hostname that the server will bind to.  Defaults to C<localhost>.
 
 has server_host => (
   is         => 'ro',
-  isa        => 'Str',
+  isa        => Str,
   init_arg   => undef,
   default    => 'localhost',
 );
+
 
 =attr server_pid
 
@@ -55,7 +62,7 @@ Returns the process id for the server (if it has been started).  Read-only.
 
 has server_pid => (
   is         => 'rw',
-  isa        => 'Int',
+  isa        => Int,
   init_arg   => undef,
   default    => 0,
 );
@@ -69,9 +76,9 @@ Returns the full URL that the server will listen on.  Read-only.
 
 has server_url => (
   is         => 'ro',
-  isa        => 'Str',
+  isa        => Uri,
   init_arg   => undef,
-  default    => sub { 'http://' . $_[0]->server_host . ':' . $_[0]->server_port },
+  default    => sub { URI->new('http://' . $_[0]->server_host . ':' . $_[0]->server_port) },
 );
 
 
@@ -86,9 +93,32 @@ be found.
 has pintod_exe => (
   is         => 'ro',
   isa        => File,
-  default    => sub { which('pintod') || croak "Could not find pintod in PATH" },
+  builder    => '_build_pintod_exe',
   coerce     => 1,
+  lazy       => 1,
 );
+
+
+#-------------------------------------------------------------------------------
+
+sub _build_pintod_exe {
+  my ($self) = @_;
+
+  # Look inside the dist directory
+  for my $dir ([qw(blib script)], [qw(bin)]) {
+    my $pintod = dir( @{$dir} )->file('pintod');
+    return $pintod if -e $pintod;
+  }
+
+  # Look at PINTO_HOME
+  return dir($ENV{PINTO_HOME})->file(qw(bin pintod)) 
+    if $ENV{PINTO_HOME};
+
+  # Look anywhere in PATH
+  return which('pintod')
+    || croak 'Unable to find pintod anywhere';
+
+}
 
 #-------------------------------------------------------------------------------
 
@@ -103,25 +133,32 @@ sub start_server {
 
   carp 'Server already started' and return if $self->server_pid;
 
-  local $ENV{PLACK_SERVER} = '';          # Use the default backend
-  local $ENV{PLACK_ENV}    = 'testing';   # Suppresses startup message
-  local $ENV{PINTO_LOCKFILE_TIMEOUT} = 2; # Don't make tests wait!
+  local $ENV{PLACK_ENV}    = 'testing';            # Suppresses startup message
+  local $ENV{PLACK_SERVER} = 'HTTP::Server::PSGI'; # Basic non-forking server
+  local $ENV{PINTO_LOCKFILE_TIMEOUT} = 2;          # Don't make tests wait!
 
-  my $server_pid = fork;
-  croak "Failed to fork: $!" if not defined $server_pid;
+  run_fork {
 
-  if ($server_pid == 0) {
-    my %opts = ('--port' => $self->server_port, '--root' => $self->root);
-    my @cmd = ($^X, $self->pintod_exe, %opts);
-    $self->tb->note(sprintf 'exec(%s)', join ' ', @cmd);
-    exec @cmd;
-  }
+    child {
+      my $xtra_lib = $self->_extra_lib;
+      my %opts = ('--port' => $self->server_port, '--root' => $self->root);
+      my @cmd = ($^X, $xtra_lib, $self->pintod_exe, %opts);
+      $self->tb->note(sprintf 'exec(%s)', join ' ', @cmd);
+      exec @cmd;
+    }
 
-  $self->server_pid($server_pid);
-  $self->server_running_ok or croak 'Sever startup failed';
-  sleep 2; # Let the server warm up
+    parent {
+      my $server_pid = shift;
+      $self->server_pid($server_pid);
+      sleep 2; # Let the server warm up
 
+    }
 
+    error {
+        croak "Failed to fork: $!";
+    }
+  };
+ 
   return $self;
 }
 
@@ -145,8 +182,6 @@ sub stop_server {
   $self->tb->note("Shutting down server $server_pid");
   kill 'TERM', $server_pid;
   sleep 2 and waitpid $server_pid, 0;
-
-  $self->server_not_running_ok;
 
   return $self;
 }
@@ -185,6 +220,19 @@ sub server_not_running_ok {
   my $ok = not kill 0, $server_pid;  # Is this portable?
 
   return $self->tb->ok($ok, "Server is not running with pid $server_pid");
+}
+
+#-------------------------------------------------------------------------------
+
+sub _extra_lib {
+  my ($self) = @_;
+
+  my $blib = dir( qw(blib lib) );
+  my $lib  = dir( qw(     lib) );
+
+  return "-I$blib" if -e $blib;
+  return "-I$lib"  if -e $lib;
+  return '';
 }
 
 #-------------------------------------------------------------------------------
