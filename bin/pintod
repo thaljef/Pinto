@@ -81,19 +81,25 @@ __END__
 
 =head1 DESCRIPTION
 
-Before running C<pintod> you must first create a Pinto
-repository.  See L<pinto> for instructions on that.
-
 C<pintod> provides a web API to a L<Pinto> repository.  Clients (like
 L<pinto>) can use this API to manage and inspect the repository.  In
-addition, C<pintod> serves up the distributions within repository, so
-you can use it as the backend for L<cpan> or L<cpanm>.
+addition, C<pintod> serves up the distributions within the repository, 
+so you can use it as the backend for L<cpan> or L<cpanm>.
+
+Before running C<pintod> you must first create a Pinto repository.  For
+example:
+
+  pinto --root=/path/to/repository init
+
+See L<pinto> for more information about creating a reposiotry.
 
 =head1 ARGUMENTS
 
 =over 4
 
-=item --root=PATH
+=item --root PATH
+
+=item -r PATH
 
 The path to the root directory of the Pinto repository you wish to
 serve.  Alternatively, you may set the C<PINTO_REPOSITORY_ROOT>
@@ -105,7 +111,7 @@ environment variable.
 
 =over 4
 
-=item --auth
+=item --auth KEY=VALUE
 
 Sets an option for the authentication scheme (default is no authentication).
 Each time this is used, a key=value pair must follow; one of them must be 
@@ -178,6 +184,14 @@ this:
     # which operates on the $app
 
 Then you may directly launch F<my-pintod.psgi> using L<plackup>.
+
+=head1 SEE ALSO
+
+L<pinto> to create and manage a Pinto repository.
+
+L<Pinto::Manual> for general information on using Pinto.
+
+L<Stratopan|http://stratopan.com> for hosting your Pinto repository in the cloud.
 
 =cut
 

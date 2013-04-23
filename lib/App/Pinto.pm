@@ -76,7 +76,7 @@ sub _prompt_for_password {
 
 __END__
 
-=head1 SEE ALSO
+=head1 SYNOPSIS
 
 L<pinto> to create and manage a Pinto repository.
 
