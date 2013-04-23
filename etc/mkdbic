@@ -1,18 +1,50 @@
-#!/bin/bash -xue
+#!/usr/bin/env perl
 
-# Run this command from the root directory of the distribution.  You
-# must install DBIx::Class::Schema::Loader first.
+# To generate the schema classes, run this command from the root directory 
+# of the distribution.  You must install DBIx::Class::Schema::Loader first.
 
-[[ -e tmp ]] || mkdir tmp
-rm -rf tmp/pinto.db
+use FindBin qw($Bin);
+use Path::Class qw(file);
+use File::Path qw(mkpath);
 
-sqlite3 tmp/pinto.db < share/pinto.ddl
+my $distdir = file($Bin)->parent;
+my $libdir  = $distdir->subdir('lib');
+push @INC, $libdir->stringify;
 
-dbicdump -Ilib \
-         -o skip_load_external=1 \
-         -o dump_directory=lib \
-         -o 'use_moose=1' \
-         -o 'result_roles=[ qw(Pinto::Role::Schema::Result) ]' \
-         Pinto::Schema \
-         dbi:SQLite:tmp/pinto.db
+#-----------------------------------------------------------------------------
+# Read DDL from inside the Database class
 
+require Pinto::Database;
+my $ddl = Pinto::Database->ddl;
+
+#-----------------------------------------------------------------------------
+# Create a temp directory to stash the database
+
+my $tmpdir = $distdir->subdir('tmp');
+mkpath $tmpdir->stringify if not -e $tmpdir;
+
+#-----------------------------------------------------------------------------
+# Create database, feeding in the DDL
+
+my $dbfile = $tmpdir->file('pinto.db');
+unlink $dbfile or die $!;
+
+open my $fh, '|-', "sqlite3 $dbfile" or die $!;
+print $fh $ddl;
+
+#-----------------------------------------------------------------------------
+# Run the schema generator
+
+system <<"END_COMMAND"; 
+dbicdump -Ilib                                            \\
+	-o skip_load_external=1                               \\
+    -o dump_directory=lib                                 \\
+    -o 'use_moose=1'                                      \\
+    -o 'result_roles=[ qw(Pinto::Role::Schema::Result) ]' \\
+    Pinto::Schema                                         \\
+    dbi:SQLite:$dbfile
+END_COMMAND
+
+#-----------------------------------------------------------------------------
+
+exit;
