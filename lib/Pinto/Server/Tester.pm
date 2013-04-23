@@ -84,9 +84,9 @@ has server_url => (
 
 =attr pintod_exe
 
-Sets the path to the C<pintod> executable.  If not specified, your
-C<PATH> will be searched.  An exception is thrown if C<pintod> cannot
-be found.
+Sets the path to the C<pintod> executable.  If not specified, we will search
+in F<./blib/script>, F<./bin>, C<PINTO_HOME>, and finally your C<PATH>  An 
+exception is thrown if C<pintod> cannot be found.
 
 =cut
 
