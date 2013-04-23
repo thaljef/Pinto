@@ -33,9 +33,29 @@ has do_pull => (
     default => 0,
 );
 
+
+has mirror_url => (
+    is      => 'ro',
+    isa     => Str,
+    builder => '_build_mirror_url',
+    lazy    => 1,
+);
+
 #------------------------------------------------------------------------------
 
 with qw( Pinto::Role::Committable Pinto::Role::Puller Pinto::Role::Installer);
+
+#------------------------------------------------------------------------------
+
+sub _build_mirror_url {
+    my ($self) = @_;
+
+    my $stack      = $self->stack;
+    my $stack_dir  = defined $stack ? "/stacks/$stack" : '';
+    my $mirror_url = 'file://' . $self->repo->root->absolute . $stack_dir;
+
+    return $mirror_url;
+}
 
 #------------------------------------------------------------------------------
 

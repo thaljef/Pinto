@@ -32,9 +32,10 @@ has cpanm_exe => (
     lazy    => 1,
 );
 
+
 #-----------------------------------------------------------------------------
 
-requires qw( execute targets  );
+requires qw( execute targets mirror_url );
 
 #-----------------------------------------------------------------------------
 
@@ -73,12 +74,9 @@ after execute => sub {
 
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
+    $opts->{mirror} = $self->mirror_url;
     $opts->{'mirror-only'} = '';
-
-    my $stack = $self->stack;
-    my $stack_dir = defined $stack ? "/stacks/$stack" : '';
-    $opts->{mirror} = 'file://' . $self->repo->root->absolute . $stack_dir;
-
+    
     # Process other cpanm options
     my @cpanm_opts;
     for my $opt ( keys %{ $opts } ){
