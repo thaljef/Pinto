@@ -14,6 +14,8 @@ See [pintod](http://search.cpan.org/perldoc?pintod) to allow remote access to yo
 
 See [Pinto::Manual](http://search.cpan.org/perldoc?Pinto::Manual) for more information about the Pinto tools.
 
+[Stratopan](http://stratopan.com) for hosting your Pinto repository in the cloud.
+
 # DESCRIPTION
 
 Pinto is an application for creating and managing a custom CPAN-like 
@@ -111,16 +113,6 @@ For now, the Pinto API is private and subject to radical change
 without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
 the ["SYNOPSIS"](#SYNOPSIS) are your public user interface.
-
-# SEE ALSO
-
-[pinto](http://search.cpan.org/perldoc?pinto) to create and manage a Pinto repository.
-
-[pintod](http://search.cpan.org/perldoc?pintod) to allow remote access to your Pinto repository.
-
-[Pinto::Manual](http://search.cpan.org/perldoc?Pinto::Manual) for general information on using Pinto.
-
-[Stratopan](http://stratopan.com) for hosting your Pinto repository in the cloud.
 
 # SUPPORT
 
