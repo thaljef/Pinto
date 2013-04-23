@@ -4,6 +4,7 @@ package Pinto::Database;
 
 use Moose;
 use MooseX::StrictConstructor;
+use MooseX::ClassAttribute;
 use MooseX::MarkAsMethods (autoclean => 1);
 use MooseX::Types::Moose qw(Str);
 
@@ -36,7 +37,7 @@ has schema => (
 );
 
 
-has ddl => (
+class_has ddl => (
    is         => 'ro',
    isa        => Str,
    init_arg   => undef,
