@@ -1,6 +1,6 @@
 #!perl
 
-# ABSTRACT: the pinto web server
+# ABSTRACT: Web interface to a Pinto repository 
 # PODNAME: pintod
 
 #-----------------------------------------------------------------------------
