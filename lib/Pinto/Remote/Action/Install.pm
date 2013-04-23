@@ -77,8 +77,6 @@ around BUILDARGS => sub {
 override execute => sub {
     my ($self) = @_;
 
-    $DB::single = 1;
-
     my $result;
     if ($self->do_pull) {
 
