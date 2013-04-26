@@ -10,7 +10,6 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use Try::Tiny;
 use Dist::Metadata;
 use Path::Class qw(dir);
-use File::Temp qw(tempdir);
 use Archive::Extract;
 
 use Pinto::Types qw(File Dir);
