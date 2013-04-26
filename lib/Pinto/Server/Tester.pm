@@ -143,7 +143,7 @@ sub start_server {
       my $xtra_lib = $self->_extra_lib;
       my %opts = ('--port' => $self->server_port, '--root' => $self->root);
       my @cmd = ($^X, $xtra_lib, $self->pintod_exe, %opts);
-      #$self->tb->note(sprintf 'exec(%s)', join ' ', @cmd);
+      $self->tb->note(sprintf 'exec(%s)', join ' ', @cmd);
       exec @cmd;
     }
 
@@ -179,7 +179,6 @@ sub stop_server {
   carp "Server $server_pid not running" and return if not kill 0, $server_pid;
 
   # TODO: Consider using Proc::Terminator instead
-  $self->tb->note("Shutting down server $server_pid");
   kill 'TERM', $server_pid;
   sleep 2 and waitpid $server_pid, 0;
 
