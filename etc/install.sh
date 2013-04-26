@@ -79,7 +79,7 @@ chmod 755 "$PINTO_CPANM_EXE"
 echo "Installing pinto into $PINTO_HOME"
 
 "$PINTO_CPANM_EXE" --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
-      --local-lib-contained "$PINTO_HOME" --man-pages Pinto App::Pinto
+      --local-lib-contained "$PINTO_HOME" --man-pages Pinto
 
 # TODO: send the build log and `perl -V` back for analysis
 if [ $? -ne 0 ] ; then echo "Installation failed."; exit 1; fi
