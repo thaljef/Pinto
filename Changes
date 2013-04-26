@@ -1,27 +1,26 @@
 {{$NEXT}}
 
-0.079_04  2013-04-23 00:44:22 America/Los_Angeles
-
       HEADLINES:
 
-      Pinto::Server and Pinto::Remote have been merged into this distribution.
-      So now everything ships together.  That also means Pinto::Server and 
+      Pinto::Server and Pinto::Remote have been merged into this distribution,
+      so everything ships together.  It also means both Pinto::Server and 
       Pinto::Remote are now working again.  Woot!!
+
+      There is one caveat: when using a remote repository, pinto will not
+      display the diff and prompt you to edit the commit message.  Instead,
+      it will automatically use the default generated message or the message
+      you specified at the command line.  I hope to fix this soon.
 
       BUG FIXES:
 
-      * pinto(1) will now be installed with a fixed shebang, so that
-      it will always run with the same version of perl, even if you use
-      perlbrew to switch to a differnt perl (thanks @punter)
+      * pinto(1) and pintod(1) will now be installed with a fixed shebang, 
+      so that they will always run with the same version of perl, even if 
+      you use perlbrew to switch to a differnt perl (thanks @punter)
 
       * pinto(1) will now show the progress meter when reading input from a
       file.  The progress meter will be hidden whenever STDERR is not
       connected to a tty.  Use the --verbose or --quiet option to forcibly
       hide the progress meter.
-
-      * pintod(1) now respects the PINTO_HOME environment variable, just
-      like pinto(1).  It also has a fixed shebang so you can switch perls
-      with perlbrew and it will still work.
 
       * Pinto now indexes "inner packages" so distributions like mod_perl
       will be indexed (more) correctly.  I had misunderstood how PAUSE
