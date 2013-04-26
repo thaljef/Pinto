@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.081     2013-04-26 13:51:32 America/Los_Angeles
+
        Just a minor change in test code to prevent failure occasionaly
        seen on Unix boxen.
 
