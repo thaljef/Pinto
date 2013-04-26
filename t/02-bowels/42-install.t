@@ -18,6 +18,10 @@ plan skip_all => "Need cpanm $min_cpanm or newer" unless has_cpanm($min_cpanm);
 
 #------------------------------------------------------------------------------
 
+plan skip_all => "Test does not work on travis-ci" if $ENV{PINTO_RUNNING_UNDER_TRAVIS};
+
+#------------------------------------------------------------------------------
+
 warn "You will see some messages from cpanm, don't be alarmed...\n";
 
 #------------------------------------------------------------------------------
