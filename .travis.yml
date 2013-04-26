@@ -13,5 +13,4 @@ install:
    - dzil listdeps   | cpanm --quiet --notest
 
 script:
-   - export PINTO_RUNNING_UNDER_TRAVIS=1
    - dzil smoke --release --author
