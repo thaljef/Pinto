@@ -177,7 +177,7 @@ has sources_list => (
 has target_perl_version => (
     is        => 'ro',
     isa       => Version,
-    default   => sub { $PERL_VERSION },
+    default   => $], # Note: $PERL_VERSION is broken on old perls
     coerce    => 1,
 );
 

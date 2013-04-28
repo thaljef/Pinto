@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use version;
 
 use Test::More;
 use English qw(-no_match_vars);
@@ -48,10 +49,9 @@ use Pinto::PackageSpec;
   is $spec->is_core(in => 'v5.10.1'), 0, "$spec is not in perl 5.10.1";
   is $spec->is_core(in => 'v5.14.2'), 1, "$spec is in perl 5.14.2";
 
-  if ($PERL_VERSION > '5.13.11') {
-    is $spec->is_core, 1, "$spec is in *this* perl ($PERL_VERSION)"
-  }
-
+  local $] = 5.013011;
+  is $spec->is_core, 1, "$spec is in *this* perl, pretending we are $]"
+  
 }
 
 #------------------------------------------------------------------------------

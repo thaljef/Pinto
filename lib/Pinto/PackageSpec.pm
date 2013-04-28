@@ -67,7 +67,10 @@ sub is_core {
 
     ## no critic qw(PackageVar);
 
-    my $pv = version->parse($args{in}) || $PERL_VERSION;
+    # Note: $PERL_VERSION is broken on old perls, so we must make 
+    # our own version object from the old $] variable
+
+    my $pv = version->parse($args{in}) || version->parse($]);
     my $core_modules = $Module::CoreList::version{ $pv->numify + 0 };
 
     throw "Invalid perl version $pv" if not $core_modules;
