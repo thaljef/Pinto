@@ -215,6 +215,7 @@ use Pinto::Util qw(:all);
 
 use overload ( '""'  => 'to_string',
                '<=>' => 'numeric_compare',
+               'cmp' => 'numeric_compare',
                'eq'  => 'equals' );
 
 #------------------------------------------------------------------------------
@@ -332,6 +333,17 @@ sub children {
   my $attrs = {join => 'ancestry_children', order_by => 'me.utc_time'};
 
   return $self->result_source->resultset->search($where, $attrs)->all;
+}
+
+#------------------------------------------------------------------------------
+
+sub distributions {
+  my ($self) = @_;
+
+  my $where = {'revision.id' => $self->id};
+  my $attrs = {join => {registrations => 'revision'}, order_by => 'archive'};
+
+  return $self->result_source->schema->search_distribution($where, $attrs)->with_packages;
 }
 
 #------------------------------------------------------------------------------

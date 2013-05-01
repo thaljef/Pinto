@@ -23,7 +23,6 @@ use Pinto::Util qw(debug throw);
 has repo => (
    is         => 'ro',
    isa        => 'Pinto::Repository',
-   weak_ref   => 1,
    required   => 1,
 );
 

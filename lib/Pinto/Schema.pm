@@ -35,13 +35,6 @@ sub schema_version { return $SCHEMA_VERSION };
 
 #-------------------------------------------------------------------------------
 
-has logger => (
-    is       => 'rw',
-    isa      => 'Pinto::Logger',
-    traits   => [ qw(SetOnce) ],
-    weak_ref => 1,
-);
-
 has repo => (
     is       => 'rw',
     isa      => 'Pinto::Repository',
