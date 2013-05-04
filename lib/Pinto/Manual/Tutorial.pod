@@ -124,12 +124,12 @@ against.  This ensures your application builds will be stable and
 predictable.
 
 On the surface, a Pinto repository looks like an ordinary CPAN, so you 
-can also install packages from it using L<cpnam> directly.  All you have 
+can also install packages from it using L<cpanm> directly.  All you have 
 to do is point them at the URL of your repository.  For example:
 
   $> cpanm --mirror file:///home/jeff/repo --mirror-only My::App
 
-The C<--mirror-only> flag is important because it tells L<cpnam> to B<not>
+The C<--mirror-only> flag is important because it tells L<cpanm> to B<not>
 look in other repositories for missing prerequisites.  Usually, you only
 want to install things from B<your> repository.
 
@@ -190,7 +190,7 @@ optional parameter.  So if you do not specify a stack explicitly, then
 the operation is applied to whichever stack is marked as the default.
 
 In any repository, there is never more than one default stack.  When we
-created this repository, we the C<master> stack was marked as the default.  
+created this repository, the C<master> stack was marked as the default.  
 You can also change the default stack or change the name of a stack, but 
 we won't go into that here.  See the L<default|App::Pinto::Command::default>
 command to learn more about that.
