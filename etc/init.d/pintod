@@ -19,12 +19,13 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Description of the service"
-NAME=daemonexecutablename
-DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS="--options args"
+DESC="pinto perl module repository"
+NAME=pintod
+DAEMON=/opt/local/pinto/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
+PORT=2700
+DAEMON_ARGS="--root=/var/pinto --auth backend=Kerberos --auth realm=example.com --port=$PORT &"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
