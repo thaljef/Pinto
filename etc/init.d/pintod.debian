@@ -27,7 +27,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 PORT=2700
 BACKEND=Kerberos
 REALM=example.com
-DAEMON_ARGS="--root=/var/pinto --auth backend=$BACKEND --auth realm=$REALM --port=$PORT &"
+DAEMON_ARGS="--root=/var/pinto --auth backend=$BACKEND --auth realm=$REALM --port=$PORT --daemonize"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
