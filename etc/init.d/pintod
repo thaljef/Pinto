@@ -25,7 +25,9 @@ DAEMON=/opt/local/pinto/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 PORT=2700
-DAEMON_ARGS="--root=/var/pinto --auth backend=Kerberos --auth realm=example.com --port=$PORT &"
+BACKEND=Kerberos
+REALM=example.com
+DAEMON_ARGS="--root=/var/pinto --auth backend=$BACKEND --auth realm=$REALM --port=$PORT &"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
