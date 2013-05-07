@@ -24,12 +24,17 @@ And then possibly...
 
   echo source ~/opt/local/pinto/etc/bashrc >> ~/.bashrc
 
-=head1 APPLICATION VERSUS LIBRARY
+=head1 APPLICATION VERSUS LIBRARY VERSUS SERVER
 
 For most situations, Pinto is more like an I<application> than a I<library>.
 It is a tool that you use to develop and deploy your code, but Pinto itself
 is not I<part of> your code.  Pinto also has a lot of dependencies, some of 
 which may conflict with or complicate your code.
+
+Pinto can also serve as the backend supporting a daemonized Starman server
+exposed to the wilds of the internet.  Doing so opens the door to many 
+additional security concerns.  We suggest below some practices we hope
+will serve to minize the risks of doing so.
 
 =head1 INSTALLING AS AN APPLICATION
 
@@ -71,6 +76,48 @@ If you wish to customize any of the other environment variables that
 pinto uses, you can place those commands in F<~/.pintorc>.  If that file
 exists, the setup script will source them as well.  See L<pinto> for
 a list of the relevant environment variables.
+
+=head1 INSTALLING AS A SERVER
+
+If you will be running the pintod daemon exposed to the internet, 
+it is suggested that you assume root privileges and proceed as follows:
+
+(1) create a pinto user like so:
+
+    adduser --system --home /opt/local/pinto --shell /bin/false \ 
+        --disabled-login --group pinto 
+
+(2) set some environmental variables:
+
+    export PINTO_HOME=/opt/local/pinto
+    export PINTO_REPOSITORY_ROOT=/var/pinto
+
+check that the exports took with `env`.
+
+(3) run the installer as described above, and source the environmental
+variables to facilitate the steps of setting up the repository.  
+
+(4) choose an authentication backend and install it like so:
+
+    cpanm -L $PINTO_HOME Authen::Simple::Kerberos 
+
+to review your options see L<Authen::Simple>.
+
+(5) choose an appropriate startup script and install it:
+
+    cp $PINTO_HOME/etc/init.d/pintod.debian /etc/init.d/pintod 
+
+    update-rc.d pintod start 50 2 3 4 5 . stop 20 0 1 6 .
+
+=head2 AN IMPORTNAT NOTE ABOUT SECURITY
+
+Currently daemonizing the pintod server will run the starman workers 
+as root.  We hope to soon have the pintod daemon drop its privileges 
+after initiating the master and before spawning the workers, so that
+the workers will run as the pinto user.  Until that feature is in
+place, pinto repository administrators are urged to keep their
+installations safely behind firewalls, protected from the potentially
+hostile user.  
 
 =head1 INSTALLING AS A LIBRARY
 
