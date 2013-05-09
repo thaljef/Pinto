@@ -132,7 +132,7 @@ and this is how the authentication backend will be constructed:
 C<pintod> ships with L<Authen::Simple::Password>.  If you wish to install
 a different authentication scheme, you'll need to install that separately.
 See also L<"BASIC AUTHENTICATION"> for additional instructions for setting
-up basic HTTP authemtication out-of-the-box.
+up basic HTTP authentication out-of-the-box.
 
 =item other options
 
