@@ -132,7 +132,7 @@ and this is how the authentication backend will be constructed:
 C<pintod> ships with L<Authen::Simple::Password>.  If you wish to install
 a different authentication scheme, you'll need to install that separately.
 See also L<"BASIC AUTHENTICATION"> for additional instructions for setting
-up basic HTTP authentication out-of-the-box.
+up basic HTTP authentication right out-of-the-box.
 
 =item other options
 
@@ -157,7 +157,7 @@ want to put the F<htpasswd> file inside the top of your repository.
 
 Then launch pintod like this:
 
-  pintod -r path/to/repository --auth backend=Password --autho path=/path/to/htpasswd
+  pintod -r path/to/repository --auth backend=Password --auth path=/path/to/htpasswd
 
 If you already have an F<htpasswd> file somewhere, you may just point to it
 directly, or create a symlink.  In any case, the F<htpasswd> file needs to
