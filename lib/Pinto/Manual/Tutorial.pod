@@ -265,7 +265,7 @@ C<uri_upgrade> stack.  If the tests pass, then you can confidently
 upgrade URI on the C<dev> stack as well.
 
 As mentioned earlier, you can also use L<cpanm> to install modules from
-your repository.  But when installing from stack other than the default, 
+your repository.  But when installing from a stack other than the default, 
 you must append "stacks/stack_name" to the URL.  For example:
 
   $> cpanm --mirror file:///home/jeff/repo/stacks/uri_upgrade --mirror-only My::App
