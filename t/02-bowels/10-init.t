@@ -16,6 +16,7 @@ use Pinto::Tester;
 
 	$t->path_exists_ok( [qw(.pinto version)] );
 	$t->path_exists_ok( [qw(.pinto cache)]   );
+	$t->path_exists_ok( [qw(.pinto log)]   );
 	$t->path_exists_ok( [qw(.pinto config pinto.ini)] );
 	$t->path_exists_ok( [qw(.pinto db pinto.db)] );
 
