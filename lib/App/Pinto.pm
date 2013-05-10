@@ -60,11 +60,12 @@ sub _prompt_for_password {
    my ($self) = @_;
 
    require Encode;
-   require Term::Prompt;
+   require IO::Prompt;
 
-   my $input    = Term::Prompt::prompt('p', 'Password:', '', '');
+   my $repo     = $self->global_options->{root};
+   my $prompt   = "Password for repository at $repo: ";
+   my $input    = IO::Prompt::prompt($prompt, -echo => '*', -tty);
    my $password = Encode::decode_utf8($input);
-   print "\n"; # Get on a new line
 
    return $password;
 }
