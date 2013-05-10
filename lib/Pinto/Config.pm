@@ -137,6 +137,15 @@ has cache_dir => (
 );
 
 
+has log_dir => (
+    is        => 'ro',
+    isa       => Dir,
+    init_arg  => undef,
+    default   => sub { return $_[0]->pinto_dir->subdir('log') },
+    lazy      => 1,
+);
+
+
 has no_history => (
     is         => 'ro',
     isa        => Bool,
@@ -229,6 +238,7 @@ sub directories {
         $self->config_dir,
         $self->cache_dir,
         $self->authors_dir,
+        $self->log_dir,
         $self->db_dir
     );
 }

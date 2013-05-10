@@ -16,7 +16,6 @@ has repo  => (
    isa      => 'Pinto::Repository',
    default  => sub { $_[0]->result_source->schema->repo },
    init_arg => undef,
-   weak_ref => 1,
    lazy     => 1,
 );
 

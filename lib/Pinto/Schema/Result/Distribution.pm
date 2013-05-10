@@ -508,8 +508,7 @@ sub string_compare {
 
     return 0 if $dist_a->id == $dist_b->id;
 
-    my $r =   ($dist_a->author  cmp $dist_b->author)
-           || ($dist_a->archive cmp $dist_b->archive);
+    my $r =  ($dist_a->archive cmp $dist_b->archive);
 
     return $r;
 }
