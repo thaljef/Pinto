@@ -340,10 +340,25 @@ sub children {
 sub distributions {
   my ($self) = @_;
 
-  my $where = {'revision.id' => $self->id};
-  my $attrs = {join => {registrations => 'revision'}, order_by => 'archive'};
+  my $rev_id = $self->id;
+  my $subquery = "SELECT DISTINCT distribution FROM registration WHERE revision = $rev_id";
+  my $where = {'me.id' => {in => \$subquery}};
+  my $attrs = {order_by => 'archive'};
 
-  return $self->result_source->schema->search_distribution($where, $attrs)->with_packages;
+  return $self->result_source->schema->search_distribution($where, $attrs);
+}
+
+#------------------------------------------------------------------------------
+
+sub packages {
+  my ($self) = @_;
+
+  my $rev_id = $self->id;
+  my $subquery = "SELECT package FROM registration WHERE revision = $rev_id";
+  my $where = {'me.id' => {in => \$subquery}};
+  my $attrs = {order_by => 'name'};
+
+  return $self->result_source->schema->search_package($where, $attrs)->with_distribution;
 }
 
 #------------------------------------------------------------------------------
