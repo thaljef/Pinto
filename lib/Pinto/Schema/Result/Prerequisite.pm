@@ -143,6 +143,8 @@ with 'Pinto::Role::Schema::Result';
 
 use Pinto::PackageSpec;
 
+use overload ('""' => 'to_string');
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -168,6 +170,14 @@ sub as_spec {
 
     return Pinto::PackageSpec->new( name    => $self->package_name,
                                     version => $self->package_version );
+}
+
+#------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+
+    return $self->as_spec->to_string;
 }
 
 #------------------------------------------------------------------------------
