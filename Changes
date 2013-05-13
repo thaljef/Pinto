@@ -5,9 +5,6 @@
       * Improved password prompting, so it still works when STDIN
       and/or STDOUT are not connected to a terninal anymore.
 
-      * By default, pintod now writes server access and error
-      logs into the .pinto/log directory inside the repository.
-
       * Revised and corrected errors in documentation.
 
       * The etc/ directory has a sample init.d script (thanks @hesco).
