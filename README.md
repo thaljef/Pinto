@@ -200,6 +200,7 @@ from your repository :)
 - Steffen Schwigon <ss5@renormalist.net>
 - Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
 - Yanick Champoux <yanick@babyl.dyndns.org>
+- hesco <hesco@campaignfoundations.com>
 
 # AUTHOR
 
