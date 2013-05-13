@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Fix line buffering in Pinto::Remote::Action.
+
 =item Finish FastForward merge (note this is not a committable action)
 
 =item Implement a reset command to move head (also not committable)
