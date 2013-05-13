@@ -150,7 +150,7 @@ sub start_server {
     parent {
       my $server_pid = shift;
       $self->server_pid($server_pid);
-      sleep 2; # Let the server warm up
+      sleep 4; # Let the server warm up
 
     }
 
@@ -180,7 +180,7 @@ sub stop_server {
 
   # TODO: Consider using Proc::Terminator instead
   kill 'TERM', $server_pid;
-  sleep 2 and waitpid $server_pid, 0;
+  sleep 4 and waitpid $server_pid, 0;
 
   return $self;
 }
