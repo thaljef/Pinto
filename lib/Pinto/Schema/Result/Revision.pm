@@ -358,7 +358,7 @@ sub packages {
   my $where = {'me.id' => {in => \$subquery}};
   my $attrs = {order_by => 'name'};
 
-  return $self->result_source->schema->search_package($where, $attrs)->with_distribution;
+  return $self->result_source->schema->search_package($where, $attrs);
 }
 
 #------------------------------------------------------------------------------
