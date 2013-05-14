@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+      ENHANCEMENTS:
+
+      Revised documentation for pintod.
+
       BUG FIXES:
 
       Now requires verison 0.018 of Test::LWP::UserAgent or newer
