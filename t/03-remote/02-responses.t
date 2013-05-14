@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::LWP::UserAgent;
+use Test::LWP::UserAgent 0.018;  # Older versions caused this test to fail
 
 use IO::String;
 use HTTP::Response;

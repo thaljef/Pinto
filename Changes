@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      BUG FIXES:
+
+      Now requires verison 0.018 of Test::LWP::UserAgent or newer
+      which resolves some test failures in Pinto seen by CPAN
+      Testers using older versions of T::LWP::UA.
+
 0.083     2013-05-13 14:36:21 America/Los_Angeles
 
       ENHANCEMENTS:
