@@ -144,7 +144,7 @@ for the server backend.  Be aware that not all servers support the same options.
 =head1 USING BASIC HTTP AUTHENTICATION
 
 C<pintod> ships with L<Authen::Simple::Passwd>, so the easiest way to run 
-C<pintod> with basic HTTP authentication is to create a password file using 
+the server with basic HTTP authentication is to create a password file using 
 the C<htpasswd> utility:
 
   htpasswd -c /path/to/htpasswd USER
