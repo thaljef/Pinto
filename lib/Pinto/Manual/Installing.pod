@@ -27,7 +27,7 @@ And then possibly...
 =head1 APPLICATION VERSUS LIBRARY VERSUS SERVER
 
 For most situations, Pinto is more like an I<application> than a I<library>.
-It is a tool that you use to develop and deploy your code, but Pinto itself
+It is a tool that you use to develop and manage your code, but Pinto itself
 is not I<part of> your code.  Pinto also has a lot of dependencies, some of 
 which may conflict with or complicate your code.
 
@@ -47,20 +47,20 @@ broke!
 
 =head2 Step 1: Run the pinto installer script
 
-The installer script at getpinto.stratopan.com is just a wrapper around 
-cpanm, which installs pinto in a self-contained directory:
+The installer script at L<http://getpinto.stratopan.com> is mostly just a 
+wrapper around L<cpanm>, which installs pinto in a self-contained directory:
 
-   # If you have curl...
+   # If you use curl...
    curl -L http://getpinto.stratopan.com | bash
 
    # If you use wget...
    wget -O - http://getpinto.stratopan.com | bash
 
 All the dependent modules will come from a curated repository on 
-L<stratopan.com|http://stratopan.com>.  These aren't always the latest 
+L<Stratopan|http://stratopan.com>.  These aren't always the latest 
 versions of things, but they are versions that I know will work.
 
-=head2 Step 2: Setup the pinto environment
+=head2 Step 2: Set up the pinto environment
 
 The pinto installer generates a setup script for you.  By default, it
 is located at F<~/opt/local/pinto/etc/bashrc>.  To load that setup into
