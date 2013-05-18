@@ -1,0 +1,57 @@
+This is a puppet manifest useful for installing pinto 
+on a node.  This is barely adapted from working code 
+in the author's environment.  
+
+To use it, install the module in your own 
+    /etc/puppet/modules/$environment path 
+
+Update the default administrative password as follows:
+
+    htpasswd -c \
+        pinto/files/etc/pinto/htpasswd.starter \
+        admin
+
+and enter your password when prompted.  
+
+Repeat this command without the -c switch for each additional user 
+you wish to set up passwords for.  
+
+Add to your /etc/puppet/manifests/nodes.pp file:  
+
+    node 'pinto-repo.example.com' { include pinto }
+    node 'pinto-client.example.com' { include pinto }
+
+Of course you should name these nodes whatever makes sense in your 
+own network.  And if you understand pinto, you know you have much
+flexibility in determining where exactly this pinto class should 
+be included.    
+
+If your pinto repository is hosted on a machine which is 
+not identified by facter to puppet as having a hostname in 
+the form:  /^pinto-repo.*/, you should update the manifest 
+so that the pintod daemon is installed on the correct server.  
+
+In this file:
+
+    pinto/manifests/init.pp
+
+Edit the line which reads:
+
+    if $fqdn =~ /^pinto-repo.*/ {
+
+to make sense in your environment.  
+
+LICENSE
+
+You may use, modify and distribute this puppet manifest consistent 
+with the provisions of the Perl Artistic License or the Gnu Public
+License.  
+
+Hope this is helpful.
+
+COPYRIGHT
+
+Hugh Esco 2013
+YMD Partners, LLC 
+hesco@campaignfoundations.com
+
