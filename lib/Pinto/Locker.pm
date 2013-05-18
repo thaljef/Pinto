@@ -62,7 +62,7 @@ sub lock {                                   ## no critic qw(Homonym)
     my $root_dir  = $self->repo->config->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
     my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
-        or throw 'Unable to lock the repository -- please try later';
+        or throw 'The repository is currently in use -- please try again later';
 
     debug("Process $$ got $lock_type lock on $root_dir");
 
