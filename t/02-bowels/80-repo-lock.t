@@ -31,7 +31,7 @@ my $t = Pinto::Tester->new;
       file_exists_ok($lock_file);
 
       local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
-      $t->run_throws_ok('Nop', {}, qr/Unable to lock/,
+      $t->run_throws_ok('Nop', {}, qr/currently in use/,
           'Operation denied when exclusive lock is in place');
 
       my $kid = wait; # Let the child finish
@@ -78,7 +78,7 @@ my $t = Pinto::Tester->new;
       local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
       $t->run_ok('List', {}, 'Non-excusive operation allowed with shared lock');
 
-      $t->run_throws_ok('Pull', {targets => 'whatever'}, qr/Unable to lock/,
+      $t->run_throws_ok('Pull', {targets => 'whatever'}, qr/currently in use/,
         'Excuisve operation denied when shared lock is in place');
 
       my $kid = wait; # Let the child finish
