@@ -165,12 +165,15 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-sub as_spec {
-    my ($self) = @_;
-
-    return Pinto::PackageSpec->new( name    => $self->package_name,
-                                    version => $self->package_version );
-}
+has as_spec => (
+  is        => 'ro',
+  isa       => 'Pinto::PackageSpec',
+  init_arg  => undef,
+  lazy      => 1,
+  handles   => [ qw(is_core is_perl) ],
+  default   => sub { Pinto::PackageSpec->new( name    => $_[0]->package_name,
+                                              version => $_[0]->package_version ) },
+);
 
 #------------------------------------------------------------------------------
 

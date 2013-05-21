@@ -35,10 +35,10 @@ has filter => (
 
 
 has queue => (
-  isa       => ArrayRef['Pinto::PackageSpec'],
+  isa       => ArrayRef['Pinto::Schema::Result::Prerequisite'],
   traits    => [ qw(Array) ],
   handles   => {enqueue => 'push', dequeue => 'shift'},
-  default   => sub { return [ $_[0]->apply_filter($_[0]->start->prerequisite_specs) ] },
+  default   => sub { return [ $_[0]->apply_filter($_[0]->start->prerequisites) ] },
   init_arg  => undef,
   lazy      => 1,
 );
@@ -62,7 +62,7 @@ sub next {
 
   if (defined $dist) {
     my $path    = $dist->path;
-    my @prereqs = $self->apply_filter($dist->prerequisite_specs);
+    my @prereqs = $self->apply_filter($dist->prerequisites);
     $self->enqueue(@prereqs) unless $self->seen->{$path};
     $self->seen->{$path} = 1;
   }

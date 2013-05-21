@@ -118,8 +118,8 @@ sub recurse {
   my $cb = sub {
     my ($prereq) = @_;
 
-    my $pkg_name = $prereq->name;
-    my $pkg_vers = $prereq->version;
+    my $pkg_name = $prereq->package_name;
+    my $pkg_vers = $prereq->package_version;
 
     # version sees undef and 0 as equal, so must also check definedness 
     # when deciding if we've seen this version (or newer) of the packge
@@ -127,7 +127,7 @@ sub recurse {
 
     # I think the only time that we won't see a $dist here is when
     # the prereq resolves to a perl (i.e. its a core-only module).
-    return if not my $dist = $self->find(target => $prereq);
+    return if not my $dist = $self->find(target => $prereq->as_spec);
 
     $dist->register(stack => $stack);
     $latest{$pkg_name} = $pkg_vers;
