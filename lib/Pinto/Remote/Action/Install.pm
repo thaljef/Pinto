@@ -87,7 +87,7 @@ override execute => sub {
     }
 
     # Pinto::Role::Installer will handle installation after execute()
-    return $result;
+    return $result;  # TOOD: Need to construct a Result, if we don't have one yet.
  };
 
 #------------------------------------------------------------------------------
