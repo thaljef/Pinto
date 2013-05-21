@@ -25,6 +25,13 @@ has no_recurse => (
 );
 
 
+has cascade => (
+  is          => 'ro',
+  isa         => Bool,
+  default     => 0,
+);
+
+
 has pin => (
   is          => 'ro',
   isa         => Bool,
@@ -89,7 +96,7 @@ sub find {
   elsif ($dist = $stack->repo->get_distribution(spec => $target) ) {
     $msg = "Found $target in $dist";
   }
-  elsif ($dist = $stack->repo->ups_distribution(spec => $target) ) {
+  elsif ($dist = $stack->repo->ups_distribution(spec => $target, cascade => $self->cascade) ) {
     $msg = "Found $target in " . $dist->source;
   }
 

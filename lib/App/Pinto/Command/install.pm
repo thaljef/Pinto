@@ -19,6 +19,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
+        [ 'cascade'                 => 'Always pick latest upstream package'          ],
         [ 'cpanm-exe|cpanm=s'       => 'Path to the cpanm executable'                 ],
         [ 'cpanm-options|o:s%'      => 'name=value pairs of cpanm options'            ],
         [ 'local-lib|l=s'           => 'install into a local lib directory'           ],
@@ -81,7 +82,7 @@ is just a thin wrapper around L<cpanm> that is wired to fetch
 everything from the Pinto repository, rather than a public CPAN
 mirror.
 
-If the C<--pull> option is given, all prerequisites
+If the C<--do-pull> option is given, then all prerequisites
 (including the targets themselves) will be pulled onto the stack
 before attempting to install them.  If any prerequisite cannot be
 pulled because it does not exist or is blocked by a pin, then the
@@ -101,6 +102,19 @@ or ';') will be ignored.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --cascade
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+This option only matters when the C<--do-pull> option is also used.
+
+When searching for a prerequisite package, always take the latest 
+satisfactory version of the package found amongst B<all> the upstream 
+repositories, rather than just taking the B<first> satisfactory version 
+that is found.  Remember that Pinto only searches the upstream
+repositories when the local repository does not already contain a
+satisfactory version of the package.
 
 =item --cpanm-exe PATH
 

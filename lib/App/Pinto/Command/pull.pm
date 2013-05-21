@@ -19,13 +19,14 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
+        [ 'cascade'      => 'Always pick latest upstream package' ],
         [ 'dry-run'      => 'Do not commit any changes'           ],
         [ 'message|m=s'  => 'Message to describe the change'      ],
         [ 'no-fail'      => 'Do not fail when there is an error'  ],
         [ 'no-recurse|n' => 'Do not recursively pull prereqs'     ],
         [ 'pin'          => 'Pin the packages to the stack'       ],
         [ 'stack|s=s'    => 'Put packages into this stack'        ],
-        [ 'use-default-message|M' => 'Use the generated message' ],
+        [ 'use-default-message|M' => 'Use the generated message'  ],
     );
 }
 
@@ -57,9 +58,9 @@ and registers them on a stack.  Then it recursively locates and pulls
 all the distributions that are necessary to satisfy their prerequisites.  
 You can also request to directly pull particular distributions.
 
-When locating prerequisites, Pinto first looks at the packages that
-already exist in the local repository, then Pinto looks at the
-packages that are available on the upstream repositories.
+When locating packages, Pinto first looks at the packages that already 
+exist in the local repository, then Pinto looks at the packages that are
+available on the upstream repositories.
 
 =head1 COMMAND ARGUMENTS
 
@@ -79,6 +80,17 @@ or ';') will be ignored.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --cascade
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+When searching for a package (or one of its prerequisites), always take
+the latest satisfactory version of the package found amongst B<all> the
+upstream repositories, rather than just taking the B<first> satisfactory
+version that is found.  Remember that Pinto only searches the upstream
+repositories when the local repository does not already contain a
+satisfactory version of the package.
 
 =item --dry-run
 

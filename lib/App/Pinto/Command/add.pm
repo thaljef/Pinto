@@ -20,6 +20,7 @@ sub opt_spec {
 
     return (
         [ 'author=s'     => 'Your (alphanumeric) author ID'       ],
+        [ 'cascade'      => 'Always pick latest upstream package' ],
         [ 'dry-run'      => 'Do not commit any changes'           ],
         [ 'message|m=s'  => 'Message to describe the change'      ],
         [ 'no-fail'      => 'Do not fail when there is an error'  ],
@@ -54,8 +55,8 @@ This command adds local distribution archives to the repository and
 registers their packages on a stack. Then it recursively pulls all the 
 distributions that are necessary to satisfy their prerequisites.
 
-When locating prerequisites, Pinto first looks at the packages that
-already exist in the local repository, then Pinto looks at the
+When locating prerequisite packages, Pinto first looks at the packages 
+that already exist in the local repository, then Pinto looks at the 
 packages that are available on the upstream repositories.
 
 =head1 COMMAND ARGUMENTS
@@ -78,6 +79,17 @@ alphanumeric characters plus hyphens and underscores.  Defaults to
 the C<user> specified in your C<~/.pause> configuration file if such 
 file exists.  Otherwise, defaults to your current login username.
 By convention, author IDs are always folded to uppercase.
+
+=item --cascade
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+When searching for a prerequisite package, always take the latest 
+satisfactory version of the package found amongst B<all> the upstream 
+repositories, rather than just taking the B<first> satisfactory version 
+that is found.  Remember that Pinto only searches the upstream
+repositories when the local repository does not already contain a
+satisfactory version of the package.
 
 =item --dry-run
 

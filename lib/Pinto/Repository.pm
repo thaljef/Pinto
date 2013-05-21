@@ -386,11 +386,12 @@ is not found, then an exception is thrown.
 sub ups_distribution {
     my ($self, %args) = @_;
 
-    my $spec = $args{spec};
+    my $spec    = $args{spec};
+    my $cascade = $args{cascade} || 0;
     my $dist_url;
 
     if ( Pinto::Util::itis($spec, 'Pinto::PackageSpec') ){
-        $dist_url = $self->locate(package => $spec->name, version => $spec->version, latest => 1);
+        $dist_url = $self->locate(package => $spec->name, version => $spec->version, latest => $cascade);
     }
     elsif ( Pinto::Util::itis($spec, 'Pinto::DistributionSpec') ){
         $dist_url = $self->locate(distribution => $spec->path)

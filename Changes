@@ -1,4 +1,12 @@
 {{$NEXT}}
+       
+      INCOMPATIBLE CHANGES:
+
+      By default, Pinto now takes the first satisfactory package that it
+      finds among the upstream repositories, rather than taking the latest
+      one.  This only matters if you specify multiple upstream repositories.
+      To get the old behavior, use the new --cascade option on the "pull" 
+      and "add" commands.  Thanks @hesco for helping me sort this out.
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 
