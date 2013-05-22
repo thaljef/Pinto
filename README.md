@@ -190,6 +190,7 @@ from your repository :)
 
 # CONTRIBUTORS
 
+- BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
 - Cory G Watson <gphat@onemogin.com>
 - Jakob Voss <jakob@nichtich.de>
 - Jeff <jeff@callahan.local>
