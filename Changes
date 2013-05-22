@@ -8,6 +8,12 @@
       To get the old behavior, use the new --cascade option on the "pull" 
       and "add" commands.  Thanks @hesco for helping me sort this out.
 
+      The "version" command has been removed.  Now that all Pinto components
+      ship together, they all have the same version number.  So there is
+      no need for a special version command.  If you want to know what version
+      of pinto you have, just use the --version option.
+      
+
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 
       ENHANCEMENTS:
