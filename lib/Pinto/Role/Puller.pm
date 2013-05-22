@@ -40,8 +40,10 @@ has pin => (
 
 #-----------------------------------------------------------------------------
 
-# We should require a stack() attribute, but I can't get it to work 
-# when composing with the Committable role which provides it.
+# We should require a stack() attribute here, but Moose can't properly 
+# resolve attributes that are composed from other roles.  For more info
+# see https://rt.cpan.org/Public/Bug/Display.html?id=46347
+
 # requires qw(stack);
 
 #-----------------------------------------------------------------------------
