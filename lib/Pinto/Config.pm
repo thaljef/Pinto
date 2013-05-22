@@ -222,8 +222,11 @@ sub _build_config_file {
 sub _build_sources_list {
     my ($self) = @_;
 
-    my @sources = split m{ \s+ }mx, $self->sources();
-    my @source_urls = map { URI->new($_) } @sources;
+    # Some folks tend to put quotes around multi-value configuration
+    # paramaters, even though they shouldn't.  Be kind and remove them.
+    my $sources = $self->sources; $sources =~ s/ ['"] //gx;
+
+    my @source_urls = map { URI->new($_) } split m{ \s+ }mx, $sources;
 
     return \@source_urls;
 }
