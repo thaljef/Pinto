@@ -7,6 +7,7 @@ use Test::More;
 
 use Path::Class;
 
+use lib 'tlib';
 use Pinto::Tester::Util qw(make_dist_obj);
 
 #-----------------------------------------------------------------------------

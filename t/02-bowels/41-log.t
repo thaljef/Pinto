@@ -5,8 +5,10 @@ use warnings;
 
 use Test::More;
 
-use Pinto::Tester;
 use Pinto::Globals;
+
+use lib 'tlib';
+use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------

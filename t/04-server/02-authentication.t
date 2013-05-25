@@ -12,9 +12,11 @@ use Path::Class;
 use HTTP::Request;
 use Apache::Htpasswd;
 
-use Pinto::Tester;
 use Pinto::Server;
 use Pinto::Constants qw(:server);
+
+use lib 'tlib';
+use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 # Create a repository

@@ -2,6 +2,8 @@
 
 use Test::More;
 use Test::Exception;
+
+use lib 'tlib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------

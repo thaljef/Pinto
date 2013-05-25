@@ -8,6 +8,7 @@ use Test::File;
 use Test::Exception;
 use Path::Class qw(dir);
 
+use lib 'tlib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
 

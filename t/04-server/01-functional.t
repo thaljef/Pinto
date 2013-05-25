@@ -13,8 +13,10 @@ use HTTP::Date;
 use HTTP::Request::Common;
 
 use Pinto::Server;
-use Pinto::Tester;
 use Pinto::Constants qw(:server);
+
+use lib 'tlib';
+use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------

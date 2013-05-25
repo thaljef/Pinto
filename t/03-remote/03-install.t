@@ -9,6 +9,8 @@ use Test::Exception;
 use Path::Class qw(dir);
 
 use Pinto::Remote;
+
+use lib 'tlib';
 use Pinto::Server::Tester;
 use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
 

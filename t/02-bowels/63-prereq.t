@@ -5,8 +5,10 @@ use warnings;
 
 use Test::More;
 
-use Pinto::Tester;
 use Pinto::PrerequisiteWalker;
+
+use lib 'tlib';
+use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 
