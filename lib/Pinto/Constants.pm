@@ -86,7 +86,7 @@ Readonly our $PINTO_STACK_NAME_ALL  => '%';
 Readonly my $PINTO_ALPHANUMERIC_REGEX       => qr{^ [a-zA-Z0-9-_]+ $}x;
 Readonly my $PINTO_HEXADECIMAL_UUID_REGEX   => qr{^ [a-f0-9-]+     $}x;
 
-Readonly our $PINTO_AUTHOR_REGEX        => $PINTO_ALPHANUMERIC_REGEX;
+Readonly our $PINTO_AUTHOR_REGEX        => qr/^ [A-Z]{2} [-A-Z0-9]*/x;
 Readonly our $PINTO_USERNAME_REGEX      => $PINTO_ALPHANUMERIC_REGEX;
 Readonly our $PINTO_STACK_NAME_REGEX    => $PINTO_ALPHANUMERIC_REGEX;
 Readonly our $PINTO_PROPERTY_NAME_REGEX => $PINTO_ALPHANUMERIC_REGEX;
