@@ -77,16 +77,16 @@ cpanm
 
 !! THIS COMMAND IS EXPERIMENTAL !!
 
-Installs packages from the repository into your environment.  This
+Installs targets from the repository into your environment.  This
 is just a thin wrapper around L<cpanm> that is wired to fetch
 everything from the Pinto repository, rather than a public CPAN
 mirror.
 
-If the C<--do-pull> option is given, then all prerequisites
-(including the targets themselves) will be pulled onto the stack
-before attempting to install them.  If any prerequisite cannot be
-pulled because it does not exist or is blocked by a pin, then the
-installation will not proceed.
+If the C<--do-pull> option is given, then all targets and their 
+prerequisites will be pulled onto the stack before attempting to 
+install them.  If any thing cannot be pulled because it cannot be
+found or is blocked by a pin, then the installation will not
+proceed.
 
 =head1 COMMAND ARGUMENTS
 
@@ -167,14 +167,13 @@ control which editor is used.  A log message is not required whenever
 the C<--dry-run> option is set, or if the action did not yield any
 changes to the repository.
 
-=item --pull
+=item --do-pull
 
-Recursively pull prerequisite packages (or the targets themselves)
-onto the stack before installing.  Without the C<--pull> option, all
-prerequisites must already be on the stack.  See the
-L<pull|App::Pinto::Command::pull> command to explicitly pull packages
-onto a stack or the L<merge|App::Pinto::Command::merge> command to
-merge packages from one stack to another.
+Pull the targets and recursively pull all their prerequisites onto the 
+stack before installing.  Without the C<--do-pull> option, all
+targets and their prerequisites must already be on the stack or the 
+installation will probably fail.  When the C<--do-pull> option is
+used, the stack must not be locked.
 
 =item --stack=NAME
 
