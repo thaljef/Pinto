@@ -7,6 +7,7 @@ use Moose;
 use Carp;
 use JSON;
 use IO::Pipe;
+use IO::Select;
 use Try::Tiny;
 use File::Temp;
 use File::Copy;
@@ -51,7 +52,6 @@ sub respond {
         $action_args->{$upload_name} = $localfile;
     }
 
-    $DB::single = 1;
     return $self->_run_action($chrome_args, $pinto_args, $action_name, $action_args);
 }
 
@@ -99,30 +99,35 @@ sub _run_action {
 
             my $child_pid = shift;
             my $reader    = $pipe->reader;
+            my $select    = IO::Select->new($reader);
+            $reader->blocking(0);
 
-            # If the client aborts (usually by hitting Ctrl-C) then we
-            # get a PIPE signal.  That is our cue to stop the Action
-            # by killing the child.  TODO: Find a way to set these
-            # signal handlers locally, rather than globally.  This is
-            # tricky because we return a callback, which might not
-            # always be in the callback when we get the signal.
-
-            ## no critic qw(RequireLocalizedPunctuationVars)
-            $SIG{PIPE} = sub { kill 'TERM', $child_pid };
-            $SIG{CHLD} = 'IGNORE';
-            ## use critic
-
-            # In Plack::Util::foreach(), input is buffered at 65536
-            # bytes. We want to buffer each line only.  So we make our
-            # own input handle with $/ set accordingly.
-
-            my $getline   = sub { local $/ = "\n"; $reader->getline };
-            my $io_handle = io_from_getline( $getline );
 
             $response  = sub {
                 my $responder = shift;
                 my $headers = ['Content-Type' => 'text/plain'];
-                return $responder->( [200, $headers, $io_handle] );
+                my $writer  = $responder->( [200, $headers] );
+                my $socket  = $self->request->env->{'psgix.io'};
+
+                while (1) {
+
+                    # HACK: getpeername() is the only way I've found to
+                    # test whether the client is still connected.  But
+                    # it only returns false after a read or write fails.
+                    # So we must keep writing something ('##') to see if
+                    # the client is realy there or not.  Unfortunately,
+                    # the PSGI spec doesn't say what write() should return.
+                    # It would be a lot easier to just check that.
+
+                    $writer->write( $select->can_read(0.5) ? <$reader> : "## " );
+                    if ($socket && not getpeername($socket) ) {
+                        kill 'TERM', $child_pid and wait; 
+                        # warn "Lost connection\n";
+                        last;
+                    }
+                }
+
+                $writer->close;
             };
         }
         error {
