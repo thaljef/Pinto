@@ -163,7 +163,6 @@ override should_render_progress => sub {
     my ($self) = @_;
 
     return 0 if not super;
-    return 0 if not is_interactive;
     return 0 if not -t $self->stderr;
     return 1;
 };
