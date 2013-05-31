@@ -52,91 +52,90 @@ sub respond {
         $action_args->{$upload_name} = $localfile;
     }
 
-    return $self->_run_action($chrome_args, $pinto_args, $action_name, $action_args);
-}
-
-#------------------------------------------------------------------------------
-
-sub _run_action {
-    my ($self, $chrome_args, $pinto_args, $action_name, $action_args) = @_;
-
     my $response;
     my $pipe = IO::Pipe->new;
 
     run_fork {
-
-        child {
-
-            my $writer = $pipe->writer;
-            $writer->autoflush;
-
-            # I'm not sure why, but cleanup isn't happening when we get
-            # a TERM signal from the parent process.  I suspect it
-            # has something to do with File::NFSLock messing with %SIG
-            local $SIG{TERM} = sub { File::Temp::cleanup; exit };
-
-            ## no critic qw(PackageVar)
-            local $Pinto::Globals::is_interactive = 0;  
-            local $Pinto::Globals::current_username    = delete $pinto_args->{username};
-            local $Pinto::Globals::current_time_offset = delete $pinto_args->{time_offset};
-            ## use critic;
-
-            $chrome_args->{stdout} = $writer;
-            $chrome_args->{stderr} = $writer;
-            $chrome_args->{diag_prefix} = $PINTO_SERVER_DIAG_PREFIX;
-
-            my $chrome = Pinto::Chrome::Term->new($chrome_args); 
-            my $pinto  = Pinto->new(chrome => $chrome, root => $self->root);
-
-            my $result =
-                try   { $pinto->run(ucfirst $action_name => %{ $action_args }) }
-                catch { print { $writer } $_; Pinto::Result->new->failed };
-
-            print { $writer } $PINTO_SERVER_STATUS_OK . "\n" if $result->was_successful;
-            exit $result->was_successful ? 0 : 1;
-        }
-        parent {
-
-            my $child_pid = shift;
-            my $reader    = $pipe->reader;
-            my $select    = IO::Select->new($reader);
-            $reader->blocking(0);
-
-
-            $response  = sub {
-                my $responder = shift;
-                my $headers = ['Content-Type' => 'text/plain'];
-                my $writer  = $responder->( [200, $headers] );
-                my $socket  = $self->request->env->{'psgix.io'};
-                my $nullmsg = $PINTO_SERVER_NULL_MESSAGE . "\n";
-
-                while (1) {
-
-                    my $input;
-                    if ( $select->can_read(0.5) ) {
-                        $input = <$reader>;  # Will block until \n
-                        last if not defined $input; # We reached eof
-                    }
-
-                    $writer->write( $input || $nullmsg );
-
-                    if ($socket && not getpeername($socket)) {
-                        kill 'TERM', $child_pid and wait; 
-                        last;
-                    }
-                }
-
-                $writer->close;
-            };
-        }
-        error {
-
-            croak "Failed to fork: $!";
-        }
+        child  { $self->child_proc($pipe, $chrome_args, $pinto_args, $action_name, $action_args) }
+        parent { $response = $self->parent_proc($pipe, shift) }
+        error  { croak "Failed to fork: $!" }
     };
 
     return $response;
  }
+
+#-------------------------------------------------------------------------------
+
+sub child_proc {
+    my ($self, $pipe, $chrome_args, $pinto_args, $action_name, $action_args) = @_;
+
+    my $writer = $pipe->writer;
+    $writer->autoflush;
+
+    # I'm not sure why, but cleanup isn't happening when we get
+    # a TERM signal from the parent process.  I suspect it
+    # has something to do with File::NFSLock messing with %SIG
+    local $SIG{TERM} = sub { File::Temp::cleanup; die 'Got sig TERM' };
+
+    ## no critic qw(PackageVar)
+    local $Pinto::Globals::is_interactive = 0;  
+    local $Pinto::Globals::current_username    = delete $pinto_args->{username};
+    local $Pinto::Globals::current_time_offset = delete $pinto_args->{time_offset};
+    ## use critic;
+
+    $chrome_args->{stdout} = $writer;
+    $chrome_args->{stderr} = $writer;
+    $chrome_args->{diag_prefix} = $PINTO_SERVER_DIAG_PREFIX;
+
+    my $chrome = Pinto::Chrome::Term->new($chrome_args); 
+    my $pinto  = Pinto->new(chrome => $chrome, root => $self->root);
+
+    my $result =
+        try   { $pinto->run(ucfirst $action_name => %{ $action_args }) }
+        catch { print { $writer } $_; Pinto::Result->new->failed };
+
+    print { $writer } $PINTO_SERVER_STATUS_OK . "\n" if $result->was_successful;
+    exit $result->was_successful ? 0 : 1;
+}
+
+#-------------------------------------------------------------------------------
+
+sub parent_proc {
+    my ($self, $pipe, $child_pid) = @_;
+
+    my $reader    = $pipe->reader;
+    my $select    = IO::Select->new($reader);
+    $reader->blocking(0);
+
+
+    my $response  = sub {
+        my $responder = shift;
+        my $headers = ['Content-Type' => 'text/plain'];
+        my $writer  = $responder->( [200, $headers] );
+        my $socket  = $self->request->env->{'psgix.io'};
+        my $nullmsg = $PINTO_SERVER_NULL_MESSAGE . "\n";
+
+        while (1) {
+
+            my $input;
+            if ( $select->can_read(0.5) ) {
+                $input = <$reader>;  # Will block until \n
+                last if not defined $input; # We reached eof
+            }
+
+            $writer->write( $input || $nullmsg );
+
+            if ($socket && not getpeername($socket)) {
+                kill 'TERM', $child_pid and wait; 
+                last;
+            }
+        }
+
+        $writer->close;
+    };
+
+    return $response;
+}
 
 #-------------------------------------------------------------------------------
 
