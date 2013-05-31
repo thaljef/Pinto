@@ -108,21 +108,20 @@ sub _run_action {
                 my $headers = ['Content-Type' => 'text/plain'];
                 my $writer  = $responder->( [200, $headers] );
                 my $socket  = $self->request->env->{'psgix.io'};
+                my $nullmsg = $PINTO_SERVER_NULL_MESSAGE . "\n";
 
                 while (1) {
 
-                    # HACK: getpeername() is the only way I've found to
-                    # test whether the client is still connected.  But
-                    # it only returns false after a read or write fails.
-                    # So we must keep writing something ('##') to see if
-                    # the client is realy there or not.  Unfortunately,
-                    # the PSGI spec doesn't say what write() should return.
-                    # It would be a lot easier to just check that.
+                    my $input;
+                    if ( $select->can_read(0.5) ) {
+                        $input = <$reader>;  # Will block until \n
+                        last if not defined $input; # We reached eof
+                    }
 
-                    $writer->write( $select->can_read(0.5) ? <$reader> : "## " );
-                    if ($socket && not getpeername($socket) ) {
+                    $writer->write( $input || $nullmsg );
+
+                    if ($socket && not getpeername($socket)) {
                         kill 'TERM', $child_pid and wait; 
-                        # warn "Lost connection\n";
                         last;
                     }
                 }

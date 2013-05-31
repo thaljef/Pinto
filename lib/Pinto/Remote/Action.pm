@@ -183,6 +183,9 @@ sub _response_callback {                  ## no critic qw(ProhibitManyArgs)
         if ($_ eq $PINTO_SERVER_STATUS_OK) {
             ${ $status } = 1;
         }
+        elsif ($_ eq $PINTO_SERVER_NULL_MESSAGE) {
+            # Do nothing, discard message
+        }
         elsif (m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x) {
             print {$self->chrome->stderr} "$1\n";
         }

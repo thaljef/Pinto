@@ -23,6 +23,7 @@ Readonly our @EXPORT_OK => qw(
 
     $PINTO_SERVER_STATUS_OK
     $PINTO_SERVER_DIAG_PREFIX
+    $PINTO_SERVER_NULL_MESSAGE
 
     $PINTO_DEFAULT_COLORS
     $PINTO_COLOR_0
@@ -63,6 +64,8 @@ Readonly our $PINTO_SERVER_DEFAULT_ROOT  =>
 Readonly our $PINTO_SERVER_DIAG_PREFIX => '## ';
 
 Readonly our $PINTO_SERVER_STATUS_OK => "${PINTO_SERVER_DIAG_PREFIX}Status: ok";
+
+Readonly our $PINTO_SERVER_NULL_MESSAGE => "${PINTO_SERVER_DIAG_PREFIX}-- ##";
 
 #------------------------------------------------------------------------------
 
