@@ -154,13 +154,11 @@ sub _send_request {
     my ($self, %args) = @_;
 
     my $request = $args{req} || $self->_make_request;
-
-    my $status   = 0;
-    my $buffer   = '';
+    my $status  = 0;
 
     # Currying in some extra args to the callback...
-    my $callback = sub { $self->_response_callback(@_, \$status, \$buffer) };
-    my $response = $self->ua->request($request, $callback, 128);
+    my $callback = sub { $self->_response_callback(\$status, @_) };
+    my $response = $self->ua->request($request, $callback);
 
     if (not $response->is_success) {
         $self->error($response->content);
@@ -172,26 +170,26 @@ sub _send_request {
 
 #------------------------------------------------------------------------------
 
-sub _response_callback {                  ## no critic qw(ProhibitManyArgs)
-    my ($self, $data, $request, $proto, $status, $buffer) = @_;
+sub _response_callback { 
+    my ($self, $status, $data) = @_;
 
-    my $lines = '';
-    $lines = $1 if (${ $buffer } .= $data) =~ s{^ (.*)\n }{}sx;
+    # Each data chunk will be one line of text ending with \n
+    chomp $data;
 
-    for (split m{\n}x, $lines, -1) {
-
-        if ($_ eq $PINTO_SERVER_STATUS_OK) {
-            ${ $status } = 1;
-        }
-        elsif ($_ eq $PINTO_SERVER_NULL_MESSAGE) {
-            # Do nothing, discard message
-        }
-        elsif (m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x) {
-            print {$self->chrome->stderr} "$1\n";
-        }
-        else {
-            print {$self->chrome->stdout} "$_\n";
-        }
+    if ($data eq $PINTO_SERVER_STATUS_OK) {
+        ${ $status } = 1;
+    }
+    elsif($data eq $PINTO_SERVER_PROGRESS_MESSAGE) {
+        $self->chrome->show_progress;
+    }
+    elsif ($data eq $PINTO_SERVER_NULL_MESSAGE) {
+         # Do nothing, discard message
+    }
+    elsif ($data =~ m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x) {
+        $self->chrome->diag($1);
+    }
+    else {
+        $self->chrome->show($data);
     }
 
     return 1;
