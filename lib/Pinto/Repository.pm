@@ -327,7 +327,7 @@ sub get_distribution {
     # Retrieve a distribution by DistSpec or PackageSpec
     if (my $spec = $args{spec}) {
         if ( itis($spec, 'Pinto::DistributionSpec') ) {
-            my $author  = $spec->author_canonical;
+            my $author  = $spec->author;
             my $archive = $spec->archive;
 
             return $self->db->schema->distribution_rs

@@ -13,6 +13,19 @@
       no need for a special version command.  If you want to know what version
       of pinto you have, just use the --version option.
       
+      Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other words, two
+      ASCII letters followed by zero or more ASCII letters, digits, or hyphens.  
+      If you use lowercase letters, they will be automatically forced to uppercase
+      for you.  This was done because cpanm relies on author IDs following the 
+      PAUSE convention.  I had hoped that Pinto could be more liberal about author
+      IDs, but it seems we must conform so that we can cooperate with the rest of
+      the toolchain.
+
+      BUG FIXES:
+
+      The "install" command can be used on a locked stack, but only if the --do-pull
+      option is not given.  If you want to pull packges while installing, then you
+      must unlock the stack first.  Thanks Jeremy Marshal.
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 

@@ -36,6 +36,7 @@ has io  => (
 has author => (
     is  => 'rw',
     isa => AuthorID,
+    coerce => 1,
 );
 
 has stack => (

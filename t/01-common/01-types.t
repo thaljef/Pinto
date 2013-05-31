@@ -26,15 +26,17 @@ $t->uri('http://nuts');
 is(ref $t->uri(), 'URI::http', 'Coerced URI from string');
 
 $t->author('hello');
-throws_ok {$t->author('foo bar!') } qr/alphanumeric/, 'Author must be alphanumeric';
-throws_ok {$t->author(undef) } qr/alphanumeric/, 'Author must not be undef';
-throws_ok {$t->author('') } qr/alphanumeric/, 'Author must have length';
+is($t->author, 'HELLO', 'Author coerced to uppercase');
+throws_ok {$t->author('foo bar!') } qr/must match/, 'Author must be alphanumeric';
+throws_ok {$t->author(undef) } qr/must match/, 'Author must not be undef';
+throws_ok {$t->author('') } qr/must match/, 'Author must have length';
 
 $t->stack('MyStack');
 throws_ok {$t->stack('foo bar!') } qr/alphanumeric/, 'StackName must be alphanumeric';
 throws_ok {$t->stack(undef) } qr/alphanumeric/, 'StackName not be undef';
 throws_ok {$t->stack('') } qr/alphanumeric/, 'StackName must have length';
 
+# XXX: Do we still need StackAll?
 lives_ok { $t->stack_all('%') } q{StackAll as "%"};
 dies_ok { $t->stack_all('') } 'Invalid StackAll';
 dies_ok { $t->stack_all(undef) } 'Invalid StackAll';
@@ -65,7 +67,7 @@ is($t->pkg->version, '0.01', 'PackageSpec has correct version');
 
 $t->dist('Author/subdir/Dist-1.0.tar.gz');
 is(ref $t->dist, 'Pinto::DistributionSpec', 'Coerced DistributionSpec from string');
-is($t->dist->author, 'Author', 'DistributionSpec has correct author');
+is($t->dist->author, 'AUTHOR', 'DistributionSpec has correct author');
 is_deeply($t->dist->subdirs, ['subdir'], 'DistribiutionsSpec has correct subdirs');
 is($t->dist->archive, 'Dist-1.0.tar.gz', 'DistribiutionsSpec has correct archive');
 

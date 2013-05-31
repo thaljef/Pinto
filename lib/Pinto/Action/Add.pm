@@ -24,7 +24,8 @@ extends qw( Pinto::Action );
 has author => (
     is         => 'ro',
     isa        => AuthorID,
-    default    => sub { uc($_[0]->pausecfg->{user} || '') || current_author_id },
+    default    => sub { $_[0]->pausecfg->{user} || current_author_id },
+    coerce     => 1,
     lazy       => 1,
 );
 
@@ -61,6 +62,8 @@ sub BUILD {
 
     throw "Some archives are missing or unreadable"
         if @missing or @unreadable;
+
+    $self->stack->assert_not_locked;
 
     return $self;
 }

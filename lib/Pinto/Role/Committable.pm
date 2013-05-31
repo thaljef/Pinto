@@ -68,8 +68,10 @@ requires qw( execute repo );
 around BUILD => sub {
     my ($orig, $self) = @_;
 
+    # Inflate the stack into a real object.  As a side
+    # effect, this also verifies that the stack exists.
+
     my $stack = $self->repo->get_stack($self->stack);
-    $stack->assert_not_locked;
     $self->_set_stack($stack);
 
     return $self->$orig;

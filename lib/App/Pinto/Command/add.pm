@@ -19,7 +19,7 @@ sub opt_spec {
     my ($self, $app) = @_;
 
     return (
-        [ 'author=s'     => 'Your (alphanumeric) author ID'       ],
+        [ 'author=s'     => 'The ID of the archive author'        ],
         [ 'cascade'      => 'Always pick latest upstream package' ],
         [ 'dry-run'      => 'Do not commit any changes'           ],
         [ 'message|m=s'  => 'Message to describe the change'      ],
@@ -74,11 +74,12 @@ or ';') will be ignored.
 
 =item --author NAME
 
-Set the identity of the distribution author.  The C<NAME> must be
-alphanumeric characters plus hyphens and underscores.  Defaults to
-the C<user> specified in your C<~/.pause> configuration file if such 
-file exists.  Otherwise, defaults to your current login username.
-By convention, author IDs are always folded to uppercase.
+Set the identity of the distribution author.  The C<NAME> is automatically
+forced to uppercase and must match C</^[A-Z]{2}[-A-Z0-9]*$/> (that means
+two ASCII letters followed by zero or more ASCII letters, digits, or 
+hyphens). Defaults to the C<user> attribute specified in your F<~/.pause>
+configuration file if such file exists.  Otherwise, defaults to your 
+current login username.
 
 =item --cascade
 

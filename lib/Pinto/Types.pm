@@ -33,7 +33,11 @@ use Pinto::Constants qw(:all);
 subtype AuthorID,
   as Str,
   where   { $_ =~ $PINTO_AUTHOR_REGEX },
-  message { 'The author id (' . (defined() ? $_ : 'undef') . ') must be alphanumeric' };
+  message { 'The author id (' . (defined() ? $_ : 'undef') . ') must match /^[A-Z]{2}[-A-Z0-9]*$/' };
+
+coerce AuthorID,
+  from Str,
+  via { uc $_ };
 
 #-----------------------------------------------------------------------------
 

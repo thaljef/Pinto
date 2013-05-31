@@ -10,32 +10,30 @@ use Pinto::DistributionSpec;
 
 #------------------------------------------------------------------------------
 
-{
+subtest string_constructor => sub {
 
   my $spec = Pinto::DistributionSpec->new('Author/subdir/Foo-1.2.tar.gz');
-  is $spec->author,   'Author',  'Parsed author from string';
-  is $spec->author_canonical,   'AUTHOR',  'Canonical author is UPPERCASE';
-  is $spec->archive, 'Foo-1.2.tar.gz',  'Parsed archive from string';
-  is $spec->path, 'A/AU/AUTHOR/subdir/Foo-1.2.tar.gz',  'Constructed path from string';
-  is "$spec", 'Author/subdir/Foo-1.2.tar.gz', 'Stringified object';
+  is $spec->author,   'AUTHOR',  'author attribute';
+  is $spec->archive, 'Foo-1.2.tar.gz',  'archive attribute';
+  is $spec->path, 'A/AU/AUTHOR/subdir/Foo-1.2.tar.gz',  'Constructed path';
+  is "$spec", 'AUTHOR/subdir/Foo-1.2.tar.gz', 'Stringified object';
 
-}
+};
 
 #------------------------------------------------------------------------------
 
-{
+subtest hash_constructor => sub {
 
   my $spec = Pinto::DistributionSpec->new(author => 'Author',
                                           subdirs => [qw(foo bar)],
                                           archive => 'Foo-1.2.tar.gz');
 
-  is $spec->author, 'Author',  'author from attribute';
-  is $spec->author_canonical,   'AUTHOR',  'Canonical author is UPPERCASE';
-  is $spec->archive, 'Foo-1.2.tar.gz',  'archive from attribute';
-  is $spec->path, 'A/AU/AUTHOR/foo/bar/Foo-1.2.tar.gz',  'Constructed path from string';
-  is "$spec", 'Author/foo/bar/Foo-1.2.tar.gz', 'Stringified object';
+  is $spec->author, 'AUTHOR',  'author attribute';
+  is $spec->archive, 'Foo-1.2.tar.gz',  'archive attribute';
+  is $spec->path, 'A/AU/AUTHOR/foo/bar/Foo-1.2.tar.gz',  'Constructed path';
+  is "$spec", 'AUTHOR/foo/bar/Foo-1.2.tar.gz', 'Stringified object';
 
-}
+};
 
 #------------------------------------------------------------------------------
 

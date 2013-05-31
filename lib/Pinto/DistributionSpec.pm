@@ -21,16 +21,8 @@ use overload ('""' => 'to_string');
 has author => (
     is       => 'ro',
     isa      => AuthorID,
+    coerce   => 1,
     required => 1,
-);
-
-
-has author_canonical => (
-    is       => 'ro',
-    isa      => Str,
-    init_arg => undef,
-    default  => sub { uc $_[0]->author },
-    lazy     => 1,
 );
 
 
@@ -83,7 +75,7 @@ suitable for constructing a URI.
 sub path {
     my ($self) = @_;
 
-    my $author   = $self->author_canonical;
+    my $author   = $self->author;
     my @subdirs  = @{ $self->subdirs };
     my $archive  = $self->archive;
 
