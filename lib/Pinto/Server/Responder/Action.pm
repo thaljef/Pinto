@@ -14,12 +14,9 @@ use File::Copy;
 use Proc::Fork;
 use Path::Class;
 use Plack::Response;
-use IO::Handle::Util qw(io_from_getline);
-use POSIX qw(WNOHANG);
 
 use Pinto;
 use Pinto::Result;
-use Pinto::Constants;
 use Pinto::Chrome::Term;
 use Pinto::Constants qw(:server);
 
@@ -95,6 +92,7 @@ sub child_proc {
         catch { print { $writer } $_; Pinto::Result->new->failed };
 
     print { $writer } $PINTO_SERVER_STATUS_OK . "\n" if $result->was_successful;
+    
     exit $result->was_successful ? 0 : 1;
 }
 
