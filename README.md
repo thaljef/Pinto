@@ -31,7 +31,7 @@ can control precisely which dependencies go into your application.
 Pinto is inspired by [Carton](http://search.cpan.org/perldoc?Carton), [CPAN::Mini::Inject](http://search.cpan.org/perldoc?CPAN::Mini::Inject), and
 [MyCPAN::App::DPAN](http://search.cpan.org/perldoc?MyCPAN::App::DPAN), but adds a few interesting features:
 
-- Pinto supports mutiple indexes
+- Pinto supports multiple indexes
 
     A Pinto repository can have multiple indexes.  Each index corresponds
     to a "stack" of dependencies that you can control.  So you can have
@@ -104,7 +104,7 @@ there are some important differences:
     PAUSE requires authors to authenticate themselves before they can
     upload or remove modules.  Pinto does not require authentication, so
     any user with sufficient file permission can potentialy change the
-    repository.  However [pintod](http://search.cpan.org/perldoc?pintod) does suport HTTP authentication, which
+    repository.  However [pintod](http://search.cpan.org/perldoc?pintod) does support HTTP authentication, which
     gives you some control over access to a remote repository.
 
 # BUT WHERE IS THE API?
@@ -198,6 +198,7 @@ from your repository :)
 - Jeffrey Thalhammer <jeff@imaginative-software.com>
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
+- Oleg Gashev <oleg@gashev.net>
 - Steffen Schwigon <ss5@renormalist.net>
 - Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
 - Yanick Champoux <yanick@babyl.dyndns.org>
