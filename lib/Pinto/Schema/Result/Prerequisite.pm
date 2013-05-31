@@ -150,6 +150,13 @@ use overload ('""' => 'to_string');
 # VERSION
 
 #------------------------------------------------------------------------------
+
+__PACKAGE__->inflate_column( 'package_version' => {
+    inflate => sub { version->parse($_[0]) },
+    deflate => sub { $_[0]->stringify() },
+});
+
+#------------------------------------------------------------------------------
 # NOTE: We often convert a Prerequsite to/from a PackageSpec object. They don't
 # use quite the same names for their attributes, so we shuffle them around here.
 
