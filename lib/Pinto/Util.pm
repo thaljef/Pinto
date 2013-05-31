@@ -390,9 +390,9 @@ sub current_author_id {
     return $Pinto::Globals::current_author_id
       if defined $Pinto::Globals::current_author_id;
 
-    my $author_id =  $ENV{PINTO_AUTHOR_ID} || uc current_username;
+    my $author_id =  $ENV{PINTO_AUTHOR_ID} || current_username;
 
-    return $author_id;
+    return uc $author_id;
 }
 
 #-------------------------------------------------------------------------------
