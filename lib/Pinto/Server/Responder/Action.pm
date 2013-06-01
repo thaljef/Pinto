@@ -17,7 +17,7 @@ use Plack::Response;
 
 use Pinto;
 use Pinto::Result;
-use Pinto::Chrome::Term;
+use Pinto::Chrome::Net;
 use Pinto::Constants qw(:server);
 
 #-------------------------------------------------------------------------------
@@ -75,16 +75,14 @@ sub child_proc {
     local $SIG{TERM} = sub { File::Temp::cleanup; die 'Got sig TERM' };
 
     ## no critic qw(PackageVar)
-    local $Pinto::Globals::is_interactive = 0;  
     local $Pinto::Globals::current_username    = delete $pinto_args->{username};
     local $Pinto::Globals::current_time_offset = delete $pinto_args->{time_offset};
     ## use critic;
 
     $chrome_args->{stdout} = $writer;
     $chrome_args->{stderr} = $writer;
-    $chrome_args->{diag_prefix} = $PINTO_SERVER_DIAG_PREFIX;
 
-    my $chrome = Pinto::Chrome::Term->new($chrome_args); 
+    my $chrome = Pinto::Chrome::Net->new($chrome_args); 
     my $pinto  = Pinto->new(chrome => $chrome, root => $self->root);
 
     my $result =
@@ -92,7 +90,7 @@ sub child_proc {
         catch { print { $writer } $_; Pinto::Result->new->failed };
 
     print { $writer } $PINTO_SERVER_STATUS_OK . "\n" if $result->was_successful;
-    
+
     exit $result->was_successful ? 0 : 1;
 }
 
@@ -104,7 +102,6 @@ sub parent_proc {
     my $reader    = $pipe->reader;
     my $select    = IO::Select->new($reader);
     $reader->blocking(0);
-
 
     my $response  = sub {
         my $responder = shift;
