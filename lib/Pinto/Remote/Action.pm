@@ -173,23 +173,26 @@ sub _send_request {
 sub _response_callback { 
     my ($self, $status, $data) = @_;
 
-    # Each data chunk will be one line of text ending with \n
+    # Each data chunk will be one or more lines ending with \n
     chomp $data;
 
-    if ($data eq $PINTO_SERVER_STATUS_OK) {
-        ${ $status } = 1;
-    }
-    elsif($data eq $PINTO_SERVER_PROGRESS_MESSAGE) {
-        $self->chrome->show_progress;
-    }
-    elsif ($data eq $PINTO_SERVER_NULL_MESSAGE) {
-         # Do nothing, discard message
-    }
-    elsif ($data =~ m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x) {
-        $self->chrome->diag($1);
-    }
-    else {
-        $self->chrome->show($data);
+    for my $line (split m/\n/, $data, -1) {
+
+        if ($line eq $PINTO_SERVER_STATUS_OK) {
+            ${ $status } = 1;
+        }
+        elsif($line eq $PINTO_SERVER_PROGRESS_MESSAGE) {
+            $self->chrome->show_progress;
+        }
+        elsif ($line eq $PINTO_SERVER_NULL_MESSAGE) {
+             # Do nothing, discard message
+        }
+        elsif ($line =~ m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x) {
+            $self->chrome->diag($1);
+        }
+        else {
+            $self->chrome->show($line);
+        }
     }
 
     return 1;
