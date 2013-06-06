@@ -9,6 +9,8 @@ perl:
 install:
    - unset PERL_CPANM_OPT
    - cpanm App::cpanminus
+   - echo PATH is: $PATH
+   - env
    - cpanm --quiet --notest --skip-satisfied Dist::Zilla
    - dzil authordeps | cpanm --quiet --notest --skip-satisfied
    - dzil listdeps   | cpanm --quiet --notest
