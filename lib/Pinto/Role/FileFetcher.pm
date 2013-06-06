@@ -7,9 +7,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use File::Temp;
 use Path::Class;
-use HTTP::Tiny;
-use File::Copy;
-use URI;
+use LWP::UserAgent;
 
 use Pinto::Util qw(itis debug mtime throw);
 
@@ -22,10 +20,8 @@ use Pinto::Util qw(itis debug mtime throw);
 
 has ua => (
     is      => 'ro',
-    isa     => 'HTTP::Tiny',
-    default => sub { my $class = ref $_[0];
-                     my $version = $_[0]->VERSION || 'UNKNOWN';
-                     HTTP::Tiny->new(agent => "$class/$version") },
+    isa     => 'LWP::UserAgent',
+    builder => '_build_ua',
     lazy    => 1,
 );
 
@@ -39,8 +35,8 @@ intervening directories do not exist, they will be created for you.
 Returns a true value if the file has changed, returns false if it has
 not changed.  Throws and exception if anything goes wrong.
 
-The C<to> argument can be either a L<URI> or L<Path::Class::File>
-object, or a string that represents either of those.  The C<from>
+The C<from> argument can be either a L<URI> or L<Path::Class::File>
+object, or a string that represents either of those.  The C<to>
 attribute can be a L<Path::Class::File> object or a string that
 represents one.
 
@@ -53,8 +49,7 @@ sub fetch {
     my $from_uri = _make_uri($from);
     my $to       = itis($args{to}, 'Path::Class') ? $args{to} : file($args{to});
 
-    # FIX ME: This next line makes no sense to me...
-    debug "Skipping $from: already fetched to $to" and return 0 if -e $to;
+    debug("Skipping $from: already fetched to $to") and return 0 if -e $to;
 
     $to->parent->mkpath if not -e $to->parent;
     my $has_changed = $self->_fetch($from_uri, $to);
@@ -78,12 +73,10 @@ sub fetch_temporary {
     my ($self, %args) = @_;
 
     my $url  = URI->new($args{url})->canonical();
-    my $path = Path::Class::file( $url->path );
+    my $path = Path::Class::file( $url->path() );
+    return $path if $url->scheme() eq 'file';
 
-    # FIX ME: This next line makes no sense to me...
-    return $path if $url->scheme eq 'file';
-
-    my $base     = $path->basename;
+    my $base     = $path->basename();
     my $tempdir  = File::Temp::tempdir(CLEANUP => 1);
     my $tempfile = Path::Class::file($tempdir, $base);
 
@@ -97,43 +90,35 @@ sub fetch_temporary {
 sub _fetch {
     my ($self, $url, $to) = @_;
 
-    debug "Fetching $url to $to" ;
+    debug("Fetching $url");
 
-    # We switched form LWP to HTTP::Tiny to reduce our dependencies.
-    # But HTTP::Tiny does not support the file:// scheme.  So we have
-    # to handle those ourselves by copying the local file directly.
+    my $result = eval { $self->ua->mirror($url, $to) }
+        or throw $@;
 
-    return $url->scheme eq 'file' ? $self->_fetch_local($url, $to)
-                                  : $self->_fetch_remote($url, $to);
+    if ($result->is_success()) {
+        return 1;
+    }
+    elsif ($result->code() == 304) {
+        return 0;
+    }
+    else {
+        throw "Failed to fetch $url: " . $result->status_line;
+    }
+
+    # Should never get here
 }
 
 #------------------------------------------------------------------------------
 
-sub _fetch_local {
-    my ($self, $url, $to) = @_;
+sub _build_ua {
+    my ($self) = @_;
 
-    my $from = $url->path;
-    throw "$url does not exist" unless -e $from;
-    throw "$url is unreadable"  unless -r $from;
-
-    # Emmulate behavior of HTTP::Tiny->mirror
-    return 0 if -e $to and mtime($to) >= mtime($from);
-
-    File::Copy::copy($from, $to) or throw "Failed to copy $url: $!";
-
-    return 1;
-}
-
-#------------------------------------------------------------------------------
-
-sub _fetch_remote {
-    my ($self, $url, $to) = @_;
-
-    my $rsp = eval { $self->ua->mirror($url, $to) } or throw $@;
-
-    return $rsp->{status} == 304 ? 1 : 0 if $rsp->{success}; # Modified ?
-
-    throw "Failed to fetch $url: " . $rsp->{reason};
+    # TODO: Do we need to make some of this configurable?
+    my $agent = sprintf "%s/%s", ref $self, 'VERSION';
+    my $ua = LWP::UserAgent->new( agent      => $agent,
+                                  env_proxy  => 1,
+                                  keep_alive => 5 );
+    return $ua;
 }
 
 #------------------------------------------------------------------------------
