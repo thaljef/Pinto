@@ -59,7 +59,7 @@ sub _build_cpanm_exe {
     my ($cpanm_version) = $cpanm_version_cmd_output =~ m{version ([\d.]+)}
         or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
 
-    my $min_cpanm_version = '1.5013';
+    my $min_cpanm_version = '1.6916';
     if ($cpanm_version < $min_cpanm_version) {
         throw "Your cpanm ($cpanm_version) is too old. Must have $min_cpanm_version or newer";
     }
