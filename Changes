@@ -34,9 +34,13 @@
 
       BUG FIXES:
 
-      The "install" command can be used on a locked stack, but only if the --do-pull
+      The "install" command can now be used on a locked stack, but only if the --do-pull
       option is not given.  If you want to pull packges while installing, then you
       must unlock the stack first.  Thanks Jeremy Marshal.
+
+      The "install" command can now be used on a remote repository that has basic
+      HTTP authentication enabled.  Beware that cpanm does not sanitize passwords
+      from its log messages.  I'm working with miyagawa to fix that.
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 
