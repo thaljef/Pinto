@@ -174,7 +174,14 @@ sub _response_callback {
     my ($self, $status, $data) = @_;
 
     # Each data chunk will be one or more lines ending with \n
+
     chomp $data;
+    if (not $data) {
+        # HACK: So that blank lines come out right
+        # Need to find a better way to do this!!
+        $self->chrome->show('');
+        return 1;
+    }
 
     for my $line (split m/\n/, $data, -1) {
 
