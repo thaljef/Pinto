@@ -47,6 +47,7 @@ Readonly our @EXPORT_OK => qw(
     mksymlink
     mtime
     parse_dist_path
+    mask_url_passwords
     sha256
     title_text
     throw
@@ -640,6 +641,24 @@ sub is_not_blank {
     my ($string) = @_;
 
     return ! is_blank($string);
+}
+
+#-------------------------------------------------------------------------------
+
+=func mask_url_passwords($string)
+
+Masks the parts the string that look like a password embedded in an http or
+https URL. For example, C<http://joe:secret@foo.com> would return 
+C<http://joe:*password*@foo.com>
+
+=cut
+
+sub mask_url_passwords {
+    my ($url) = @_;
+
+    $url =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
+
+    return $url;
 }
 
 #-------------------------------------------------------------------------------

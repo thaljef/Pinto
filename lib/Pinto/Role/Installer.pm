@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 use Path::Class qw(dir);
 use File::Which qw(which);
 
-use Pinto::Util qw(throw);
+use Pinto::Util qw(throw mask_url_passwords);
 
 #-----------------------------------------------------------------------------
 
@@ -87,8 +87,11 @@ after execute => sub {
         push @cpanm_opts, $opt_value if defined $opt_value && length $opt_value;
     }
 
+    # Scrub passwords from the command so they don't appear in the logs
+    my @sanitized_cpanm_opts = map { mask_url_passwords($_) } @cpanm_opts;
+    $self->info(join ' ', 'Running:', $self->cpanm_exe, @sanitized_cpanm_opts);
+
     # Run cpanm
-    $self->info(join ' ', 'Running:', $self->cpanm_exe, @cpanm_opts);
     0 == system($self->cpanm_exe, @cpanm_opts, $self->targets)
       or throw "Installation failed.  See the cpanm build log for details";
 };

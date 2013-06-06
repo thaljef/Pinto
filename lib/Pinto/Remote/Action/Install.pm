@@ -54,6 +54,12 @@ sub _build_mirror_url {
     my $stack_dir  = defined $stack ? "/stacks/$stack" : '';
     my $mirror_url = $self->root . $stack_dir;
 
+    if (defined $self->password) {
+        # Squirt username and password into URL
+        my $credentials = $self->username . ':' . $self->password;
+        $mirror_url =~ s{^ (https?://) }{$1$credentials\@}mx;
+    }
+
     return $mirror_url;
 }
 
