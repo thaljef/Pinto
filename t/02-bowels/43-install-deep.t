@@ -14,7 +14,7 @@ use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
 
 #------------------------------------------------------------------------------
 
-my $min_cpanm = 1.5013;
+my $min_cpanm = 1.6916;
 plan skip_all => "Need cpanm $min_cpanm or newer" unless has_cpanm($min_cpanm);
 
 #------------------------------------------------------------------------------
