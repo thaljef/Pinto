@@ -28,6 +28,10 @@
       pulling a long chain of dependencies into a remote repository and the server
       will immediately stop and roll back the entire transaction.
 
+      The progress meter is now visible when using a remote repository.  The progress
+      meter is never shown when --verbose or --quiet is set, or when STDERR is not
+      connected to a terminal.
+
       BUG FIXES:
 
       The "install" command can now be used on a locked stack, but only if the --do-pull
