@@ -16,8 +16,8 @@ use Pinto::Tester::Util qw(make_dist_archive has_cpanm $MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
-my $min_cpanm = $MINIMUM_CPANM_VERSION;
-plan skip_all => "Need cpanm $min_cpanm or newer" unless has_cpanm($min_cpanm);
+plan skip_all => "Need cpanm $MINIMUM_CPANM_VERSION or newer" 
+  unless has_cpanm($MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
