@@ -30,7 +30,7 @@ use Pinto::Util qw(decamelize throw);
 #-------------------------------------------------------------------------------
 
 use Readonly;
-Readonly::Scalar our $SCHEMA_VERSION => 1;
+Readonly our $SCHEMA_VERSION => 1;
 sub schema_version { return $SCHEMA_VERSION };
 
 #-------------------------------------------------------------------------------
