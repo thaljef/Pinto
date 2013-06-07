@@ -5,6 +5,7 @@ package Pinto::Tester::Util;
 use strict;
 use warnings;
 
+use Readonly;
 use Path::Class;
 use File::Temp qw(tempdir);
 use Module::Faker::Dist;
@@ -20,16 +21,23 @@ use base 'Exporter';
 
 #-------------------------------------------------------------------------------
 
-our @EXPORT_OK = qw( make_dist_obj
-                     make_pkg_obj
-                     make_dist_struct
-                     make_dist_archive
-                     parse_pkg_spec
-                     parse_dist_spec
-                     parse_reg_spec
-                     has_cpanm );
+Readonly our @EXPORT_OK => qw( 
+    $MINIMUM_CPANM_VERSION
+    make_dist_obj
+    make_pkg_obj
+    make_dist_struct
+    make_dist_archive
+    parse_pkg_spec
+    parse_dist_spec
+    parse_reg_spec
+    has_cpanm
+);
 
-our %EXPORT_TAGS = (all => \@EXPORT_OK);
+Readonly our %EXPORT_TAGS => (all => \@EXPORT_OK);
+
+#-------------------------------------------------------------------------------
+
+Readonly our $MINIMUM_CPANM_VERSION => 1.6196;
 
 #-------------------------------------------------------------------------------
 

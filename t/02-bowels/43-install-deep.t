@@ -10,11 +10,11 @@ use Path::Class qw(dir);
 
 use lib 'tlib';
 use Pinto::Tester;
-use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
+use Pinto::Tester::Util qw(make_dist_archive has_cpanm $MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
-my $min_cpanm = 1.6916;
+my $min_cpanm = $MINIMUM_CPANM_VERSION;
 plan skip_all => "Need cpanm $min_cpanm or newer" unless has_cpanm($min_cpanm);
 
 #------------------------------------------------------------------------------
