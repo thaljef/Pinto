@@ -121,6 +121,7 @@ sub parent_proc {
             $writer->write( $input || $nullmsg );
 
             if ($socket && not getpeername($socket)) {
+                # TODO: Consider using Proc::Terminator instead
                 kill 'TERM', $child_pid and wait; 
                 last;
             }
