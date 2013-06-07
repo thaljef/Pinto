@@ -37,6 +37,7 @@ has server_port => (
   is         => 'ro',
   isa        => Int,
   default    => sub { empty_port() },
+  lazy       => 1,
 );
 
 
