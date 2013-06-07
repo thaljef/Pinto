@@ -25,9 +25,12 @@ is(ref $t->dir(), 'Path::Class::Dir', 'Coerced dir from string');
 $t->uri('http://nuts');
 is(ref $t->uri(), 'URI::http', 'Coerced URI from string');
 
-$t->author('hello');
-is($t->author, 'HELLO', 'Author coerced to uppercase');
-throws_ok {$t->author('foo bar!') } qr/must match/, 'Author must be alphanumeric';
+$t->author('foobar');
+is($t->author, 'FOOBAR', 'Author coerced to uppercase');
+lives_ok  {$t->author('FOO-123') } q{Author name can contain trailing numbers};
+throws_ok {$t->author('FOO_BAR') } qr/must match/, 'Author must be alphanumeric';
+throws_ok {$t->author('F') } qr/must match/, 'Author must be at least 2 chars';
+throws_ok {$t->author('F6') } qr/must match/, 'First 2 chars of author must be letters';
 throws_ok {$t->author(undef) } qr/must match/, 'Author must not be undef';
 throws_ok {$t->author('') } qr/must match/, 'Author must have length';
 
