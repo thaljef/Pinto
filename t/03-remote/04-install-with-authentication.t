@@ -62,7 +62,7 @@ subtest 'Install succeeds with valid credentials' => sub {
   my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
 
   lives_ok { $remote->run(Install => (targets => ['PkgA'], %cpanm_opts)) }
-    'install command was successfull'
+    'install command was successfull';
 
   file_exists_ok($p5_dir->file('PkgA.pm'));
   file_exists_ok($p5_dir->file('PkgB.pm'));
