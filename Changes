@@ -2,48 +2,50 @@
        
       INCOMPATIBLE CHANGES:
 
-      By default, Pinto now takes the first satisfactory package that it
-      finds among the upstream repositories, rather than taking the latest
-      one.  This only matters if you specify multiple upstream repositories.
-      To get the old behavior, use the new --cascade option on the "pull" 
-      and "add" commands.  Thanks @hesco for helping me sort this out.
+      By default, Pinto now takes the first satisfactory package that it finds
+      among the upstream repositories, rather than taking the latest one.
+      This only matters if you specify multiple upstream repositories. To get
+      the old behavior, use the new --cascade option on the "pull"  and "add"
+      commands.  Thanks @hesco for helping me sort this out.
 
       The "version" command has been removed.  Now that all Pinto components
-      ship together, they all have the same version number.  So there is
-      no need for a special version command.  If you want to know what version
-      of pinto you have, just use the --version option.
+      ship together, they all have the same version number.  So there is no
+      need for a special version command.  If you want to know what version of
+      pinto you have, just use the --version option.
       
       Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other words, two
-      ASCII letters followed by zero or more ASCII letters, digits, or hyphens.  
-      If you use lowercase letters, they will be automatically forced to uppercase
-      for you.  This was done because cpanm relies on author IDs following the 
-      PAUSE convention.  I had hoped that Pinto could be more liberal about author
-      IDs, but it seems we must conform so that we can cooperate with the rest of
-      the toolchain.
+      ASCII letters followed by zero or more ASCII letters, digits, or
+      hyphens.   If you use lowercase letters, they will be automatically
+      forced to uppercase for you.  This was done because cpanm relies on
+      author IDs following the  PAUSE convention.  I had hoped that Pinto
+      could be more liberal about author IDs, but it seems we must conform so
+      that we can cooperate with the rest of the toolchain.
 
       The --no-history repository configuration is no longer supported.  This
       feature was experimental and the use case hasn't proven to be valid.
 
       ENHANCEMENTS:
 
-      Pinto::Server (a.k.a. pintod) will abort the action if it looses the connection
-      with the client.  So, for example, you can press Ctrl-C in the middle of
-      pulling a long chain of dependencies into a remote repository and the server
-      will immediately stop and roll back the entire transaction.
+      Pinto::Server (a.k.a. pintod) will abort the action if it looses the
+      connection with the client.  So, for example, you can press Ctrl-C in
+      the middle of pulling a long chain of dependencies into a remote
+      repository and the server will immediately stop and roll back the entire
+      transaction.
 
-      The progress meter is now visible when using a remote repository.  The progress
-      meter is never shown when --verbose or --quiet is set, or when STDERR is not
-      connected to a terminal.
+      The progress meter is now visible when using a remote repository.  The
+      progress meter is never shown when --verbose or --quiet is set, or when
+      STDERR is not connected to a terminal.
 
       BUG FIXES:
 
-      The "install" command can now be used on a locked stack, but only if the --do-pull
-      option is not given.  If you want to pull packges while installing, then you
-      must unlock the stack first.  Thanks Jeremy Marshal.
+      The "install" command can now be used on a locked stack, but only if the
+      --do-pull option is not given.  If you want to pull packges while
+      installing, then you must unlock the stack first.  Thanks Jeremy
+      Marshal.
 
-      The "install" command can now be used on a remote repository that has basic
-      HTTP authentication enabled.  Beware that cpanm does not sanitize passwords
-      from its log messages.  I'm working with miyagawa to fix that.
+      The "install" command can now be used on a remote repository that has
+      basic HTTP authentication enabled.  Beware that cpanm does not sanitize
+      passwords from its log messages.  I'm working with miyagawa to fix that.
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 
@@ -53,16 +55,16 @@
 
       BUG FIXES:
 
-      Now requires verison 0.018 of Test::LWP::UserAgent or newer
-      which resolves some test failures in Pinto seen by CPAN
-      Testers using older versions of T::LWP::UA.
+      Now requires verison 0.018 of Test::LWP::UserAgent or newer which
+      resolves some test failures in Pinto seen by CPAN Testers using older
+      versions of T::LWP::UA.
 
 0.083     2013-05-13 14:36:21 America/Los_Angeles
 
       ENHANCEMENTS:
 
-      * Improved password prompting, so it still works when STDIN
-      and/or STDOUT are not connected to a terninal anymore.
+      * Improved password prompting, so it still works when STDIN and/or
+      STDOUT are not connected to a terninal anymore.
 
       * Revised and corrected errors in documentation.
 
@@ -74,27 +76,27 @@
 
 0.081     2013-04-26 13:51:32 America/Los_Angeles
 
-       Just a minor change in test code to prevent failure occasionaly
-       seen on Unix boxen.
+       Just a minor change in test code to prevent failure occasionaly seen on
+       Unix boxen.
 
 0.080     2013-04-26 10:41:19 America/Los_Angeles
 
       HEADLINES:
 
       Pinto::Server and Pinto::Remote have been merged into this distribution,
-      so everything ships together.  It also means both Pinto::Server and 
+      so everything ships together.  It also means both Pinto::Server and
       Pinto::Remote are now working again.  Woot!!
 
       There is one caveat: when using a remote repository, pinto will not
-      display the diff and prompt you to edit the commit message.  Instead,
-      it will automatically use the default generated message or the message
-      you specified at the command line.  I hope to fix this soon.
+      display the diff and prompt you to edit the commit message.  Instead, it
+      will automatically use the default generated message or the message you
+      specified at the command line.  I hope to fix this soon.
 
       BUG FIXES:
 
-      * pinto(1) and pintod(1) will now be installed with a fixed shebang, 
-      so that they will always run with the same version of perl, even if 
-      you use perlbrew to switch to a differnt perl (thanks @punter)
+      * pinto(1) and pintod(1) will now be installed with a fixed shebang,
+      so that they will always run with the same version of perl, even if you
+      use perlbrew to switch to a differnt perl (thanks @punter)
 
       * pinto(1) will now show the progress meter when reading input from a
       file.  The progress meter will be hidden whenever STDERR is not
@@ -102,8 +104,8 @@
       hide the progress meter.
 
       * Pinto now indexes "inner packages" so distributions like mod_perl
-      will be indexed (more) correctly.  I had misunderstood how PAUSE
-      worked.  Thanks @miyagawa.
+      will be indexed (more) correctly.  I had misunderstood how PAUSE worked.
+      Thanks @miyagawa.
 
 0.068     2013-04-04 22:41:55 America/Los_Angeles
 
