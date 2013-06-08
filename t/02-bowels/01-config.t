@@ -20,7 +20,6 @@ subtest 'Default config' => sub {
     my %cases = (
         root       => 'nowhere',
         sources    => 'http://cpan.perl.org http://backpan.perl.org',
-        no_history => 0,
     );
 
     my $cfg = Pinto::Config->new(root => 'nowhere');
@@ -37,7 +36,6 @@ subtest 'Custom config' => sub {
     my %cases = (
         root       => 'nowhere',
         sources    => 'http://cpan.pair.com  http://metacpan.org',
-        no_history => 1
     );
 
     my $cfg = Pinto::Config->new(%cases);

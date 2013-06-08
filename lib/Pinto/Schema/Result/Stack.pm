@@ -375,21 +375,6 @@ sub duplicate_registrations {
 
 #------------------------------------------------------------------------------
 
-sub move_registrations {
-    my ($self, %args) = @_;
-
-    my $rev = $args{to};
-
-    debug "Moving registrations for stack $self to $rev";
-
-    my $rs = $self->head->registrations;
-    $rs->update({revision => $rev->id});
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub rename {
     my ($self, %args) = @_;
 
@@ -472,8 +457,7 @@ sub start_revision {
     my $old_head  = $self->head;
     my $new_head  = $self->result_source->schema->create_revision( {} );
 
-    my $method = ($self->should_keep_history ? 'duplicate' : 'move') . '_registrations';
-    $self->$method(to => $new_head);
+    $self->duplicate_registrations(to => $new_head);
 
     $new_head->add_parent($old_head);
     $self->set_head($new_head);
@@ -506,9 +490,6 @@ sub commit_revision {
 
 sub should_keep_history {
   my ($self) = @_;
-
-  # Is this repo configured to keep history?
-  return 1 unless $self->repo->config->no_history;
 
   # Is this revision referenced by other stacks?
   return 1 if $self->head->stacks->count > 1;

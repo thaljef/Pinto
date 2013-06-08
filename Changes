@@ -21,6 +21,9 @@
       IDs, but it seems we must conform so that we can cooperate with the rest of
       the toolchain.
 
+      The --no-history repository configuration is no longer supported.  This
+      feature was experimental and the use case hasn't proven to be valid.
+
       ENHANCEMENTS:
 
       Pinto::Server (a.k.a. pintod) will abort the action if it looses the connection

@@ -146,15 +146,6 @@ has log_dir => (
 );
 
 
-has no_history => (
-    is         => 'ro',
-    isa        => Bool,
-    key        => 'no_history',
-    default    => 0,
-    documentation => 'Do not keep stack snapshots at each revision',
-);
-
-
 has allow_duplicates => (
     is         => 'ro',
     isa        => Bool,
