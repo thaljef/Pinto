@@ -3,7 +3,7 @@
 package Pinto::Server::Tester;
 
 use Moose;
-use MooseX::Types::Moose qw(Str Int);
+use MooseX::Types::Moose qw(Str Int ArrayRef);
 
 use Carp;
 use IPC::Run;
@@ -25,6 +25,19 @@ use HTTP::Server::PSGI;  # just to make sure we have it
 extends 'Pinto::Tester';
 
 #-------------------------------------------------------------------------------
+
+=attr pintod_opts( \@args )
+
+Passes additional C<@args> to the F<pintod> command line.  Default is empty.
+
+=cut
+
+has pintod_opts => (
+  is         => 'ro',
+  isa        => ArrayRef,
+  default    => sub { [] },
+  lazy       => 1,
+);
 
 =attr server_port( $integer )
 
@@ -142,8 +155,9 @@ sub start_server {
 
     child {
       my $xtra_lib = $self->_extra_lib;
+      my $xtra_opts = $self->pintod_opts;
       my %opts = ('--port' => $self->server_port, '--root' => $self->root);
-      my @cmd = ($^X, $xtra_lib, $self->pintod_exe, %opts);
+      my @cmd = ($^X, $xtra_lib, $self->pintod_exe, %opts, @{$xtra_opts});
       $self->tb->note(sprintf 'exec(%s)', join ' ', @cmd);
       exec @cmd;
     }
