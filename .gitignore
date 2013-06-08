@@ -23,4 +23,5 @@ profiles
 nytprof
 nytprof.out
 *.sublime*
+.tags*
 tmp
