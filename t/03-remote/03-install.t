@@ -32,7 +32,7 @@ $t->populate('MARK/DistC-1 = PkgC~1');
 $t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
 
 #------------------------------------------------------------------------------
-subtest install_from_default_stack => sub {
+subtest 'Install from default stack' => sub {
 
   my $sandbox = File::Temp->newdir;
   my $p5_dir = dir($sandbox, qw(lib perl5));
@@ -49,7 +49,7 @@ subtest install_from_default_stack => sub {
 
 #------------------------------------------------------------------------------
 
-subtest install_from_named_stack => sub {
+subtest 'Install from named stack' => sub {
 
   $t->run_ok('New'  => {stack => 'dev'} );
   $t->run_ok('Pull' => {targets => 'PkgA', stack => 'dev'});
@@ -69,7 +69,7 @@ subtest install_from_named_stack => sub {
 
 #------------------------------------------------------------------------------
 
-subtest missing_target => sub {
+subtest 'Install a missing target' => sub {
 
   my $sandbox = File::Temp->newdir;
   my $p5_dir = dir($sandbox, qw(lib perl5));
@@ -82,7 +82,7 @@ subtest missing_target => sub {
 
 #------------------------------------------------------------------------------
 
-subtest unusual_author_id => sub {
+subtest 'Install a dist with an unusual author id' => sub {
 
   # Versions of cpanm before 1.6916 could not handle short author ids or those
   # that contained numbers and hyphens.  But miyagawa agreed to support them
