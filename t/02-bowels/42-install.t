@@ -7,19 +7,16 @@ use Test::More;
 use Test::File;
 use Test::Exception;
 use Path::Class qw(dir);
+use Capture::Tiny qw(capture_stderr);
 
 use lib 'tlib';
 use Pinto::Tester;
-use Pinto::Tester::Util qw(make_dist_archive has_cpanm $MINIMUM_CPANM_VERSION);
+use Pinto::Tester::Util qw(has_cpanm $MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
 plan skip_all => "Need cpanm $MINIMUM_CPANM_VERSION or newer" 
     unless has_cpanm($MINIMUM_CPANM_VERSION);
-
-#------------------------------------------------------------------------------
-
-warn "You will see some messages from cpanm, don't be alarmed...\n";
 
 #------------------------------------------------------------------------------
 
@@ -31,12 +28,15 @@ $t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
 
 #------------------------------------------------------------------------------
 
-subtest install_from_default_stack => sub {
+subtest 'Install from default stack' => sub {
 
     my $sandbox = File::Temp->newdir;
     my $p5_dir = dir($sandbox, qw(lib perl5));
     my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
-    $t->run_ok(Install => {targets => ['PkgA'], %cpanm_opts});
+
+    my $stderr = capture_stderr {
+        $t->run_ok(Install => {targets => ['PkgA'], %cpanm_opts});
+    };   
 
     file_exists_ok($p5_dir->file('PkgA.pm'));
     file_exists_ok($p5_dir->file('PkgB.pm'));
@@ -46,7 +46,7 @@ subtest install_from_default_stack => sub {
 
 #------------------------------------------------------------------------------
 
-subtest install_from_named_stack => sub {
+subtest 'Install from named stack' => sub {
 
     $t->run_ok('New'  => {stack => 'dev'} );
     $t->run_ok('Pull' => {targets => 'PkgA', stack => 'dev'});
@@ -54,7 +54,10 @@ subtest install_from_named_stack => sub {
     my $sandbox = File::Temp->newdir;
     my $p5_dir = dir($sandbox, qw(lib perl5));
     my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
-    $t->run_ok(Install => {targets => ['PkgA'], stack => 'dev', %cpanm_opts});
+
+    my $stderr = capture_stderr {
+        $t->run_ok(Install => {targets => ['PkgA'], stack => 'dev', %cpanm_opts});
+    };
 
     file_exists_ok($p5_dir->file('PkgA.pm'));
     file_exists_ok($p5_dir->file('PkgB.pm'));
@@ -64,18 +67,21 @@ subtest install_from_named_stack => sub {
 
 #------------------------------------------------------------------------------
 
-subtest missing_target => sub {
+subtest 'Install a missing target' => sub {
 
     my $sandbox = File::Temp->newdir;
     my $p5_dir = dir($sandbox, qw(lib perl5));
     my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
 
-    $t->run_throws_ok(Install => {targets => ['PkgZ'], %cpanm_opts}, qr/Installation failed/);
+    my $stderr = capture_stderr {
+        $t->run_throws_ok(Install => {targets => ['PkgZ'], %cpanm_opts},
+            qr/Installation failed/);
+    };
 };
 
 #------------------------------------------------------------------------------
 
-subtest unusual_author_id => sub {
+subtest 'Install target with unusual author ID' => sub {
 
     # Versions of cpanm before 1.6916 could not handle short author ids or those
     # that contained numbers and hyphens.  But miyagawa agreed to support them
@@ -88,8 +94,11 @@ subtest unusual_author_id => sub {
     my $sandbox = File::Temp->newdir;
     my $p5_dir = dir($sandbox, qw(lib perl5));
     my %cpanm_opts = (cpanm_options => {q => undef, L => $sandbox->dirname});
-    $t->run_ok(Install => {targets => ['PkgA'], %cpanm_opts});
-    $t->run_ok(Install => {targets => ['PkgB'], %cpanm_opts});
+
+    my $stderr = capture_stderr {
+        $t->run_ok(Install => {targets => ['PkgA'], %cpanm_opts});
+        $t->run_ok(Install => {targets => ['PkgB'], %cpanm_opts});
+    };
 
     file_exists_ok($p5_dir->file('PkgA.pm'));
     file_exists_ok($p5_dir->file('PkgB.pm'));

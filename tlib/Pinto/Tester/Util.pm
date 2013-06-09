@@ -7,6 +7,7 @@ use warnings;
 
 use Readonly;
 use Path::Class;
+use Apache::Htpasswd;
 use File::Temp qw(tempdir);
 use Module::Faker::Dist;
 
@@ -27,6 +28,7 @@ Readonly our @EXPORT_OK => qw(
     make_pkg_obj
     make_dist_struct
     make_dist_archive
+    make_htpasswd_file
     parse_pkg_spec
     parse_dist_spec
     parse_reg_spec
@@ -163,6 +165,19 @@ sub parse_reg_spec {
     $pkg_version ||= 0;
 
     return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);
+}
+
+#------------------------------------------------------------------------------
+
+sub make_htpasswd_file {
+    my ($username, $password, $file) = @_;
+
+    $file ||= file( tempdir(CLEANUP => 1), 'htpasswd' );
+    $file->touch; # Apache::Htpasswd requires the file to exist
+    
+    Apache::Htpasswd->new( $file )->htpasswd($username, $password);
+
+    return $file;
 }
 
 #------------------------------------------------------------------------------

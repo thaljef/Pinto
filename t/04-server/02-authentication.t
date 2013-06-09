@@ -7,42 +7,26 @@ use Test::More;
 use Plack::Test;
 
 use JSON;
-use File::Temp;
-use Path::Class;
 use HTTP::Request;
-use Apache::Htpasswd;
 
 use Pinto::Server;
 use Pinto::Constants qw(:server);
 
 use lib 'tlib';
 use Pinto::Tester;
+use Pinto::Tester::Util qw(make_htpasswd_file);
 
 #------------------------------------------------------------------------------
-# Create a repository
+# Create a repository and configure server
 
 my $t = Pinto::Tester->new;
-
-#------------------------------------------------------------------------------
-# Create a password file
-
-my $temp_dir         = File::Temp->newdir;
-my $htpasswd_file    = file($temp_dir, 'htpasswd');
-my @credentials      = qw(my_login my_password);
-my $auth_required_rx = qr/authorization required/i;
-
-$htpasswd_file->touch; # Apache::Htpasswd requires the file to exist
-Apache::Htpasswd->new( $htpasswd_file )->htpasswd(@credentials);
-
-ok( -e $htpasswd_file, 'htpasswd file exists' );
-ok( -s $htpasswd_file, 'htpasswd file is not empty' );
-
-#------------------------------------------------------------------------------
-# Setup the server
-
-my $auth = {backend => 'Passwd', path => $htpasswd_file->stringify()};
-my %opts = ( root => $t->pinto->root(), auth => $auth );
+my @credentials = qw(my_login, my_password);
+my $htpasswd_file = make_htpasswd_file(@credentials);
+my $auth = {backend => 'Passwd', path => $htpasswd_file->stringify};
+my %opts = ( root => $t->pinto->root, auth => $auth );
 my $app  = Pinto::Server->new(%opts)->to_app;
+
+my $auth_required_rx = qr/authorization required/i;
 
 #------------------------------------------------------------------------------
 # Do tests
