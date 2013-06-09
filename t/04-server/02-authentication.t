@@ -29,7 +29,6 @@ my $app  = Pinto::Server->new(%opts)->to_app;
 my $auth_required_rx = qr/authorization required/i;
 
 #------------------------------------------------------------------------------
-# Do tests
 
 test_psgi
     app => $app,
@@ -49,6 +48,8 @@ test_psgi
         like $get_res->content, $auth_required_rx, 'Expected content';
 
     };
+
+#------------------------------------------------------------------------------
 
 test_psgi
     app => $app,
@@ -70,6 +71,7 @@ test_psgi
         # TODO: maybe test headers, body.
     };
 
+#------------------------------------------------------------------------------
 
 test_psgi
     app => $app,
