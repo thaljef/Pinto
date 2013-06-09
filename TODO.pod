@@ -40,11 +40,7 @@
 
 =item Create command to list outdated packages
 
-=item Stack property: source repositories
-
 =item Stack property: allow devel releases
-
-=item Repo property: log level
 
 =item Repo property: default sources
 
