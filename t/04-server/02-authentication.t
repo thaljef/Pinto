@@ -20,7 +20,7 @@ use Pinto::Tester::Util qw(make_htpasswd_file);
 # Create a repository and configure server
 
 my $t = Pinto::Tester->new;
-my @credentials = qw(my_login, my_password);
+my @credentials = qw(my_login my_password);
 my $htpasswd_file = make_htpasswd_file(@credentials);
 my $auth = {backend => 'Passwd', path => $htpasswd_file->stringify};
 my %opts = ( root => $t->pinto->root, auth => $auth );
