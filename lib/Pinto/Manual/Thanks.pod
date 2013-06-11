@@ -1,0 +1,76 @@
+# ABSTRACT: Thanking the Pinto supporters
+
+package Pinto::Manual::Thanks;
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+1;
+
+__END__
+
+=pod
+
+=encoding utf-8
+
+In April of 2013, brian d foy organized a L<crowdfunding 
+campaign|http://blogs.perl.org/users/brian_d_foy/2013/04/crowd-funding-pinto.html> 
+to finance further development of Pinto.  To my knowledge, this was the first and 
+(so far) largest crowdfunding campaign for an open source Perl project.
+
+Thanks to the hard work of numerous individuals, the campaign ultimately exceeded 
+it's goals and raised a total of $4,620.12 from 128 contributors (listed below).
+I am truly grateful to each and every one of them.  Because of their generous 
+support, I am able to continue doing the work I love most.  Thank you.
+
+  jrw 32982               Nathan Glenn            Ekki Plicht             
+  Olaf Alders             Michael Gregorowicz     Steve Purkis            
+  Mark Allen              Jason Harlan            Sean Quinlan            
+  Rohan Almeida           George Hartzell         Michael Rasmussen       
+  Pat And Don             John Haugeland          Will Redd               
+  Ross Attrill            Sherry Heinz            Jozef Reisinger         
+  Renee B                 Khaled Hussein          Dan Risse               
+  John Bales              Toby Inkster            Michel Rodriguez        
+  Michiel Beijen          Infinity Interactive    Daniel Ruoso            
+  Alan Berndt             Perl Is Fun             Bill Ruppert            
+  James Beshara           Chris Jack              Timothy Sailer          
+  Neil Bowers             Paul Johnson            Jorge Sainz             
+  Norbert Brandl          Prakash Kailasa         Moosa Salem             
+  Philippe Bruhat         Alexander Karelas       Conrad Schneiker        
+  Lee Carmichael          Aydar Khabibullin       Clayton Scott           
+  Yanick Champoux         Andrey Khozov           Craig Scrivner          
+  Gustavo Chaves          Wolfgang Kinkeldei      Li Sen                  
+  Peter Chines            Yaroslav Korshak        Michael South           
+  Adam Clarke             Damien Krotkine         Tadeusz Sośnierz        
+  Olav Cleemann           Michael Kröll           Marc St Raymond         
+  Jody Clements           Tom Legrady             Seth Surchin            
+  Greg Cole               Felipe Leprevost        Gabor Szabo             
+  Montgomery Conner       Hermen Lesscher         Christopher Taranto     
+  Tudor Constantin        Vladimir Lettiev        Jan Thorsen             
+  Anon Contrib            Carlos Lima             Viacheslav Tykhanovskyi 
+  Anonymous Contributor   Nick Logan              A Sinan Unur            
+  Justin Cook             Søren Lund              Bruce Van Allen         
+  Dave Cross              Jim Martinez            Todd Wade               
+  Tomasz Czepiel          Naveed Massjouni        Brian Wisti             
+  Seth Daniel             Vyacheslav Matyukhin    John Wittkoski          
+  Robert Debowski         Gabriel Munoz           William Wolf            
+  Gautam Dey              Kamen Naydenov          Chisel Wright           
+  José Diaz Seng          Al Newkirk              Sawyer X                
+  Boris Däppen            T Nishimura             Andy Yates              
+  Magnus Enger            Ryan Olson              Doyle Young             
+  Hugh Esco               Marco Palma             Marek Zareba            
+  Roman F                 Karen Pauley            Kev Zettler             
+  David Farrell           Bryan Paxton            j0e axford              
+  Eric Folley             Emil Perhinschi         dagur                  
+  Mike Friedman           Matt Perry              brian d foy             
+  Wolf Gang               Dimitar Petrov          del skorch              
+  Greg Gerke              Jamie Pitts             Allen van der Ross    
+
+I also thank L<Crowdtilt|http://crowdtilt.com> for graciously providing their
+fundraising platform free of charge, and for providing such excellent customer 
+support during our campaign.
+
+=cut
+

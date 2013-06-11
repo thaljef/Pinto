@@ -37,6 +37,10 @@ Presents a narrative explanation of how to use L<Pinto>.
 
 Presents a condensed summary of L<pinto> commands.
 
+=item L<Pinto::Manual::Thanks>
+
+Names of those who helped to finance Pinto.
+
 =back
 
 =head1 SEE ALSO

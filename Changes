@@ -26,6 +26,10 @@
 
       ENHANCEMENTS:
 
+      The names of those kind souls who generously helped finance Pinto
+      through the crowdfunding campaing on Crowdtilt are now listed in 
+      Pinto::Manual::Thanks.
+
       Pinto::Server (a.k.a. pintod) will abort the action if it looses the
       connection with the client.  So, for example, you can press Ctrl-C in
       the middle of pulling a long chain of dependencies into a remote
