@@ -114,6 +114,19 @@ without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
 the ["SYNOPSIS"](#SYNOPSIS) are your public user interface.
 
+# CONTRIBUTORS
+
+- BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+- Cory G Watson <gphat@onemogin.com>
+- Jakob Voss <jakob@nichtich.de>
+- Karen Etheridge <ether@cpan.org>
+- Michael G. Schwern <schwern@pobox.com>
+- Oleg Gashev <oleg@gashev.net>
+- Steffen Schwigon <ss5@renormalist.net>
+- Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
+- Yanick Champoux <yanick@babyl.dyndns.org>
+- Hugh Esco <hesco@campaignfoundations.com>
+
 # SUPPORT
 
 ## Perldoc
@@ -187,22 +200,6 @@ from your repository :)
 [https://github.com/thaljef/Pinto](https://github.com/thaljef/Pinto)
 
     git clone git://github.com/thaljef/Pinto.git
-
-# CONTRIBUTORS
-
-- BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
-- Cory G Watson <gphat@onemogin.com>
-- Jakob Voss <jakob@nichtich.de>
-- Jeff <jeff@callahan.local>
-- Jeffrey Ryan Thalhammer <jeff@imaginative-software.com>
-- Jeffrey Thalhammer <jeff@imaginative-software.com>
-- Karen Etheridge <ether@cpan.org>
-- Michael G. Schwern <schwern@pobox.com>
-- Oleg Gashev <oleg@gashev.net>
-- Steffen Schwigon <ss5@renormalist.net>
-- Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
-- Yanick Champoux <yanick@babyl.dyndns.org>
-- hesco <hesco@campaignfoundations.com>
 
 # AUTHOR
 

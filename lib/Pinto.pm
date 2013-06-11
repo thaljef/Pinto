@@ -256,4 +256,50 @@ without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
 the L</SYNOPSIS> are your public user interface.
 
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item *
+
+BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+
+=item *
+
+Cory G Watson <gphat@onemogin.com>
+
+=item *
+
+Jakob Voss <jakob@nichtich.de>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Michael G. Schwern <schwern@pobox.com>
+
+=item *
+
+Oleg Gashev <oleg@gashev.net>
+
+=item *
+
+Steffen Schwigon <ss5@renormalist.net>
+
+=item *
+
+Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
+
+=item *
+
+Yanick Champoux <yanick@babyl.dyndns.org>
+
+=item *
+
+Hugh Esco <hesco@campaignfoundations.com>
+
+=back
+
 =cut
