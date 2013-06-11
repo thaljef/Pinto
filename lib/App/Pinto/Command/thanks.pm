@@ -1,6 +1,6 @@
-package App::Pinto::Command::thanks;
+# ABSTRACT: show our gratitude
 
-# ABSTRACT: show my gratitude
+package App::Pinto::Command::thanks;
 
 use strict;
 use warnings;
@@ -40,3 +40,16 @@ sub execute {
 #-------------------------------------------------------------------------------
 1;
 
+__END__
+
+
+=head1 SYNOPSIS
+
+  pinto thanks
+
+=head1 DESCRIPTION
+
+This command shows our appreciation to those who contributed to the Pinto
+crowdfunding campaign.
+
+=cut
