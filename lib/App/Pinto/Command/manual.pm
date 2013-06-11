@@ -50,3 +50,20 @@ sub execute {
 #-------------------------------------------------------------------------------
 1;
 
+=head1 SYNOPSIS
+
+  pinto manual COMMAND
+
+=head1 DESCRIPTION
+
+This command shows the user manual for a pinto COMMAND.
+
+=head1 COMMAND ARGUMENTS
+
+The argument to this command is the name of the command for which you would
+like to see the manual.  To see a list of available commands, use this
+command:
+
+  pinto commands
+
+=cut
