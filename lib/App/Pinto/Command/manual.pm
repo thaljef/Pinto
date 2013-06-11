@@ -1,6 +1,6 @@
-package App::Pinto::Command::manual;
-
 # ABSTRACT: show the full manual for a command
+
+package App::Pinto::Command::manual;
 
 use strict;
 use warnings;
@@ -61,9 +61,7 @@ This command shows the user manual for a pinto COMMAND.
 =head1 COMMAND ARGUMENTS
 
 The argument to this command is the name of the command for which you would
-like to see the manual.  To see a list of available commands, use this
-command:
-
-  pinto commands
+like to see the manual.  You can also use the L<help|App::Pinto::Command::help> 
+command to get a breif summary of the command.
 
 =cut
