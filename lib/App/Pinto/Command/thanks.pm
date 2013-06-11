@@ -19,17 +19,20 @@ use base qw(App::Pinto::Command);
 sub execute {
     my ($self, $opts, $args) = @_;
 
-    my ($cmd, undef, undef) = $self->app->prepare_command(@$args);
-
     my $path;
     for my $dir (@INC) {
-        $path = dir($dir)->file( qw( Pinto Manual Thanks.pod) );
-        last if -e $path;
+        my $maybe = dir($dir)->file( qw( Pinto Manual Thanks.pod) );
+        $path = $maybe and last if -e $maybe;
     }
 
     die "Could not find the Thanks pod.\n" if not $path;
 
-    pod2usage(-verbose => 2, -input => "$path", -exitval => 0);
+    pod2usage(
+        -verbose  => 99,
+        -sections => 'THANK YOU',
+        -input    => "$path",
+        -exitval  => 0,
+    );
 
     return 1;
 }
