@@ -56,7 +56,7 @@ sub execute {
 
 =head1 DESCRIPTION
 
-This command shows the user manual for a pinto COMMAND.
+This command shows the complete user manual for a pinto COMMAND.
 
 =head1 COMMAND ARGUMENTS
 
