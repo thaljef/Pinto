@@ -6,6 +6,7 @@ use warnings;
 use Test::More;
 use Test::Memory::Cycle;
 
+use lib 'tlib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------
