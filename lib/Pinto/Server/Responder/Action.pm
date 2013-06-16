@@ -72,7 +72,7 @@ sub child_proc {
     # I'm not sure why, but cleanup isn't happening when we get
     # a TERM signal from the parent process.  I suspect it
     # has something to do with File::NFSLock messing with %SIG
-    local $SIG{TERM} = sub { File::Temp::cleanup; die 'Got sig TERM' };
+    local $SIG{TERM} = sub { File::Temp::cleanup; die $@};
 
     ## no critic qw(PackageVar)
     local $Pinto::Globals::current_username    = delete $pinto_args->{username};
