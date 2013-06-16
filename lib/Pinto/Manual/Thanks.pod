@@ -17,15 +17,15 @@ __END__
 
 =head1 THANK YOU
 
-In April of 2013, brian d foy organized a L<crowdfunding 
-campaign|http://blogs.perl.org/users/brian_d_foy/2013/04/crowd-funding-pinto.html> 
-to finance further development of Pinto.  To my knowledge, this was the first 
-and (so far) largest crowdfunding campaign for an open source Perl project.
+In April of 2013, brian d foy organized a L<crowdfunding
+campaign|http://tinyurl.com/d989jys>  to finance further development of Pinto.
+To my knowledge, this was the first  and (so far) largest crowdfunding
+campaign for an open source Perl project.
 
 Thanks to the hard work of numerous individuals, the campaign ultimately
-exceeded it's goals and raised a total of $4,620.12 from 128 contributors 
-(listed below).  I am truly grateful to each and every one of them.  Because
-of their generous support, I am able to continue doing the work I love most.  
+exceeded its goals and raised $4,620.12 from 128 contributors  (listed
+below).  I am truly grateful to each and every one of them.  Because of their
+generous support, I can continue doing the work I love most.
 
   jrw 32982               Nathan Glenn            Ekki Plicht             
   Olaf Alders             Michael Gregorowicz     Steve Purkis            
@@ -70,9 +70,9 @@ of their generous support, I am able to continue doing the work I love most.
   Wolf Gang               Dimitar Petrov          del skorch              
   Greg Gerke              Jamie Pitts             Allen van der Ross    
 
-I also thank L<Crowdtilt|http://crowdtilt.com> for graciously providing their
-fundraising platform free of charge, and for providing such excellent customer 
-support during our campaign.
+I also thank L<Crowdtilt|http://crowdtilt.com> for graciously allowing us to
+use their fundraising platform free of charge, and for providing such
+excellent customer support during our campaign.
 
 =cut
 
