@@ -21,10 +21,10 @@ __END__
 =head1 CREATING A REPOSITORY
 
   # A new repository with default stack named "master"
-  pinto -r /repo/dir
+  pinto -r /repo/dir init
 
   # A new repository with default stack named "dev"
-  pinto -r /repo/dir dev
+  pinto -r /repo/dir init dev
 
 =head1 BROWSING A REPOSITORY
 
