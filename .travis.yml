@@ -8,9 +8,9 @@ perl:
 
 install:
    - unset PERL_CPANM_OPT
-   - cpanm --quiet --notest --skip-satisfied Dist::Zilla
-   - dzil authordeps | cpanm --quiet --notest --skip-satisfied
-   - dzil listdeps   | cpanm --quiet --notest
+   - cpanm --mirror http://cpan.stratopan.com --quiet --notest --skip-satisfied Dist::Zilla
+   - dzil authordeps | cpanm --mirror http://cpan.stratopan.com --quiet --notest --skip-satisfied
+   - dzil listdeps   | cpanm --mirror http://cpan.stratopan.com --quiet --notest
 
 script:
    - dzil smoke --release --author
