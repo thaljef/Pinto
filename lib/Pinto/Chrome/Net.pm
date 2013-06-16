@@ -4,14 +4,11 @@ package Pinto::Chrome::Net;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Term::EditorEdit;
-
-use Pinto::Types qw(Io ANSIColorSet);
+use Pinto::Types qw(Io);
+use Pinto::Util qw(itis);
 use Pinto::Constants qw(:server);
-use Pinto::Util qw(user_colors is_interactive itis throw);
 
 #-----------------------------------------------------------------------------
 
@@ -19,24 +16,9 @@ use Pinto::Util qw(user_colors is_interactive itis throw);
 
 #-----------------------------------------------------------------------------
 
-extends qw( Pinto::Chrome );
+extends qw( Pinto::Chrome::Term );
 
 #-----------------------------------------------------------------------------
-
-has no_color => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
-);
-
-
-has colors => (
-    is        => 'ro',
-    isa       => ArrayRef,
-    default   => sub { user_colors() },
-    lazy      => 1,
-);
-
 
 has stdout => (
     is       => 'ro',
@@ -52,22 +34,6 @@ has stderr => (
     required => 1,
     coerce   => 1,
 );
-
-#-----------------------------------------------------------------------------
-
-sub show { 
-    my ($self, $msg, $opts) = @_;
-
-    $opts ||= {};
-
-    $msg = $self->colorize($msg, $opts->{color});
-
-    $msg .= "\n" unless $opts->{no_newline};
-
-    print { $self->stdout } $msg or croak $!;
-
-    return $self
-}
 
 #-----------------------------------------------------------------------------
 
@@ -109,13 +75,13 @@ sub show_progress {
 
 #-----------------------------------------------------------------------------
 
-sub progress_done {
+sub should_render_progress {
     my ($self) = @_;
 
-    return unless $self->should_render_progress;
-
-    print {$self->stderr} "\n" or croak $!;
-}
+    return 0 if $self->verbose;
+    return 0 if $self->quiet;
+    return 1;
+};
 
 #-----------------------------------------------------------------------------
 
@@ -123,45 +89,6 @@ sub edit {
     my ($self, $document) = @_;
 
     return $document; # TODO!
-}
-
-#-----------------------------------------------------------------------------
-
-sub colorize {
-    my ($self, $string, $color_number) = @_;
-
-    return ''      if not $string;
-    return $string if not defined $color_number;
-    return $string if $self->no_color;
-
-    my $color = $self->get_color($color_number);
-
-    return $color . $string . Term::ANSIColor::color('reset');
-}
-
-#-----------------------------------------------------------------------------
-
-sub get_color {
-    my ($self, $color_number) = @_;
-
-    return '' if not defined $color_number;
-
-    my $color = $self->colors->[$color_number];
-
-    throw "Invalid color number: $color_number" if not defined $color;
-
-    return Term::ANSIColor::color($color);
-}
-
-#-----------------------------------------------------------------------------
-
-my %color_map = (warning => 1, error => 2);
-while ( my ($level, $color) = each %color_map)  {
-    around $level => sub {
-        my ($orig, $self, $msg, $opts) = @_;
-        $opts ||= {}; $opts->{color} = $color;
-        return $self->$orig($msg, $opts); 
-    }; 
 }
 
 #-----------------------------------------------------------------------------

@@ -6,9 +6,6 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Int Bool);
 
-use Pinto::Util qw(is_interactive);
-
-
 #-----------------------------------------------------------------------------
 
 # VERSION
@@ -38,7 +35,7 @@ sub diag { return 1 }
 
 #-----------------------------------------------------------------------------
 
-sub edit { return shift }
+sub edit { return $_[1] }
 
 #-----------------------------------------------------------------------------
 
@@ -47,16 +44,6 @@ sub show_progress { return 1 }
 #-----------------------------------------------------------------------------
 
 sub progress_done { return 1 }
-
-#-----------------------------------------------------------------------------
-
-sub should_render_progress {
-    my ($self) = @_;
-
-    return 0 if $self->verbose;
-    return 0 if $self->quiet;
-    return 1;
-};
 
 #-----------------------------------------------------------------------------
 
@@ -71,17 +58,17 @@ sub should_render_diag {
 
 #-----------------------------------------------------------------------------
 
-sub levels { return qw(error warning notice info) }
+sub diag_levels { return qw(error warning notice info) }
 
 #-----------------------------------------------------------------------------
 
-my @levels = __PACKAGE__->levels;
-__generate_method($levels[$_], $_) for (0..$#levels);
+my @levels = __PACKAGE__->diag_levels;
+__generate_diag_method($levels[$_], $_) for (0..$#levels);
 
 #-----------------------------------------------------------------------------
 
-sub __generate_method {
-    my ($name, $level) = @_;
+sub __generate_diag_method {
+    my ($method_name, $diag_level) = @_;
 
     my $template = <<'END_METHOD';
 sub %s {
@@ -91,7 +78,7 @@ sub %s {
 }
 END_METHOD
 
-    eval sprintf $template, $name, $level;
+    eval sprintf $template, $method_name, $diag_level;
     croak $@ if $@;
 }
 

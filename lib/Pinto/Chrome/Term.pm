@@ -7,10 +7,11 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Term::ANSIColor;
 use Term::EditorEdit;
 
 use Pinto::Types qw(Io ANSIColorSet);
-use Pinto::Util qw(user_colors is_interactive itis throw);
+use Pinto::Util qw(user_colors itis throw);
 
 #-----------------------------------------------------------------------------
 
@@ -62,7 +63,7 @@ sub _build_stdout {
     my $stdout = [fileno(*STDOUT), '>'];
     my $pager = $ENV{PINTO_PAGER} || $ENV{PAGER};
 
-    return $stdout if not is_interactive;
+    return $stdout if not -t $stdout;
     return $stdout if not $pager;
 
     open my $pager_fh, q<|->, $pager
@@ -132,10 +133,11 @@ sub progress_done {
 
 #-----------------------------------------------------------------------------
 
-override should_render_progress => sub {
+sub should_render_progress {
     my ($self) = @_;
 
-    return 0 if not super;
+    return 0 if $self->verbose;
+    return 0 if $self->quiet;
     return 0 if not -t $self->stderr;
     return 1;
 };
