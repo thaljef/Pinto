@@ -12,10 +12,13 @@ use HTTP::Response;
 use File::Temp;
 
 use Pinto::Remote;
+use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
 
 #-----------------------------------------------------------------------------
 
 {
+
+  local $ENV{PINTO_COLORS} = undef;
 
   my $res = HTTP::Response->new(200);
   my $ua  = Test::LWP::UserAgent->new;
@@ -24,7 +27,7 @@ use Pinto::Remote;
   my $action = 'Add';
   my $temp = File::Temp->new;
   my %pinto_args   = (username => 'myname');
-  my %chrome_args  = (verbose => 2, no_color => 1, quiet => 0);
+  my %chrome_args  = (verbose => 2, no_color => 1, quiet => 0, colors => $PINTO_DEFAULT_COLORS);
   my %action_args  = (archives => [$temp->filename], author => 'ME', stack => 'mystack');
 
   my $chrome = Pinto::Chrome::Term->new(%chrome_args);
