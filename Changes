@@ -2,11 +2,11 @@
        
       INCOMPATIBLE CHANGES:
 
-      By default, Pinto now takes the first satisfactory package that it finds
-      among the upstream repositories, rather than taking the latest one.
-      This only matters if you specify multiple upstream repositories. To get
-      the old behavior, use the new --cascade option on the "pull"  and "add"
-      commands.  Thanks @hesco for helping me sort this out.
+      When pulling, Pinto now takes the first satisfactory package that it
+      finds among the upstream repositories, rather than taking the latest
+      one.  This only matters if you specify multiple upstream repositories. To
+      get the old behavior, use the new --cascade option on the "pull"  and
+      "add" commands.  Thanks @hesco for helping me sort this out.
 
       The "version" command has been removed.  Now that all Pinto components
       ship together, they all have the same version number.  So there is no
@@ -15,7 +15,7 @@
       
       Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other words, two
       ASCII letters followed by zero or more ASCII letters, digits, or
-      hyphens.   If you use lowercase letters, they will be automatically
+      hyphens.  If you use lowercase letters, they will be automatically
       forced to uppercase for you.  This was done because cpanm relies on
       author IDs following the  PAUSE convention.  I had hoped that Pinto
       could be more liberal about author IDs, but it seems we must conform so
