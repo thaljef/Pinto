@@ -122,6 +122,7 @@ sub _chrome_args {
 
     my $chrome_args = { verbose  => $self->chrome->verbose,
                         no_color => $self->chrome->no_color,
+                        colors   => $self->chrome->colors,
                         quiet    => $self->chrome->quiet };
 
     return ( chrome => encode_json($chrome_args) );
