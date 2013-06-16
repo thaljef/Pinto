@@ -9,7 +9,8 @@ use version;
 use MooseX::Types -declare => [ qw( AuthorID Username Uri Dir File FileList Io Version
                                     StackName StackAll StackDefault PropertyName PkgSpec
                                     PkgSpecList StackObject DistSpec DistSpecList
-                                    Spec SpecList RevisionID RevisionHead) ];
+                                    Spec SpecList RevisionID RevisionHead 
+                                    ANSIColor ANSIColorSet) ];
 
 use MooseX::Types::Moose qw( Str Num ScalarRef ArrayRef Undef
                              HashRef FileHandle Object Int );
@@ -17,6 +18,7 @@ use MooseX::Types::Moose qw( Str Num ScalarRef ArrayRef Undef
 use URI;
 use Path::Class::Dir;
 use Path::Class::File;
+use Term::ANSIColor;
 use IO::String;
 use IO::Handle;
 use IO::File;
@@ -87,6 +89,20 @@ coerce Version,
 coerce Version,
   from Num,
   via { version->parse($_) };
+
+#-----------------------------------------------------------------------------
+
+subtype ANSIColor,
+  as       Str,
+  where   { Term::ANSIColor::colorvalid($_) },
+  message { 'The color name (' . (defined() ? $_ : 'undef') . 'is not valid' };
+
+#-----------------------------------------------------------------------------
+
+subtype ANSIColorSet,
+  as      ArrayRef[ANSIColor],
+  where   { @{$_} == 3 },
+  message { 'Must be exactly three colors' };
 
 #-----------------------------------------------------------------------------
 

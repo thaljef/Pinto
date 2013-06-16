@@ -7,10 +7,9 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Term::ANSIColor 2.02 (); #First version with colorvalid()
 use Term::EditorEdit;
 
-use Pinto::Types qw(Io);
+use Pinto::Types qw(Io ANSIColorSet);
 use Pinto::Constants qw(:server);
 use Pinto::Util qw(user_colors is_interactive itis throw);
 
@@ -27,14 +26,14 @@ extends qw( Pinto::Chrome );
 has no_color => (
     is       => 'ro',
     isa      => Bool,
-    default  => sub { return !!$ENV{PINTO_NO_COLOR} or 0 },
+    default  => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
 );
 
 
 has colors => (
     is        => 'ro',
     isa       => ArrayRef,
-    default   => sub { return user_colors },
+    default   => sub { user_colors() },
     lazy      => 1,
 );
 
@@ -55,20 +54,6 @@ has stderr => (
 );
 
 #-----------------------------------------------------------------------------
-
-sub BUILD {
-    my ($self) = @_;
-
-    my @colors = @{ $self->colors };
-
-    throw "Must specify exactly three colors" if @colors != 3;
-
-    Term::ANSIColor::colorvalid($_) || throw "Color $_ is not valid" for @colors;
-
-    return $self;
-};
-
-#------------------------------------------------------------------------------
 
 sub show { 
     my ($self, $msg, $opts) = @_;

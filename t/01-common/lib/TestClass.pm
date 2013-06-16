@@ -1,11 +1,27 @@
 package TestClass;
 
 use Moose;
-use Pinto::Types qw( File Dir Uri Io AuthorID Version PropertyName
-                     StackName StackAll StackDefault
-                     PkgSpec PkgSpecList
-                     DistSpec DistSpecList
-                     SpecList RevisionID );
+
+use Pinto::Types qw(
+    File
+    Dir
+    Uri
+    Io
+    AuthorID
+    Version
+    PropertyName
+    StackName
+    StackAll
+    StackDefault
+    PkgSpec 
+    PkgSpecList
+    DistSpec
+    DistSpecList
+    SpecList
+    RevisionID
+    ANSIColor
+    ANSIColorSet
+);
 
 #-----------------------------------------------------------------------------
 
@@ -99,6 +115,16 @@ has revision => (
     is     => 'rw',
     isa    => RevisionID,
     coerce => 1,
+);
+
+has color => (
+    is     => 'rw',
+    isa    => ANSIColor,
+);
+
+has colorset => (
+    is     => 'rw',
+    isa    => ANSIColorSet,
 );
 
 #-----------------------------------------------------------------------------

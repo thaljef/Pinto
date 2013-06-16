@@ -7,10 +7,9 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Term::ANSIColor 2.02 (); #First version with colorvalid()
 use Term::EditorEdit;
 
-use Pinto::Types qw(Io);
+use Pinto::Types qw(Io ANSIColorSet);
 use Pinto::Util qw(user_colors is_interactive itis throw);
 
 #-----------------------------------------------------------------------------
@@ -26,14 +25,14 @@ extends qw( Pinto::Chrome );
 has no_color => (
     is       => 'ro',
     isa      => Bool,
-    default  => sub { return !!$ENV{PINTO_NO_COLOR} or 0 },
+    default  => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
 );
 
 
 has colors => (
     is        => 'ro',
-    isa       => ArrayRef,
-    default   => sub { return user_colors },
+    isa       => ANSIColorSet,
+    default   => sub { user_colors() },
     lazy      => 1,
 );
 
@@ -55,28 +54,7 @@ has stderr => (
     lazy    => 1,
 );
 
-
-has diag_prefix => (
-    is      => 'ro',
-    isa     => Str,
-    default => '',
-);
-
 #-----------------------------------------------------------------------------
-
-sub BUILD {
-    my ($self) = @_;
-
-    my @colors = @{ $self->colors };
-
-    throw "Must specify exactly three colors" if @colors != 3;
-
-    Term::ANSIColor::colorvalid($_) || throw "Color $_ is not valid" for @colors;
-
-    return $self;
-};
-
-#------------------------------------------------------------------------------
 
 sub _build_stdout {
     my ($self) = @_;
@@ -126,11 +104,6 @@ sub diag {
     chomp $msg;
     $msg  = $self->colorize($msg, $opts->{color});
     $msg .= "\n" unless $opts->{no_newline};
-
-    # Prepend prefix to each line (not just at the start of the message)
-    # The prefix is used by Pinto::Remote to distinguish between
-    # messages that go to stderr and those that should go to stdout
-    $msg =~ s/^/$self->diag_prefix/gemx if length $self->diag_prefix;
 
     print { $self->stderr } $msg or croak $!;
 }

@@ -90,6 +90,17 @@ is($t->revision, 'aa-aa',   'Coerced RevisionID to lowercase');
 throws_ok {$t->revision('gh123') } qr/hexadecimal/, 'RevisionID must be hex';
 throws_ok {$t->revision('abc') } qr/hexadecimal/, 'RevisionID must be at least 4 chars';
 
+lives_ok { $t->color('blue')     };
+lives_ok { $t->color('dark red') };
+dies_ok  { $t->color('foo bar')  } 'Invalid color thorws exception';
+dies_ok  { $t->color(undef)      } 'undef color thorws exception';
+
+lives_ok { $t->colorset( [qw(red blue green)] ) };
+dies_ok  { $t->colorset( [qw(red blue)] )       } 'Colorset needs 3 colors';
+dies_ok  { $t->colorset( [qw(a b c)] )          } 'Colorset must be valid colors';
+dies_ok  { $t->colorset( undef )                };
+dies_ok  { $t->colorset( [] )                   };
+
 #-----------------------------------------------------------------------------
 
 done_testing;

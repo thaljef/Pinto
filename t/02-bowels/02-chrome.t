@@ -58,19 +58,6 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    throws_ok { Pinto::Chrome::Term->new(colors => []) } 
-        qr/exactly three colors/, 'Too few colors';
-
-    throws_ok { Pinto::Chrome::Term->new(colors => [0..3]) } 
-        qr/exactly three colors/, 'Too many colors';
-
-    throws_ok { Pinto::Chrome::Term->new(colors => [qw(red blue chartruse)]) } 
-        qr/chartruse is not valid/, 'Invalid color';
-}
-
-#-----------------------------------------------------------------------------
-
-{
     local $ENV{PINTO_NO_COLOR} = 1;
 
     my ($out, $err) = ('', '');
