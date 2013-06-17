@@ -10,7 +10,6 @@ use MooseX::Configuration;
 use MooseX::Aliases;
 
 use URI;
-use English qw(-no_match_vars);
 
 use Pinto::Types qw(Dir File Username Version);
 use Pinto::Util qw(current_username current_time_offset);
