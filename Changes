@@ -1,6 +1,4 @@
 {{$NEXT}}
-
-0.084_01  2013-06-16 00:53:47 America/Los_Angeles
        
       INCOMPATIBLE CHANGES:
 
@@ -52,6 +50,14 @@
       The "install" command can now be used on a remote repository that has
       basic HTTP authentication enabled.  Beware that cpanm does not sanitize
       passwords from its log messages.  I'm working with miyagawa to fix that.
+
+
+0.084_01  2013-06-16 00:53:47 America/Los_Angeles
+
+      !! DEVELOPER RELEASES !!
+
+      Changes consolidated above under version 0.085.
+
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 
