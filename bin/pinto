@@ -155,18 +155,6 @@ should only be used if creating a repository that mirrors another one which migh
 have duplicate distributions (for example, mirroring all of CPAN in a Pinto 
 repository).
 
-=item no_history = 0|1
-
-!! THIS PROPERTY IS EXPERIMENTAL !!
-
-If set to 1, pinto will not record the state of the stack at each revision.
-This makes the database smaller and faster.  But it also means you'll never be 
-able to revert, reset, or diff a stack with a prior revision.  However, log 
-messages will still be recorded and can be displayed as usual.  This should 
-only be used if creating an archival repository where you don't really care 
-about the changes in each revision (for example, tracking all of CPAN in a 
-Pinto repository).  The default value is 0.
-
 =item sources = URL1 [URL2 URL3 ...]
 
 This is a space-delimited list of the URLs for the upstream repositories that 
