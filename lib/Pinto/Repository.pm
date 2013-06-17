@@ -818,11 +818,9 @@ sub assert_archive_not_duplicate {
         throw "A distribution already exists as $same_path";
     }
 
-    unless ( $self->config->allow_duplicates) {
-        my $sha256 = Pinto::Util::sha256($archive);
-        my $dupe = $self->db->schema->search_distribution({sha256 => $sha256})->first;
-        throw "Archive $archive is identical to $dupe" if $dupe;
-    }
+    my $sha256 = Pinto::Util::sha256($archive);
+    my $dupe = $self->db->schema->search_distribution({sha256 => $sha256})->first;
+    throw "Archive $archive is identical to $dupe" if $dupe;
 
     return $self;
 }

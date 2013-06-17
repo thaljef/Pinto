@@ -23,8 +23,11 @@
       could be more liberal about author IDs, but it seems we must conform so
       that we can cooperate with the rest of the toolchain.
 
-      The --no-history repository configuration is no longer supported.  This
-      feature was experimental and the use case hasn't proven to be valid.
+      The --no-history and --allow-duplicates repository configuration
+      parameters are no longer supported.  I had created those so you could
+      try mirroring CPAN with a Pinto repository.  But I have decided that use
+      case is out of scope for Pinto.  If you realy want a mirror of CPAN, use
+      CPAN::Mini or rsync.
 
       ENHANCEMENTS:
 

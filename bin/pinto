@@ -144,17 +144,6 @@ The following configuration parameters are supported:
 
 =over 4
 
-=item allow_duplicates = 0|1
-
-!! THIS PROPERTY IS EXPERIMENTAL !!
-
-If set to 1, pinto will allow the repository to contain multiple copies of the
-same distribution but under a different author or archive name.  Normally, pinto 
-prohibits you from having identical distributions with different names.  This 
-should only be used if creating a repository that mirrors another one which might
-have duplicate distributions (for example, mirroring all of CPAN in a Pinto 
-repository).
-
 =item sources = URL1 [URL2 URL3 ...]
 
 This is a space-delimited list of the URLs for the upstream repositories that 
