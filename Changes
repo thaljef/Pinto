@@ -2,18 +2,18 @@
        
       INCOMPATIBLE CHANGES:
 
-      When pulling, Pinto now takes the first satisfactory package that it
+      * When pulling, Pinto now takes the first satisfactory package that it
       finds among the upstream repositories, rather than taking the latest
       one.  This only matters if you specify multiple upstream repositories. To
       get the old behavior, use the new --cascade option on the "pull"  and
       "add" commands.  Thanks @hesco for helping me sort this out.
 
-      The "version" command has been removed.  Now that all Pinto components
+      * The "version" command has been removed.  Now that all Pinto components
       ship together, they all have the same version number.  So there is no
       need for a special version command.  If you want to know what version of
       pinto you have, just use the --version option.
       
-      Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other words, two
+      * Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other words, two
       ASCII letters followed by zero or more ASCII letters, digits, or
       hyphens.  If you use lowercase letters, they will be automatically
       forced to uppercase for you.  This was done because cpanm relies on
@@ -21,7 +21,7 @@
       could be more liberal about author IDs, but it seems we must conform so
       that we can cooperate with the rest of the toolchain.
 
-      The --no-history and --allow-duplicates repository configuration
+      * The --no-history and --allow-duplicates repository configuration
       parameters are no longer supported.  I had created those so you could
       try mirroring CPAN with a Pinto repository.  But I have decided that use
       case is out of scope for Pinto.  If you realy want a mirror of CPAN, use
@@ -29,32 +29,35 @@
 
       ENHANCEMENTS:
 
-      The names of those kind souls who generously helped finance Pinto
+      * The names of those kind souls who generously helped finance Pinto
       through the crowdfunding campaing on Crowdtilt are now listed in 
       Pinto::Manual::Thanks.  There is also a related Easter egg among
-      the pinto commands -- see if you can find it!
+      the pinto(1) commands -- see if you can find it!
 
-      Pinto::Server (a.k.a. pintod) will abort the action if it looses the
+      * Pinto::Server (a.k.a. pintod) will abort the action if it looses the
       connection with the client.  So, for example, you can press Ctrl-C in
       the middle of pulling a long chain of dependencies into a remote
       repository and the server will immediately stop and roll back the entire
       transaction.
 
-      The progress meter is now visible when using a remote repository.  The
+      * The progress meter is now visible when using a remote repository.  The
       progress meter is never shown when --verbose or --quiet is set, or when
       STDERR is not connected to a terminal.
 
       BUG FIXES:
 
-      The "install" command can now be used on a locked stack, but only if the
+      * The "install" command can now be used on a locked stack, but only if the
       --do-pull option is not given.  If you want to pull packges while
       installing, then you must unlock the stack first.  Thanks Jeremy
       Marshal.
 
-      The "install" command can now be used on a remote repository that has
+      * The "install" command can now be used on a remote repository that has
       basic HTTP authentication enabled.  Beware that cpanm does not sanitize
       passwords from its log messages.  I'm working with miyagawa to fix that.
 
+      * Cleaned up some extraneous dependencies.
+
+      * Fixed several typos in the documentation.
 
 0.084_02  2013-06-16 20:54:06 America/Los_Angeles
 0.084_01  2013-06-16 00:53:47 America/Los_Angeles
@@ -68,11 +71,11 @@
 
       ENHANCEMENTS:
 
-      Revised documentation for pintod.
+      * Revised documentation for pintod.
 
       BUG FIXES:
 
-      Now requires verison 0.018 of Test::LWP::UserAgent or newer which
+      * Now requires verison 0.018 of Test::LWP::UserAgent or newer which
       resolves some test failures in Pinto seen by CPAN Testers using older
       versions of T::LWP::UA.
 
@@ -100,7 +103,7 @@
 
       HEADLINES:
 
-      Pinto::Server and Pinto::Remote have been merged into this distribution,
+      * Pinto::Server and Pinto::Remote have been merged into this distribution,
       so everything ships together.  It also means both Pinto::Server and
       Pinto::Remote are now working again.  Woot!!
 
