@@ -31,7 +31,7 @@ use Test::More;
 
 use Pinto::Globals;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------

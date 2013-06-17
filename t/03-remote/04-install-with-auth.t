@@ -13,7 +13,7 @@ use Capture::Tiny qw(capture_stderr);
 
 use Pinto::Remote;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Server::Tester;
 use Pinto::Tester::Util qw(make_htpasswd_file has_cpanm $MINIMUM_CPANM_VERSION);
 

@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester::Util qw(make_dist_obj make_pkg_obj);
 
 #------------------------------------------------------------------------------

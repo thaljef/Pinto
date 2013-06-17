@@ -12,7 +12,7 @@ use HTTP::Request;
 use Pinto::Server;
 use Pinto::Constants qw(:server);
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_htpasswd_file);
 

@@ -9,7 +9,7 @@ use Test::Exception;
 use Path::Class qw(dir);
 use Capture::Tiny qw(capture_stderr);
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(has_cpanm $MINIMUM_CPANM_VERSION);
 

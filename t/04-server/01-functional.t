@@ -15,7 +15,7 @@ use HTTP::Request::Common;
 use Pinto::Server;
 use Pinto::Constants qw(:server);
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 

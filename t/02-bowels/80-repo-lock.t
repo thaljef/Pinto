@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Test::File;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------

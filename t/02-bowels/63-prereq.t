@@ -7,7 +7,7 @@ use Test::More;
 
 use Pinto::PrerequisiteWalker;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------

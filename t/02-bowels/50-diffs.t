@@ -7,7 +7,7 @@ use Test::More;
 
 use Pinto::Difference;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------

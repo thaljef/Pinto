@@ -2,7 +2,7 @@
 
 use Test::More;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 

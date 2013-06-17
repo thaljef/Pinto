@@ -7,7 +7,7 @@ use File::Copy;
 use Path::Class;
 use Test::More;
 
-use lib 'tlib';
+use lib 't/lib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
