@@ -1,0 +1,38 @@
+#!/bin/bash -ue
+
+######################################################################
+#
+# THIS IS THE Pinto SMOKER
+#
+# I uses this little script to build & test Pinto against several
+# common versions of Perl that I have on my machine.  The key thing
+# is that all the dependencies come from a curated repository on
+# Stratopan.  So these are not the latest versions, but versions
+# that I have blessed.  In comparison, the builds on Travis are
+# done with the latest versions from CPAN, which don't always work.
+#
+######################################################################
+
+MODULE_TO_SMOKE=${1:-Pinto};
+SMOKE_BASE_DIR=$HOME/tmp/smoke
+MIRROR_URL=http://stratopan.com:8700/stacks/pinto-release
+PERLS_TO_SMOKE='5.8.9 5.10.1 5.14.4 5.16.3 5.18.0'
+
+for pv in $PERLS_TO_SMOKE; do
+
+    SMOKE_WORK_DIR="$SMOKE_BASE_DIR/$pv";
+
+    echo "=========================================================";
+    echo "Smoking $MODULE_TO_SMOKE with perl-$pv in $SMOKE_WORK_DIR";
+
+    rm -rf "$SMOKE_WORK_DIR";
+    mkdir -p "$SMOKE_WORK_DIR";
+
+    perlbrew exec --with $pv                            \
+        cpanm --mirror $MIRROR_URL                      \
+            --local-lib-contained "$SMOKE_WORK_DIR"     \
+            --mirror-only                               \
+            --quiet                                     \
+            $MODULE_TO_SMOKE
+done;
+
