@@ -6,7 +6,6 @@ use Moose;
 use MooseX::Types::Moose qw(Str Int ArrayRef);
 
 use Carp;
-use IPC::Run;
 use Test::TCP;
 use File::Which;
 use Proc::Fork;
