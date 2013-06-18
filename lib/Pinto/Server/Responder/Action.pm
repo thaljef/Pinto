@@ -122,13 +122,13 @@ sub parent_proc {
 
             if ($socket && not getpeername($socket)) {
                 # TODO: Consider using Proc::Terminator instead
-                kill 'TERM', $child_pid and wait; 
+                kill 'TERM', $child_pid; 
                 last;
             }
         }
 
         $writer->close;
-        waitpid $child_pid, 1; # Non-blocking
+        wait;
     };
 
     return $response;
