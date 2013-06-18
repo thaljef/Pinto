@@ -60,10 +60,10 @@ has stderr => (
 sub _build_stdout {
     my ($self) = @_;
 
-    my $stdout = [fileno(*STDOUT), '>'];
     my $pager = $ENV{PINTO_PAGER} || $ENV{PAGER};
+    my $stdout = [fileno(*STDOUT), '>'];
 
-    return $stdout if not -t $stdout;
+    return $stdout if not -t STDOUT;
     return $stdout if not $pager;
 
     open my $pager_fh, q<|->, $pager
