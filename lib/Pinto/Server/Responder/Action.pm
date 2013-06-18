@@ -13,6 +13,7 @@ use File::Temp;
 use File::Copy;
 use Proc::Fork;
 use Path::Class;
+use Proc::Terminator;
 use Plack::Response;
 
 use Pinto;
@@ -121,14 +122,13 @@ sub parent_proc {
             $writer->write( $input || $nullmsg );
 
             if ($socket && not getpeername($socket)) {
-                # TODO: Consider using Proc::Terminator instead
-                kill 'TERM', $child_pid; 
+                proc_terminate($child_pid, max_wait => 10);
                 last;
             }
         }
 
         $writer->close;
-        wait;
+        waitpid $child_pid, 0;
     };
 
     return $response;
