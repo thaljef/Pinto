@@ -128,6 +128,7 @@ sub parent_proc {
         }
 
         $writer->close;
+        waitpid $child_pid, 1; # Non-blocking
     };
 
     return $response;
