@@ -11,7 +11,7 @@ use MooseX::Aliases;
 
 use URI;
 
-use Pinto::Types qw(Dir File Username Version);
+use Pinto::Types qw(Dir File Username PerlVersion);
 use Pinto::Util qw(current_username current_time_offset);
 
 #------------------------------------------------------------------------------
@@ -165,10 +165,12 @@ has sources_list => (
 
 
 has target_perl_version => (
-    is        => 'ro',
-    isa       => Version,
-    default   => $], # Note: $PERL_VERSION is broken on old perls
-    coerce    => 1,
+    is            => 'ro',
+    isa           => PerlVersion,
+    key           => 'target_perl_version',
+    documentation => 'Default target perl version for new stacks',
+    default       => $], # Note: $PERL_VERSION is broken on old perls
+    coerce        => 1,
 );
 
 

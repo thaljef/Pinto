@@ -10,7 +10,7 @@ use MooseX::Types -declare => [ qw( AuthorID Username Uri Dir File FileList Io V
                                     StackName StackAll StackDefault PropertyName PkgSpec
                                     PkgSpecList StackObject DistSpec DistSpecList
                                     Spec SpecList RevisionID RevisionHead 
-                                    ANSIColor ANSIColorSet) ];
+                                    ANSIColor ANSIColorSet PerlVersion) ];
 
 use MooseX::Types::Moose qw( Str Num ScalarRef ArrayRef Undef
                              HashRef FileHandle Object Int );
@@ -19,6 +19,7 @@ use URI;
 use Path::Class::Dir;
 use Path::Class::File;
 use Term::ANSIColor;
+use Module::CoreList;
 use IO::String;
 use IO::Handle;
 use IO::File;
@@ -87,6 +88,21 @@ coerce Version,
   via { version->parse($_) };
 
 coerce Version,
+  from Num,
+  via { version->parse($_) };
+
+#-----------------------------------------------------------------------------
+
+subtype PerlVersion,
+  as       Object,
+  where    { $_->isa('version') && exists $Module::CoreList::version{ $_->numify + 0 } },
+  message  { "perl version ($_) is unknown to me" };
+
+coerce PerlVersion,
+  from Str,
+  via { version->parse($_) };
+
+coerce PerlVersion,
   from Num,
   via { version->parse($_) };
 

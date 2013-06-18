@@ -152,6 +152,13 @@ minicpan mirrors, or stacks within other Pinto repositories.  Pinto will search
 the source repositories in the order they are listed here.  The default value 
 is C<http://cpan.perl.org http://backpan.perl.org>.
 
+=item target_perl_version = X.X.X
+
+Sets the default C<target_perl_version> property for all new stacks.
+Otherwise, all new stacks will target the version of perl that you first used
+to create the repository.  You can always configure the target perl for each
+stack independently by using the L<props|App::Pinto::Command::props> command.
+
 =back
 
 B<BEWARE:> The above configuration properties are global -- they affect every

@@ -24,6 +24,7 @@ sub opt_spec {
         [ 'description=s' => 'Description of the initial stack'             ],
         [ 'no-default'    => 'Do not mark the initial stack as the default' ],
         [ 'source=s@'     => 'URL of upstream repository (repeatable)'      ],
+        [ 'target-perl-version|tpv=s' => 'Default perl version for new stacks' ],
     );
 }
 
