@@ -135,7 +135,7 @@ sub parent_proc {
             }
         }
 
-        # $writer->close; # Hangs!
+        $writer->close if not $socket; # Hangs otherwise!
         waitpid $child_pid, 0;
     };
 
