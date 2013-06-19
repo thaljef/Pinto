@@ -4,7 +4,7 @@
 #
 # THIS IS THE Pinto SMOKER
 #
-# I uses this little script to build & test Pinto against several
+# I use this little script to build & test Pinto against several
 # common versions of Perl that I have on my machine.  The key thing
 # is that all the dependencies come from a curated repository on
 # Stratopan.  So these are not the latest versions, but versions
@@ -13,9 +13,10 @@
 #
 ######################################################################
 
+unset PINTO_HOME;
 MODULE_TO_SMOKE=${1:-Pinto};
 SMOKE_BASE_DIR=$HOME/tmp/smoke
-MIRROR_URL=http://stratopan.com:8700/stacks/pinto-release
+CPAN_MIRROR_URL=http://stratopan.com:8700/stacks/pinto-release
 PERLS_TO_SMOKE='5.8.9 5.10.1 5.14.4 5.16.3 5.18.0'
 
 for pv in $PERLS_TO_SMOKE; do
@@ -29,7 +30,7 @@ for pv in $PERLS_TO_SMOKE; do
     mkdir -p "$SMOKE_WORK_DIR";
 
     perlbrew exec --with $pv                            \
-        cpanm --mirror $MIRROR_URL                      \
+        cpanm --mirror "$CPAN_MIRROR_URL"               \
             --local-lib-contained "$SMOKE_WORK_DIR"     \
             --mirror-only                               \
             --quiet                                     \
