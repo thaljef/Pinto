@@ -129,7 +129,7 @@ sub parent_proc {
             };
 
             alarm(0);
-            unless ($ok and getpeername($socket)) {
+            unless ($ok && (!$socket || getpeername($socket))) {
                 proc_terminate($child_pid, max_wait => 10);
                 last;
             }
