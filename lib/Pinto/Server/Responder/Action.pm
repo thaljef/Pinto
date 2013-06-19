@@ -111,23 +111,31 @@ sub parent_proc {
         my $socket  = $self->request->env->{'psgix.io'};
         my $nullmsg = $PINTO_SERVER_NULL_MESSAGE . "\n";
 
+
         while (1) {
 
             my $input;
-            if ( $select->can_read(0.5) ) {
+            if ( $select->can_read(1) ) {
                 $input = <$reader>;  # Will block until \n
                 last if not defined $input; # We reached eof
             }
 
-            $writer->write( $input || $nullmsg );
+            my $ok = eval {
+                local $SIG{ALRM} = sub { die "Write timed out" };
+                alarm(3);
 
-            if ($socket && not getpeername($socket)) {
+                $writer->write( $input || $nullmsg );
+                1; # Write succeeded
+            };
+
+            alarm(0);
+            unless ($ok and getpeername($socket)) {
                 proc_terminate($child_pid, max_wait => 10);
                 last;
             }
         }
 
-        $writer->close;
+        # $writer->close; # Hangs!
         waitpid $child_pid, 0;
     };
 
