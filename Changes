@@ -1,12 +1,4 @@
 {{$NEXT}}
-
-0.086     2013-06-18 02:45:38 America/Los_Angeles
-
-      BUG FIXES:
-
-      * Pinto::Server now cleans up child procs.  No more zombies!
-      
-0.085     2013-06-17 12:58:30 America/Los_Angeles
        
       INCOMPATIBLE CHANGES:
 
@@ -52,6 +44,11 @@
       progress meter is never shown when --verbose or --quiet is set, or when
       STDERR is not connected to a terminal.
 
+      * The "init" command now has a --target-perl-version switch that sets
+      the default target_perl_version property for all new stacks.  This is
+      handy if you know that all stacks will be targeting a perl that is
+      different from the one you are using to run pinto.
+
       BUG FIXES:
 
       * The "install" command can now be used on a locked stack, but only if the
@@ -63,16 +60,25 @@
       basic HTTP authentication enabled.  Beware that cpanm does not sanitize
       passwords from its log messages.  I'm working with miyagawa to fix that.
 
+      * Pinto::Server now cleans up child procs.  No more zombies!
+
       * Cleaned up some extraneous dependencies.
 
       * Fixed several typos in the documentation.
+
+0.086     2013-06-18 02:45:38 America/Los_Angeles
+0.085     2013-06-18 02:45:38 America/Los_Angeles
+
+      !! BROKEN RELEASES !!
+
+      Changes re-consolidated above under version 0.087.
 
 0.084_02  2013-06-16 20:54:06 America/Los_Angeles
 0.084_01  2013-06-16 00:53:47 America/Los_Angeles
 
       !! DEVELOPER RELEASES !!
 
-      Changes consolidated above under version 0.085.
+      Changes consolidated above under version 0.087.
 
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
