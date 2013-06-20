@@ -1,4 +1,4 @@
-# ABSTRACT: show our gratitude
+# ABSTRACT: show some gratitude
 
 package App::Pinto::Command::thanks;
 
