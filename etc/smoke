@@ -33,7 +33,9 @@ for pv in $PERLS_TO_SMOKE; do
         cpanm --mirror "$CPAN_MIRROR_URL"               \
             --local-lib-contained "$SMOKE_WORK_DIR"     \
             --mirror-only                               \
-            --quiet                                     \
-            $MODULE_TO_SMOKE
+            --verbose                                   \
+            $MODULE_TO_SMOKE                            \
+     2>&1 | tee "$SMOKE_WORK_DIR/smoke.log"
+
 done;
 
