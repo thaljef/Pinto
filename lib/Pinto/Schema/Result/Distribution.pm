@@ -232,14 +232,14 @@ sub register {
     $stack->assert_is_open;
     $stack->assert_not_locked;
 
-    # TODO: This process makes a of trips to the database.  You could
-    # optimize this by fetching all the incumbents at once, checking
-    # for pins, and then bulk-insert the new registrations.
+    my @package_names = map { $_->name } $self->packages;
+    my $where = {package_name => {in => \@package_names}};
+    my @registrations = $stack->head->registrations($where, {prefetch => 'package'});
+    my %incumbents = map { $_->package_name => $_ } @registrations; 
     
     for my $pkg ($self->packages) {
 
-      my $where = {package_name => $pkg->name};
-      my $incumbent = $stack->head->find_related(registrations => $where);
+      my $incumbent = $incumbents{$pkg->name};
 
       if (not defined $incumbent) {
           debug( sub {"Registering $pkg on stack $stack"} );
