@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+      ENHANCEMENTS:
+
+      * Optimized some queries to make it faster to register packages on a stack.
+      In the best cases, performance has improved by about 150%.  But in the
+      average case, the limiting factor is fetching and unpacking the upstream
+      distribution, so you'll only see a slight improvement there.
+
 0.087     2013-06-19 14:47:01 America/Los_Angeles
        
       INCOMPATIBLE CHANGES:
