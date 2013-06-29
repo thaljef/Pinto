@@ -232,8 +232,8 @@ sub register {
     $stack->assert_is_open;
     $stack->assert_not_locked;
 
-    my @package_names = map { $_->name } $self->packages;
-    my $where = {package_name => {in => \@package_names}};
+    my @incoming_package_names = map { $_->name } $self->packages;
+    my $where = {package_name => {in => \@incoming_package_names}};
     my @registrations = $stack->head->registrations($where, {prefetch => 'package'});
     my %incumbents = map { $_->package_name => $_ } @registrations; 
     
