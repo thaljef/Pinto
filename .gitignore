@@ -25,3 +25,5 @@ nytprof.out
 *.sublime*
 .tags*
 tmp
+perltidy.LOG
+.tiidyall.d
