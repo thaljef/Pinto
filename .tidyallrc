@@ -1,0 +1,6 @@
+no_backups = 1
+no_cache = 1
+
+[PerlTidy]
+select = **/*.{pl,pm,t}
+argv = -q -se -l=120 -i=4 -ci=4 -vt=2 -cti=0 -pt=1 -sbt=1 -bbt=1 -nsfs -nolq
