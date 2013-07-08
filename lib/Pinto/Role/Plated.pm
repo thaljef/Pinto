@@ -3,7 +3,7 @@
 package Pinto::Role::Plated;
 
 use Moose::Role;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 #-----------------------------------------------------------------------------
 
@@ -12,10 +12,10 @@ use MooseX::MarkAsMethods (autoclean => 1);
 #-----------------------------------------------------------------------------
 
 has chrome => (
-    is         => 'ro',
-    isa        => 'Pinto::Chrome',
-    handles    => [ qw(show info notice warning error) ],
-    required   => 1,
+    is       => 'ro',
+    isa      => 'Pinto::Chrome',
+    handles  => [qw(show info notice warning error)],
+    required => 1,
 );
 
 #-----------------------------------------------------------------------------

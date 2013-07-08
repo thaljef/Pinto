@@ -4,7 +4,7 @@ package Pinto::Action::Clean;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 #------------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ sub execute {
     my ($self) = @_;
 
     $self->repo->optimize_database;
-    
+
     my $did_delete = $self->repo->clean_files;
 
     $self->result->changed if $did_delete;

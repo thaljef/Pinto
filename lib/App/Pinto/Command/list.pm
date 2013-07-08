@@ -22,7 +22,7 @@ sub command_names { return qw( list ls ) }
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return (
         [ 'author|A=s'        => 'Limit to distributions by author' ],
@@ -37,10 +37,10 @@ sub opt_spec {
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Multiple arguments are not allowed')
-        if @{ $args } > 1;
+        if @{$args} > 1;
 
     $opts->{format} = interpolate( $opts->{format} )
         if exists $opts->{format};

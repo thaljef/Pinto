@@ -5,7 +5,7 @@ package Pinto::Action::Unregister;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(throw);
 use Pinto::Types qw(SpecList);
@@ -20,19 +20,18 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has targets   => (
+has targets => (
     isa      => SpecList,
-    traits   => [ qw(Array) ],
-    handles  => {targets => 'elements'},
+    traits   => [qw(Array)],
+    handles  => { targets => 'elements' },
     required => 1,
     coerce   => 1,
 );
 
-
 has force => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -41,13 +40,12 @@ with qw( Pinto::Role::Committable );
 
 #------------------------------------------------------------------------------
 
-
 sub execute {
     my ($self) = @_;
 
     my $stack = $self->stack;
 
-    my @dists = map { $self->_unregister($_, $stack) } $self->targets;
+    my @dists = map { $self->_unregister( $_, $stack ) } $self->targets;
 
     return @dists;
 }
@@ -55,15 +53,15 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _unregister {
-    my ($self, $target, $stack) = @_;
+    my ( $self, $target, $stack ) = @_;
 
-    my $dist = $stack->get_distribution(spec => $target);
+    my $dist = $stack->get_distribution( spec => $target );
 
     throw "Target $target is not in the repository" if not defined $dist;
 
     $self->notice("Unregistering distribution $dist from stack $stack");
 
-    my $did_unregister = $dist->unregister(stack => $stack, force => $self->force);
+    my $did_unregister = $dist->unregister( stack => $stack, force => $self->force );
 
     return $did_unregister ? $dist : ();
 }

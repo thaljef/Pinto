@@ -20,33 +20,33 @@ sub command_names { return qw(diff) }
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return ();
 }
 
 #------------------------------------------------------------------------------
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Must specify at least one stack') if @{$args} < 1;
 
     $self->usage_error('Cannot specify more than two stacks') if @{$args} > 2;
-    
+
     return 1;
 }
 
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     # If there's only one stack, then the
     # left stack is the default (i.e. undef)
     unshift @{$args}, undef if @{$args} == 1;
 
     my %stacks = ( left_stack => $args->[0], right_stack => $args->[1] );
-    my $result = $self->pinto->run($self->action_name, %{$opts}, %stacks);
+    my $result = $self->pinto->run( $self->action_name, %{$opts}, %stacks );
 
     return $result->exit_status;
 }

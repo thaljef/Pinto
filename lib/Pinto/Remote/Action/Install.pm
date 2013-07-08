@@ -3,7 +3,7 @@
 package Pinto::Remote::Action::Install;
 
 use Moose;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Undef Bool HashRef ArrayRef Maybe Str);
 
 use File::Temp;
@@ -23,20 +23,18 @@ extends qw( Pinto::Remote::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => ArrayRef[Str],
-    traits   => [ 'Array' ],
-    handles  => { targets => 'elements' },
-    default  => sub { $_[0]->args->{targets} || [] },
-    lazy     => 1,
+    isa => ArrayRef [Str],
+    traits  => ['Array'],
+    handles => { targets => 'elements' },
+    default => sub { $_[0]->args->{targets} || [] },
+    lazy    => 1,
 );
-
 
 has do_pull => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
 );
-
 
 has mirror_url => (
     is      => 'ro',
@@ -54,7 +52,8 @@ sub _build_mirror_url {
     my $stack_dir  = defined $stack ? "/stacks/$stack" : '';
     my $mirror_url = $self->root . $stack_dir;
 
-    if (defined $self->password) {
+    if ( defined $self->password ) {
+
         # Squirt username and password into URL
         my $credentials = $self->username . ':' . $self->password;
         $mirror_url =~ s{^ (https?://) }{$1$credentials\@}mx;
@@ -84,17 +83,17 @@ override execute => sub {
     my ($self) = @_;
 
     my $result;
-    if ($self->do_pull) {
+    if ( $self->do_pull ) {
 
-        my $request = $self->_make_request(name => 'pull');
-        $result = $self->_send_request(req => $request);
+        my $request = $self->_make_request( name => 'pull' );
+        $result = $self->_send_request( req => $request );
 
         throw 'Failed to pull packages' if not $result->was_successful;
     }
 
     # Pinto::Role::Installer will handle installation after execute()
     return defined $result ? $result : Pinto::Result->new;
- };
+};
 
 #------------------------------------------------------------------------------
 

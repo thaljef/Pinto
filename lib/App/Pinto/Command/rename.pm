@@ -20,7 +20,7 @@ sub command_names { return qw(rename mv) }
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Must specify FROM_STACK and TO_STACK')
         if @{$args} != 2;

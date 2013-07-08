@@ -3,20 +3,19 @@
 package Pinto::DistributionSpec;
 
 use Moose;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(ArrayRef Str);
 
 use Pinto::Types qw(AuthorID);
 use Pinto::Util qw(throw);
 
-use overload ('""' => 'to_string');
+use overload ( '""' => 'to_string' );
 
 #------------------------------------------------------------------------------
 
 # VERSION
 
 #------------------------------------------------------------------------------
-
 
 has author => (
     is       => 'ro',
@@ -25,43 +24,40 @@ has author => (
     required => 1,
 );
 
-
 has archive => (
     is       => 'ro',
     isa      => Str,
     required => 1,
 );
 
-
 has subdirs => (
     is      => 'ro',
-    isa     => ArrayRef[Str],
+    isa     => ArrayRef [Str],
     default => sub { [] },
 );
 
 #------------------------------------------------------------------------------
 
 around BUILDARGS => sub {
-    my $orig = shift;
+    my $orig  = shift;
     my $class = shift;
 
     my @args = @_;
-    if (@args == 1 and not ref $args[0]) {
+    if ( @args == 1 and not ref $args[0] ) {
         my @path_parts = split m{/+}x, $args[0];
 
-        my $author   = shift @path_parts;  # First element
-        my $archive  = pop @path_parts;    # Last element
-        my $subdirs  = [ @path_parts ];    # Everything else
+        my $author  = shift @path_parts;    # First element
+        my $archive = pop @path_parts;      # Last element
+        my $subdirs = [@path_parts];        # Everything else
 
         throw "Invalid distribution spec: $args[0]"
-            if not ($author and $archive);
+            if not( $author and $archive );
 
-        @args = (author => $author, subdirs => $subdirs, archive => $archive);
+        @args = ( author => $author, subdirs => $subdirs, archive => $archive );
     }
 
     return $class->$orig(@args);
 };
-
 
 #------------------------------------------------------------------------------
 
@@ -75,15 +71,11 @@ suitable for constructing a URI.
 sub path {
     my ($self) = @_;
 
-    my $author   = $self->author;
-    my @subdirs  = @{ $self->subdirs };
-    my $archive  = $self->archive;
+    my $author  = $self->author;
+    my @subdirs = @{ $self->subdirs };
+    my $archive = $self->archive;
 
-    return join '/', substr($author, 0, 1),
-                     substr($author, 0, 2),
-                     $author,
-                     @subdirs,
-                     $archive;
+    return join '/', substr( $author, 0, 1 ), substr( $author, 0, 2 ), $author, @subdirs, $archive;
 }
 
 #------------------------------------------------------------------------------
@@ -98,13 +90,11 @@ context.  Returns the same result as the C<path> method.
 sub to_string {
     my ($self) = @_;
 
-    my $author   = $self->author;
-    my @subdirs  = @{ $self->subdirs };
-    my $archive  = $self->archive;
+    my $author  = $self->author;
+    my @subdirs = @{ $self->subdirs };
+    my $archive = $self->archive;
 
-    return join '/', $author,
-                     @subdirs,
-                     $archive;
+    return join '/', $author, @subdirs, $archive;
 }
 
 #------------------------------------------------------------------------------

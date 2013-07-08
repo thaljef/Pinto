@@ -16,13 +16,13 @@ use base 'App::Pinto::Command';
 #-----------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return (
-        [ 'dry-run'     => 'Do not commit any changes'            ],
-        [ 'message|m=s' => 'Message to describe the change'       ],
-        [ 'stack|s=s'   => 'Unpin targets from this stack'        ],
-        [ 'use-default-message|M' => 'Use the generated message'  ],
+        [ 'dry-run'               => 'Do not commit any changes' ],
+        [ 'message|m=s'           => 'Message to describe the change' ],
+        [ 'stack|s=s'             => 'Unpin targets from this stack' ],
+        [ 'use-default-message|M' => 'Use the generated message' ],
     );
 }
 

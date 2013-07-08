@@ -5,7 +5,7 @@ package Pinto::Database;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::ClassAttribute;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str);
 
 use Path::Class qw(file);
@@ -21,28 +21,26 @@ use Pinto::Util qw(debug throw);
 #-------------------------------------------------------------------------------
 
 has repo => (
-   is         => 'ro',
-   isa        => 'Pinto::Repository',
-   weak_ref   => 1,
-   required   => 1,
+    is       => 'ro',
+    isa      => 'Pinto::Repository',
+    weak_ref => 1,
+    required => 1,
 );
-
 
 has schema => (
-   is         => 'ro',
-   isa        => 'Pinto::Schema',
-   builder    => '_build_schema',
-   init_arg   => undef,
-   lazy       => 1,
+    is       => 'ro',
+    isa      => 'Pinto::Schema',
+    builder  => '_build_schema',
+    init_arg => undef,
+    lazy     => 1,
 );
 
-
 class_has ddl => (
-   is         => 'ro',
-   isa        => Str,
-   init_arg   => undef,
-   default    => do { local $/ = undef; <DATA> },
-   lazy       => 1,
+    is       => 'ro',
+    isa      => Str,
+    init_arg => undef,
+    default  => do { local $/ = undef; <DATA> },
+    lazy     => 1,
 );
 
 #-------------------------------------------------------------------------------
@@ -54,13 +52,13 @@ sub _build_schema {
 
     my $db_file = $self->repo->config->db_file;
     my $dsn     = "dbi:SQLite:$db_file";
-    my $xtra    = {on_connect_call => 'use_foreign_keys'};
-    my @args    = ($dsn, undef, undef, $xtra);
+    my $xtra    = { on_connect_call => 'use_foreign_keys' };
+    my @args    = ( $dsn, undef, undef, $xtra );
 
     my $connected = $schema->connect(@args);
 
     # Inject attributes thru back door
-    $connected->repo($self->repo);
+    $connected->repo( $self->repo );
 
     # Tune sqlite (taken from monotone)...
     my $dbh = $connected->storage->dbh;
@@ -76,15 +74,15 @@ sub _build_schema {
 }
 
 #-------------------------------------------------------------------------------
-# NB: We used to just let DBIx::Class generate the DDL from its own schema, but 
+# NB: We used to just let DBIx::Class generate the DDL from its own schema, but
 # SQL::Translator does not support the COLLATE feature of SQLite.  So now, we
 # ship Pinto with a real copy of the DDL, and feed it into the database when
 # the repository is initialized.
 #
-# Personally, I kinda prefer having a raw DDL file, rather than generating it 
-# because then I know *exactly* what the database schema will be, and we are 
+# Personally, I kinda prefer having a raw DDL file, rather than generating it
+# because then I know *exactly* what the database schema will be, and we are
 # no longer exposed to bugs that might exist in SQL::Translator.  We don't need
-# to deploy to different RDBMSes, so we don't really need SQL::Translator to 
+# to deploy to different RDBMSes, so we don't really need SQL::Translator to
 # help with that anyway.
 #
 # DBD::SQLite can only process one statement at a time, so we have to parse
@@ -114,7 +112,7 @@ sub create_database_schema {
     my ($self) = @_;
 
     debug("Creating database schema");
-    
+
     my $dbh = $self->schema->storage->dbh;
     $dbh->do("$_;") for split /;/, $self->ddl;
 
@@ -126,13 +124,15 @@ sub create_database_schema {
 sub create_root_revision {
     my ($self) = @_;
 
-    my $attrs = { uuid         => $self->root_revision_uuid, 
-                  message      => 'root commit', 
-                  is_committed => 1 };
+    my $attrs = {
+        uuid         => $self->root_revision_uuid,
+        message      => 'root commit',
+        is_committed => 1
+    };
 
     debug("Creating root revision");
 
-    return $self->schema->create_revision($attrs);   
+    return $self->schema->create_revision($attrs);
 }
 
 #-------------------------------------------------------------------------------
@@ -140,10 +140,10 @@ sub create_root_revision {
 sub get_root_revision {
     my ($self) = @_;
 
-    my $where = {uuid => $self->root_revision_uuid};
-    my $attrs = {key => 'uuid_unique'};
+    my $where = { uuid => $self->root_revision_uuid };
+    my $attrs = { key  => 'uuid_unique' };
 
-    my $revision = $self->schema->find_revision($where, $attrs)
+    my $revision = $self->schema->find_revision( $where, $attrs )
         or throw "PANIC: No root revision was found";
 
     return $revision;

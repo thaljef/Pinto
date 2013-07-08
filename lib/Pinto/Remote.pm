@@ -4,7 +4,7 @@ package Pinto::Remote;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Maybe Str);
 
 use LWP::UserAgent;
@@ -14,7 +14,6 @@ use Pinto::Remote::Action;
 use Pinto::Constants qw(:server);
 use Pinto::Util qw(throw current_username);
 use Pinto::Types qw(Uri);
-
 
 #-------------------------------------------------------------------------------
 
@@ -27,12 +26,11 @@ with qw(Pinto::Role::Plated);
 #------------------------------------------------------------------------------
 
 has root => (
-    is       => 'ro',
-    isa      => Uri,
-    default  => $ENV{PINTO_REPOSITORY_ROOT},
-    coerce   => 1,
+    is      => 'ro',
+    isa     => Uri,
+    default => $ENV{PINTO_REPOSITORY_ROOT},
+    coerce  => 1,
 );
-
 
 has username => (
     is      => 'ro',
@@ -40,20 +38,17 @@ has username => (
     default => current_username,
 );
 
-
 has password => (
+    is  => 'ro',
+    isa => Maybe [Str],
+);
+
+has ua => (
     is      => 'ro',
-    isa     => Maybe[ Str ],
+    isa     => 'LWP::UserAgent',
+    default => sub { LWP::UserAgent->new( agent => $_[0]->ua_name ) },
+    lazy    => 1,
 );
-
-
-has ua    => (
-    is        => 'ro',
-    isa       => 'LWP::UserAgent',
-    default   => sub { LWP::UserAgent->new( agent => $_[0]->ua_name) },
-    lazy      => 1,
-);
-
 
 has ua_name => (
     is      => 'ro',
@@ -79,8 +74,8 @@ around BUILDARGS => sub {
 
     # Grrr.  Gotta avoid passing undefs to Moose
     my @chrome_attrs = qw(verbose quiet no_color);
-    my %chrome_args  = map  { $_ => delete $args->{$_} } 
-                       grep { exists $args->{$_}       } @chrome_attrs;
+    my %chrome_args = map { $_ => delete $args->{$_} }
+        grep { exists $args->{$_} } @chrome_attrs;
 
     $args->{chrome} ||= Pinto::Chrome::Term->new(%chrome_args);
 
@@ -99,18 +94,20 @@ back to the L<Pinto::Remote::Action> base class.
 =cut
 
 sub run {
-    my ($self, $action_name, @args) = @_;
+    my ( $self, $action_name, @args ) = @_;
 
-    my $action_args = (@args == 1 and ref $args[0] eq 'HASH') ? $args[0] : {@args};
-    my $action_class = $self->load_class_for_action(name => $action_name);
+    my $action_args = ( @args == 1 and ref $args[0] eq 'HASH' ) ? $args[0] : {@args};
+    my $action_class = $self->load_class_for_action( name => $action_name );
 
-    my $action = $action_class->new( name     => $action_name,
-                                     args     => $action_args,
-                                     root     => $self->root,
-                                     username => $self->username,
-                                     password => $self->password,
-                                     chrome   => $self->chrome,
-                                     ua       => $self->ua );
+    my $action = $action_class->new(
+        name     => $action_name,
+        args     => $action_args,
+        root     => $self->root,
+        username => $self->username,
+        password => $self->password,
+        chrome   => $self->chrome,
+        ua       => $self->ua
+    );
 
     return $action->execute;
 }
@@ -118,9 +115,9 @@ sub run {
 #------------------------------------------------------------------------------
 
 sub load_class_for_action {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $action_name = $args{name} 
+    my $action_name = $args{name}
         or throw 'Must specify an action name';
 
     my $action_baseclass = __PACKAGE__ . '::Action';

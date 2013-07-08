@@ -4,7 +4,7 @@ package Pinto;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Class::Load;
@@ -40,18 +40,17 @@ with qw( Pinto::Role::Plated );
 #------------------------------------------------------------------------------
 
 has root => (
-    is       => 'ro',
-    isa      => Dir,
-    default  => $ENV{PINTO_REPOSITORY_ROOT},
-    coerce   => 1,
+    is      => 'ro',
+    isa     => Dir,
+    default => $ENV{PINTO_REPOSITORY_ROOT},
+    coerce  => 1,
 );
 
-
-has repo  => (
-    is         => 'ro',
-    isa        => 'Pinto::Repository',
-    default    => sub { Pinto::Repository->new( root => $_[0]->root ) },
-    lazy       => 1,
+has repo => (
+    is      => 'ro',
+    isa     => 'Pinto::Repository',
+    default => sub { Pinto::Repository->new( root => $_[0]->root ) },
+    lazy    => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -63,26 +62,25 @@ around BUILDARGS => sub {
 
     # Grrr.  Gotta avoid passing undefs to Moose
     my @chrome_attrs = qw(verbose quiet no_color);
-    my %chrome_args  = map  { $_ => delete $args->{$_} } 
-                       grep { exists $args->{$_}       } @chrome_attrs;
+    my %chrome_args = map { $_ => delete $args->{$_} }
+        grep { exists $args->{$_} } @chrome_attrs;
 
     $args->{chrome} ||= Pinto::Chrome::Term->new(%chrome_args);
 
     return $args;
 };
 
-
 #------------------------------------------------------------------------------
 
 sub run {
-    my ($self, $action_name, @action_args) = @_;
+    my ( $self, $action_name, @action_args ) = @_;
 
-    # Divert all warnings through our chrome 
+    # Divert all warnings through our chrome
     local $SIG{__WARN__} = sub { $self->warning($_) for @_ };
 
     my $result = try {
 
-        my $action = $self->create_action($action_name => @action_args);
+        my $action = $self->create_action( $action_name => @action_args );
         my $lock_type = $action->lock_type;
 
         $self->repo->assert_sanity_ok;
@@ -91,26 +89,26 @@ sub run {
 
         $action->execute;
     }
-    catch { 
+    catch {
         $self->repo->unlock;
         $self->error($_);
 
-        Pinto::Result->new->failed(because => $_);
+        Pinto::Result->new->failed( because => $_ );
     }
     finally {
         $self->repo->unlock;
     };
-    
-    return $result; 
+
+    return $result;
 }
 
 #------------------------------------------------------------------------------
 
 sub create_action {
-    my ($self, $action_name, %action_args) = @_;
+    my ( $self, $action_name, %action_args ) = @_;
 
-    @action_args{qw(chrome repo)} = ($self->chrome, $self->repo);
-    my $action_class = $self->load_class_for_action(name => $action_name);
+    @action_args{qw(chrome repo)} = ( $self->chrome, $self->repo );
+    my $action_class = $self->load_class_for_action( name => $action_name );
     my $action = $action_class->new(%action_args);
 
     return $action;
@@ -119,15 +117,16 @@ sub create_action {
 #------------------------------------------------------------------------------
 
 sub load_class_for_action {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $action_name  = ucfirst( $args{name} || throw 'Must specify an action name' );
+    my $action_name = ucfirst( $args{name} || throw 'Must specify an action name' );
     my $action_class = "Pinto::Action::$action_name";
 
     Class::Load::load_class($action_class);
 
     return $action_class;
 }
+
 #------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable;

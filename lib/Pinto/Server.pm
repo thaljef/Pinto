@@ -32,11 +32,11 @@ required.
 
 =cut
 
-has root  => (
-   is       => 'ro',
-   isa      => Dir,
-   required => 1,
-   coerce   => 1,
+has root => (
+    is       => 'ro',
+    isa      => Dir,
+    required => 1,
+    coerce   => 1,
 );
 
 =attr auth
@@ -69,7 +69,6 @@ has router => (
     lazy    => 1,
 );
 
-
 =attr default_port
 
 Returns the default port number that the server will listen on.  This
@@ -78,18 +77,17 @@ is a class attribute.
 =cut
 
 class_has default_port => (
-    is       => 'ro',
-    isa      => Int,
-    default  => $PINTO_SERVER_DEFAULT_PORT,
+    is      => 'ro',
+    isa     => Int,
+    default => $PINTO_SERVER_DEFAULT_PORT,
 );
-
 
 #-------------------------------------------------------------------------------
 
 sub BUILD {
     my ($self) = @_;
 
-    my $repo = Pinto::Repository->new(root => $self->root);
+    my $repo = Pinto::Repository->new( root => $self->root );
     $repo->assert_sanity_ok;
 
     return $self;
@@ -108,7 +106,7 @@ sub to_app {
 
     my $app = sub { $self->call(@_) };
 
-    if (my %auth_options = $self->auth_options) {
+    if ( my %auth_options = $self->auth_options ) {
 
         my $backend = delete $auth_options{backend}
             or carp 'No auth backend provided!';
@@ -117,8 +115,7 @@ sub to_app {
         print "Authenticating using $class\n" if is_interactive;
         Class::Load::load_class($class);
 
-        $app = Plack::Middleware::Auth::Basic->wrap($app,
-            authenticator => $class->new(%auth_options) );
+        $app = Plack::Middleware::Auth::Basic->wrap( $app, authenticator => $class->new(%auth_options) );
     }
 
     return $app;
@@ -134,12 +131,12 @@ PSGI-compatible response.
 =cut
 
 sub call {
-    my ($self, $env) = @_;
+    my ( $self, $env ) = @_;
 
-    my $response = $self->router->route($env, $self->root);
+    my $response = $self->router->route( $env, $self->root );
 
     $response = $response->finalize
-      if blessed($response) && $response->can('finalize');
+        if blessed($response) && $response->can('finalize');
 
     return $response;
 }

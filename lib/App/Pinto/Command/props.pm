@@ -19,17 +19,16 @@ use base 'App::Pinto::Command';
 
 sub opt_spec {
 
-  return (
-      [ 'format=s' => 'Format specification (See POD for details)' ],
-      [ 'properties|prop|P=s%' => 'name=value pairs of properties' ],
-  );
+    return (
+        [ 'format=s'             => 'Format specification (See POD for details)' ],
+        [ 'properties|prop|P=s%' => 'name=value pairs of properties' ],
+    );
 }
 
 #------------------------------------------------------------------------------
 
-
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Cannot specify multiple stacks')
         if @{$args} > 1;

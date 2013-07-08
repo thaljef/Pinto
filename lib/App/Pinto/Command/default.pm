@@ -16,7 +16,7 @@ use base 'App::Pinto::Command';
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return ( [ 'none' => 'Unmark the default stack' ] );
 }
@@ -24,13 +24,13 @@ sub opt_spec {
 #-----------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Cannot specify multiple stacks')
         if @{$args} > 1;
 
     $self->usage_error('Must specify a STACK or --none')
-        if ! ( @{$args} xor $opts->{none} );
+        if !( @{$args} xor $opts->{none} );
 
     return 1;
 }
@@ -38,11 +38,11 @@ sub validate_args {
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $opts->{stack} = $args->[0] if $args->[0];
 
-    my $result = $self->pinto->run($self->action_name, %{ $opts });
+    my $result = $self->pinto->run( $self->action_name, %{$opts} );
 
     return $result->exit_status;
 }

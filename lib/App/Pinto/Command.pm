@@ -19,14 +19,15 @@ use App::Cmd::Setup -command;
 #-----------------------------------------------------------------------------
 
 sub usage_desc {
-    my ($class_or_self, @args) = @_;
+    my ( $class_or_self, @args ) = @_;
 
-    my $class  = ref $class_or_self || $class_or_self;
-    my $file   = $class . '.pm'; $file =~ s{::}{/}xg;
-    my $path   = $INC{$file} or return;
+    my $class = ref $class_or_self || $class_or_self;
+    my $file = $class . '.pm';
+    $file =~ s{::}{/}xg;
+    my $path = $INC{$file} or return;
     my $handle = IO::String->new;
 
-    pod2usage(-output => $handle, -input => $path, -exitval => 'NOEXIT');
+    pod2usage( -output => $handle, -input => $path, -exitval => 'NOEXIT' );
 
     return ${ $handle->string_ref };
 }
@@ -41,10 +42,10 @@ sub pinto {
 #-----------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error("Arguments are not allowed")
-      if @{ $args } and not $self->args_attribute;
+        if @{$args} and not $self->args_attribute;
 
     return 1;
 }
@@ -52,10 +53,10 @@ sub validate_args {
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     my %args = $self->process_args($args);
-    my $result = $self->pinto->run($self->action_name, %{$opts}, %args);
+    my $result = $self->pinto->run( $self->action_name, %{$opts}, %args );
 
     return $result->exit_status;
 }
@@ -63,15 +64,15 @@ sub execute {
 #-----------------------------------------------------------------------------
 
 sub process_args {
-    my ($self, $args) = @_;
+    my ( $self, $args ) = @_;
 
     my $attr_name = $self->args_attribute or return;
 
-    if ( ! @{$args} && $self->args_from_stdin) {
-        return ($attr_name => [ _args_from_fh(\*STDIN) ]);
+    if ( !@{$args} && $self->args_from_stdin ) {
+        return ( $attr_name => [ _args_from_fh( \*STDIN ) ] );
     }
 
-    return ($attr_name => $args);
+    return ( $attr_name => $args );
 }
 
 #-----------------------------------------------------------------------------
@@ -79,7 +80,7 @@ sub process_args {
 sub action_name {
     my ($self) = @_;
 
-    my $class = ref $self;
+    my $class  = ref $self;
     my $prefix = $self->command_namespace_prefix();
 
     $class =~ m/ ^ ${prefix}:: (.+) /mx
@@ -98,7 +99,7 @@ sub _args_from_fh {
     my ($fh) = @_;
 
     my @args;
-    while (my $line = <$fh>) {
+    while ( my $line = <$fh> ) {
         chomp $line;
         next if not length $line;
         next if $line =~ m/^ \s* [;#]/x;

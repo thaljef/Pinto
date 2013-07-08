@@ -1,4 +1,5 @@
 use utf8;
+
 package Pinto::Schema::Result::Ancestry;
 
 # Created by DBIx::Class::Schema::Loader
@@ -47,12 +48,9 @@ __PACKAGE__->table("ancestry");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "parent",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "child",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+    "id",     { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+    "parent", { data_type => "integer", is_foreign_key    => 1, is_nullable => 0 },
+    "child",  { data_type => "integer", is_foreign_key    => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -78,10 +76,10 @@ Related object: L<Pinto::Schema::Result::Revision>
 =cut
 
 __PACKAGE__->belongs_to(
-  "child",
-  "Pinto::Schema::Result::Revision",
-  { id => "child" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
+    "child",
+    "Pinto::Schema::Result::Revision",
+    { id            => "child" },
+    { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head2 parent
@@ -93,10 +91,10 @@ Related object: L<Pinto::Schema::Result::Revision>
 =cut
 
 __PACKAGE__->belongs_to(
-  "parent",
-  "Pinto::Schema::Result::Revision",
-  { id => "parent" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
+    "parent",
+    "Pinto::Schema::Result::Revision",
+    { id            => "parent" },
+    { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -109,9 +107,7 @@ __PACKAGE__->belongs_to(
 
 =cut
 
-
 with 'Pinto::Role::Schema::Result';
-
 
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-02-27 14:20:24
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NAFcD1cZ00q/UhZ15CEYUg

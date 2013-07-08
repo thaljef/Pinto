@@ -23,17 +23,15 @@ has route_handler => (
 #-------------------------------------------------------------------------------
 
 sub BUILD {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  my $r = $self->route_handler;
+    my $r = $self->route_handler;
 
-  $r->connect( '/action/{action}',
-               {responder => 'Action'}, {method => 'POST'} );
+    $r->connect( '/action/{action}', { responder => 'Action' }, { method => 'POST' } );
 
-  $r->connect( '/*',
-               {responder => 'File'  }, {method => ['GET', 'HEAD'] } );
+    $r->connect( '/*', { responder => 'File' }, { method => [ 'GET', 'HEAD' ] } );
 
-  return $self;
+    return $self;
 }
 
 #-------------------------------------------------------------------------------
@@ -47,16 +45,16 @@ response.
 =cut
 
 sub route {
-    my ($self, $env, $root) = @_;
+    my ( $self, $env, $root ) = @_;
 
     my $p = $self->route_handler->match($env)
-      or return [404, [], ['Not Found']];
+        or return [ 404, [], ['Not Found'] ];
 
     my $responder_class = 'Pinto::Server::Responder::' . $p->{responder};
     Class::Load::load_class($responder_class);
 
-    my $request   = Plack::Request->new($env);
-    my $responder = $responder_class->new(request => $request, root => $root);
+    my $request = Plack::Request->new($env);
+    my $responder = $responder_class->new( request => $request, root => $root );
 
     # HACK: Plack-1.02 calls URI::Escape::uri_escape() with arguments
     # that inadvertently cause $_ to be compiled into a regex.  This
@@ -66,7 +64,7 @@ sub route {
     local $_ = '';
 
     return $responder->respond;
-};
+}
 
 #-------------------------------------------------------------------------------
 

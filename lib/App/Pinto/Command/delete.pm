@@ -20,11 +20,9 @@ sub command_names { return qw(delete remove del rm) }
 #-----------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
-    return (
-        [ 'force'  => 'Delete even if packages are pinned'  ],
-    );
+    return ( [ 'force' => 'Delete even if packages are pinned' ], );
 }
 
 #------------------------------------------------------------------------------

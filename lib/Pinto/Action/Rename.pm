@@ -4,7 +4,7 @@ package Pinto::Action::Rename;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Types qw(StackName StackObject);
 
@@ -28,7 +28,6 @@ has from_stack => (
     required => 1,
 );
 
-
 has to_stack => (
     is       => 'ro',
     isa      => StackName,
@@ -40,9 +39,9 @@ has to_stack => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->from_stack);
+    my $stack = $self->repo->get_stack( $self->from_stack );
 
-    $self->repo->rename_stack(stack => $stack, to => $self->to_stack);
+    $self->repo->rename_stack( stack => $stack, to => $self->to_stack );
 
     return $self->result->changed;
 }

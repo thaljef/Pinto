@@ -1,4 +1,5 @@
 use utf8;
+
 package Pinto::Schema::Result::Revision;
 
 # Created by DBIx::Class::Schema::Loader
@@ -70,22 +71,14 @@ __PACKAGE__->table("revision");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "uuid",
-  { data_type => "text", is_nullable => 0 },
-  "message",
-  { data_type => "text", is_nullable => 0 },
-  "username",
-  { data_type => "text", is_nullable => 0 },
-  "utc_time",
-  { data_type => "integer", is_nullable => 0 },
-  "time_offset",
-  { data_type => "integer", is_nullable => 0 },
-  "is_committed",
-  { data_type => "boolean", is_nullable => 0 },
-  "has_changes",
-  { data_type => "boolean", is_nullable => 0 },
+    "id", { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+    "uuid",         { data_type => "text",    is_nullable => 0 },
+    "message",      { data_type => "text",    is_nullable => 0 },
+    "username",     { data_type => "text",    is_nullable => 0 },
+    "utc_time",     { data_type => "integer", is_nullable => 0 },
+    "time_offset",  { data_type => "integer", is_nullable => 0 },
+    "is_committed", { data_type => "boolean", is_nullable => 0 },
+    "has_changes",  { data_type => "boolean", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -112,7 +105,7 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("uuid_unique", ["uuid"]);
+__PACKAGE__->add_unique_constraint( "uuid_unique", ["uuid"] );
 
 =head1 RELATIONS
 
@@ -125,10 +118,8 @@ Related object: L<Pinto::Schema::Result::Ancestry>
 =cut
 
 __PACKAGE__->has_many(
-  "ancestry_children",
-  "Pinto::Schema::Result::Ancestry",
-  { "foreign.child" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "ancestry_children", "Pinto::Schema::Result::Ancestry",
+    { "foreign.child" => "self.id" }, { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 ancestry_parents
@@ -140,10 +131,8 @@ Related object: L<Pinto::Schema::Result::Ancestry>
 =cut
 
 __PACKAGE__->has_many(
-  "ancestry_parents",
-  "Pinto::Schema::Result::Ancestry",
-  { "foreign.parent" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "ancestry_parents", "Pinto::Schema::Result::Ancestry",
+    { "foreign.parent" => "self.id" }, { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 registrations
@@ -155,10 +144,8 @@ Related object: L<Pinto::Schema::Result::Registration>
 =cut
 
 __PACKAGE__->has_many(
-  "registrations",
-  "Pinto::Schema::Result::Registration",
-  { "foreign.revision" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "registrations", "Pinto::Schema::Result::Registration",
+    { "foreign.revision" => "self.id" }, { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 stacks
@@ -170,10 +157,10 @@ Related object: L<Pinto::Schema::Result::Stack>
 =cut
 
 __PACKAGE__->has_many(
-  "stacks",
-  "Pinto::Schema::Result::Stack",
-  { "foreign.head" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "stacks",
+    "Pinto::Schema::Result::Stack",
+    { "foreign.head" => "self.id" },
+    { cascade_copy   => 0, cascade_delete => 0 },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -186,9 +173,7 @@ __PACKAGE__->has_many(
 
 =cut
 
-
 with 'Pinto::Role::Schema::Result';
-
 
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-07 12:56:52
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:u3EeZBioyg8H9+azCHQYNA
@@ -213,91 +198,90 @@ use Digest::SHA;
 
 use Pinto::Util qw(:all);
 
-use overload ( '""'  => 'to_string',
-               '<=>' => 'numeric_compare',
-               'cmp' => 'numeric_compare',
-               'eq'  => 'equals' );
+use overload (
+    '""'  => 'to_string',
+    '<=>' => 'numeric_compare',
+    'cmp' => 'numeric_compare',
+    'eq'  => 'equals'
+);
 
 #------------------------------------------------------------------------------
 
 has uuid_prefix => (
-  is          => 'ro',
-  isa         => Str,
-  default     => sub { substr($_[0]->uuid, 0, 8) },
-  init_arg    => undef,
-  lazy        => 1,
+    is       => 'ro',
+    isa      => Str,
+    default  => sub { substr( $_[0]->uuid, 0, 8 ) },
+    init_arg => undef,
+    lazy     => 1,
 );
-
 
 has message_title => (
-  is          => 'ro',
-  isa         => Str,
-  default     => sub { trim_text( title_text($_[0]->message) ) },
-  init_arg    => undef,
-  lazy        => 1,
+    is       => 'ro',
+    isa      => Str,
+    default  => sub { trim_text( title_text( $_[0]->message ) ) },
+    init_arg => undef,
+    lazy     => 1,
 );
-
 
 has message_body => (
-  is          => 'ro',
-  isa         => Str,
-  default     => sub { trim_text( body_text($_[0]->message) ) },
-  init_arg    => undef,
-  lazy        => 1,
+    is       => 'ro',
+    isa      => Str,
+    default  => sub { trim_text( body_text( $_[0]->message ) ) },
+    init_arg => undef,
+    lazy     => 1,
 );
-
 
 has is_root => (
-  is          => 'ro',
-  isa         => Bool,
-  default     => sub { $_[0]->id == 1 },
-  init_arg    => undef,
-  lazy        => 1,
+    is       => 'ro',
+    isa      => Bool,
+    default  => sub { $_[0]->id == 1 },
+    init_arg => undef,
+    lazy     => 1,
 );
-
 
 has datetime => (
-  is         => 'ro',
-  isa        => 'DateTime',
-  default    => sub { DateTime->from_epoch(epoch => $_[0]->utc_time, time_zone => $_[0]->timezone) },
-  init_arg   => undef,
-  lazy       => 1,
+    is       => 'ro',
+    isa      => 'DateTime',
+    default  => sub { DateTime->from_epoch( epoch => $_[0]->utc_time, time_zone => $_[0]->timezone ) },
+    init_arg => undef,
+    lazy     => 1,
 );
 
-
 has timezone => (
-  is         => 'ro',
-  isa        => 'DateTime::TimeZone',
-  default    => sub { my $offset = DateTime::TimeZone->offset_as_string($_[0]->repo->config->time_offset);
-                      return DateTime::TimeZone::OffsetOnly->new(offset => $offset) },
-  init_arg   => undef,
-  lazy       => 1,
+    is      => 'ro',
+    isa     => 'DateTime::TimeZone',
+    default => sub {
+        my $offset = DateTime::TimeZone->offset_as_string( $_[0]->repo->config->time_offset );
+        return DateTime::TimeZone::OffsetOnly->new( offset => $offset );
+    },
+    init_arg => undef,
+    lazy     => 1,
 );
 
 #------------------------------------------------------------------------------
 
 sub FOREIGNBUILDARGS {
-  my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
 
-  $args ||= {};
-  $args->{uuid}         ||= uuid;
-  $args->{username}     ||= '';
-  $args->{utc_time}     ||= 0;
-  $args->{time_offset}  ||= 0;
-  $args->{is_committed} ||= 0;
-  $args->{has_changes}  ||= 0;
-  $args->{message}      ||= '';
+    $args                 ||= {};
+    $args->{uuid}         ||= uuid;
+    $args->{username}     ||= '';
+    $args->{utc_time}     ||= 0;
+    $args->{time_offset}  ||= 0;
+    $args->{is_committed} ||= 0;
+    $args->{has_changes}  ||= 0;
+    $args->{message}      ||= '';
 
-  return $args;
+    return $args;
 }
 
 #------------------------------------------------------------------------------
 
 sub add_parent {
-    my ($self, $parent) = @_;
+    my ( $self, $parent ) = @_;
 
     # TODO: Figure out how to do merges
-    $self->create_related(ancestry_children => {parent => $parent->id});
+    $self->create_related( ancestry_children => { parent => $parent->id } );
 
     return;
 }
@@ -305,10 +289,10 @@ sub add_parent {
 #------------------------------------------------------------------------------
 
 sub add_child {
-    my ($self, $child) = @_;
+    my ( $self, $child ) = @_;
 
     # TODO: Figure out how to do merges
-    $self->create_related(ancestry_parents => {child => $child->id});
+    $self->create_related( ancestry_parents => { child => $child->id } );
 
     return;
 }
@@ -316,65 +300,65 @@ sub add_child {
 #------------------------------------------------------------------------------
 
 sub parents {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  my $where = {child => $self->id};
-  my $attrs = {join => 'ancestry_parents', order_by => 'me.utc_time'};
+    my $where = { child => $self->id };
+    my $attrs = { join => 'ancestry_parents', order_by => 'me.utc_time' };
 
-  return $self->result_source->resultset->search($where, $attrs)->all;
+    return $self->result_source->resultset->search( $where, $attrs )->all;
 }
 
 #------------------------------------------------------------------------------
 
 sub children {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  my $where = {parent => $self->id};
-  my $attrs = {join => 'ancestry_children', order_by => 'me.utc_time'};
+    my $where = { parent => $self->id };
+    my $attrs = { join => 'ancestry_children', order_by => 'me.utc_time' };
 
-  return $self->result_source->resultset->search($where, $attrs)->all;
+    return $self->result_source->resultset->search( $where, $attrs )->all;
 }
 
 #------------------------------------------------------------------------------
 
 sub distributions {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  my $rev_id = $self->id;
-  my $subquery = "SELECT DISTINCT distribution FROM registration WHERE revision = $rev_id";
-  my $where = {'me.id' => {in => \$subquery}};
-  my $attrs = {order_by => 'archive'};
+    my $rev_id   = $self->id;
+    my $subquery = "SELECT DISTINCT distribution FROM registration WHERE revision = $rev_id";
+    my $where    = { 'me.id' => { in => \$subquery } };
+    my $attrs    = { order_by => 'archive' };
 
-  return $self->result_source->schema->search_distribution($where, $attrs);
+    return $self->result_source->schema->search_distribution( $where, $attrs );
 }
 
 #------------------------------------------------------------------------------
 
 sub packages {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  my $rev_id = $self->id;
-  my $subquery = "SELECT package FROM registration WHERE revision = $rev_id";
-  my $where = {'me.id' => {in => \$subquery}};
-  my $attrs = {order_by => 'name'};
+    my $rev_id   = $self->id;
+    my $subquery = "SELECT package FROM registration WHERE revision = $rev_id";
+    my $where    = { 'me.id' => { in => \$subquery } };
+    my $attrs    = { order_by => 'name' };
 
-  return $self->result_source->schema->search_package($where, $attrs);
+    return $self->result_source->schema->search_package( $where, $attrs );
 }
 
 #------------------------------------------------------------------------------
 
 sub commit {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
     throw "Must specify a message to commit" if not $args{message};
 
-    $args{is_committed}   = 1;
-    $args{has_changes}    = 0;
-    $args{username}     ||= $self->repo->config->username;
-    $args{time_offset}  ||= $self->repo->config->time_offset;
-    $args{utc_time}     ||= current_utc_time;
+    $args{is_committed} = 1;
+    $args{has_changes}  = 0;
+    $args{username}    ||= $self->repo->config->username;
+    $args{time_offset} ||= $self->repo->config->time_offset;
+    $args{utc_time}    ||= current_utc_time;
 
-    $self->update(\%args);
+    $self->update( \%args );
 
     return $self;
 }
@@ -386,11 +370,10 @@ sub assert_is_open {
 
     # TODO: mark column dirty rather than refresh whole object.
     throw "PANIC: Revision $self is already committed"
-      if $self->refresh->get_column('is_committed');
+        if $self->refresh->get_column('is_committed');
 
     return $self;
 }
-
 
 #-------------------------------------------------------------------------------
 
@@ -399,7 +382,7 @@ sub assert_is_committed {
 
     # TODO: mark column dirty rather than refresh whole object.
     throw "PANIC: Revision $self is still open"
-      if not $self->refresh->get_column('is_committed');
+        if not $self->refresh->get_column('is_committed');
 
     return $self;
 }
@@ -411,7 +394,7 @@ sub assert_has_changed {
 
     # TODO: mark column dirty rather than refresh whole object.
     throw "PANIC: Revision $self has not changed"
-      if not $self->refresh->get_column('has_changes');
+        if not $self->refresh->get_column('has_changes');
 
     return $self;
 }
@@ -419,27 +402,27 @@ sub assert_has_changed {
 #------------------------------------------------------------------------------
 
 sub diff {
-  my ($self, $other) = @_;
+    my ( $self, $other ) = @_;
 
-    my $left  = $other || ($self->parents)[0];
+    my $left = $other || ( $self->parents )[0];
     my $right = $self;
 
     require Pinto::Difference;
-    return  Pinto::Difference->new(left => $left, right => $right);
+    return Pinto::Difference->new( left => $left, right => $right );
 }
 
 #------------------------------------------------------------------------------
 
 sub numeric_compare {
-    my ($revision_a, $revision_b) = @_;
+    my ( $revision_a, $revision_b ) = @_;
 
     my $pkg = __PACKAGE__;
     throw "Can only compare $pkg objects"
-        if not ( itis($revision_a, $pkg) && itis($revision_b, $pkg) );
+        if not( itis( $revision_a, $pkg ) && itis( $revision_b, $pkg ) );
 
     return 0 if $revision_a->id == $revision_b->id;
 
-    my $r = ($revision_a->utc_time <=> $revision_b->utc_time);
+    my $r = ( $revision_a->utc_time <=> $revision_b->utc_time );
 
     return $r;
 }
@@ -447,11 +430,11 @@ sub numeric_compare {
 #------------------------------------------------------------------------------
 
 sub equals {
-    my ($revision_a, $revision_b) = @_;
+    my ( $revision_a, $revision_b ) = @_;
 
     my $pkg = __PACKAGE__;
     throw "Can only compare $pkg objects"
-        if not ( itis($revision_a, $pkg) && itis($revision_b, $pkg) );
+        if not( itis( $revision_a, $pkg ) && itis( $revision_b, $pkg ) );
 
     return $revision_a->id == $revision_b->id;
 }
@@ -459,21 +442,21 @@ sub equals {
 #------------------------------------------------------------------------------
 
 sub to_string {
-    my ($self, $format) = @_;
+    my ( $self, $format ) = @_;
 
     my %fspec = (
-           i => sub { $self->uuid_prefix                              },
-           I => sub { $self->uuid                                     },
-           j => sub { $self->username                                 },
-           u => sub { $self->datetime->strftime($_[0] || '%c')        },
-           g => sub { $self->message_body                             },
-           G => sub { indent_text( trim_text($self->message), $_[0] ) },
-           t => sub { $self->message_title                            },
-           T => sub { truncate_text( $self->message_title, $_[0] )    },
+        i => sub { $self->uuid_prefix },
+        I => sub { $self->uuid },
+        j => sub { $self->username },
+        u => sub { $self->datetime->strftime( $_[0] || '%c' ) },
+        g => sub { $self->message_body },
+        G => sub { indent_text( trim_text( $self->message ), $_[0] ) },
+        t => sub { $self->message_title },
+        T => sub { truncate_text( $self->message_title, $_[0] ) },
     );
 
     $format ||= $self->default_format;
-    return String::Format::stringf($format, %fspec);
+    return String::Format::stringf( $format, %fspec );
 }
 
 #-------------------------------------------------------------------------------

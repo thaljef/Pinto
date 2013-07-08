@@ -1,4 +1,5 @@
 use utf8;
+
 package Pinto::Schema::Result::Prerequisite;
 
 # Created by DBIx::Class::Schema::Loader
@@ -56,16 +57,11 @@ __PACKAGE__->table("prerequisite");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "phase",
-  { data_type => "text", is_nullable => 0 },
-  "distribution",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "package_name",
-  { data_type => "text", is_nullable => 0 },
-  "package_version",
-  { data_type => "text", is_nullable => 0 },
+    "id", { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+    "phase",           { data_type => "text",    is_nullable    => 0 },
+    "distribution",    { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+    "package_name",    { data_type => "text",    is_nullable    => 0 },
+    "package_version", { data_type => "text",    is_nullable    => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -97,8 +93,8 @@ __PACKAGE__->set_primary_key("id");
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "distribution_phase_package_name_unique",
-  ["distribution", "phase", "package_name"],
+    "distribution_phase_package_name_unique",
+    [ "distribution", "phase", "package_name" ],
 );
 
 =head1 RELATIONS
@@ -112,10 +108,10 @@ Related object: L<Pinto::Schema::Result::Distribution>
 =cut
 
 __PACKAGE__->belongs_to(
-  "distribution",
-  "Pinto::Schema::Result::Distribution",
-  { id => "distribution" },
-  { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
+    "distribution",
+    "Pinto::Schema::Result::Distribution",
+    { id            => "distribution" },
+    { is_deferrable => 0, on_delete => "CASCADE", on_update => "NO ACTION" },
 );
 
 =head1 L<Moose> ROLES APPLIED
@@ -128,9 +124,7 @@ __PACKAGE__->belongs_to(
 
 =cut
 
-
 with 'Pinto::Role::Schema::Result';
-
 
 # Created by DBIx::Class::Schema::Loader v0.07033 @ 2013-03-26 11:05:47
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:p++Wil511AYW5fZ8Xoe4Jg
@@ -143,7 +137,7 @@ with 'Pinto::Role::Schema::Result';
 
 use Pinto::PackageSpec;
 
-use overload ('""' => 'to_string');
+use overload ( '""' => 'to_string' );
 
 #------------------------------------------------------------------------------
 
@@ -151,21 +145,23 @@ use overload ('""' => 'to_string');
 
 #------------------------------------------------------------------------------
 
-__PACKAGE__->inflate_column( 'package_version' => {
-    inflate => sub { version->parse($_[0]) },
-    deflate => sub { $_[0]->stringify() },
-});
+__PACKAGE__->inflate_column(
+    'package_version' => {
+        inflate => sub { version->parse( $_[0] ) },
+        deflate => sub { $_[0]->stringify() },
+    }
+);
 
 #------------------------------------------------------------------------------
 # NOTE: We often convert a Prerequsite to/from a PackageSpec object. They don't
 # use quite the same names for their attributes, so we shuffle them around here.
 
 sub FOREIGNBUILDARGS {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
 
     $args ||= {};
-    $args->{package_name}      = delete $args->{name};
-    $args->{package_version}   = delete $args->{version};
+    $args->{package_name}    = delete $args->{name};
+    $args->{package_version} = delete $args->{version};
 
     return $args;
 }
@@ -173,13 +169,17 @@ sub FOREIGNBUILDARGS {
 #------------------------------------------------------------------------------
 
 has as_spec => (
-  is        => 'ro',
-  isa       => 'Pinto::PackageSpec',
-  init_arg  => undef,
-  lazy      => 1,
-  handles   => [ qw(is_core is_perl) ],
-  default   => sub { Pinto::PackageSpec->new( name    => $_[0]->package_name,
-                                              version => $_[0]->package_version ) },
+    is       => 'ro',
+    isa      => 'Pinto::PackageSpec',
+    init_arg => undef,
+    lazy     => 1,
+    handles  => [qw(is_core is_perl)],
+    default  => sub {
+        Pinto::PackageSpec->new(
+            name    => $_[0]->package_name,
+            version => $_[0]->package_version
+        );
+    },
 );
 
 #------------------------------------------------------------------------------

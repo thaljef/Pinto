@@ -4,7 +4,7 @@ package Pinto::Chrome::Net;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Types qw(Io);
 use Pinto::Util qw(itis);
@@ -27,7 +27,6 @@ has stdout => (
     coerce   => 1,
 );
 
-
 has stderr => (
     is       => 'ro',
     isa      => Io,
@@ -38,19 +37,20 @@ has stderr => (
 #-----------------------------------------------------------------------------
 
 sub diag {
-    my ($self, $msg, $opts) = @_;
+    my ( $self, $msg, $opts ) = @_;
 
     $opts ||= {};
 
     $msg = $msg->() if ref $msg eq 'CODE';
 
-    if ( itis($msg, 'Pinto::Exception') ) {
+    if ( itis( $msg, 'Pinto::Exception' ) ) {
+
         # Show full stack trace if we are debugging
         $msg = $ENV{PINTO_DEBUG} ? $msg->as_string : $msg->message;
     }
 
     chomp $msg;
-    $msg  = $self->colorize($msg, $opts->{color});
+    $msg = $self->colorize( $msg, $opts->{color} );
     $msg .= "\n" unless $opts->{no_newline};
 
     # Prepend prefix to each line (not just at the start of the message)
@@ -68,9 +68,9 @@ sub show_progress {
 
     return if not $self->should_render_progress;
 
-    $self->stderr->autoflush; # Make sure pipes are hot
+    $self->stderr->autoflush;    # Make sure pipes are hot
 
-    print {$self->stderr} $PINTO_SERVER_PROGRESS_MESSAGE . "\n" or croak $!;
+    print { $self->stderr } $PINTO_SERVER_PROGRESS_MESSAGE . "\n" or croak $!;
 }
 
 #-----------------------------------------------------------------------------
@@ -81,14 +81,14 @@ sub should_render_progress {
     return 0 if $self->verbose;
     return 0 if $self->quiet;
     return 1;
-};
+}
 
 #-----------------------------------------------------------------------------
 
 sub edit {
-    my ($self, $document) = @_;
+    my ( $self, $document ) = @_;
 
-    return $document; # TODO!
+    return $document;    # TODO!
 }
 
 #-----------------------------------------------------------------------------

@@ -27,7 +27,7 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    my $chrome = Pinto::Chrome::Term->new(verbose => 1);
+    my $chrome = Pinto::Chrome::Term->new( verbose => 1 );
     is $chrome->should_render_diag(0), 1, 'Diag level 0 at verbose = 1';
     is $chrome->should_render_diag(1), 1, 'Diag level 1 at verbose = 1';
     is $chrome->should_render_diag(2), 1, 'Diag level 2 at verbose = 1';
@@ -38,7 +38,7 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    my $chrome = Pinto::Chrome::Term->new(quiet => 1);
+    my $chrome = Pinto::Chrome::Term->new( quiet => 1 );
     is $chrome->should_render_diag(0), 1, 'Diag level when quiet';
     is $chrome->should_render_diag(1), 0, 'Diag level when quiet';
     is $chrome->should_render_diag(2), 0, 'Diag level when quiet';
@@ -52,7 +52,7 @@ use Pinto::Chrome::Term;
     local $ENV{PINTO_COLORS} = 'dark blue,  white on_red,green';
 
     my $chrome = Pinto::Chrome::Term->new;
-    is_deeply $chrome->colors, ['dark blue', 'white on_red', 'green'], 'Parsed color list';
+    is_deeply $chrome->colors, [ 'dark blue', 'white on_red', 'green' ], 'Parsed color list';
 }
 
 #-----------------------------------------------------------------------------
@@ -60,8 +60,8 @@ use Pinto::Chrome::Term;
 {
     local $ENV{PINTO_NO_COLOR} = 1;
 
-    my ($out, $err) = ('', '');
-    my $chrome = Pinto::Chrome::Term->new(stdout => \$out, stderr => \$err);
+    my ( $out, $err ) = ( '', '' );
+    my $chrome = Pinto::Chrome::Term->new( stdout => \$out, stderr => \$err );
     $chrome->error('This is diagnostic');
     $chrome->show('This is output');
 

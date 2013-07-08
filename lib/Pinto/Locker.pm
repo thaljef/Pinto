@@ -4,7 +4,7 @@ package Pinto::Locker;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Path::Class;
 use File::NFSLock;
@@ -18,24 +18,23 @@ use Pinto::Types qw(File);
 
 #-----------------------------------------------------------------------------
 
-our $LOCKFILE_TIMEOUT = $ENV{PINTO_LOCKFILE_TIMEOUT} || 50; # Seconds
+our $LOCKFILE_TIMEOUT = $ENV{PINTO_LOCKFILE_TIMEOUT} || 50;    # Seconds
 
 #-----------------------------------------------------------------------------
 
 has repo => (
-   is         => 'ro',
-   isa        => 'Pinto::Repository',
-   weak_ref   => 1,
-   required   => 1,
+    is       => 'ro',
+    isa      => 'Pinto::Repository',
+    weak_ref => 1,
+    required => 1,
 );
 
-
 has _lock => (
-    is         => 'rw',
-    isa        => 'File::NFSLock',
-    predicate  => '_is_locked',
-    clearer    => '_clear_lock',
-    init_arg   => undef,
+    is        => 'rw',
+    isa       => 'File::NFSLock',
+    predicate => '_is_locked',
+    clearer   => '_clear_lock',
+    init_arg  => undef,
 );
 
 #-----------------------------------------------------------------------------
@@ -49,19 +48,19 @@ we patiently wait until we timeout, which is about 60 seconds.
 
 =cut
 
-sub lock {                                   ## no critic qw(Homonym)
-    my ($self, $lock_type) = @_;
+sub lock {    ## no critic qw(Homonym)
+    my ( $self, $lock_type ) = @_;
 
     return if $self->_is_locked;
 
     $lock_type ||= 'SH';
 
     local $File::NFSLock::LOCK_EXTENSION = '';
-    local @File::NFSLock::CATCH_SIGS = ();
+    local @File::NFSLock::CATCH_SIGS     = ();
 
     my $root_dir  = $self->repo->config->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock = File::NFSLock->new($lock_file, $lock_type, $LOCKFILE_TIMEOUT)
+    my $lock      = File::NFSLock->new( $lock_file, $lock_type, $LOCKFILE_TIMEOUT )
         or throw 'The repository is currently in use -- please try again later';
 
     debug("Process $$ got $lock_type lock on $root_dir");

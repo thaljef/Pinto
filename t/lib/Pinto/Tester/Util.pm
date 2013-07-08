@@ -22,7 +22,7 @@ use base 'Exporter';
 
 #-------------------------------------------------------------------------------
 
-Readonly our @EXPORT_OK => qw( 
+Readonly our @EXPORT_OK => qw(
     $MINIMUM_CPANM_VERSION
     make_dist_obj
     make_pkg_obj
@@ -35,7 +35,7 @@ Readonly our @EXPORT_OK => qw(
     has_cpanm
 );
 
-Readonly our %EXPORT_TAGS => (all => \@EXPORT_OK);
+Readonly our %EXPORT_TAGS => ( all => \@EXPORT_OK );
 
 #-------------------------------------------------------------------------------
 
@@ -60,12 +60,14 @@ sub make_dist_obj {
 sub make_dist_archive {
     my ($spec_or_struct) = @_;
 
-    my $struct    = ref $spec_or_struct eq 'HASH' ? $spec_or_struct
-                                                  : make_dist_struct( $spec_or_struct );
+    my $struct =
+        ref $spec_or_struct eq 'HASH'
+        ? $spec_or_struct
+        : make_dist_struct($spec_or_struct);
 
-    my $temp_dir     = tempdir(CLEANUP => 1 );
-    my $fake_dist    = Module::Faker::Dist->new( $struct );
-    my $fake_archive = $fake_dist->make_archive( {dir => $temp_dir} );
+    my $temp_dir     = tempdir( CLEANUP => 1 );
+    my $fake_dist    = Module::Faker::Dist->new($struct);
+    my $fake_archive = $fake_dist->make_archive( { dir => $temp_dir } );
 
     return file($fake_archive);
 }
@@ -75,24 +77,23 @@ sub make_dist_archive {
 sub make_dist_struct {
     my ($spec) = @_;
 
-    my ($dist, $provides, $requires) = parse_dist_spec($spec);
+    my ( $dist, $provides, $requires ) = parse_dist_spec($spec);
 
-    for my $provision ( @{ $provides } ) {
+    for my $provision ( @{$provides} ) {
         my $version = $provision->{version};
         my $name    = $provision->{name};
         my $file    = "lib/$name.pm";
-        $dist->{provides}->{ $name } = { file => $file, version => $version };
+        $dist->{provides}->{$name} = { file => $file, version => $version };
     }
 
-    for my $requirement ( @{ $requires } ) {
+    for my $requirement ( @{$requires} ) {
         my $version = $requirement->{version};
         my $name    = $requirement->{name};
-        $dist->{requires}->{ $name } = $version;
+        $dist->{requires}->{$name} = $version;
     }
 
     return $dist;
 }
-
 
 #------------------------------------------------------------------------------
 
@@ -109,11 +110,11 @@ sub parse_dist_spec {
     # requires:  optional
     # All whitespace is ignored
 
-    $spec =~ s{\s+}{}g;  # Remove any whitespace
+    $spec =~ s{\s+}{}g;    # Remove any whitespace
     $spec =~ m{ ^ (?: ([^/]+) /)? (.+?) (?: .tar.gz)? = ([^&]+) (?: & (.+) )? $ }mx
         or throw "Could not parse distribution spec: $spec";
 
-    my ($author, $dist, $provides, $requires) = ($1, $2, $3, $4);
+    my ( $author, $dist, $provides, $requires ) = ( $1, $2, $3, $4 );
 
     $dist = parse_pkg_spec($dist);
     $dist->{cpan_author} = $author || 'LOCAL';
@@ -121,7 +122,7 @@ sub parse_dist_spec {
     my @provides = map { parse_pkg_spec($_) } split /,/, $provides || '';
     my @requires = map { parse_pkg_spec($_) } split /,/, $requires || '';
 
-    return ($dist, \@provides, \@requires);
+    return ( $dist, \@provides, \@requires );
 }
 
 #------------------------------------------------------------------------------
@@ -133,7 +134,7 @@ sub parse_pkg_spec {
     $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x
         or throw "Could not parse spec: $spec";
 
-    return {name => $1, version => $2 || 0};
+    return { name => $1, version => $2 || 0 };
 }
 
 #------------------------------------------------------------------------------
@@ -145,37 +146,37 @@ sub parse_reg_spec {
     $spec =~ s{\s+}{}g;
 
     # Spec looks like "AUTHOR/Foo-Bar-1.2/Foo::Bar-1.2/stack/+"
-    my ($author, $dist_archive, $pkg, $stack_name, $is_pinned) = split m{/}x, $spec;
+    my ( $author, $dist_archive, $pkg, $stack_name, $is_pinned ) = split m{/}x, $spec;
 
     # Spec must at least have these
     throw "Could not parse pkg spec: $spec"
-       if not ($author and $dist_archive and $pkg);
+        if not( $author and $dist_archive and $pkg );
 
     # Append the usual suffix to the archive
     $dist_archive .= '.tar.gz' unless $dist_archive =~ m{\.tar\.gz$}x;
 
     # Normalize the is_pinned flag
-    $is_pinned = ($is_pinned eq '*' ? 1 : 0) if defined $is_pinned;
+    $is_pinned = ( $is_pinned eq '*' ? 1 : 0 ) if defined $is_pinned;
 
     # Parse package name/version
-    my ($pkg_name, $pkg_version) = split m{~}x, $pkg;
+    my ( $pkg_name, $pkg_version ) = split m{~}x, $pkg;
 
     # Set defaults
     $stack_name  ||= 'master';
     $pkg_version ||= 0;
 
-    return ($author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned);
+    return ( $author, $dist_archive, $pkg_name, $pkg_version, $stack_name, $is_pinned );
 }
 
 #------------------------------------------------------------------------------
 
 sub make_htpasswd_file {
-    my ($username, $password, $file) = @_;
+    my ( $username, $password, $file ) = @_;
 
-    $file ||= file( tempdir(CLEANUP => 1), 'htpasswd' );
-    $file->touch; # Apache::Htpasswd requires the file to exist
-    
-    Apache::Htpasswd->new( $file )->htpasswd($username, $password);
+    $file ||= file( tempdir( CLEANUP => 1 ), 'htpasswd' );
+    $file->touch;    # Apache::Htpasswd requires the file to exist
+
+    Apache::Htpasswd->new($file)->htpasswd( $username, $password );
 
     return $file;
 }

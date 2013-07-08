@@ -13,7 +13,7 @@ use Pinto::Types qw(
     StackName
     StackAll
     StackDefault
-    PkgSpec 
+    PkgSpec
     PkgSpecList
     DistSpec
     DistSpecList
@@ -26,32 +26,32 @@ use Pinto::Types qw(
 #-----------------------------------------------------------------------------
 
 has file => (
-    is   => 'rw',
-    isa  => File,
+    is     => 'rw',
+    isa    => File,
     coerce => 1,
 );
 
 has dir => (
-    is  => 'rw',
-    isa => Dir,
+    is     => 'rw',
+    isa    => Dir,
     coerce => 1,
 );
 
 has uri => (
-    is  => 'rw',
-    isa => Uri,
+    is     => 'rw',
+    isa    => Uri,
     coerce => 1,
 );
 
-has io  => (
-    is  => 'rw',
-    isa => Io,
+has io => (
+    is     => 'rw',
+    isa    => Io,
     coerce => 1,
 );
 
 has author => (
-    is  => 'rw',
-    isa => AuthorID,
+    is     => 'rw',
+    isa    => AuthorID,
     coerce => 1,
 );
 
@@ -76,8 +76,8 @@ has property => (
 );
 
 has version => (
-    is  => 'rw',
-    isa => Version,
+    is     => 'rw',
+    isa    => Version,
     coerce => 1,
 );
 
@@ -118,13 +118,13 @@ has revision => (
 );
 
 has color => (
-    is     => 'rw',
-    isa    => ANSIColor,
+    is  => 'rw',
+    isa => ANSIColor,
 );
 
 has colorset => (
-    is     => 'rw',
-    isa    => ANSIColorSet,
+    is  => 'rw',
+    isa => ANSIColorSet,
 );
 
 #-----------------------------------------------------------------------------

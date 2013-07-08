@@ -5,7 +5,7 @@ package Pinto::Action::Add;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 
 use Pinto::Util qw(sha256 current_author_id throw);
@@ -22,27 +22,25 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has author => (
-    is         => 'ro',
-    isa        => AuthorID,
-    default    => sub { $_[0]->pausecfg->{user} || current_author_id },
-    coerce     => 1,
-    lazy       => 1,
+    is      => 'ro',
+    isa     => AuthorID,
+    default => sub { $_[0]->pausecfg->{user} || current_author_id },
+    coerce  => 1,
+    lazy    => 1,
 );
 
-
-has archives  => (
-    isa       => FileList,
-    traits    => [ qw(Array) ],
-    handles   => {archives => 'elements'},
-    required  => 1,
-    coerce    => 1,
+has archives => (
+    isa      => FileList,
+    traits   => [qw(Array)],
+    handles  => { archives => 'elements' },
+    required => 1,
+    coerce   => 1,
 );
-
 
 has no_fail => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -52,7 +50,7 @@ with qw( Pinto::Role::PauseConfig Pinto::Role::Committable Pinto::Role::Puller )
 #------------------------------------------------------------------------------
 
 sub BUILD {
-    my ($self, $args) = @_;
+    my ( $self, $args ) = @_;
 
     my @missing = grep { not -e $_ } $self->archives;
     $self->error("Archive $_ does not exist") for @missing;
@@ -73,17 +71,17 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my (@successful, @failed);
-    for my $archive ($self->archives) {
+    my ( @successful, @failed );
+    for my $archive ( $self->archives ) {
 
-        try   {
-            $self->repo->svp_begin; 
+        try {
+            $self->repo->svp_begin;
             my $dist = $self->_add($archive);
             push @successful, $dist ? $dist : ();
         }
         catch {
-            throw $_ unless $self->no_fail; 
-            $self->result->failed(because => $_);
+            throw $_ unless $self->no_fail;
+            $self->result->failed( because => $_ );
 
             $self->repo->svp_rollback;
 
@@ -105,31 +103,31 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _add {
-    my ($self, $archive) = @_;
-    
+    my ( $self, $archive ) = @_;
+
     my $dist;
-    if (my $dupe = $self->_check_for_duplicate($archive)) {
+    if ( my $dupe = $self->_check_for_duplicate($archive) ) {
         $self->warning("$archive is the same as $dupe -- using $dupe instead");
         $dist = $dupe;
     }
     else {
         $self->info("Adding $archive to the repository");
-        $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
+        $dist = $self->repo->add_distribution( archive => $archive, author => $self->author );
     }
 
-    $self->notice("Registering $dist on stack " . $self->stack);
-    $self->pull(target => $dist); # Registers dist and pulls prereqs
-    
+    $self->notice( "Registering $dist on stack " . $self->stack );
+    $self->pull( target => $dist );    # Registers dist and pulls prereqs
+
     return $dist;
 }
 
 #------------------------------------------------------------------------------
 
 sub _check_for_duplicate {
-    my ($self, $archive) = @_;
+    my ( $self, $archive ) = @_;
 
     my $sha256 = sha256($archive);
-    my $dupe = $self->repo->db->schema->search_distribution({sha256 => $sha256})->first;
+    my $dupe = $self->repo->db->schema->search_distribution( { sha256 => $sha256 } )->first;
 
     return if not defined $dupe;
     return $dupe if $archive->basename eq $dupe->archive;

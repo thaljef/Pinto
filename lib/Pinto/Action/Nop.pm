@@ -5,7 +5,7 @@ package Pinto::Action::Nop;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Int);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 #------------------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ has sleep => (
 sub execute {
     my ($self) = @_;
 
-    if (my $sleep = $self->sleep) {
+    if ( my $sleep = $self->sleep ) {
         $self->notice("Process $$ sleeping for $sleep seconds");
         sleep $self->sleep;
     }

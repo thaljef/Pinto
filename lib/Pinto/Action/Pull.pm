@@ -5,7 +5,7 @@ package Pinto::Action::Pull;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 
@@ -24,17 +24,16 @@ extends qw( Pinto::Action );
 
 has targets => (
     isa      => SpecList,
-    traits   => [ qw(Array) ],
-    handles  => {targets => 'elements'},
+    traits   => [qw(Array)],
+    handles  => { targets => 'elements' },
     required => 1,
     coerce   => 1,
 );
 
-
 has no_fail => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
 
 #------------------------------------------------------------------------------
@@ -48,7 +47,7 @@ sub BUILD {
 
     $self->stack->assert_not_locked;
 
-    return $self
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -56,18 +55,18 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my (@successful, @failed);
-    for my $target ($self->targets) {
+    my ( @successful, @failed );
+    for my $target ( $self->targets ) {
 
-        try   {
+        try {
             $self->repo->svp_begin;
-            $self->notice("Pulling target $target to stack " . $self->stack);
-            my $dist = $self->pull(target => $target); 
+            $self->notice( "Pulling target $target to stack " . $self->stack );
+            my $dist = $self->pull( target => $target );
             push @successful, $dist ? $dist : ();
         }
         catch {
             throw $_ unless $self->no_fail;
-            $self->result->failed(because => $_);
+            $self->result->failed( because => $_ );
 
             $self->repo->svp_rollback;
 

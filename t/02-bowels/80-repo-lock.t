@@ -18,90 +18,97 @@ my $t = Pinto::Tester->new;
 
 {
 
-  note 'Testing exclusive locking';
+    note 'Testing exclusive locking';
 
-  my $pid = fork;
-  die "fork failed: $!" unless defined $pid;
+    my $pid = fork;
+    die "fork failed: $!" unless defined $pid;
 
-  if ($pid) {
-      # parent
-      sleep 3; # Let the child start
-      print "Starting parent: $$\n";
+    if ($pid) {
 
-      my $lock_file = $t->root->file('.lock');
-      file_exists_ok($lock_file);
+        # parent
+        sleep 3;    # Let the child start
+        print "Starting parent: $$\n";
 
-      local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
-      $t->run_throws_ok('Nop', {}, qr/currently in use/,
-          'Operation denied when exclusive lock is in place');
+        my $lock_file = $t->root->file('.lock');
+        file_exists_ok($lock_file);
 
-      my $kid = wait; # Let the child finish
-      is($kid, $pid, "reaped correct child");
-      is($?, 0, "child finished succesfully");
-      file_not_exists_ok($lock_file);
+        local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
+        $t->run_throws_ok( 'Nop', {}, qr/currently in use/, 'Operation denied when exclusive lock is in place' );
 
-      $t->run_ok('Nop', {}, 'Operation allowed after exclusive lock is removed');
+        my $kid = wait;    # Let the child finish
+        is( $kid, $pid, "reaped correct child" );
+        is( $?,   0,    "child finished succesfully" );
+        file_not_exists_ok($lock_file);
 
-  }
-  else {
-      # child
-      print "Starting child: $$\n";
+        $t->run_ok( 'Nop', {}, 'Operation allowed after exclusive lock is removed' );
 
-      require Pinto::Action::Pull;
+    }
+    else {
+        # child
+        print "Starting child: $$\n";
 
-      no warnings qw(redefine once);
-      # Override the execute method to just sit and idle
-      local *Pinto::Action::Pull::execute = sub { sleep 12; return $_[0]->result };
+        require Pinto::Action::Pull;
 
-      my $result = $t->pinto->run('Pull', targets => 'whatever');
+        no warnings qw(redefine once);
 
-      exit $result->exit_status;
-  }
+        # Override the execute method to just sit and idle
+        local *Pinto::Action::Pull::execute = sub { sleep 12; return $_[0]->result };
+
+        my $result = $t->pinto->run( 'Pull', targets => 'whatever' );
+
+        exit $result->exit_status;
+    }
 }
 
 #------------------------------------------------------------------------------
 
 {
 
-  note 'Testing shared locking';
+    note 'Testing shared locking';
 
-  my $pid = fork;
-  die "fork failed: $!" unless defined $pid;
+    my $pid = fork;
+    die "fork failed: $!" unless defined $pid;
 
-  if ($pid) {
-      # parent
-      sleep 3; # Let the child start
-      print "Starting parent: $$\n";
+    if ($pid) {
 
-      my $lock_file = $t->root->file('.lock');
-      file_exists_ok($lock_file);
+        # parent
+        sleep 3;    # Let the child start
+        print "Starting parent: $$\n";
 
-      local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
-      $t->run_ok('List', {}, 'Non-excusive operation allowed with shared lock');
+        my $lock_file = $t->root->file('.lock');
+        file_exists_ok($lock_file);
 
-      $t->run_throws_ok('Pull', {targets => 'whatever'}, qr/currently in use/,
-        'Excuisve operation denied when shared lock is in place');
+        local $Pinto::Locker::LOCKFILE_TIMEOUT = 5;
+        $t->run_ok( 'List', {}, 'Non-excusive operation allowed with shared lock' );
 
-      my $kid = wait; # Let the child finish
-      is($kid, $pid, "reaped correct child");
-      is($?, 0, "child finished succesfully");
-      file_not_exists_ok($lock_file);
+        $t->run_throws_ok(
+            'Pull',
+            { targets => 'whatever' },
+            qr/currently in use/,
+            'Excuisve operation denied when shared lock is in place'
+        );
 
-  }
-  else {
-      # child
-      print "Starting child: $$\n";
+        my $kid = wait;    # Let the child finish
+        is( $kid, $pid, "reaped correct child" );
+        is( $?,   0,    "child finished succesfully" );
+        file_not_exists_ok($lock_file);
 
-      require Pinto::Action::List;
+    }
+    else {
+        # child
+        print "Starting child: $$\n";
 
-      no warnings qw(redefine once);
-      # Override the execute method to just sit and idle
-      local *Pinto::Action::List::execute = sub { sleep 15; return $_[0]->result };
+        require Pinto::Action::List;
 
-      my $result = $t->pinto->run('List');
+        no warnings qw(redefine once);
 
-      exit $result->exit_status;
-  }
+        # Override the execute method to just sit and idle
+        local *Pinto::Action::List::execute = sub { sleep 15; return $_[0]->result };
+
+        my $result = $t->pinto->run('List');
+
+        exit $result->exit_status;
+    }
 
 }
 

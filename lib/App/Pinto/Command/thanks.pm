@@ -17,11 +17,11 @@ use base qw(App::Pinto::Command);
 #-------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     my $path;
     for my $dir (@INC) {
-        my $maybe = dir($dir)->file( qw(Pinto Manual Thanks.pod) );
+        my $maybe = dir($dir)->file(qw(Pinto Manual Thanks.pod));
         do { $path = $maybe->stringify; last } if -f $maybe;
     }
 

@@ -4,7 +4,7 @@ package Pinto::Action::Lock;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Types qw(StackName StackDefault StackObject);
 
@@ -23,9 +23,9 @@ with qw( Pinto::Role::Transactional );
 #------------------------------------------------------------------------------
 
 has stack => (
-    is        => 'ro',
-    isa       => StackName | StackDefault | StackObject,
-    default   => undef,
+    is      => 'ro',
+    isa     => StackName | StackDefault | StackObject,
+    default => undef,
 );
 
 #------------------------------------------------------------------------------
@@ -35,9 +35,9 @@ sub execute {
 
     my $stack = $self->repo->get_stack( $self->stack );
 
-    if ($stack->is_locked) {
-    	$self->warning("Stack $stack is already locked");
-    	return $self->result;
+    if ( $stack->is_locked ) {
+        $self->warning("Stack $stack is already locked");
+        return $self->result;
     }
 
     $stack->lock;

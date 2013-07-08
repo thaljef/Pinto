@@ -5,7 +5,7 @@ package Pinto::Action;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Str);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Result;
 use Pinto::Util qw(throw);
@@ -21,13 +21,11 @@ with qw( Pinto::Role::Plated );
 
 #------------------------------------------------------------------------------
 
-
-has repo  => (
+has repo => (
     is       => 'ro',
     isa      => 'Pinto::Repository',
     required => 1,
 );
-
 
 has result => (
     is       => 'ro',
@@ -37,17 +35,16 @@ has result => (
     lazy     => 1,
 );
 
-
 has lock_type => (
-    is        => 'ro',
-    isa       => Str,
-    default   => $PINTO_LOCK_TYPE_SHARED,
-    init_arg  => undef,
+    is       => 'ro',
+    isa      => Str,
+    default  => $PINTO_LOCK_TYPE_SHARED,
+    init_arg => undef,
 );
 
 #------------------------------------------------------------------------------
 
-sub BUILD {}
+sub BUILD { }
 
 #------------------------------------------------------------------------------
 

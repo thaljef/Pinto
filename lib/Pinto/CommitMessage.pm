@@ -5,7 +5,7 @@ package Pinto::CommitMessage;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Str);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use overload ( q{""} => 'to_string' );
 
@@ -21,13 +21,11 @@ has title => (
     required => 1,
 );
 
-
 has stack => (
-    is      => 'ro',
-    isa     => 'Pinto::Schema::Result::Stack',
+    is       => 'ro',
+    isa      => 'Pinto::Schema::Result::Stack',
     required => 1,
 );
-
 
 has diff => (
     is       => 'ro',

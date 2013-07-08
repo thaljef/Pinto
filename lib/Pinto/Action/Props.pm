@@ -4,7 +4,7 @@ package Pinto::Action::Props;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str HashRef);
 
 use String::Format qw(stringf);
@@ -28,17 +28,15 @@ with qw( Pinto::Role::Transactional );
 #------------------------------------------------------------------------------
 
 has stack => (
-    is        => 'ro',
-    isa       => StackName | StackDefault | StackObject,
+    is  => 'ro',
+    isa => StackName | StackDefault | StackObject,
 );
-
 
 has properties => (
     is        => 'ro',
     isa       => HashRef,
     predicate => 'has_properties',
 );
-
 
 has format => (
     is      => 'ro',
@@ -51,10 +49,11 @@ has format => (
 sub execute {
     my ($self) = @_;
 
-    my $stack = $self->repo->get_stack($self->stack);
+    my $stack = $self->repo->get_stack( $self->stack );
 
-    $self->has_properties ? $self->_set_properties($stack)
-                          : $self->_show_properties($stack);
+    $self->has_properties
+        ? $self->_set_properties($stack)
+        : $self->_show_properties($stack);
 
     return $self->result;
 }
@@ -62,9 +61,9 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _set_properties {
-    my ($self, $target) = @_;
+    my ( $self, $target ) = @_;
 
-    $target->set_properties($self->properties);
+    $target->set_properties( $self->properties );
 
     $self->result->changed;
 
@@ -74,15 +73,15 @@ sub _set_properties {
 #------------------------------------------------------------------------------
 
 sub _show_properties {
-    my ($self, $target) = @_;
+    my ( $self, $target ) = @_;
 
     my $props = $target->get_properties;
-    while ( my ($prop, $value) = each %{$props} ) {
+    while ( my ( $prop, $value ) = each %{$props} ) {
 
-        my $string = stringf($self->format, {p => $prop, v => $value});
-        my $color  = is_system_prop($prop) ? $PINTO_COLOR_2 : undef; 
+        my $string = stringf( $self->format, { p => $prop, v => $value } );
+        my $color = is_system_prop($prop) ? $PINTO_COLOR_2 : undef;
 
-        $self->show($string, {color => $color});
+        $self->show( $string, { color => $color } );
     }
 
     return;

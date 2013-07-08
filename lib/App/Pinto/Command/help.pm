@@ -16,12 +16,12 @@ use base qw(App::Cmd::Command::help);
 # extend the exeucte() method to mention the "pinto manual" command at the end
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
-    my ($cmd, undef, undef) = $self->app->prepare_command(@$args);
+    my ( $cmd, undef, undef ) = $self->app->prepare_command(@$args);
     my ($cmd_name) = $cmd->command_names;
 
-    my $rv = $self->SUPER::execute($opts, $args);
+    my $rv = $self->SUPER::execute( $opts, $args );
 
     # Only display this if showing help for a specific command.
     print qq{For more information, run "pinto manual $cmd_name"\n} if @{$args};

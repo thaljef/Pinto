@@ -20,20 +20,19 @@ sub command_names { return qw(copy cp) }
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return (
-        [ 'default'         => 'Make the new stack the default stack'  ],
-        [ 'description|d=s' => 'Brief description of the stack'        ],
+        [ 'default'         => 'Make the new stack the default stack' ],
+        [ 'description|d=s' => 'Brief description of the stack' ],
         [ 'lock'            => 'Lock the new stack to prevent changes' ],
     );
-
 
 }
 
 #------------------------------------------------------------------------------
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Must specify FROM_STACK and TO_STACK')
         if @{$args} != 2;
@@ -44,10 +43,10 @@ sub validate_args {
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     my %stacks = ( from_stack => $args->[0], to_stack => $args->[1] );
-    my $result = $self->pinto->run($self->action_name, %{$opts}, %stacks);
+    my $result = $self->pinto->run( $self->action_name, %{$opts}, %stacks );
 
     return $result->exit_status;
 }

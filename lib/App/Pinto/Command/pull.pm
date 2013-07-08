@@ -16,17 +16,17 @@ use base 'App::Pinto::Command';
 #-----------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return (
-        [ 'cascade'      => 'Always pick latest upstream package' ],
-        [ 'dry-run'      => 'Do not commit any changes'           ],
-        [ 'message|m=s'  => 'Message to describe the change'      ],
-        [ 'no-fail'      => 'Do not fail when there is an error'  ],
-        [ 'no-recurse|n' => 'Do not recursively pull prereqs'     ],
-        [ 'pin'          => 'Pin the packages to the stack'       ],
-        [ 'stack|s=s'    => 'Put packages into this stack'        ],
-        [ 'use-default-message|M' => 'Use the generated message'  ],
+        [ 'cascade'               => 'Always pick latest upstream package' ],
+        [ 'dry-run'               => 'Do not commit any changes' ],
+        [ 'message|m=s'           => 'Message to describe the change' ],
+        [ 'no-fail'               => 'Do not fail when there is an error' ],
+        [ 'no-recurse|n'          => 'Do not recursively pull prereqs' ],
+        [ 'pin'                   => 'Pin the packages to the stack' ],
+        [ 'stack|s=s'             => 'Put packages into this stack' ],
+        [ 'use-default-message|M' => 'Use the generated message' ],
     );
 }
 

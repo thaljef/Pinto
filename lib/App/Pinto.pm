@@ -17,12 +17,12 @@ use App::Cmd::Setup -app;
 sub global_opt_spec {
 
     return (
-        [ 'root|r=s'           => 'Path to your repository root directory'  ],
-        [ 'no-color|no-colour' => 'Do not colorize any output'              ],
-        [ 'password|p=s'       => 'Password for server authentication'      ],
-        [ 'quiet|q'            => 'Only report fatal errors'                ],
-        [ 'username|u=s'       => 'Username for server authentication'      ],
-        [ 'verbose|v+'         => 'More diagnostic output (repeatable)'     ],
+        [ 'root|r=s'           => 'Path to your repository root directory' ],
+        [ 'no-color|no-colour' => 'Do not colorize any output' ],
+        [ 'password|p=s'       => 'Password for server authentication' ],
+        [ 'quiet|q'            => 'Only report fatal errors' ],
+        [ 'username|u=s'       => 'Username for server authentication' ],
+        [ 'verbose|v+'         => 'More diagnostic output (repeatable)' ],
     );
 }
 
@@ -40,38 +40,37 @@ sub pinto {
         $global_options->{password} = $self->_prompt_for_password
             if defined $global_options->{password} and $global_options->{password} eq '-';
 
-        my $pinto_class = $self->pinto_class_for($global_options->{root});
+        my $pinto_class = $self->pinto_class_for( $global_options->{root} );
         Class::Load::load_class($pinto_class);
 
-        $pinto_class->new( %{ $global_options } );
+        $pinto_class->new( %{$global_options} );
     };
 }
 
 #------------------------------------------------------------------------------
 
 sub pinto_class_for {
-    my ($self, $root) = @_;
+    my ( $self, $root ) = @_;
     return $root =~ m{^http://}x ? 'Pinto::Remote' : 'Pinto';
 }
 
 #------------------------------------------------------------------------------
 
 sub _prompt_for_password {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   require Encode;
-   require IO::Prompt;
+    require Encode;
+    require IO::Prompt;
 
-   my $repo     = $self->global_options->{root};
-   my $prompt   = "Password for repository at $repo: ";
-   my $input    = IO::Prompt::prompt($prompt, -echo => '*', -tty);
-   my $password = Encode::decode_utf8($input);
+    my $repo     = $self->global_options->{root};
+    my $prompt   = "Password for repository at $repo: ";
+    my $input    = IO::Prompt::prompt( $prompt, -echo => '*', -tty );
+    my $password = Encode::decode_utf8($input);
 
-   return $password;
+    return $password;
 }
 
 #-------------------------------------------------------------------------------
-
 
 1;
 

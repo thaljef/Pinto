@@ -18,12 +18,12 @@ use base 'App::Pinto::Command';
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
     return (
-        [ 'description=s' => 'Description of the initial stack'             ],
-        [ 'no-default'    => 'Do not mark the initial stack as the default' ],
-        [ 'source=s@'     => 'URL of upstream repository (repeatable)'      ],
+        [ 'description=s'             => 'Description of the initial stack' ],
+        [ 'no-default'                => 'Do not mark the initial stack as the default' ],
+        [ 'source=s@'                 => 'URL of upstream repository (repeatable)' ],
         [ 'target-perl-version|tpv=s' => 'Default perl version for new stacks' ],
     );
 }
@@ -31,13 +31,13 @@ sub opt_spec {
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Only one stack argument is allowed')
-      if @{ $args } > 1;
+        if @{$args} > 1;
 
     $self->usage_error('Cannot use --description without specifying a stack')
-      if $opts->{description} and not @{ $args };
+        if $opts->{description} and not @{$args};
 
     return 1;
 }
@@ -45,7 +45,7 @@ sub validate_args {
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     my $global_opts = $self->app->global_options;
 
@@ -63,7 +63,7 @@ sub execute {
     $opts->{stack} = $args->[0] if $args->[0];
 
     my $initializer = $self->load_initializer->new;
-    $initializer->init( %{ $global_opts }, %{$opts} );
+    $initializer->init( %{$global_opts}, %{$opts} );
     return 0;
 }
 
@@ -73,12 +73,12 @@ sub load_initializer {
 
     my $class = 'Pinto::Initializer';
 
-    my ($ok, $error) = Class::Load::try_load_class($class);
+    my ( $ok, $error ) = Class::Load::try_load_class($class);
     return $class if $ok;
 
-    my $msg = $error =~ m/Can't locate .* in \@INC/ ## no critic (ExtendedFormatting)
-                     ? "Must install Pinto to create new repositories\n"
-                     : $error;
+    my $msg = $error =~ m/Can't locate .* in \@INC/    ## no critic (ExtendedFormatting)
+        ? "Must install Pinto to create new repositories\n"
+        : $error;
     die $msg;
 }
 
