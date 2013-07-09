@@ -2,4 +2,9 @@
 ^nytprof
 ^tmp$
 ^[.]tags
+^perltidy.LOG
+^[.].tidyall.d
+^[.]build
+^TEST
+
 
