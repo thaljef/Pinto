@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+      NEW FEATURES:
+
+      * The "add" command now has an experimental --no-index option to exclude
+      certain packages from the index.  This is useful when Pinto finds
+      packages in your distribution that it should not.  Thanks to Todd Chapman
+      for the great suggestion.
+
       ENHANCEMENTS:
 
       * Optimized some queries to make it faster to register packages on a stack.

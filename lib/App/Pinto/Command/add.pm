@@ -24,6 +24,7 @@ sub opt_spec {
         [ 'dry-run'               => 'Do not commit any changes' ],
         [ 'message|m=s'           => 'Message to describe the change' ],
         [ 'no-fail'               => 'Do not fail when there is an error' ],
+        [ 'no-index|x=s@'         => 'Do not index matching packages' ],
         [ 'no-recurse|n'          => 'Do not recursively pull prereqs' ],
         [ 'pin'                   => 'Pin packages to the stack' ],
         [ 'stack|s=s'             => 'Put packages into this stack' ],
@@ -124,6 +125,29 @@ This option is useful if you want to throw a list of archives into
 a repository and see which ones are problematic.  Once you've fixed
 the broken ones, you can throw the whole list at the repository
 again.
+
+=item --no-index=PACKAGE
+
+=item -x PACKAGE
+
+=item --no-index=/PATTERN
+
+=item -x /PATTERN
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Exclude the PACKAGE from the index.  If the argument starts with a slash, then
+it is interpreted as a regular expression, and all packages matching the
+pattern will be excluded.  Exclusions only apply to the added distributions
+(i.e. the arguments to this command) so they do not affect any prerequisited
+distributions that may also get pulled.  You can repeat this option to specify
+multiple PACKAGES or PATTERNS.
+
+This option is useful when Pinto's indexing is to aggressive and finds
+packages that it probably should not.  Remember that Pinto does not promise to
+index exactly as PAUSE would.  When using a PATTERN, take care to use a
+conservative one so you don't exclude the wrong packages.  Pinto will throw an
+exception if you exclude every package in the distribution.
 
 =item --no-recurse
 

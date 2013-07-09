@@ -4,7 +4,7 @@ package Pinto::Action::Add;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 
@@ -41,6 +41,12 @@ has no_fail => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
+);
+
+has no_index => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    default => sub { [] }
 );
 
 #------------------------------------------------------------------------------
@@ -113,6 +119,7 @@ sub _add {
     else {
         $self->info("Adding $archive to the repository");
         $dist = $self->repo->add_distribution( archive => $archive, author => $self->author );
+        $self->_apply_exclusions($dist);
     }
 
     $self->notice( "Registering $dist on stack " . $self->stack );
@@ -133,6 +140,35 @@ sub _check_for_duplicate {
     return $dupe if $archive->basename eq $dupe->archive;
 
     throw "Archive $archive is the same as $dupe but with different name";
+}
+
+#-----------------------------------------------------------------------------
+
+sub _apply_exclusions {
+    my ( $self, $dist ) = @_;
+
+    my @rules = map { s/^\/// ? qr/$_/ : $_ } @{ $self->no_index };
+
+    my $matcher = sub {
+        my ( $rule, $pkg ) = @_;
+        return ref $rule eq 'Regexp'
+            ? $pkg->name =~ $rule
+            : $pkg->name eq $rule;
+    };
+
+    my @pkgs = $dist->packages;
+    for my $rule (@rules) {
+        for my $pkg (@pkgs) {
+            next unless $matcher->( $rule, $pkg );
+            $self->warning("Excluding matching package $pkg from index");
+            $pkg->delete;
+        }
+    }
+
+    throw "Distribution $dist has no packages left"
+        if $dist->packages->count == 0;
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------
