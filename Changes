@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+      !! DEVELOPER RELEASE !!
+
       NEW FEATURES:
 
       * The "add" command now has an experimental --no-index option to exclude
