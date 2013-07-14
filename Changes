@@ -18,6 +18,13 @@
       average case, the limiting factor is fetching and unpacking the upstream
       distribution, so you'll only see a slight improvement there.
 
+      BUG FIXES:
+
+      * You can now edit the commit message when pinto is reading input from 
+      a file or pipe, as long as STDOUT is connected to a terminal.  You
+      can always just use the -m or -M options if you don't want to edit
+      the message.
+
 0.087     2013-06-19 14:47:01 America/Los_Angeles
        
       INCOMPATIBLE CHANGES:
