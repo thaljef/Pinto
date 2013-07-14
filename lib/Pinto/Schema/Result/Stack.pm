@@ -138,7 +138,7 @@ with 'Pinto::Role::Schema::Result';
 
 #-------------------------------------------------------------------------------
 
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::Types::Moose qw(Bool Str Undef);
 
 use String::Format;
 use File::Copy ();
@@ -188,7 +188,7 @@ has authors_dir => (
 
 has description => (
     is       => 'ro',
-    isa      => Str,
+    isa      => Str | Undef,
     lazy     => 1,
     default  => sub { $_[0]->get_property('description') },
     init_arg => undef,
