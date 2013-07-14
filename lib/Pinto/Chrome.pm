@@ -5,6 +5,7 @@ package Pinto::Chrome;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Int Bool);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 #-----------------------------------------------------------------------------
 
