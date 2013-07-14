@@ -44,7 +44,7 @@ sub to_string {
 
     $diff =~ s/^/# /gm;
 
-    return <<"END_MESSAGE";
+    my $msg = <<"END_MESSAGE";
 $title
 
 
@@ -58,6 +58,9 @@ $title
 #
 $diff
 END_MESSAGE
+
+    chomp $msg;
+    return $msg;
 }
 
 #------------------------------------------------------------------------------
