@@ -190,6 +190,16 @@ sub FOREIGNBUILDARGS {
     $args ||= {};
     $args->{version} = 0 if not defined $args->{version};
 
+    # We're no longer storing the file path and sha digests of each package
+    # because the paths in the META are often wrong anyway, and that would
+    # cause Dist::Metadata to blow up.  I had hoped this information would be
+    # used to figure out which distribution a given file came from.  But I've
+    # decided that is out of scope for Pinto.  Eventually, we'll remove
+    # these from the schema entirely.
+
+    $args->{file}   ||= '';
+    $args->{sha256} ||= '';
+
     return $args;
 }
 
