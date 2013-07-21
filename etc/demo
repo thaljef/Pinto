@@ -1,0 +1,188 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Term::ReadKey;
+use Term::ANSIColor;
+use Time::HiRes qw(usleep);
+
+#-----------------------------------------------------------------------------
+
+my $shell  = '/bin/bash';
+my $prompt = colored ['green'], '(jeff)$ ';
+my $DEBUG  = $ENV{DEBUG};
+
+open my $fh, '|-', $shell or die $!;
+ReadMode(4); # raw mode
+$| = 1;
+
+#-----------------------------------------------------------------------------
+
+my $do_next_cmd;
+$SIG{ALRM} = sub {$do_next_cmd = 1};
+
+my @commands = <DATA>;
+my $previous_cmd;
+
+CMD:
+while (my $cmd = shift @commands) {
+
+      my $original = $cmd;
+      chomp $cmd;
+
+      next if not $cmd;
+      next if $cmd =~ /^\s*(\#|:)/;
+      next if $cmd !~ /\S/;
+
+      print $prompt;
+
+      my @steps = split /<PAUSE>/, $cmd;
+      while (my $step = shift @steps) {
+
+        my $key = ReadKey(0);
+        next CMD if $key eq 'n';
+        last CMD if $key eq 'q';
+
+        if ($key eq '!') {
+          shell();
+          unshift @commands, $previous_cmd;
+          next CMD;
+        }
+        elsif ($key eq '?') {
+          shell();
+          redo CMD;
+        }
+
+
+        $step .= ' ' if not @steps;
+        for my $char (split '', $step) {
+          print $char;
+          usleep 25000;
+        }
+      }
+
+      my $key = ReadKey(0);
+      print "\n";
+
+      next CMD if $key eq 'n';
+      last CMD if $key eq 'q';
+
+      if ($key eq '!') {
+        shell();
+        unshift @commands, $previous_cmd;
+        next CMD;
+      }
+      elsif ($key eq '?') {
+        shell();
+        redo CMD;
+      }
+
+      $cmd =~ s/<PAUSE>//g;
+      print $fh "$cmd\n";
+      print $fh "kill -14 $$\n";
+      $fh->flush;
+
+      until ($do_next_cmd) {}
+      $do_next_cmd = 0;
+      $previous_cmd = $original;
+}
+
+ReadMode(0);
+print "\n";
+
+#-----------------------------------------------------------------------------
+
+
+sub shell {
+  print "\n";
+  ReadMode(0);  # reset to narmal mode
+
+  print "Entering subshell\n";
+  system $shell;
+  print "Returning to script\n";
+
+  ReadMode(4); # back to raw again
+  return 1;
+}
+
+#-----------------------------------------------------------------------------
+
+__DATA__
+
+# Set up
+perlbrew use perl-5.16.3
+perlbrew lib delete perl-5.16.3@demo
+perlbrew lib create perl-5.16.3@demo
+exit
+
+perlbrew use perl-5.16.3@demo
+
+rm -rf MyModules
+rm -rf ~/opt/local/pinto/lib/perl5/HTTP*
+rm -rf ~/opt/local/pinto/lib/perl5/URI.pm
+rm -rf ~/opt/local/pinto/lib/perl5/Pinto*
+rm -rf ~/opt/local/pinto/lib/perl5/darwin-2level/auto/Pinto
+export PERL_CPANM_OPT=--notest
+echo 'Here we go!'; clear
+
+# Install pinto
+curl -L http://getpinto.stratopan.com | bash
+
+# Create repository
+pinto <PAUSE>--root MyModules <PAUSE>init <PAUSE>--source file:///Users/jeff/tmp/CPAN-July
+
+# Show repository structure
+find MyModules -type f
+
+# Set ENV var, so we can be lazy
+export PINTO_REPOSITORY_ROOT=$PWD/MyModules
+
+# Pull Dancer from CPAN and install
+pinto install<PAUSE> --do-pull<PAUSE> Dancer
+
+# Show stack contents
+pinto list
+clear
+
+# URI is broken so inject our patched one
+pinto add<PAUSE> ~/tmp/URI-1.58_PATCHED.tar.gz
+
+# Pin our URI so it doesn't change
+pinto pin<PAUSE> URI
+
+# Edit config file to travel forward in time
+(exec < /dev/tty vim MyModules/.pinto/config/pinto.ini)
+
+# Pull newer Dancer and install
+pinto install --do-pull Dancer<PAUSE>~1.3116
+
+# Show log to explain the pin
+pinto log
+
+# Make a copy of the stack
+pinto copy<PAUSE> master foo
+
+# Show the stack listing
+pinto stacks
+
+# Unpin URI on the copied stack
+pinto unpin<PAUSE> --stack foo<PAUSE> URI
+
+# Upgrade Dancer
+pinto install --do-pull --stack foo<PAUSE> Dancer~1.3116
+
+# Compare the stacks
+pinto diff<PAUSE> master foo
+
+# Unpin URI on master too
+pinto unpin URI
+
+# Pull Dancer to master
+pinto pull Dancer~1.3116
+
+# Compare stacks again
+pinto diff master foo
+
+# The end
+echo 'Thank You!'
+exit
