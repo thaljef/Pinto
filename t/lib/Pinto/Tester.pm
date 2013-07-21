@@ -113,9 +113,10 @@ sub _build_pinto {
     my ($self) = @_;
 
     my $chrome = Pinto::Chrome::Term->new(
-        verbose => 2,
-        stdout  => $self->outstr,
-        stderr  => $self->errstr
+        verbose  => 2,
+        no_color => 1,
+        stdout   => $self->outstr,
+        stderr   => $self->errstr,
     );
 
     my %defaults = ( root => $self->root );
