@@ -30,12 +30,11 @@
       INTERNAL CHANGES:
 
       * Pinto no longers stores the file path and SHA digest of every
-      package it sees in the META, since many distributions on CPAN
-      don't have the right paths in there anyway.  This allows Pinto
-      to index some (technically broken) distributions that it
-      otherwise couldn't.  Pinto was never really using this
-      information anyway, and it will probably be removed from the
-      schema entirely in the next major upgrade cycle.
+      package it sees in the META, since many distributions on CPAN don't have
+      the right paths in there anyway.  This allows Pinto to index some
+      (technically broken) distributions that it otherwise couldn't.  Pinto
+      was never really using this information anyway, and it will probably be
+      removed from the schema entirely in the next major upgrade cycle.
 
 0.087_02  2013-07-16 02:12:40 America/Los_Angeles
 0.087_01  2013-07-09 01:06:47 America/Los_Angeles
