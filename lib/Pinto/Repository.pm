@@ -211,9 +211,14 @@ sub get_revision {
 
     return $revision if itis( $revision, 'Pinto::Schema::Result::Revision' );
 
-    my @revs = $self->db->schema->search_revision( { uuid => { like => $revision } } );
+    my $where = { uuid => { like => lc "$revision%" } };
+    my @revs = $self->db->schema->search_revision( $where );
 
-    throw "Revision id $revision is ambiguous" if @revs > 1;
+    if (@revs > 1) {
+        my $msg = "Revision ID $revision is ambiguous.  Possible matches are:\n";
+        $msg .= $_->to_string("%i: %{48}T\n") for @revs;
+        throw $msg;
+    }
 
     return @revs ? $revs[0] : ();
 }

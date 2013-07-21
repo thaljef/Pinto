@@ -4,7 +4,7 @@ package Pinto::Difference;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(ArrayRef);
+use MooseX::Types::Moose qw(ArrayRef Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(itis);
@@ -61,6 +61,14 @@ has deletions => (
         ];
     },
     init_arg => undef,
+    lazy     => 1,
+);
+
+has is_different => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => undef,
+    default  => sub { shift->diffs > 0},
     lazy     => 1,
 );
 
