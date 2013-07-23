@@ -19,8 +19,9 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
-        [ 'default'         => 'Make the new stack the default stack' ],
-        [ 'description|d=s' => 'Brief description of the stack' ],
+        [ 'default'                   => 'Make the new stack the default stack' ],
+        [ 'description|d=s'           => 'Brief description of the stack' ],
+        [ 'target-perl-version|tpv=s' => 'Target Perl version for this stack'],
     );
 }
 
@@ -77,6 +78,15 @@ Also mark the new stack as the default stack.
 Use TEXT for the description of the stack.
 
 =back
+
+=item --target-perl-version=VERSION
+
+=item --tpv=VERSION
+
+Sets the target perl version for the stack.  Pinto never pulls distributions
+for prerequisites that are satisfied by the core of the target perl version.
+VERSION must be a valid version number for an existing release of perl 5.
+Defaults to the global target Perl version of this repository.
 
 =cut
 

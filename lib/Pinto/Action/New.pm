@@ -7,7 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Pinto::Types qw(StackName);
+use Pinto::Types qw(StackName PerlVersion);
 
 #------------------------------------------------------------------------------
 
@@ -41,6 +41,14 @@ has description => (
     predicate => 'has_description',
 );
 
+
+has target_perl_version => (
+    is        => 'ro',
+    isa       => PerlVersion,
+    predicate => 'has_target_perl_version',
+    coerce    => 1,
+);
+
 #------------------------------------------------------------------------------
 
 sub execute {
@@ -50,8 +58,15 @@ sub execute {
     my $stack = $self->repo->create_stack(%attrs);
 
     $stack->set_properties( $stack->default_properties );
-    $stack->set_description( $self->description ) if $self->has_description;
-    $stack->mark_as_default if $self->default;
+
+    $stack->set_property( description => $self->description )
+        if $self->has_description;
+
+    $stack->set_property( target_perl_version => $self->target_perl_version )
+        if $self->has_target_perl_version;
+
+    $stack->mark_as_default 
+        if $self->default;
 
     return $self->result->changed;
 }

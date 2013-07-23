@@ -15,6 +15,12 @@
       compare any two arbitrary revisions.  Revision IDs can be truncated to
       uniqueness.  This feature was generously funded by a grant from TPF.
 
+      * The "new" command now accepts a --target-perl-version option to set
+      the target perl version of the new stack.  This affects how Pinto
+      decided if a prerequisite is satisfied by the core.  If you do not
+      specify the --target-perl-version, then it defaults the global value
+      that is set in the repository configuration file.
+
       ENHANCEMENTS:
 
       * Optimized some queries to make it faster to register packages on a stack.
