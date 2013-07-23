@@ -681,7 +681,7 @@ sub get_properties {
 sub set_property {
     my ( $self, $key, $value ) = @_;
 
-    $self->set_properties( { $key => $value } );
+    $self->set_properties( { $key => "$value" } );
 
     return $self;
 }
@@ -695,8 +695,8 @@ sub set_properties {
     while ( my ( $key, $value ) = each %{$new_props} ) {
         Pinto::Util::validate_property_name($key);
 
-        if ( defined $value && length $value ) {
-            $props->{ lc $key } = $value;
+        if ( defined $value && length "$value" ) {
+            $props->{ lc $key } = "$value";
         }
         else {
             delete $props->{ lc $key };
