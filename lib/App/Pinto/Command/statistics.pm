@@ -18,6 +18,20 @@ use base 'App::Pinto::Command';
 sub command_names { return qw( statistics stats ) }
 
 #------------------------------------------------------------------------------
+
+sub validate_args {
+    my ( $self, $opts, $args ) = @_;
+
+    $self->usage_error('Multiple arguments are not allowed')
+        if @{$args} > 1;
+
+    $opts->{stack} = $args->[0]
+        if $args->[0];
+
+    return 1;
+}
+
+#------------------------------------------------------------------------------
 1;
 
 __END__
@@ -34,7 +48,8 @@ This command reports some statistics about the repository.
 
 =head1 COMMAND ARGUMENTS
 
-None.
+The argument is the name of the stack you wish to see the statistics for. If
+you do not specify a stack, then the default stack will be used.
 
 =head1 COMMAND OPTIONS
 
