@@ -68,6 +68,8 @@ sub provides {
         my $lib_dir = $self->work_dir->subdir('lib');
         local @INC = ( $lib_dir->stringify, @INC );
 
+        # TODO: Run this under Safe to protect ourselves
+        # from evil.  See ANDK/pause/pmfile.pm for example
         $self->dm->module_info; # returned from try{}
     }
     catch {
@@ -97,10 +99,11 @@ sub requires {
     my $archive = $self->archive;
     debug "Extracting packages required by archive $archive";
 
-    my $prereqs_meta = try { $self->dm->meta->prereqs } catch { throw "Unable to extract prereqs from $archive: $_" };
+    my $prereqs_meta =   try { $self->dm->meta->prereqs } 
+                       catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
-    for my $phase (qw( develop configure build test runtime )) {
+    for my $phase ( keys %{$prereqs_meta} ) {
 
         my $prereqs_for_phase = $prereqs_meta->{$phase}        || {};
         my $required_prereqs  = $prereqs_for_phase->{requires} || {};
