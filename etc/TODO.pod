@@ -2,13 +2,27 @@
 
 =over 4
 
+=item Fallback if upstream repo does not respond
+
+=item Add cpan.stratopan.com as first upstream repo
+
+=item Add --with-recommended-dependencies
+
+=item Apply --no-index to prereqs too?
+
+=item Add option to skip prereqs?
+
 =item Fix line buffering in Pinto::Remote::Action.
 
-=item Finish FastForward merge (note this is not a committable action)
+=item Command to update all packages on stack.
 
-=item Implement a reset command to move head (also not committable)
+=item Create command to list outdated packages.
 
-=item Test cases for Pop, Reindex, Delete
+=item Finish FastForward merge (note this is not a committable action).
+
+=item Implement a reset command to move head (also not committable).
+
+=item Create command to undo one or more specific revisions.
 
 =item Move repository configuration into the DB
 
@@ -16,19 +30,13 @@
 
 =item Create a hook mechanism to do stuff before or after an Action
 
-=item Create command to populate repository from current modules in @INC
-
-=item Create command to undo one or more specific revisions
-
 =back
 
 =head1 MEDIUM PRORITY
 
 =over 4
 
-=item Improve locking mechanism (one lock per stack, maybe in db).
-
-=item Enable locks on all stacks.
+=item Enable locks on all stacks (repo lock)
 
 =item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
 
@@ -40,11 +48,9 @@
 
 =item Create command to list outdated packages
 
+=item Create command to package whole repo in tar.gz
+
 =item Stack property: allow devel releases
-
-=item Repo property: default sources
-
-=item Repo property: default target perl version
 
 =item Repo property: default devel option
 
