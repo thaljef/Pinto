@@ -28,6 +28,11 @@
       average case, the limiting factor is fetching and unpacking the upstream
       distribution, so you'll only see a slight improvement there.
 
+      * If your username contains non-alphanumeric characters, they will be
+      stripped out when used as your author identity.  This is because the
+      CPAN toolchain requires author ids to be alphanumeric.  Thanks to
+      @chiselwright and @cebjyre.
+
       BUG FIXES:
 
       * You can now edit the commit message when pinto is reading input from 
