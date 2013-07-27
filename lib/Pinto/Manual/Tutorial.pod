@@ -134,7 +134,7 @@ The C<--mirror-only> flag is important because it tells L<cpanm> to B<not>
 look in other repositories for missing prerequisites.  Usually, you only
 want to install things from B<your> repository.
 
-You can do the same thing with L<cpan> and L<cpanp> as well.  Se their
+You can do the same thing with L<cpan> and L<cpanp> as well.  See their
 documentation for information on how to set the URL of the repository.  
 
 =head2 Upgrading a dependency
