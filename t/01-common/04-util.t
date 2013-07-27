@@ -27,6 +27,9 @@ use Pinto::Util qw(:all);
     local $Pinto::Globals::is_interactive = -9;
     is( is_interactive, -9, 'Override interactive state' );
 
+    local $Pinto::Globals::current_username = 'foo.bar-baz';
+    is( current_author_id, 'FOOBARBAZ', 'Convert username to author id' );
+
 }
 
 #-----------------------------------------------------------------------------
