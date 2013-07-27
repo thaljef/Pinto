@@ -46,7 +46,7 @@ has password => (
 has ua => (
     is      => 'ro',
     isa     => 'LWP::UserAgent',
-    default => sub { LWP::UserAgent->new( agent => $_[0]->ua_name ) },
+    default => sub { LWP::UserAgent->new( agent => $_[0]->ua_name, env_proxy => 1 ) },
     lazy    => 1,
 );
 
