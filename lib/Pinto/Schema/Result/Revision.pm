@@ -264,9 +264,9 @@ sub FOREIGNBUILDARGS {
     my ( $class, $args ) = @_;
 
     $args                 ||= {};
-    $args->{uuid}         ||= uuid;
+    $args->{uuid}         ||= uuid();
     $args->{username}     ||= '';
-    $args->{utc_time}     ||= 0;
+    $args->{utc_time}     ||= current_utc_time();
     $args->{time_offset}  ||= 0;
     $args->{is_committed} ||= 0;
     $args->{has_changes}  ||= 0;
