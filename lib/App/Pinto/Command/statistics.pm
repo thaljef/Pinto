@@ -38,7 +38,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT statistics
+  pinto --root=REPOSITORY_ROOT statistics [STACK]
 
 =head1 DESCRIPTION
 
