@@ -36,6 +36,12 @@ has pin => (
     default => 0,
 );
 
+has with_development_prerequisites => (
+    is     => 'ro',
+    isa => Bool,
+    default => 0,
+);
+
 #-----------------------------------------------------------------------------
 
 # We should require a stack() attribute here, but Moose can't properly
@@ -135,15 +141,19 @@ sub recurse {
         return $dist;
     };
 
-    require Pinto::PrerequisiteWalker;
 
-    my $tpv    = $stack->target_perl_version;
-    my $filter = sub { $_[0]->is_perl || $_[0]->is_core( in => $tpv ) };
-    my $walker = Pinto::PrerequisiteWalker->new( start => $dist, callback => $cb, filter => $filter );
+    # Exclude perl itself, and prereqs that are satisfied by the core
+    my @filters = ( sub {$_[0]->is_perl || $_[0]->is_core(in => $stack->target_perl_version)} );
+
+    # Exlucde develop-time dependencies, unless asked not to
+    push @filters, sub {$_[0]->phase eq 'develop'} unless $self->with_development_prerequisites;
+
+    require Pinto::PrerequisiteWalker;
+    my $walker = Pinto::PrerequisiteWalker->new( start => $dist, callback => $cb, filters => \@filters );
 
     $self->notice("Descending into prerequisites for $dist");
 
-    while ( $walker->next ) { };    # We just want the side effects
+    while ( $walker->next ) { };  # Just want the callback side effects
 
     return $self;
 }

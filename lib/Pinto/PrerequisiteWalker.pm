@@ -25,17 +25,17 @@ has callback => (
     required => 1,
 );
 
-has filter => (
+has filters => (
     is        => 'ro',
-    isa       => CodeRef,
-    predicate => 'has_filter',
+    isa       => ArrayRef[ CodeRef ],
+    predicate => 'has_filters',
 );
 
 has queue => (
     isa => ArrayRef ['Pinto::Schema::Result::Prerequisite'],
     traits  => [qw(Array)],
     handles => { enqueue => 'push', dequeue => 'shift' },
-    default => sub { return [ $_[0]->apply_filter( $_[0]->start->prerequisites ) ] },
+    default => sub { return [ $_[0]->apply_filters( $_[0]->start->prerequisites ) ] },
     init_arg => undef,
     lazy     => 1,
 );
@@ -58,7 +58,7 @@ sub next {
 
     if ( defined $dist ) {
         my $path    = $dist->path;
-        my @prereqs = $self->apply_filter( $dist->prerequisites );
+        my @prereqs = $self->apply_filters( $dist->prerequisites );
         $self->enqueue(@prereqs) unless $self->seen->{$path};
         $self->seen->{$path} = 1;
     }
@@ -68,12 +68,16 @@ sub next {
 
 #------------------------------------------------------------------------------
 
-sub apply_filter {
+sub apply_filters {
     my ( $self, @prereqs ) = @_;
 
-    return @prereqs if not $self->has_filter;
+    return @prereqs if not $self->has_filters;
 
-    return grep { !$self->filter->($_) } @prereqs;
+    for my $filter ( @{ $self->filters } ) {
+        @prereqs = grep { ! $filter->($_) } @prereqs;
+    }
+
+    return @prereqs;
 }
 
 #------------------------------------------------------------------------------
