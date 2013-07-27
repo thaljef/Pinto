@@ -11,7 +11,7 @@ use Term::ANSIColor;
 use Term::EditorEdit;
 
 use Pinto::Types qw(Io ANSIColorSet);
-use Pinto::Util qw(user_colors itis throw);
+use Pinto::Util qw(user_colors itis throw is_interactive);
 
 #-----------------------------------------------------------------------------
 
@@ -136,7 +136,7 @@ sub should_render_progress {
 
     return 0 if $self->verbose;
     return 0 if $self->quiet;
-    return 0 if not -t $self->stderr;
+    return 0 if not is_interactive;
     return 1;
 }
 

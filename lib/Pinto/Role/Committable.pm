@@ -123,7 +123,7 @@ sub compose_message {
         if $self->use_default_message;
 
     return $title
-        if not -t STDOUT;
+        if not is_interactive;
 
     my $cm = Pinto::CommitMessage->new(
         title => $title,
