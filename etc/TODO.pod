@@ -2,6 +2,8 @@
 
 =over 4
 
+=item Move Package::Locator into this dist
+
 =item Fallback if upstream repo does not respond
 
 =item Add cpan.stratopan.com as first upstream repo
