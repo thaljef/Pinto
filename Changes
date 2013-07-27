@@ -33,6 +33,10 @@
       CPAN toolchain requires author ids to be alphanumeric.  Thanks to
       @chiselwright and @cebjyre.
 
+      * The "statistics" command now accepts a stack name, so you can see
+      the figures for any stack in the respository, not just the default
+      stack.  This was a silly omission.  I don't know why I left it out.
+
       BUG FIXES:
 
       * You can now edit the commit message when pinto is reading input from 
