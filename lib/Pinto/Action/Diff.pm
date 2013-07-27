@@ -40,20 +40,22 @@ sub execute {
 
     my $error_message = qq{"%s" does not match any stack or revision};
 
-    my $left  =  $self->repo->get_stack( $self->left, (nocroak => 1) )
+    my $left =
+           $self->repo->get_stack( $self->left, ( nocroak => 1 ) )
         || $self->repo->get_revision( $self->left )
         || throw sprintf $error_message, $self->left;
 
-    my $right = $self->repo->get_stack( $self->right, (nocroak => 1) )
+    my $right =
+           $self->repo->get_stack( $self->right, ( nocroak => 1 ) )
         || $self->repo->get_revision( $self->right )
         || throw sprintf $error_message, $self->right;
-    
+
     my $diff = Pinto::Difference->new( left => $left, right => $right );
 
-    if ($diff->is_different) {
-        $self->show( "--- $left",  {color => $PINTO_COLOR_1});
-        $self->show( "+++ $right", {color => $PINTO_COLOR_1});
-    };
+    if ( $diff->is_different ) {
+        $self->show( "--- $left",  { color => $PINTO_COLOR_1 } );
+        $self->show( "+++ $right", { color => $PINTO_COLOR_1 } );
+    }
 
     for my $entry ( $diff->diffs ) {
         my $op     = $entry->op;

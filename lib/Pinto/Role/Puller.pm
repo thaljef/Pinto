@@ -37,8 +37,8 @@ has pin => (
 );
 
 has with_development_prerequisites => (
-    is     => 'ro',
-    isa => Bool,
+    is      => 'ro',
+    isa     => Bool,
     default => 0,
 );
 
@@ -141,19 +141,19 @@ sub recurse {
         return $dist;
     };
 
-
     # Exclude perl itself, and prereqs that are satisfied by the core
-    my @filters = ( sub {$_[0]->is_perl || $_[0]->is_core(in => $stack->target_perl_version)} );
+    my @filters = ( sub { $_[0]->is_perl || $_[0]->is_core( in => $stack->target_perl_version ) } );
 
     # Exlucde develop-time dependencies, unless asked not to
-    push @filters, sub {$_[0]->phase eq 'develop'} unless $self->with_development_prerequisites;
+    push @filters, sub { $_[0]->phase eq 'develop' }
+        unless $self->with_development_prerequisites;
 
     require Pinto::PrerequisiteWalker;
     my $walker = Pinto::PrerequisiteWalker->new( start => $dist, callback => $cb, filters => \@filters );
 
     $self->notice("Descending into prerequisites for $dist");
 
-    while ( $walker->next ) { };  # Just want the callback side effects
+    while ( $walker->next ) { };    # Just want the callback side effects
 
     return $self;
 }

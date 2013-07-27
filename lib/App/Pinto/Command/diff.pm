@@ -41,7 +41,7 @@ sub validate_args {
 sub execute {
     my ( $self, $opts, $args ) = @_;
 
-    # If there's only one argument, then the left argument 
+    # If there's only one argument, then the left argument
     # is assumed to be the default stack (i.e. undef)
     unshift @{$args}, undef if @{$args} == 1;
 

@@ -68,7 +68,7 @@ has is_different => (
     is       => 'ro',
     isa      => Bool,
     init_arg => undef,
-    default  => sub { shift->diffs > 0},
+    default  => sub { shift->diffs > 0 },
     lazy     => 1,
 );
 

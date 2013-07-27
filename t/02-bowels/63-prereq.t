@@ -49,7 +49,7 @@ while ( my ( $pv, $expect ) = each %test_cases ) {
     };
 
     # If $pv is not a true value, then do not make a filter
-    my %filter = $pv ? ( filters => [sub { $_[0]->is_perl || $_[0]->is_core( in => $pv ) }] ) : ();
+    my %filter = $pv ? ( filters => [ sub { $_[0]->is_perl || $_[0]->is_core( in => $pv ) } ] ) : ();
 
     my $walker = Pinto::PrerequisiteWalker->new( start => $dist, callback => $cb, %filter );
     while ( $walker->next ) { }

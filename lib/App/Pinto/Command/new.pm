@@ -21,7 +21,7 @@ sub opt_spec {
     return (
         [ 'default'                   => 'Make the new stack the default stack' ],
         [ 'description|d=s'           => 'Brief description of the stack' ],
-        [ 'target-perl-version|tpv=s' => 'Target Perl version for this stack'],
+        [ 'target-perl-version|tpv=s' => 'Target Perl version for this stack' ],
     );
 }
 

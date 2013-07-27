@@ -27,7 +27,7 @@ has callback => (
 
 has filters => (
     is        => 'ro',
-    isa       => ArrayRef[ CodeRef ],
+    isa       => ArrayRef [CodeRef],
     predicate => 'has_filters',
 );
 
@@ -74,7 +74,7 @@ sub apply_filters {
     return @prereqs if not $self->has_filters;
 
     for my $filter ( @{ $self->filters } ) {
-        @prereqs = grep { ! $filter->($_) } @prereqs;
+        @prereqs = grep { !$filter->($_) } @prereqs;
     }
 
     return @prereqs;

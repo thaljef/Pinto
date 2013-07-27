@@ -70,7 +70,7 @@ sub provides {
 
         # TODO: Run this under Safe to protect ourselves
         # from evil.  See ANDK/pause/pmfile.pm for example
-        $self->dm->module_info; # returned from try{}
+        $self->dm->module_info;    # returned from try{}
     }
     catch {
         throw "Unable to extract packages from $archive: $_";
@@ -83,7 +83,7 @@ sub provides {
         my $pkg_ver = version->parse( $info->{version} );
         debug "Archive $archive provides: $pkg_name-$pkg_ver";
 
-        push @provides, {name => $pkg_name, version => $pkg_ver};
+        push @provides, { name => $pkg_name, version => $pkg_ver };
     }
 
     @provides = $self->__apply_workarounds if @provides == 0;
@@ -99,8 +99,7 @@ sub requires {
     my $archive = $self->archive;
     debug "Extracting packages required by archive $archive";
 
-    my $prereqs_meta =   try { $self->dm->meta->prereqs } 
-                       catch { throw "Unable to extract prereqs from $archive: $_" };
+    my $prereqs_meta = try { $self->dm->meta->prereqs } catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
     for my $phase ( keys %{$prereqs_meta} ) {

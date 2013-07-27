@@ -41,7 +41,6 @@ has description => (
     predicate => 'has_description',
 );
 
-
 has target_perl_version => (
     is        => 'ro',
     isa       => PerlVersion,
@@ -65,7 +64,7 @@ sub execute {
     $stack->set_property( target_perl_version => $self->target_perl_version )
         if $self->has_target_perl_version;
 
-    $stack->mark_as_default 
+    $stack->mark_as_default
         if $self->default;
 
     return $self->result->changed;
