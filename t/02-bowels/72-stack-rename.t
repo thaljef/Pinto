@@ -41,6 +41,24 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 {
+    my $t = Pinto::Tester->new;
+
+    $t->path_exists_ok( [qw(stacks master)] );
+    #$t->path_not_exists_ok( [qw(stacks MASTER)] );
+
+    my $master = $t->get_stack('master');
+    $t->run_ok( Rename => { from_stack => 'master', to_stack => 'MASTER' } );
+    my $MASTER = $t->get_stack('master');
+
+    $t->path_exists_ok( [qw(stacks MASTER)] );
+    #$t->path_not_exists_ok( [qw(stacks master)] );
+
+    is($master->id, $MASTER->id, 'Stacks are the same')
+}
+
+#------------------------------------------------------------------------------
+
+{
 
     my $t = Pinto::Tester->new;
     $t->run_throws_ok(

@@ -308,10 +308,13 @@ sub rename_filesystem {
     $self->assert_not_locked;
 
     my $orig_dir = $self->stack_dir;
-    throw "Directory $orig_dir does not exist" if not -e $orig_dir;
+    throw "Directory $orig_dir does not exist" 
+        if not -e $orig_dir;
 
+    $DB::single = 1;
     my $new_dir = $self->repo->config->stacks_dir->subdir($new_name);
-    throw "Directory $new_dir already exists" if -e $new_dir;
+    throw "Directory $new_dir already exists" 
+        if -e $new_dir && (CORE::fc $new_dir ne CORE::fc $orig_dir);
 
     debug "Renaming directory $orig_dir to $new_dir";
     File::Copy::move( $orig_dir, $new_dir ) or throw "Rename failed: $!";

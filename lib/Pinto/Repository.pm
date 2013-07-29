@@ -669,8 +669,10 @@ sub rename_stack {
     my $stack    = delete $args{stack};
     my $old_name = $stack->name;
 
-    throw "Stack $new_name already exists"
-        if $self->get_stack( $new_name, nocroak => 1 );
+    if (my $existing_stack = $self->get_stack( $new_name, nocroak => 1 )) {
+        my $is_different_stack = CORE::fc $new_name ne CORE::fc $existing_stack->name;
+        throw "Stack $new_name already exists" if $is_different_stack || $new_name eq $old_name;
+    }
 
     $stack->rename_filesystem( to => $new_name );
     $stack->rename( to => $new_name );
