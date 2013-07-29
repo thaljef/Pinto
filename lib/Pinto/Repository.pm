@@ -670,7 +670,7 @@ sub rename_stack {
     my $old_name = $stack->name;
 
     if (my $existing_stack = $self->get_stack( $new_name, nocroak => 1 )) {
-        my $is_different_stack = CORE::fc $new_name ne CORE::fc $existing_stack->name;
+        my $is_different_stack = lc $new_name ne lc $existing_stack->name;
         throw "Stack $new_name already exists" if $is_different_stack || $new_name eq $old_name;
     }
 
