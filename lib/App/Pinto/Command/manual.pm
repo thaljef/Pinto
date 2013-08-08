@@ -36,6 +36,12 @@ sub execute {
     my ( $cmd, undef, undef ) = $self->app->prepare_command(@$args);
 
     my $class = ref $cmd;
+
+    # (An invalid command name was specified; the fallback was returned)
+    if ( $class eq 'App::Cmd::Command::commands' ) {
+        return 1;
+    }
+
     ( my $relative_path = $class ) =~ s< :: ></>xmsg;
     $relative_path .= '.pm';
 
