@@ -23,6 +23,28 @@ use FindBin qw( $Bin );
     );
 }
 
+{
+    run_cmd_and_trap( 'manual', 'foobar' );
+
+    like(
+        $trap->stdout, qr/unrecognized command/i,
+        qq['foobar' doesn't exist]
+    );
+
+    unlike(
+        $trap->stdout, qr/App::Cmd::Command::commands/,
+        qq[A wrong manpage is not returned]
+    );
+
+    TODO: {
+        local $TODO = 'Difficult to subvert App::Cmd here';
+        unlike(
+            $trap->stdout, qr/Usage:/,
+            qq[Usage is not attempted to be printed]
+        );
+    };
+}
+
 # (App::Cmd::Tester doesn't capture pod2usage() pager output)
 sub run_cmd_and_trap {
     my (@args) = @_;
