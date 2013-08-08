@@ -22,7 +22,7 @@ sub opt_spec {
       [ 'all|a!' => 'include all stacks in export' ],
       [ 'default|d!' => 'include default stack in export' ],
       [ 'output|o=s' => 'path to the exported directory/archive' ],
-      [ 'output-format|F=s' => 'export format (dir/tar/zip)' ],
+      [ 'of|output-format|F=s' => 'export format (dir/tar/zip)' ],
       [ 'prefix|p=s' => 'prefix to add to filenames in archive' ],
     );
 }
@@ -55,14 +55,15 @@ sub validate_args {
     @{$args} = keys %wanted;
 
     # Normalize and check output-format
-    my $of = delete $opts->{'output-format'};
+    my $of = delete $opts->{'of'};
     $of = 'dir' unless defined $of;
-    $of = $opts->{output_format} = {
+    $opts->{output_format} = {
         dir => 'directory',
         directory => 'directory',
         tar => 'tar',
         zip => 'zip',
     }->{lc($of)} or die "unrecognised output format '$of'\n";
+    $of = $opts->{output_format};
 
     # Check output for non-existence
     my $o = $opts->{output};

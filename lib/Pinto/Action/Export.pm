@@ -11,7 +11,6 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Util qw(throw mksymlink);
-use Pinto::Types qw(StacksList);
 use File::Copy ();
 
 #------------------------------------------------------------------------------
@@ -82,78 +81,57 @@ sub stacks {  # poor man's expansion, might be better in the future FIXME
 }
 
 sub _export_stack {
-   my ($self, $stack, $authors, $modules, $history) = @_;
-   $history ||= {};
-
-   # modules
-   $modules->mkpath() unless -e $modules;
-   my $modules_from = $stack->modules_dir();
-   for my $name (qw< 02packages.details.txt.gz  03modlist.data.gz >) {
-      File::Copy::copy($modules_from->file($name), $modules->file($name));
-   }
+   my ($self, $stack, $output, $modules) = @_;
 
    # authors' basics
-   $authors->mkpath() unless -e $authors;
-   my $authors_from = $stack->authors_dir();
-   for my $name (qw< 01mailrc.txt.gz >) {
-      my $target = $authors->file($name);
-      File::Copy::copy($authors_from->file($name), $target)
-         unless -e $target;
-   }
+   my $mailrc = '01mailrc.txt.gz';
+   $output->insert($stack->authors_dir()->file($mailrc), file(authors => $mailrc));
+
+   # modules
+   my $modules_from = $stack->modules_dir();
+   $output->insert($modules_from->file($_), $modules->file($_))
+      for (qw< 02packages.details.txt.gz  03modlist.data.gz >);
 
    # distro files - the real meat
    my $where = { revision => $stack->head->id };
    my $attrs = { prefetch => [qw(revision package distribution)] };
    my $rs = $self->repo->db->schema->search_registration( $where, $attrs );
-   my ($from_dir, $to_dir) = map { $_->subdir('id') } ($authors_from, $authors);
+   my $from_dir = $stack->authors_dir()->subdir('id');
+   my $to_dir = dir(qw< authors id >);
    while ( my $reg = $rs->next ) {
-      my $distribution = $reg->distribution();
-      my $path = $distribution->path;
-      next if $history->{distro}{$path}++;
-
+      my $path = $reg->distribution->path;
       my $to = $to_dir->file($path);
-      my $tod = $to->parent();
-      $tod->mkpath() unless -e $tod;
-
       my $from = $from_dir->file($path);
-      File::Copy::copy($from, $to);
-
-      next if $history->{checksum}{$tod}++;
-      File::Copy::copy($from->parent()->file('CHECKSUMS'), $tod->file('CHECKSUMS'));
+      $output->insert($from, $to);
+      $output->insert($from->parent()->file('CHECKSUMS'), $to->parent()->file('CHECKSUMS'));
    }
 
    return;
 }
 
 sub export_single {
-    my ($self, $wdir) = @_;
-    $wdir ||= $self->_get_output_directory();
+    my ($self, $output) = @_;
     my ($stack) = $self->stacks();
-
-    # Calculate output directories for 'authors' and 'modules'
-    my ($authors, $modules) = map { $wdir->subdir($_) } qw< authors modules >;
-
-    # Call workhorse to do the heavylifting
-    $self->_export_stack($stack, $authors, $modules);
-
+    $self->_export_stack($stack, $output, dir('modules'));
     return;
 }
 
 sub export_multiple {
-    my ($self, $wdir) = @_;
-    $wdir ||= $self->_get_output_directory();
+    my ($self, $output) = @_;
 
-    # Calculate output directories for 'authors' and 'stacks'
-    my ($authors, $stacks) = map { $wdir->subdir($_) } qw< authors stacks >;
-    $authors->mkpath();
-
-    my $history = {};
     for my $stack ($self->stacks()) {
-        my $stack_dir = $stacks->subdir($stack);
-        $stack_dir->mkpath();
-        my $modules = $stack_dir->subdir('modules');
-        mksymlink($stack_dir->subdir('authors'), $authors->relative($stack_dir));
-        $self->_export_stack($stack, $authors, $modules, $history);
+        $self->_export_stack($stack, $output, dir(stacks => $stack => 'modules'));
+        $output->link(
+            dir(stacks => $stack => 'authors'),
+            dir(qw< .. .. authors >)
+        );
+    }
+
+    if (defined(my $default = $self->default_stack())) {
+        $output->link(
+            dir(qw< modules >),
+            dir(stacks => $default => 'modules'),
+        );
     }
 
     return;
@@ -164,14 +142,14 @@ sub execute {
     my @stacks = $self->stacks();
 
     # FIXME handle locking/unlocking
-
-    my $wdir = $self->_get_output_directory();
+    my $output = $self->_get_output_channel();
     if (scalar(@stacks) == 1) {
-        $self->export_single();
+        $self->export_single($output);
     }
     else {
-        $self->export_multiple();  # re-create some "Pinto"-experience
+        $self->export_multiple($output);  # re-create some "Pinto"-experience
     }
+    $output->close();
 
     # pack to target archive if necessary
     #$self->_pack($wdir) if $self->output_format() ne 'directory';
@@ -179,18 +157,14 @@ sub execute {
     return $self->result();
 }
 
-sub _get_output_directory {
+sub _get_output_channel {
    my ($self) = @_;
 
-   if ($self->output_format() eq 'directory') {
-      my $dir = dir($self->output());
-      $dir->mkpath();
-      return $dir;
-   }
-      
-   require File::Temp;
-   # FIXME change to CLEANUP => 1
-   return dir(File::Temp::tempdir(CLEANUP => 0));
+   my $classname = 'Pinto::Action::Export::' . ucfirst(lc($self->output_format()));
+   (my $packpath = $classname . '.pm') =~ s{::}{/}gmxs;
+   require $packpath;
+
+   return $classname->new(exporter => $self);
 }
 
 sub _pack {

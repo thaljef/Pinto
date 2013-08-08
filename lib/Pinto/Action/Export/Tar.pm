@@ -1,6 +1,6 @@
-# ABSTRACT: support directory storage for Export action
+# ABSTRACT: support TAR archive storage for Export action
 
-package Pinto::Action::Export::Directory;
+package Pinto::Action::Export::Tar;
 
 use Moose;
 use MooseX::StrictConstructor;
@@ -9,9 +9,10 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Path::Class;
+use Archive::Tar;
+use Archive::Tar::Constant qw< SYMLINK >;
 
 use Pinto::Util qw(mksymlink);
-use File::Copy ();
 
 #------------------------------------------------------------------------------
 
@@ -21,33 +22,49 @@ use File::Copy ();
 
 with 'Pinto::Action::Export::ExporterRole';
 
+has archive => (
+   is => 'ro',
+   default => sub { return Archive::Tar->new(); },
+);
+
+has prefix => (
+   is => 'ro',
+   lazy => 1,
+   default => sub {
+      my ($self) = @_;
+      return dir($self->exporter()->prefix() || '');
+   },
+);
+
 sub insert {
    my ($self, $source, $destination) = @_;
 
    return if $self->is_present($source);
    $self->mark($source);
 
-   $destination = $self->path()->file($destination);
-   _ensure_path($destination->parent());
-   File::Copy::copy($source, $destination);
+   my ($file) = $self->archive()->add_files($source);
+   $file->rename($self->prefix()->file($destination));
+
    return;
 }
 
 sub link {
    my ($self, $from, $to) = @_;
-   $from = $self->path()->file($from);
-   _ensure_path($from->parent());
-   mksymlink($from, $to);
+   $self->archive()->add_data(
+      $self->prefix()->file($from),
+      '',
+      {
+         type => SYMLINK,
+         linkname => $to,
+      }
+   );
    return;
 }
 
-sub _ensure_path {
-   my ($path) = @_;
-   $path->mkpath() unless -e $path;
-   return;
+sub close {
+   my ($self) = @_;
+   $self->archive()->write($self->exporter()->output());
 }
-
-sub close {}
 
 #------------------------------------------------------------------------------
 
