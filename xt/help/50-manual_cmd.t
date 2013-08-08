@@ -46,16 +46,12 @@ use Test::Trap qw|
 # (App::Cmd::Tester doesn't capture pod2usage() pager output)
 sub run_cmd_and_trap {
     my (@args) = @_;
-
     my $program_name = 'pinto';
 
-    my @cmd = (
-        "perl", # Running perl with perl...good times
-        "-Ilib",
-        "bin/${program_name}",
-    );
+    my @cmd = ( "perl", "-Ilib", "bin/${program_name}" );
 
-    my @r = trap { system ( @cmd, @args ) };
+    diag("\$ $program_name @args");
+    my @r = trap { system( @cmd, @args ) };
 
     return @r;
 }
