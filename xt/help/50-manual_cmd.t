@@ -12,8 +12,6 @@ use Test::Trap qw|
     :warn
 |;
 
-use FindBin qw( $Bin );
-
 {
     run_cmd_and_trap( 'manual', 'init' );
 
@@ -49,12 +47,11 @@ use FindBin qw( $Bin );
 sub run_cmd_and_trap {
     my (@args) = @_;
 
-    my $dist_base_directory = sprintf '%s/../..', $Bin;
     my $program_name = 'pinto';
 
     my @cmd = (
         "perl", # Running perl with perl...good times
-        "-I${dist_base_directory}/lib",
+        "-Ilib",
         "bin/${program_name}",
     );
 
