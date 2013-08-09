@@ -92,7 +92,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT export [OPTIONS] TARGET ...
+  pinto --root=REPOSITORY_ROOT export [OPTIONS] STACK ...
 
 =head1 DESCRIPTION
 
@@ -124,8 +124,8 @@ Include all stacks in the export.
 
 Ensure that the default stack is included in the export.
 
-The default stack is always included whenever the list of TARGETs is left
-empty. If you want to provide a list of TARGETs and in addition ensure that
+The default stack is always included whenever the list of STACKs is left
+empty. If you want to provide a list of STACKs and in addition ensure that
 the default stack is included, use this option.
 
 =item --output=PATH

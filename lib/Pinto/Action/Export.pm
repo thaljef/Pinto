@@ -11,6 +11,7 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Util qw(throw mksymlink);
+use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
 use File::Copy ();
 
 #------------------------------------------------------------------------------
@@ -66,6 +67,10 @@ sub BUILD {
 
     return $self;
 }
+
+#------------------------------------------------------------------------------
+
+sub lock_type { return $PINTO_LOCK_TYPE_EXCLUSIVE }
 
 #------------------------------------------------------------------------------
 
