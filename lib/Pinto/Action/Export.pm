@@ -4,14 +4,14 @@ package Pinto::Action::Export;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Str Undef);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Path::Class;
 
 use Pinto::Constants qw( $PINTO_LOCK_TYPE_EXCLUSIVE );
-use Pinto::Types qw( StackName );
+use Pinto::Types qw( StackName StackDefault StackObject );
 use Class::Load qw( load_class );
 
 #------------------------------------------------------------------------------
@@ -25,33 +25,47 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has stack => (
-    is       => 'ro',
-    isa      => StackName,
-    required => 1,
+    is       => 'rw',
+    isa      => StackName | StackDefault | StackObject,
+    default  => undef,
 );
 
 has output => (
-    is      => 'ro',
-    isa     => Str,
-    default => 0,
+    is      => 'rw',
+    isa     => Str | Undef,
+    default => undef,
 );
 
 has output_format => (
     is      => 'ro',
     isa     => Str,
-    default => 0,
+    default => 'dir',
 );
 
 has prefix => (
     is      => 'ro',
-    isa     => Str,
-    default => 0,
+    isa     => Str | Undef,
+    default => undef,
 );
 
 
 #------------------------------------------------------------------------------
 
 sub lock_type { return $PINTO_LOCK_TYPE_EXCLUSIVE }
+
+#------------------------------------------------------------------------------
+
+sub execute {
+    my ($self) = @_;
+
+    my $stack = $self->repo->get_stack($self->stack());
+    my $output = $self->get_output_channel($stack);
+
+    $self->export_stack($stack, $output);
+    $output->close();
+
+    return $self->result();
+}
 
 #------------------------------------------------------------------------------
 
@@ -86,30 +100,52 @@ sub export_stack {
    return;
 }
 
-sub execute {
-    my ($self) = @_;
-
-    my $output = $self->get_output_channel();
-    $self->export_stack($self->stack(), $output);
-    $output->close();
-
-    return $self->result();
-}
+#------------------------------------------------------------------------------
 
 sub get_output_channel {
-   my ($self) = @_;
+   my ($self, $stack) = @_;
 
    my $of = $self->output_format();
-   my $short_name = {
-      dir => 'Directory',
-      directory => 'Directory',
-      zip => 'Zip',
-      tar => 'Tar',
-      # FIXME tgz => 'Tar',
+   my $output_format = {
+      dir => {
+         short_name => 'Directory',
+         extension  => '',
+      },
+      tar => {
+         short_name => 'Tar',
+         extension  => '.tar',
+      },
+      'tar.bz2' => {
+         short_name => 'Tar',
+         extension  => '.tar.bz2',
+      },
+      'tar.gz' => {
+         short_name => 'Tar',
+         extension  => '.tar.gz',
+      },
+      tgz => {
+         short_name => 'Tar',
+         extension  => '.tgz',
+      },
+      zip => {
+         short_name => 'Zip',
+         extension  => '.zip',
+      },
    }->{lc $of}
       or die "unsupported output format '$of'\n";
 
-   my $class_name = 'Pinto::Action::Export::' . $short_name;
+   my $output = $self->output();
+   if (! defined $output) {
+      $stack = $self->repo->get_stack($stack);
+      my $head = $stack->head();
+      $output = $stack->to_string() . '-' . $head->uuid_prefix() . $output_format->{extension};
+      $self->output($output);
+   }
+
+   die "output '$output' is already present\n"
+      if -e $output;
+
+   my $class_name = 'Pinto::Action::Export::' . $output_format->{short_name};
    return load_class($class_name)->new(exporter => $self);
 }
 

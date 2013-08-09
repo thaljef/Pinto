@@ -46,7 +46,6 @@ sub insert {
 
    $destination = $self->prefix()->file($destination);
    my $file = $self->archive()->addFile("$source", "$destination");
-   $file->desiredCompressionMethod(COMPRESSION_STORED);
 
    return;
 }

@@ -35,6 +35,12 @@ sub validate_args {
         if @{$args} > 1;
     $opts->{stack} = $args->[0] if @{$args};
 
+    if (exists $opts->{output_format}) {
+      my $of = lc(delete $opts->{output_format});
+      $of = 'dir' if $of eq 'directory';
+      $opts->{output_format} = $of;
+    }
+
     return 1;
 }
 
@@ -99,6 +105,16 @@ generate a directory
 =item tar
 
 generate a TAR archive
+
+=item tar.bz2
+
+generate a BZIP2 compressed TAR archive
+
+=item tar.gz
+
+=item tgz
+
+generate a GZIP compressed TAR archive
 
 =item zip
 

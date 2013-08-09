@@ -1,6 +1,7 @@
 # ABSTRACT: support directory storage for Export action
 
 package Pinto::Action::Export::Directory;
+use English qw< -no_match_vars >;
 
 use Moose;
 use MooseX::StrictConstructor;
@@ -10,7 +11,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 use Path::Class;
 
-use Pinto::Util qw(mksymlink);
+use Pinto::Util qw(mkhardlink mksymlink);
 use File::Copy ();
 
 #------------------------------------------------------------------------------
@@ -29,7 +30,13 @@ sub insert {
 
    $destination = $self->path()->file($destination);
    _ensure_path($destination->parent());
-   File::Copy::copy($source, $destination);
+   try {
+      mkhardlink($destination, $source)
+   }
+   catch {
+      File::Copy::copy($source, $destination)
+         or die "while copying '$source' to '$destination': $OS_ERROR\n";
+   };
    return;
 }
 
@@ -43,7 +50,9 @@ sub link {
 
 sub _ensure_path {
    my ($path) = @_;
-   $path->mkpath() unless -e $path;
+   return if -e $path;
+   $path->mkpath()
+      or die "mkpath('$path'): $OS_ERROR";
    return;
 }
 

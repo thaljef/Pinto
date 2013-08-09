@@ -35,7 +35,7 @@ has path => (
       my $self = shift;
       my $output = $self->exporter()->output();
       return dir($output)
-         if $self->exporter()->output_format() eq 'directory';
+         if lc($self->exporter()->output_format()) eq 'dir';
       return file($output);
    },
 );

@@ -10,7 +10,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 use Path::Class;
 use Archive::Tar;
-use Archive::Tar::Constant qw< SYMLINK >;
+use Archive::Tar::Constant qw< SYMLINK COMPRESS_GZIP COMPRESS_BZIP >;
 
 use Pinto::Util qw(mksymlink);
 
@@ -36,6 +36,8 @@ has prefix => (
    },
 );
 
+#------------------------------------------------------------------------------
+
 sub insert {
    my ($self, $source, $destination) = @_;
 
@@ -47,6 +49,8 @@ sub insert {
 
    return;
 }
+
+#------------------------------------------------------------------------------
 
 sub link {
    my ($self, $from, $to) = @_;
@@ -61,9 +65,16 @@ sub link {
    return;
 }
 
+#------------------------------------------------------------------------------
+
 sub close {
    my ($self) = @_;
-   $self->archive()->write($self->exporter()->output());
+   my @compression;
+   push @compression, COMPRESS_GZIP
+      if $self->exporter()->output_format() =~ /gz$/mxs;
+   push @compression, COMPRESS_BZIP
+      if $self->exporter()->output_format() eq 'tar.bz2';
+   $self->archive()->write($self->exporter()->output(), @compression);
 }
 
 #------------------------------------------------------------------------------
