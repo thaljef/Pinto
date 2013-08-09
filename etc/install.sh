@@ -51,7 +51,7 @@ set -ue
 #-----------------------------------------------------------------------------
 # You can set these variables beforehand to override defaults
 
-PINTO_REPO_URL=${PINTO_REPO_URL:="http://stratopan.com:8700/stacks/pinto-release"}
+PINTO_REPO_URL=${PINTO_REPO_URL:="https://repo.stratopan.com/thaljef/OpenSource/pinto-release"}
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 
 #-----------------------------------------------------------------------------
