@@ -1,0 +1,5 @@
+* move most validation logic into Action class instead of Command
+* add tgz target and gzipping of final archive
+* add a --multiple explicit option to ask explicitly which format the
+  export should support
+* eliminate "multiple" support at all
