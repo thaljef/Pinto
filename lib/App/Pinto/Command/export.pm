@@ -19,10 +19,8 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return ( 
-      [ 'all|a!' => 'include all stacks in export' ],
-      [ 'default|d!' => 'include default stack in export' ],
       [ 'output|o=s' => 'path to the exported directory/archive' ],
-      [ 'of|output-format|F=s' => 'export format (dir/tar/zip)' ],
+      [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip)' ],
       [ 'prefix|p=s' => 'prefix to add to filenames in archive' ],
     );
 }
@@ -32,51 +30,16 @@ sub opt_spec {
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
-    # Compute and check target stacks
-    my @stacks = $self->pinto->repo->get_all_stacks();
-    my ($default_stack, %stack_for);
-    for my $stack (@stacks) {
-        $default_stack = "$stack" if $stack->is_default();
-        $stack_for{$stack} = 1;
-    }
-
-    my $wants_default = delete($opts->{default}) || ! scalar(@{$args});
-    my %wanted;
-    if (my $wants_all = delete $opts->{all}) {
-        %wanted = %stack_for;
-    }
-    else {
-        %wanted = map {
-            $_ => ($stack_for{$_} || die "inexistent stack '$_'\n")
-        } (@{$args}, $wants_default ? $default_stack : ());
-    }
-    $opts->{default_stack} = $default_stack
-        if exists $wanted{$default_stack};
-    @{$args} = keys %wanted;
-
-    # Normalize and check output-format
-    my $of = delete $opts->{'of'};
-    $of = 'dir' unless defined $of;
-    $opts->{output_format} = {
-        dir => 'directory',
-        directory => 'directory',
-        tar => 'tar',
-        zip => 'zip',
-    }->{lc($of)} or die "unrecognised output format '$of'\n";
-    $of = $opts->{output_format};
-
-    # Check output for non-existence
-    my $o = $opts->{output};
-    $o = 'pinto-export' unless defined $o;
-    die "export file '$o' already exists\n" if -e $o;
-    $opts->{output} = $o;
+    # one optional STACK, defaults to the default stack
+    $self->usage_error('Must specify at most one stack')
+        if @{$args} > 1;
 
     return 1;
 }
 
 #------------------------------------------------------------------------------
 
-sub args_attribute { return 'stack_names' }
+sub args_attribute { return 'stack_name' }
 
 #------------------------------------------------------------------------------
 
@@ -92,11 +55,11 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT export [OPTIONS] STACK ...
+  pinto --root=REPOSITORY_ROOT export [OPTIONS] [STACK]
 
 =head1 DESCRIPTION
 
-This command exports one or more stacks in a directory or archive of your
+This command exports one stack in a directory or archive of your
 choice, so that you can take it e.g. in locations where you don't have
 a direct connection to the Internet. This allows you to pack all your
 dependencies in a convenient place and be able to secure your installation
@@ -104,29 +67,12 @@ in the isolated server.
 
 =head1 COMMAND ARGUMENTS
 
-The list of stacks to include in the export. If no target is provided, then
-the default stack is exported. If you want to export a list of stacks AND
-the default stack, then use also option C<--default> described below.
+The stack to include in the export. If no STACK is provided, then
+the default stack is exported.
 
 =head1 COMMAND OPTIONS
 
 =over 4
-
-=item --all
-
-=item -a
-
-Include all stacks in the export.
-
-=item --default
-
-=item -d
-
-Ensure that the default stack is included in the export.
-
-The default stack is always included whenever the list of STACKs is left
-empty. If you want to provide a list of STACKs and in addition ensure that
-the default stack is included, use this option.
 
 =item --output=PATH
 
