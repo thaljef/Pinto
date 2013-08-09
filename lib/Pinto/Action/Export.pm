@@ -10,9 +10,9 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 use Path::Class;
 
-use Pinto::Util qw(throw mksymlink);
-use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
-use File::Copy ();
+use Pinto::Constants qw( $PINTO_LOCK_TYPE_EXCLUSIVE );
+use Pinto::Types qw( StackName );
+use Class::Load qw( load_class );
 
 #------------------------------------------------------------------------------
 
@@ -24,21 +24,10 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
-has stack_names => (
-    is      => 'ro',
+has stack => (
+    is       => 'ro',
+    isa      => StackName,
     required => 1,
-);
-
-has _stacks => (
-    is => 'rw',
-    lazy => 1,
-    builder => 'BUILD_stacks',
-);
-
-has default_stack => (
-    is => 'ro',
-    isa => Str,
-    default => 0,
 );
 
 has output => (
@@ -62,31 +51,14 @@ has prefix => (
 
 #------------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self) = @_;
-
-    return $self;
-}
-
-#------------------------------------------------------------------------------
-
 sub lock_type { return $PINTO_LOCK_TYPE_EXCLUSIVE }
 
 #------------------------------------------------------------------------------
 
-sub BUILD_stacks {
-   my ($self) = @_;
-   my %stack_for = map { $_ => $_ } $self->repo->get_all_stacks();
-   return [ map { $stack_for{$_} } @{$self->stack_names()} ];
-}
-
-sub stacks {  # poor man's expansion, might be better in the future FIXME
-   my ($self) = @_;
-   return @{$self->_stacks()};
-}
-
-sub _export_stack {
-   my ($self, $stack, $output, $modules) = @_;
+sub export_stack {
+   my ($self, $stack, $output, $modules_to) = @_;
+   $stack = $self->repo->get_stack($stack);
+   $modules_to = dir('modules') unless defined $modules_to;
 
    # authors' basics
    my $mailrc = '01mailrc.txt.gz';
@@ -94,7 +66,7 @@ sub _export_stack {
 
    # modules
    my $modules_from = $stack->modules_dir();
-   $output->insert($modules_from->file($_), $modules->file($_))
+   $output->insert($modules_from->file($_), $modules_to->file($_))
       for (qw< 02packages.details.txt.gz  03modlist.data.gz >);
 
    # distro files - the real meat
@@ -114,68 +86,31 @@ sub _export_stack {
    return;
 }
 
-sub export_single {
-    my ($self, $output) = @_;
-    my ($stack) = $self->stacks();
-    $self->_export_stack($stack, $output, dir('modules'));
-    return;
-}
-
-sub export_multiple {
-    my ($self, $output) = @_;
-
-    for my $stack ($self->stacks()) {
-        $self->_export_stack($stack, $output, dir(stacks => $stack => 'modules'));
-        $output->link(
-            dir(stacks => $stack => 'authors'),
-            dir(qw< .. .. authors >)
-        );
-    }
-
-    if (defined(my $default = $self->default_stack())) {
-        $output->link(
-            dir(qw< modules >),
-            dir(stacks => $default => 'modules'),
-        );
-    }
-
-    return;
-}
-
 sub execute {
     my ($self) = @_;
-    my @stacks = $self->stacks();
 
-    # FIXME handle locking/unlocking
-    my $output = $self->_get_output_channel();
-    if (scalar(@stacks) == 1) {
-        $self->export_single($output);
-    }
-    else {
-        $self->export_multiple($output);  # re-create some "Pinto"-experience
-    }
+    my $output = $self->get_output_channel();
+    $self->export_stack($self->stack(), $output);
     $output->close();
-
-    # pack to target archive if necessary
-    #$self->_pack($wdir) if $self->output_format() ne 'directory';
 
     return $self->result();
 }
 
-sub _get_output_channel {
+sub get_output_channel {
    my ($self) = @_;
 
-   my $classname = 'Pinto::Action::Export::' . ucfirst(lc($self->output_format()));
-   (my $packpath = $classname . '.pm') =~ s{::}{/}gmxs;
-   require $packpath;
+   my $of = $self->output_format();
+   my $short_name = {
+      dir => 'Directory',
+      directory => 'Directory',
+      zip => 'Zip',
+      tar => 'Tar',
+      # FIXME tgz => 'Tar',
+   }->{lc $of}
+      or die "unsupported output format '$of'\n";
 
-   return $classname->new(exporter => $self);
-}
-
-sub _pack {
-   my ($self, $directory) = @_;
-   $self->error('Not supporting archives format yet, see ' . $directory);
-   return;
+   my $class_name = 'Pinto::Action::Export::' . $short_name;
+   return load_class($class_name)->new(exporter => $self);
 }
 
 #------------------------------------------------------------------------------

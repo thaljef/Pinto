@@ -33,13 +33,10 @@ sub validate_args {
     # one optional STACK, defaults to the default stack
     $self->usage_error('Must specify at most one stack')
         if @{$args} > 1;
+    $opts->{stack} = $args->[0] if @{$args};
 
     return 1;
 }
-
-#------------------------------------------------------------------------------
-
-sub args_attribute { return 'stack_name' }
 
 #------------------------------------------------------------------------------
 
