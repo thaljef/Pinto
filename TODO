@@ -3,3 +3,4 @@
 * add a --multiple explicit option to ask explicitly which format the
   export should support
 * eliminate "multiple" support at all
+* change default output file/directory name
