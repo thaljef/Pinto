@@ -9,6 +9,10 @@ use Path::Class;
 
 #-----------------------------------------------------------------------------
 
+# Copyright 2013 Jeffrey Ryan Thalhammer
+
+#-----------------------------------------------------------------------------
+
 die "Must specify a CPAN directory\n" if not @ARGV;
 
 my $cpan_dir   = dir(shift);
@@ -25,7 +29,3 @@ File::Find::find( {no_chdir => 1, wanted => $cb}, $search_dir->stringify);
 say s|^.*/authors/id/./../||r for @dists;
 
 __END__
-
-=pod
-
-=cut

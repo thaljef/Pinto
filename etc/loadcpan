@@ -10,6 +10,10 @@ use Getopt::Long::Descriptive;
 
 #-----------------------------------------------------------------------------
 
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
+
+#-----------------------------------------------------------------------------
+
 # To diagnose leaks:
 
 # use Pinto::Util;

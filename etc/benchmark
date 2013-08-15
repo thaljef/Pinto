@@ -13,6 +13,10 @@ use Getopt::Long::Descriptive;
 
 #-----------------------------------------------------------------------------
 
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
+
+#-----------------------------------------------------------------------------
+
 my @ops = qw(pin unpin unregister register);
 
 my ($opt, $usage) = describe_options(
