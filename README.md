@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.087\_05
+version 0.088
 
 # SYNOPSIS
 
@@ -202,6 +202,7 @@ from your repository :)
 - Michael G. Schwern <schwern@pobox.com>
 - Oleg Gashev <oleg@gashev.net>
 - Steffen Schwigon <ss5@renormalist.net>
+- Tommy Stanton <tommystanton@gmail.com>
 - Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
 - Yanick Champoux <yanick@babyl.dyndns.org>
 - hesco <hesco@campaignfoundations.com>
