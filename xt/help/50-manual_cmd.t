@@ -12,16 +12,20 @@ use Test::Trap qw|
     :warn
 |;
 
-{
+#-------------------------------------------------------------------------------
+
+subtest 'manual for valid command' => sub {
     run_cmd_and_trap( 'manual', 'init' );
 
     like(
         $trap->stdout, qr/creates a new repository/i,
         qq['init' manual page returned]
     );
-}
+};
 
-{
+#-------------------------------------------------------------------------------
+
+subtest 'manual for invalid command' => sub {
     run_cmd_and_trap( 'manual', 'foobar' );
 
     like(
@@ -41,9 +45,11 @@ use Test::Trap qw|
             qq[Usage is not attempted to be printed]
         );
     };
-}
+};
 
+#-------------------------------------------------------------------------------
 # (App::Cmd::Tester doesn't capture pod2usage() pager output)
+
 sub run_cmd_and_trap {
     my (@args) = @_;
     my $program_name = 'pinto';
@@ -56,4 +62,5 @@ sub run_cmd_and_trap {
     return @r;
 }
 
+#-------------------------------------------------------------------------------
 done_testing;
