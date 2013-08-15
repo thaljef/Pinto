@@ -43,6 +43,7 @@ Readonly our @EXPORT_OK => qw(
     isa_perl
     itis
     md5
+    mkhardlink
     mksymlink
     mtime
     parse_dist_path
@@ -547,6 +548,26 @@ sub indent_text {
     $string =~ s/^ /$indent/xmg;
 
     return $string;
+}
+
+#-------------------------------------------------------------------------------
+
+=func mkhardlink($from => $to)
+
+Creates a hard link between the two files.  No checks are performed to see
+if either path is valid or already exists.  Throws an exception if the
+operation fails or is not supported.
+
+=cut
+
+sub mkhardlink {
+    my ( $from, $to ) = @_;
+
+    # TODO: Try to add Win32 support here, somehow.
+    debug "(Hard) Linking $to to $from";
+    link $to, $from or throw "link to $to from $from failed: $!";
+
+    return 1;
 }
 
 #-------------------------------------------------------------------------------
