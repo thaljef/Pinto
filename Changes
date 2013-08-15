@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+      No code changes.  Only added Copyright declarations to files in etc/
+      so the Debian packagers can avoid legal hassles when redistributing
+      this code.
+      
 0.088     2013-08-15 10:49:36 America/Los_Angeles
 
       INCOMPATIBLE CHANGES:
