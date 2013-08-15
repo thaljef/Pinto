@@ -37,10 +37,11 @@ sub execute {
 
     my $class = ref $cmd;
 
-    # (An invalid command name was specified; the fallback was returned)
-    if ( $class eq 'App::Cmd::Command::commands' ) {
-        return 1;
-    }
+    # An invalid command name was specified, so the fallback command class 
+    # was returned.  Rather than showing the (unhelpful) manual for 
+    # App::Cmd::Command::commands, we will just bail out and let App::Cmd
+    # show the usual 'unrecognized command' message.
+    return 1 if $class eq 'App::Cmd::Command::commands';
 
     ( my $relative_path = $class ) =~ s< :: ></>xmsg;
     $relative_path .= '.pm';
