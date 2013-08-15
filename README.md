@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.088
+version 0.089
 
 # SYNOPSIS
 
@@ -193,6 +193,7 @@ from your repository :)
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
 - Boris Däppen <boris\_daeppen@bluewin.ch>
 - Cory G Watson <gphat@onemogin.com>
+- Flavio Poletti <flavio@polettix.it>
 - Glenn Fowler <cebjyre@cpan.org>
 - Jakob Voss <jakob@nichtich.de>
 - Jeff <jeff@callahan.local>
