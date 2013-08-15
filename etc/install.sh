@@ -44,6 +44,8 @@
 # installation process for other platforms & environments (e.g. Windows, 
 # csh, zsh, etc.)
 #
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
+#
 ##############################################################################
 
 set -ue

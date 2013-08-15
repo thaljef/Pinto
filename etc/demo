@@ -2,9 +2,14 @@
 
 use strict;
 use warnings;
+
 use Term::ReadKey;
 use Term::ANSIColor;
 use Time::HiRes qw(usleep);
+
+#-----------------------------------------------------------------------------
+
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
 
 #-----------------------------------------------------------------------------
 

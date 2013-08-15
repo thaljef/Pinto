@@ -12,6 +12,10 @@ my $libdir  = $distdir->subdir('lib');
 push @INC, $libdir->stringify;
 
 #-----------------------------------------------------------------------------
+
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
+
+#-----------------------------------------------------------------------------
 # Read DDL from inside the Database class
 
 require Pinto::Database;

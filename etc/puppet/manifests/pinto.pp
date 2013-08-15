@@ -1,5 +1,6 @@
 
 # Puppet pinto manifest
+# Copyright 2013 Hugh Esco <hesco@campaignfoundations.org>
 
 class pinto {
     # require postfix 

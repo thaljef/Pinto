@@ -11,6 +11,8 @@
 # that I have blessed.  In comparison, the builds on Travis are
 # done with the latest versions from CPAN, which don't always work.
 #
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
+#
 ######################################################################
 
 unset PINTO_HOME;

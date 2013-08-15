@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Copyright 2013 Hugh Esco <hesco@campaignfoundations.com>
+
 set -e 
 
 if [[ ! `grep PINTO_HOME /root/.bashrc | wc -l` > 0 ]] ; then 
