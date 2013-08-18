@@ -109,7 +109,7 @@ to review your options see L<Authen::Simple>.
 
     update-rc.d pintod start 50 2 3 4 5 . stop 20 0 1 6 .
 
-=head2 AN IMPORTNAT NOTE ABOUT SECURITY
+=head2 AN IMPORTANT NOTE ABOUT SECURITY
 
 Currently daemonizing the pintod server will run the starman workers 
 as root.  We hope to soon have the pintod daemon drop its privileges 
