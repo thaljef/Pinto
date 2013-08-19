@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.088
+version 0.089
 
 # SYNOPSIS
 
@@ -206,6 +206,7 @@ from your repository :)
 - Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
 - Yanick Champoux <yanick@babyl.dyndns.org>
 - hesco <hesco@campaignfoundations.com>
+- popl <popl\_likes\_to\_code@yahoo.com>
 
 # AUTHOR
 
