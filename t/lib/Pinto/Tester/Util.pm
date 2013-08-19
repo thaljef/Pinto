@@ -23,7 +23,6 @@ use base 'Exporter';
 #-------------------------------------------------------------------------------
 
 Readonly our @EXPORT_OK => qw(
-    $MINIMUM_CPANM_VERSION
     make_dist_obj
     make_pkg_obj
     make_dist_struct
@@ -36,10 +35,6 @@ Readonly our @EXPORT_OK => qw(
 );
 
 Readonly our %EXPORT_TAGS => ( all => \@EXPORT_OK );
-
-#-------------------------------------------------------------------------------
-
-Readonly our $MINIMUM_CPANM_VERSION => 1.6196;
 
 #-------------------------------------------------------------------------------
 
