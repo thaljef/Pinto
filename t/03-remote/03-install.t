@@ -100,8 +100,8 @@ subtest 'Install a dist with an unusual author id' => sub {
     my $remote     = Pinto::Remote->new( root => $t->server_url );
 
     my $stderr = capture_stderr {
-        $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
-        $remote->run( Install => ( targets => ['PkgB'], %cpanm_opts ) );
+        $remote->run( Install => ( targets => ['FOO-22/DistA-1.tar.gz'], %cpanm_opts ) );
+        $remote->run( Install => ( targets => ['FO/DistB-1.tar.gz'], %cpanm_opts ) );
     };
 
     file_exists_ok( $p5_dir->file('PkgA.pm') );
