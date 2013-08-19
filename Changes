@@ -1,72 +1,90 @@
 {{$NEXT}}
 
-      No code changes.  Only added Copyright declarations to files in etc/
-      so the Debian packagers can avoid legal hassles when redistributing
-      this code.
+     [CODE CHANGES]
+
+     - None.
+
+     [DOCUMENTATION CHANGES]
+
+     - Added Copyright declarations to files in etc/ so the Debian
+      packagers can avoid legal hassles when redistributing this code.
+
+     - Added an =encoding command to all POD.  This should fix
+      whatever caused MetaCPAN to reject the last release of
+      Pinto. (Thanks rwstauner & oalders).
+
+     - Reformatted this change log to conform to the
+       CPAN::Changes::Spec (Thanks omega).
       
 0.088     2013-08-15 10:49:36 America/Los_Angeles
 
-      INCOMPATIBLE CHANGES:
+     [INCOMPATIBLE CHANGES]
 
-      * Both the "pull" and "add" commands will no longer fetch development
-      prerequisites by default.  If you want to have them, then add the
-      --with-development-prerequisites (or --wd) option.
+     - Both the "pull" and "add" commands will no longer fetch
+      development prerequisites by default.  If you want to have them,
+      then add the --with-development-prerequisites (or --wd) option.
 
-      NEW FEATURES:
+     [NEW FEATURES]
 
-      * The "add" command now has an experimental --no-index option to exclude
-      certain packages from the index.  This is useful when Pinto finds
-      packages in your distribution that it should not.  Thanks to Todd Chapman
-      for the great suggestion.
+     - The "add" command now has an experimental --no-index option to
+      exclude certain packages from the index.  This is useful when
+      Pinto finds packages in your distribution that it should not.
+      Thanks to Todd Chapman for the great suggestion.
 
-      * The "diff" command now accepts revision IDs as arguments, so you can
-      compare any two arbitrary revisions.  Revision IDs can be truncated to
-      uniqueness.  This feature was generously funded by a grant from TPF.
+     - The "diff" command now accepts revision IDs as arguments, so
+      you can compare any two arbitrary revisions.  Revision IDs can
+      be truncated to uniqueness.  This feature was generously funded
+      by a grant from TPF.
 
-      * The "new" command now accepts a --target-perl-version option to set
-      the target perl version of the new stack.  This affects how Pinto
-      decided if a prerequisite is satisfied by the core.  If you do not
-      specify the --target-perl-version, then it defaults the global value
-      that is set in the repository configuration file.
+     - The "new" command now accepts a --target-perl-version option to
+      set the target perl version of the new stack.  This affects how
+      Pinto decided if a prerequisite is satisfied by the core.  If
+      you do not specify the --target-perl-version, then it defaults
+      the global value that is set in the repository configuration
+      file.
 
-      ENHANCEMENTS:
+     [ENHANCEMENTS]
 
-      * Improved the output from the "manual" command.  Thanks to Tommy Stanton.
+     - Improved the output from the "manual" command.  Thanks to Tommy
+       Stanton.
 
-      * Optimized some queries to make it faster to register packages on a stack.
-      In the best cases, performance has improved by about 150%.  But in the
-      average case, the limiting factor is fetching and unpacking the upstream
-      distribution, so you'll only see a slight improvement there.
+     - Optimized some queries to make it faster to register packages
+      on a stack.  In the best cases, performance has improved by
+      about 150%.  But in the average case, the limiting factor is
+      fetching and unpacking the upstream distribution, so you'll only
+      see a slight improvement there.
 
-      * If your username contains non-alphanumeric characters, they will be
-      stripped out when used as your author identity.  This is because the
-      CPAN toolchain requires author ids to be alphanumeric.  Thanks to
-      @chiselwright and @cebjyre.
+     - If your username contains non-alphanumeric characters, they
+      will be stripped out when used as your author identity.  This is
+      because the CPAN toolchain requires author ids to be
+      alphanumeric.  Thanks to @chiselwright and @cebjyre.
 
-      * The "statistics" command now accepts a stack name, so you can see
-      the figures for any stack in the respository, not just the default
-      stack.  This was a silly omission.  I don't know why I left it out.
+     - The "statistics" command now accepts a stack name, so you can
+      see the figures for any stack in the respository, not just the
+      default stack.  This was a silly omission.  I don't know why I
+      left it out.
 
-      BUG FIXES:
+     [BUG FIXES]
 
-      * You can now edit the commit message when pinto is reading input from 
-      a file or pipe, as long as STDOUT is connected to a terminal.  You
-      can always just use the -m or -M options if you don't want to edit
-      the message.
+     - You can now edit the commit message when pinto is reading input
+      from a file or pipe, as long as STDOUT is connected to a
+      terminal.  You can always just use the -m or -M options if you
+      don't want to edit the message.
 
-      * You can now change only the letter case when renaming a stack, even 
-      on case-insensitive filesystems.  So you can change "foo" to "FOO".
-      Previously, you had to change the name entirely, and then rename it
-      again to the desired case.
+     - You can now change only the letter case when renaming a stack,
+      even on case-insensitive filesystems.  So you can change "foo"
+      to "FOO".  Previously, you had to change the name entirely, and
+      then rename it again to the desired case.
 
-      INTERNAL CHANGES:
+     [INTERNAL CHANGES]
 
-      * Pinto no longers stores the file path and SHA digest of every
-      package it sees in the META, since many distributions on CPAN don't have
-      the right paths in there anyway.  This allows Pinto to index some
-      (technically broken) distributions that it otherwise couldn't.  Pinto
-      was never really using this information anyway, and it will probably be
-      removed from the schema entirely in the next major upgrade cycle.
+     - Pinto no longers stores the file path and SHA digest of every
+      package it sees in the META, since many distributions on CPAN
+      don't have the right paths in there anyway.  This allows Pinto
+      to index some (technically broken) distributions that it
+      otherwise couldn't.  Pinto was never really using this
+      information anyway, and it will probably be removed from the
+      schema entirely in the next major upgrade cycle.
 
 0.087_05  2013-07-29 23:03:41 America/Los_Angeles
 0.087_04  2013-07-26 20:11:14 America/Los_Angeles
@@ -74,231 +92,238 @@
 0.087_02  2013-07-16 02:12:40 America/Los_Angeles
 0.087_01  2013-07-09 01:06:47 America/Los_Angeles
 
-      !! DEVELOPER RELEASES !!
+     [DEVELOPER RELEASES]
 
-      Changes consolidated above under version 0.088.
+     - Changes consolidated above under version 0.088.
 
 
 0.087     2013-06-19 14:47:01 America/Los_Angeles
        
-      INCOMPATIBLE CHANGES:
+     [INCOMPATIBLE CHANGES]
 
-      * When pulling, Pinto now takes the first satisfactory package that it
-      finds among the upstream repositories, rather than taking the latest
-      one.  This only matters if you specify multiple upstream repositories. To
-      get the old behavior, use the new --cascade option on the "pull"  and
-      "add" commands.  Thanks @hesco for helping me sort this out.
+     - When pulling, Pinto now takes the first satisfactory package
+      that it finds among the upstream repositories, rather than
+      taking the latest one.  This only matters if you specify
+      multiple upstream repositories. To get the old behavior, use the
+      new --cascade option on the "pull" and "add" commands.  Thanks
+      @hesco for helping me sort this out.
 
-      * The "version" command has been removed.  Now that all Pinto components
-      ship together, they all have the same version number.  So there is no
-      need for a special version command.  If you want to know what version of
-      pinto you have, just use the --version option.
+     - The "version" command has been removed.  Now that all Pinto
+      components ship together, they all have the same version number.
+      So there is no need for a special version command.  If you want
+      to know what version of pinto you have, just use the --version
+      option.
       
-      * Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other words, two
-      ASCII letters followed by zero or more ASCII letters, digits, or
-      hyphens.  If you use lowercase letters, they will be automatically
-      forced to uppercase for you.  This was done because cpanm relies on
-      author IDs following the  PAUSE convention.  I had hoped that Pinto
-      could be more liberal about author IDs, but it seems we must conform so
-      that we can cooperate with the rest of the toolchain.
+     - Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other
+      words, two ASCII letters followed by zero or more ASCII letters,
+      digits, or hyphens.  If you use lowercase letters, they will be
+      automatically forced to uppercase for you.  This was done
+      because cpanm relies on author IDs following the PAUSE
+      convention.  I had hoped that Pinto could be more liberal about
+      author IDs, but it seems we must conform so that we can
+      cooperate with the rest of the toolchain.
 
-      * The --no-history and --allow-duplicates repository configuration
-      parameters are no longer supported.  I had created those so you could
-      try mirroring CPAN with a Pinto repository.  But I have decided that use
-      case is out of scope for Pinto.  If you realy want a mirror of CPAN, use
-      CPAN::Mini or rsync.
+     - The --no-history and --allow-duplicates repository
+      configuration parameters are no longer supported.  I had created
+      those so you could try mirroring CPAN with a Pinto repository.
+      But I have decided that use case is out of scope for Pinto.  If
+      you realy want a mirror of CPAN, use CPAN::Mini or rsync.
 
-      ENHANCEMENTS:
+     [ENHANCEMENTS]
 
-      * The names of those kind souls who generously helped finance Pinto
-      through the crowdfunding campaing on Crowdtilt are now listed in 
-      Pinto::Manual::Thanks.  There is also a related Easter egg among
-      the pinto(1) commands -- see if you can find it!
+     - The names of those kind souls who generously helped finance
+      Pinto through the crowdfunding campaing on Crowdtilt are now
+      listed in Pinto::Manual::Thanks.  There is also a related Easter
+      egg among the pinto(1) commands -- see if you can find it!
 
-      * Pinto::Server (a.k.a. pintod) will abort the action if it looses the
-      connection with the client.  So, for example, you can press Ctrl-C in
-      the middle of pulling a long chain of dependencies into a remote
-      repository and the server will immediately stop and roll back the entire
-      transaction.
+     - Pinto::Server (a.k.a. pintod) will abort the action if it
+      looses the connection with the client.  So, for example, you can
+      press Ctrl-C in the middle of pulling a long chain of
+      dependencies into a remote repository and the server will
+      immediately stop and roll back the entire transaction.
 
-      * The progress meter is now visible when using a remote repository.  The
-      progress meter is never shown when --verbose or --quiet is set, or when
-      STDERR is not connected to a terminal.
+     - The progress meter is now visible when using a remote
+      repository.  The progress meter is never shown when --verbose or
+      --quiet is set, or when STDERR is not connected to a terminal.
 
-      * The "init" command now has a --target-perl-version switch that sets
-      the default target_perl_version property for all new stacks.  This is
-      handy if you know that all stacks will be targeting a perl that is
-      different from the one you are using to run pinto.
+     - The "init" command now has a --target-perl-version switch that
+      sets the default target_perl_version property for all new
+      stacks.  This is handy if you know that all stacks will be
+      targeting a perl that is different from the one you are using to
+      run pinto.
 
-      BUG FIXES:
+     [BUG FIXES]
 
-      * The "install" command can now be used on a locked stack, but only if the
-      --do-pull option is not given.  If you want to pull packges while
-      installing, then you must unlock the stack first.  Thanks Jeremy
-      Marshal.
+     - The "install" command can now be used on a locked stack, but
+     only if the --do-pull option is not given.  If you want to pull
+     packges while installing, then you must unlock the stack first.
+     Thanks Jeremy Marshal.
 
-      * The "install" command can now be used on a remote repository that has
-      basic HTTP authentication enabled.  Beware that cpanm does not sanitize
-      passwords from its log messages.  I'm working with miyagawa to fix that.
+     - The "install" command can now be used on a remote repository
+      that has basic HTTP authentication enabled.  Beware that cpanm
+      does not sanitize passwords from its log messages.  I'm working
+      with miyagawa to fix that.
 
-      * Pinto::Server now cleans up child procs.  No more zombies!
+     - Pinto::Server now cleans up child procs.  No more zombies!
 
-      * Cleaned up some extraneous dependencies.
+     - Cleaned up some extraneous dependencies.
 
-      * Fixed several typos in the documentation.
+     - Fixed several typos in the documentation.
 
 0.086     2013-06-18 02:45:38 America/Los_Angeles
 0.085     2013-06-18 02:45:38 America/Los_Angeles
 
-      !! BROKEN RELEASES !!
+     [BROKEN RELEASES]
 
-      Changes re-consolidated above under version 0.087.
+      - Changes re-consolidated above under version 0.087.
 
 0.084_02  2013-06-16 20:54:06 America/Los_Angeles
 0.084_01  2013-06-16 00:53:47 America/Los_Angeles
 
-      !! DEVELOPER RELEASES !!
+     [DEVELOPER RELEASES]
 
-      Changes consolidated above under version 0.087.
+     - Changes consolidated above under version 0.087.
 
 
 0.084     2013-05-14 17:24:22 America/Los_Angeles
 
-      ENHANCEMENTS:
+     [ENHANCEMENTS]
 
-      * Revised documentation for pintod.
+     - Revised documentation for pintod.
 
-      BUG FIXES:
+     [BUG FIXES]
 
-      * Now requires verison 0.018 of Test::LWP::UserAgent or newer which
-      resolves some test failures in Pinto seen by CPAN Testers using older
-      versions of T::LWP::UA.
+     - Now requires verison 0.018 of Test::LWP::UserAgent or newer
+      which resolves some test failures in Pinto seen by CPAN Testers
+      using older versions of T::LWP::UA.
 
 0.083     2013-05-13 14:36:21 America/Los_Angeles
 
-      ENHANCEMENTS:
+     [ENHANCEMENTS]
 
-      * Improved password prompting, so it still works when STDIN and/or
-      STDOUT are not connected to a terninal anymore.
+     - Improved password prompting, so it still works when STDIN
+      and/or STDOUT are not connected to a terninal anymore.
 
-      * Revised and corrected errors in documentation.
+     - Revised and corrected errors in documentation.
 
-      * The etc/ directory has a sample init.d script (thanks @hesco).
+     - The etc/ directory has a sample init.d script (thanks @hesco).
 
 0.082     2013-04-29 09:42:43 America/Los_Angeles
 
-       Just minor changes so Pinto will run on perl 5.8.9
+     - Just minor changes so Pinto will run on perl 5.8.9
 
 0.081     2013-04-26 13:51:32 America/Los_Angeles
 
-       Just a minor change in test code to prevent failure occasionaly seen on
-       Unix boxen.
+     - Just a minor change in test code to prevent failure occasionaly
+       seen on Unix boxen.
 
 0.080     2013-04-26 10:41:19 America/Los_Angeles
 
-      HEADLINES:
+     [HEADLINES]
 
-      * Pinto::Server and Pinto::Remote have been merged into this distribution,
-      so everything ships together.  It also means both Pinto::Server and
-      Pinto::Remote are now working again.  Woot!!
+     - Pinto::Server and Pinto::Remote have been merged into this
+      distribution, so everything ships together.  It also means both
+      Pinto::Server and Pinto::Remote are now working again.  Woot!!
 
-      There is one caveat: when using a remote repository, pinto will not
-      display the diff and prompt you to edit the commit message.  Instead, it
-      will automatically use the default generated message or the message you
-      specified at the command line.  I hope to fix this soon.
+      There is one caveat: when using a remote repository, pinto will
+      not display the diff and prompt you to edit the commit message.
+      Instead, it will automatically use the default generated message
+      or the message you specified at the command line.  I hope to fix
+      this soon.
 
-      BUG FIXES:
+     [BUG FIXES]
 
-      * pinto(1) and pintod(1) will now be installed with a fixed shebang,
-      so that they will always run with the same version of perl, even if you
-      use perlbrew to switch to a differnt perl (thanks @punter)
+     - pinto(1) and pintod(1) will now be installed with a fixed
+      shebang, so that they will always run with the same version of
+      perl, even if you use perlbrew to switch to a differnt perl
+      (thanks @punter)
 
-      * pinto(1) will now show the progress meter when reading input from a
-      file.  The progress meter will be hidden whenever STDERR is not
-      connected to a tty.  Use the --verbose or --quiet option to forcibly
-      hide the progress meter.
+     - pinto(1) will now show the progress meter when reading input
+      from a file.  The progress meter will be hidden whenever STDERR
+      is not connected to a tty.  Use the --verbose or --quiet option
+      to forcibly hide the progress meter.
 
-      * Pinto now indexes "inner packages" so distributions like mod_perl
-      will be indexed (more) correctly.  I had misunderstood how PAUSE worked.
-      Thanks @miyagawa.
+     - Pinto now indexes "inner packages" so distributions like
+      mod_perl will be indexed (more) correctly.  I had misunderstood
+      how PAUSE worked.  Thanks @miyagawa.
 
 0.068     2013-04-04 22:41:55 America/Los_Angeles
 
-      * Now using Module::Build::CleanInstall, which removes files from the
-      last installation before installing.  This should help prevent build
-      failures for those coming from versions prior to 0.066.  Thanks to
-      Joel Berger for creating the wonderful M::B::CleanInstall!
+     - Now using Module::Build::CleanInstall, which removes files from
+      the last installation before installing.  This should help
+      prevent build failures for those coming from versions prior to
+      0.066.  Thanks to Joel Berger for creating the wonderful
+      M::B::CleanInstall!
 
-      * Worked around bizzare bug that caused DateTime::TimZone to blow
-      up with a "locate object method" exception on perl 5.14.  Root cause
-      has not been determined.
+     - Worked around bizzare bug that caused DateTime::TimZone to blow
+      up with a "locate object method" exception on perl 5.14.  Root
+      cause has not been determined.
 
 0.067     2013-03-30 00:23:36 America/Los_Angeles
 
-      * Only minor refactoring.  No functional or interface changes.
+     - Only minor refactoring.  No functional or interface changes.
 
-      * Explicitly requires Term::ANSIColor 2.02 or later.  Thanks CPAN Testers!
+     - Explicitly requires Term::ANSIColor 2.02 or later.  Thanks CPAN Testers!
 
-      * Requires Pinto::Common 0.068, so you'll have better documentation. 
+     - Requires Pinto::Common 0.068, so you'll have better documentation. 
 
 0.066     2013-03-26 16:18:06 America/Los_Angeles
 
-     HEADLINES:
+     [HEADLINES]
 
-     * Your MUST uninstall both Pinto and App::Pinto before installing this.
+     - Your MUST uninstall both Pinto and App::Pinto before installing this.
 
-     * For local repositories, you'll need to have App::Pinto 0.066 or later.
+     - For local repositories, you'll need to have App::Pinto 0.066 or later.
 
-     * This release is not (yet) compatible with any Pinto::Server.
+     - This release is not (yet) compatible with any Pinto::Server.
 
+     [IMPORTANT]
 
-     IMPORTANT:
+     - Bad news: This version of Pinto is not compatible with
+     *existing* repositories.  To migrate, you'll need to create a new
+     repository (using this version of Pinto) and then "pull" all the
+     distributons from your old repository into the new one.  Repeat
+     this process for each stack.  Unfortunatley, you will loose your
+     revision history.  If you bug me about it, I'll write a script to
+     automate this for you.  I am thaljef@cpan.org.
 
-     Bad news:  This version of Pinto is not compatible with *existing* 
-     repositories.  To migrate, you'll need to create a new repository 
-     (using this version of Pinto) and then "pull" all the distributons 
-     from your old repository into the new one.  Repeat this process for 
-     each stack.  Unfortunatley, you will loose your revision history.  If
-     you bug me about it, I'll write a script to automate this for you.  I
-     am thaljef@cpan.org.
+     - Good news: This version of Pinto has hooks to do future
+     migrations automatically.  So any repository you create with
+     *this version* of Pinto can be easily migrated to any future
+     versions. I'm also pretty confident that the schema is now
+     stable, so a migration will not be required for a while.
 
-     Good news:  This version of Pinto has hooks to do future migrations
-     automatically.  So any repository you create with *this version*
-     of Pinto can be easily migrated to any future versions. I'm also pretty
-     confident that the schema is now stable, so a migration will not be
-     required for a while.
+     [CHANGES]
 
+     - Switched from using Archive::Tar to Archive::Extract.  The
+     latter will attempt to use tar(1) to unpack the archive, which
+     works much better with older archives.  This is a bit slower
+     however.  If you don't have tar(1), it falls back to using
+     Archive::Tar internally.
 
-     CHANGES:
+     - Switched from using HTTP::UserAgent to HTTP::Tiny.  This cuts
+     out one non-core dependency.  But some of Pinto's upstream
+     dependencies probably still use HTTP::UserAgent, so the net
+     effect is moot.
 
-     * Switched from using Archive::Tar to Archive::Extract.  The
-     latter will attempt to use tar(1) to unpack the archive,
-     which works much better with older archives.  This is a bit
-     slower however.  If you don't have tar(1), it falls back
-     to using Archive::Tar internally.
-
-     * Switched from using HTTP::UserAgent to HTTP::Tiny.  This cuts out
-     one non-core dependency.  But some of Pinto's upstream dependencies
-     probably still use HTTP::UserAgent, so the net effect is moot.
-
-     * The version control subsystem has been completely redesigned.
-     Pinto now stores full snaphots of the stack at each revision
-     and organizes them in a directed graph, much like Git does.  Each
+     - The version control subsystem has been completely redesigned.
+     Pinto now stores full snaphots of the stack at each revision and
+     organizes them in a directed graph, much like Git does.  Each
      revision is now identified by a unique non-sequential identifier.
      
-     * The interface with the terminal has been completely redesigned.
-     You'll see fewer (but hopefully better) diagnostic messages
-     when running in verbose mode.  And if not verbose, then
-     you'll see a progress meter.  If you still want to see all
-     the gory details, then set the PINTO_DEBUG environment variable.
+     - The interface with the terminal has been completely redesigned.
+     You'll see fewer (but hopefully better) diagnostic messages when
+     running in verbose mode.  And if not verbose, then you'll see a
+     progress meter.  If you still want to see all the gory details,
+     then set the PINTO_DEBUG environment variable.
 
-     * The logger has been completely removed, so Pinto no longer
-     records diagnostic messages.  Recording them never proved to
-     be useful anyway.  All the important changes to the stacks are
-     still recorded in the revision log though.
+     - The logger has been completely removed, so Pinto no longer
+     records diagnostic messages.  Recording them never proved to be
+     useful anyway.  All the important changes to the stacks are still
+     recorded in the revision log though.
 
-     * Several Action classes have been added, removed, renamed,
-     or repurposed.  The specifics are not described here because the
+     - Several Action classes have been added, removed, renamed, or
+     repurposed.  The specifics are not described here because the
      Pinto API is still private.  See the change log for App::Pinto
      for a description of all the public interface changes.
 
@@ -309,25 +334,25 @@
 0.065_02  2013-03-15 23:39:27 America/Los_Angeles
 0.065_01  2013-03-15 16:19:38 America/Los_Angeles
 
-     !! DEVELOPER RELEASES !!
+     [DEVELOPER RELEASES]
 
-     Changes consolidated above under version 0.066.
+     - Changes consolidated above under version 0.066.
 
 0.065     2012-11-14 09:55:54 America/Los_Angeles
 
-     Interface Changes:
+     [Interface Changes]
 
-     * In commit messages, all lines starting with '#' are discarded.
+     - In commit messages, all lines starting with '#' are discarded.
        Previously, we figured out the start and end of the message
        based on other landmarks, but that isn't very reliable.
 
-     * Commit timestamps are now reported in the format that is right
+     - Commit timestamps are now reported in the format that is right
        for your locale.  However, they are reported in UTC, not the
        local timezone.  I will fix this in the next release.
 
-     New Features:
+      [New Features]
 
-     * Commit messages are now parsed into separate title and body
+     - Commit messages are now parsed into separate title and body
        sections.  The message prompt will advise you to put the title
        on the first line, followed by one blank line, followed by the
        body (just like with Git).  We make some attempt to be lenient
@@ -335,111 +360,107 @@
 
 0.064     2012-11-12 13:29:50 America/Los_Angeles
 
-     New Features:
+      [New Features]
 
-     * If running in an interactive environment and the PINTO_PAGER or
+     - If running in an interactive environment and the PINTO_PAGER or
        PAGER environment variable is set, then Action output will be
        sent to it.  Log messages still go to STDERR and will not be
        sent to the pager.
 
 0.063     2012-11-12 11:58:29 America/Los_Angeles
 
-     Important:
+      [Important]
 
-     This version of Pinto is not compatible with repositories that
-     were created with prior versions.  Please contact
-     thaljef@cpan.org if you need to migrate an old repository.
+     - This version of Pinto is not compatible with repositories that were created 
+     with prior versions.  Please contact thaljef@cpan.org if you need to migrate an 
+     old repository.
 
-     New Features:
+      [New Features]
 
-     * Now has a Rename action, to change the name of an existing
+     - Now has a Rename action, to change the name of an existing
        stack.  You'll need a newer App::Pinto to utilize this action
        (Schwern).
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     * The Delete action actually works now (Schwern, Holybit).
+     - The Delete action actually works now (Schwern, Holybit).
 
 0.062     2012-11-08 10:52:02 America/Los_Angeles
 
-     Interface Changes:
+      [Interface Changes]
 
-     * If the commit message for a Committable action is empty (but
+     - If the commit message for a Committable action is empty (but
        defined) then we automatically fall back to using the default
        message.
 
-     Interal API Changes:
+      [Interal API Changes]
 
-     * Actions that take a stack name argument can now accept a stack
+     - Actions that take a stack name argument can now accept a stack
        object as well.
 
-     * Pinto::Util has been moved from this distribution to Pinto-Common.
+     - Pinto::Util has been moved from this distribution to Pinto-Common.
 
 
 0.061     2012-10-30 17:19:10 America/Los_Angeles
 
-     Interface Changes:
+      [Interal Changes]
 
-     NONE
+     - Some query optimizations, to benefit alpha.stratopan.com
 
-     Interal API Changes:
-
-     * Some query optimizations, to benefit alpha.stratopan.com
-
-     * Stack and Revision objects are now sortable.  In string
+     - Stack and Revision objects are now sortable.  In string
        context, Stacks sort by name.  In numeric context, they sort by
        Revision.  Revisions sort chronologically.
 
 0.060     2012-10-23 10:57:41 America/Los_Angeles
 
-     New Features:
+      [New Features]
 
-     * You can now set the default stack at the same time that you
+     - You can now set the default stack at the same time that you
        create or copy a stack.
 
-     Other Changes:
+      [Other Changes]
 
-     * The output of the Blame action now has the familiar format of
+     - The output of the Blame action now has the familiar format of
        the List action, and records are sorted by package name.
 
 0.059     2012-10-20 00:52:34 America/Los_Angeles
 
-     Important:
+      [Important]
 
      This version of Pinto is not compatible with repositories that
      were created with prior versions.  Please contact thaljef@cpan.org
      if you need to migrate an old repository.
 
-     Interface Changes:
+      [Interface Changes]
 
-     * Stack names and property names are no longer forced to
+     - Stack names and property names are no longer forced to
        lowercase.  Instead, we preserve the original case when they
        are created.  But subsequent comparisons or lookups are done
        irrespective of case.
 
-     * Author IDs are no longer forced to uppercase.  However, the
+     - Author IDs are no longer forced to uppercase.  However, the
        author ID in the canonical path for any distribution that you
        add will always be uppercase, which is consistent with PAUSE.
        When listing distributions/packages for a certain author, the
        comparison is done irrespective of case.
 
-     Other Changes:
+      [Other Changes]
 
-     * Made several schema optimizations to help support Stratopan,
+     - Made several schema optimizations to help support Stratopan,
        the upcoming cloud-based service built on Pinto.  For a
        preview, check out http://alpha.stratopan.com
 
 0.058     2012-10-11 22:47:23 America/Los_Angeles
 
-     New Features:
+      [New Features]
 
-     * Added the Blame action, which reports who last modified each
+     - Added the Blame action, which reports who last modified each
        package in the stack.  You'll need App::Pinto-0.052 to utilize
        this action.
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     * When pulling prereqs, Pinto would pull the latest version of
+     - When pulling prereqs, Pinto would pull the latest version of
        the package across the entire repository, rather than taking
        the version that is already on the stack. If the package that
        is on the stack does not exist or is too old, *then* you get
@@ -449,34 +470,34 @@
 
 0.057     2012-10-07 12:28:37 America/Los_Angeles
 
-     * The Pull action will ignore requests for packages that are in
+     - The Pull action will ignore requests for packages that are in
        the Perl core, unless you explicitly request a version of the
        package that is newer than the core.
 
-     * Removed stray dependency on Pinto::Store::File.  That module
+     - Removed stray dependency on Pinto::Store::File.  That module
        has been deprecated and no longer ships with Pinto (holybit).
 
 0.056     2012-09-27 13:40:56 America/Los_Angeles
 
-     Important:
+      [Important]
 
      This version of Pinto is not compatible with repositories that
      were created with prior versions.  Please contact thaljef@cpan.org
      if you need to migrate an old repository.
 
-     New Features:
+      [New Features]
 
-     * Added the Replace action, which substitues one dist for another
+     - Added the Replace action, which substitues one dist for another
        on all stacks.  You'll need to upgrade App::Pinto to get the
        corresponding 'replace' command.
 
-     Other Changes:
+      [Other Changes]
 
-     * Significantly improved performance, especially for large
+     - Significantly improved performance, especially for large
        repositories.  Pinto can now hold the *entire* CPAN (not just
        the tip) and still perform reasonably well.
 
-     * Changed the way prereqs are discovered.  We now trust the
+     - Changed the way prereqs are discovered.  We now trust the
        dist's own META to tell us the prereqs, rather than configuring
        the dist directly.  This is much faster and usually just as
        accurate.  The only casualties are old dists that don't have a
@@ -484,40 +505,40 @@
        configuration.  So it ain't perfect, but it is probably good
        enough.
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     * Pinto can now cope with distributions that contain no packages.
+     - Pinto can now cope with distributions that contain no packages.
        These are relatively rare but they do exist on CPAN, usualy in
        the form of distributions that contain only scripts.
 
 0.055     2012-09-20 13:33:57 America/Los_Angeles
 
-     Interface Changes:
+      [Interface Changes]
 
-     * For the List action, the magic stack name is now '%' instead of
+     - For the List action, the magic stack name is now '%' instead of
        '@'.  This was changed to distinguish it from revision strings
        that look like stack@1234.
 
-     * The username attribute is now attached to the Config, not the
+     - The username attribute is now attached to the Config, not the
        Action.  This makes it available to any object that needs it
        (particularly when creating a Revision).
 
 0.054     2012-09-19 22:02:57 America/Los_Angeles
 
-     * Added a workaround so Pinto can cope with the nonsensical
+     - Added a workaround so Pinto can cope with the nonsensical
        common::sense module.
 
 0.053     2012-09-19 20:58:46 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     * For all committable actions, a commit message is required only
+     - For all committable actions, a commit message is required only
        if the action actually changed the state of the repository. A
        commit message is never required for a dryrun action.
 
-     Other Changes:
+      [Other Changes]
 
-     * Requires DBIx::Class-0.08200 or newer.  In certain earlier
+     - Requires DBIx::Class-0.08200 or newer.  In certain earlier
        versions, prefetching was broken.
 
      * The Install action is now committable, but it only matters
@@ -525,7 +546,7 @@
 
 0.052     2012-09-18 16:15:38 America/Los_Angeles
 
-     Important:
+      [Important]
 
      This version of Pinto is not compatible with repositories that
      were created with prior versions.  The way that archives and
@@ -534,48 +555,48 @@
      that too.  Contact thaljef@cpan.org if you need a migration
      path for an existing repository.
 
-     New Features:
+      [New Features]
 
-     * Now supports a Revert action, which restores the stack to a
+     - Now supports a Revert action, which restores the stack to a
        prior revision.  This is light-weight form of version control.
 
-     * Now supports a Log action, which displays the history of
+     - Now supports a Log action, which displays the history of
        changes to a stack.
 
-     * Each action that changes the state of the repository now
+     - Each action that changes the state of the repository now
        requires a commit message.  You can pass this into the API, or
        it will prompt for one via your editor.
 
-     Other Changes:
+      [Other Changes]
 
-     * The Index action is no longer supported.  Now that each stack
+     - The Index action is no longer supported.  Now that each stack
        has its own index file, I see no need to have this Action.
 
-     * Orphaned archives are now automatically cleaned whenever you do
+     - Orphaned archives are now automatically cleaned whenever you do
        an Add or Pull action with dryrun enabled.
 
-     * Now requires Dist-Requires-0.008, which fixes some test
+     - Now requires Dist-Requires-0.008, which fixes some test
        failures on some platforms.
 
 0.051     2012-08-15 18:27:34 America/Los_Angeles
 
-     * More hacking to workaround the broken prefetch feature in
+     - More hacking to workaround the broken prefetch feature in
        DBIx::Class.  May result is slightly slower performance now
        that we have to make more trips to the database.
 
-     * Added the Clean action to remove orphaned archives from the
+     - Added the Clean action to remove orphaned archives from the
        filesystem.  The Pull and Add actions now automatically clean
        up if doing a dryrun.
 
 0.050     2012-08-15 14:26:13 America/Los_Angeles
 
-     * I've worked around the bug that required you to use a
+     - I've worked around the bug that required you to use a
        development version of DBIx::Class (see previous release notes
        below).  So now you don't have to manually install anything.
 
 0.048     2012-08-15 09:05:19 America/Los_Angeles
 
-     Prefetch is broken in DBIx::Class-0.08198 (see RT #78456) so
+     - Prefetch is broken in DBIx::Class-0.08198 (see RT #78456) so
      Pinto now requires DBIx::Class-0.08198_01 or later.  At the
      moment, this is only available as a dev release, so you may have
      to install it manually before building Pinto.  For example:
@@ -584,66 +605,66 @@
 
 0.047     2012-08-13 17:21:03 America/Los_Angeles
 
-     Added a hook for controling the lockfile timeout via an
+     - Added a hook for controling the lockfile timeout via an
      environment variable.  This makes testing for Pinto::Server and
      Pinto::Remote faster.
 
 0.046     2012-08-13 15:17:18 America/Los_Angeles
 
-     Important:
+    [Important]
 
-     Removed workaround for bug that appeared in DBIx::Class-0.08198.
+     - Removed workaround for bug that appeared in DBIx::Class-0.08198.
      We now require DBIx-Class-0.08198_01, which is only a developer
      release at the moment.  So you may have to fetch that dependency
      manually.
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     Partially resolved #14, where Pinto would blow up if you
+     - Partially resolved #14, where Pinto would blow up if you
      asked it to pull a core-only package.  In this case, it
      really should give you a warning.  But for now, it just
      silently skips it.
 
-     Other Changes:
+      [Other Changes]
 
-     Pinto::Tester now constructs the repository on disk
+     - Pinto::Tester now constructs the repository on disk
      immediately upon constructing the object.  Before, you
      had to access the pinto attribute to trigger it to
      write anything to disk.
 
 0.045     2012-07-23 23:14:42 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     Tests were failing with the latest version of DBIx::Class.
+     - Tests were failing with the latest version of DBIx::Class.
      I think the root cause is in DBIx::Class itself (see RT #78456)
      but until that is resolved, I've done a workaround.
 
 0.044     2012-07-15 01:39:18 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     The magic stack named '@' (meaning all stacks) did
+     - The magic stack named '@' (meaning all stacks) did
      not work.
 
 0.043     2012-06-19 10:47:15 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     Prevent writing to closed handle, when running the install
+     - Prevent writing to closed handle, when running the install
      action via pinto remotely.
 
-     Now requires Dist::Metadata 0.923 or newer, which indexes
+     - Now requires Dist::Metadata 0.923 or newer, which indexes
      more like PAUSE does it.
 
-     Other Stuff:
+      [Other Stuff]
 
-     Some minor performance optimizations, to reduce the number of
+     - Some minor performance optimizations, to reduce the number of
      trips to the database.
 
 0.042     2012-05-17 21:55:19 America/Los_Angeles
 
-     finally{...} doesn't seem to work properly on older perls, and
+     - finally{...} doesn't seem to work properly on older perls, and
      this caused several test failures.  According to the perldelta,
      5.14 introduced several changes to exception handling.  So I've
      moved the exception handling into the catch{...} block.  I don't
@@ -651,9 +672,9 @@
  
 0.041     2012-05-15 11:13:27 America/Los_Angeles
 
-     Important:
+      [Important]
    
-     There have been major changes to the interface and behavior of
+     - There have been major changes to the interface and behavior of
      Pinto (read more below).  Beware this version of Pinto is NOT
      compatible with repositories created with any previous version of
      Pinto.  If you have an existing repository and you really, really
@@ -663,16 +684,16 @@
      existing versions of all the Pinto libraries and scripts before
      installing a new one on top of it.
 
-     New/Changed/Removed Features:
+     [New/Changed/Removed Features]
 
-     Pinto now supports multiple indexes called "stacks".  So you
+     - Pinto now supports multiple indexes called "stacks".  So you
      could have one stack of dependencies for application X and a
      different stack for application Y (or one for development, one
      for production, etc).  Each stack can contain different modules
      and/or different versions of those modules.  It's like having
      several repositories in one.
 
-     Stacks can be copied and merged, much like a version control
+     - Stacks can be copied and merged, much like a version control
      system.  This allows you to experiment with new dependencies
      without impacting other stacks.  If you have multiple
      applications with different dependencies (or just different
@@ -680,31 +701,31 @@
      converge dependencies.  Likewise, it allows you to fork
      dependencies if two applications need to diverge in some way.
 
-     The VCS integration has been removed.  Most of the people I've
+     - The VCS integration has been removed.  Most of the people I've
      talked with did not find this feature particularly useful, since
      you can't really branch & merge a repository (the database is
      binary).  This was also the most rickety part of the system.
 
-     The "pinto-admin" and "pinto-remote" applications have been
+     - The "pinto-admin" and "pinto-remote" applications have been
      consolidated into one application called "pinto".  It will use
      the appropriate backend (either Pinto or Pinto::Remote) depending
      on whether the repository root is a local directory or a remote
      URL.  However the backends ship separately from the application,
      so you must choose which to install (or you can choose both).
 
-     The pinto application also has an "install" command, which
+     - The pinto application also has an "install" command, which
      functions as a stand-in for cpanm.  It is wired to pull
      distributions only from your repository, using the stack of your
      choice.
 
-     Pinto no longer supports mirroring CPAN.  I've found that it is
+     - Pinto no longer supports mirroring CPAN.  I've found that it is
      difficult to manage application dependencies in the context of an
      entire mirror of CPAN.  Most people only care about the stuff
      their application needs, so they don't really need a snapshot of
      the entire CPAN.  If you really want that, then CPAN::Mini does a
      fine job.
 
-     Pinto no longer allows you to remove archives from the
+     - Pinto no longer allows you to remove archives from the
      repository, so the "clean", "purge", and "remove" commands are
      gone.  Eventually, my goal is to make Pinto behave just like a
      VCS, where nothing is really deleted and you can always revert
@@ -712,7 +733,7 @@
      distribution off of a stack, but the .tar.gz file never really
      goes away.
 
-     Pinto no longer enforces any sort of permissions on package
+     - Pinto no longer enforces any sort of permissions on package
      namespaces.  Previously, Pinto only allowed the original author
      to update a package (just as PAUSE does).  But the restriction
      was only advisory -- you could just bypass it by changing your
@@ -721,7 +742,7 @@
      file so you can see who changed what, but Pinto expects you to be
      accountable for your actions.
 
-     Pinto now tracks dependencies between the distributions within
+     - Pinto now tracks dependencies between the distributions within
      the repository.  So it can potentially tell you which
      distributions need to be tested after upgrading a module, or
      whether the stack actually contains sufficient modules to satisfy
@@ -730,172 +751,172 @@
 
 0.040_003 2012-05-04 21:38:07 America/Los_Angeles
 
-     Fixed bug in 35-install.t that would cause the test to fail
+     - Fixed bug in 35-install.t that would cause the test to fail
      (instead of skipping) if cpanm was not installed.  Thanks
      Andreas!
 
-     Switched to using File::NFSLock instead of Lockfile::Simple.  The
+     - Switched to using File::NFSLock instead of Lockfile::Simple.  The
      latter uses some deprecated syntax that causes lots of ugly
      warnings on newer perls.
 
-     Still alpha testing.
+     - Still alpha testing.
 
 0.040_002 2012-05-04 16:19:11 America/Los_Angeles
 
-     Added Action::Install.  Still alpha testing.
+     - Added Action::Install.  Still alpha testing.
 
 0.040_001 2012-05-01 13:12:34 America/Los_Angeles
 
-     This is a developer release for alpha testing the stacks feature.
+     - This is a developer release for alpha testing the stacks feature.
 
 0.038     2012-04-16 18:14:57 America/Los_Angeles
 
-     New Features:
+      [New Features]
 
-     The "import" command will now import a particular distribution
+     - The "import" command will now import a particular distribution
      if you specify it using the right notation.  See POD for details
      (Steven Leung).
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     The Git store would fail if you specified the --root as a
+     - The Git store would fail if you specified the --root as a
      relative path that contained any "../" updirs (William Wolf).
 
 0.037     2012-04-10 19:57:09 America/Los_Angeles
 
-     No code changes.  Just fixed dependency declarations.
+     - No code changes.  Just fixed dependency declarations.
      Thanks CPAN Testers!
 
 0.036     2012-04-09 00:14:50 America/Los_Angeles
 
-     New Features:
+      [New Features]
 
-     Pinto now logs activity to $root_dir/.pinto/logs/pinto.log
+     - Pinto now logs activity to $root_dir/.pinto/logs/pinto.log
      (Karen Etheridge).  You can set the logging level in the
      repository's config file.
 
-     Other Stuff:
+      [Other Stuff]
 
-     A lot of files have been moved around in this release (and the
+     - A lot of files have been moved around in this release (and the
      last couple releases).  I suggest removing your current Pinto
      before installing this one, to avoid accumulating cruft.
 
 0.035     2012-04-04 19:00:35 America/Los_Angeles
 
-     New Features:
+      [New Features]
 
-     The value for the --author option now defaults to the 'user'
+     - The value for the --author option now defaults to the 'user'
      specified in your ~/.pause file.  If that file does not exist,
      then it still defaults to your current login username.
 
-     Other Changes:
+      [Other Changes]
 
-     All diagnostic messages from pinto-admin now go to STDERR
+     - All diagnostic messages from pinto-admin now go to STDERR
      rather than STDOUT.  So you can cleanly directy the output
      into a file (like with the `list` command).
 
-     Refactored a lot of redundant code into roles that are shared
+     - Refactored a lot of redundant code into roles that are shared
      with Pinto::Remote.  But if you're not looking at the Pinto
      internals, you won't notice it.
 
 0.033     2012-03-15 06:55:39 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     Corrected documentation about the environment variable
+     - Corrected documentation about the environment variable
      controlling the default location of the repository.
      Thanks fibo.
 
-     The index file is now properly updated after doing an
+     - The index file is now properly updated after doing an
      import operation.  Thanks throughnothing.
 
 0.032     2012-03-01 10:36:25 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     Worked around a problem that caused the PAUSE indexer to
+     - Worked around a problem that caused the PAUSE indexer to
      reject the last release.
 
-     Added an accurate line-count to the 02packages file so that
+     - Added an accurate line-count to the 02packages file so that
      cpan(1) doesn't complain about it.
 
 0.031     2012-02-28 05:19:58 America/Los_Angeles
 
-     Bug Fixes:
+      [Bug Fixes]
 
-     Fixed bug in the create command.  Not sure how this ever
+     - Fixed bug in the create command.  Not sure how this ever
      worked before.
 
-     New Features:
+      [New Features]
 
-     The "add" command now recursively imports all the dependencies
+     - The "add" command now recursively imports all the dependencies
      by default.  To disable this behavior use the --norecurse option.
 
 0.030     2012-01-26 22:00:32 America/Los_Angeles
 
-     The --repos option for pinto-admin has been officially 
+     - The --repos option for pinto-admin has been officially 
      renamed to --root.  This was done to create a symmetrical
      API between Pinto and Pinto::Admin.  The old --repos option
      will *not* be supported for backward compatibility.
 
 0.029     2011-12-15 00:24:11 America/Los_Angeles
 
-     The 'list' command now has --index and --noindex options to
+     - The 'list' command now has --index and --noindex options to
      filter the output to packages that are in the index, or not
      in the index, respectively.
 
-     The 'list' command now has --pinned and --nopinned options to
+     - The 'list' command now has --pinned and --nopinned options to
      filter the output to packages that are pinned, or not pinned,
      respectively.
 
-     The default output format for the 'list' command now includes a
+     - The default output format for the 'list' command now includes a
      '+' character to indicate whether a package is pinned.
 
-     Some improvements to Pinto::Store::VCS::Git, which allow you
+     - Some improvements to Pinto::Store::VCS::Git, which allow you
      to place your Pinto repository anywhere inside a Git repository.
  
 0.028     2011-12-12 01:22:02 America/Los_Angeles
 
-     I discovered that Subversion 1.7 changed the working copy layout
+     - I discovered that Subversion 1.7 changed the working copy layout
      in a way that caused Pinto to run exponentially slower as the
      repository got bigger (like when mirroring the CPAN).  I've fixed
      this now.
 
-     pinto-admin now has a 'statistics' command that will report
+     - pinto-admin now has a 'statistics' command that will report
      some basic stats about your repository.  I plan to add more
      stats in the future.
 
-     You can now store your repository with Git using either
+     - You can now store your repository with Git using either
      Pinto::Store::VCS::Git or Pinto::Store::VCS::Git::Remote.
      These are both experimental, so use with caution.
 
-     Mirror actions are now a bit faster, espeically when you
+     - Mirror actions are now a bit faster, espeically when you
      already have most of the distributions in the source
      repository.
 
-     The VCS log message used for the commit is now also used
+     - The VCS log message used for the commit is now also used
      as the message for the tag operation.
 
-     Pinning a devel package is only allowed if this repository
+     - Pinning a devel package is only allowed if this repository
      is configured to index devel packages.
 
 0.027     2011-12-08 15:23:00 America/Los_Angeles
 
-     The 'list' command now has options to filter the output
+     - The 'list' command now has options to filter the output
      to either packages or distributions that contain some
      substring.  This is not as powerful as a regex, and you
      can only filter on the package name or dist path.  But
      this will make things go much faster.
 
-     Fixed numerous bugs in the VCS integration.  This was totally
+     - Fixed numerous bugs in the VCS integration.  This was totally
      broken.  That's what I get for not writing regression tests
      in that area.
 
-     Fixed compatibility issue with Pinto::Remote.
+     - Fixed compatibility issue with Pinto::Remote.
 
-     Added or improved some log messages.
+     - Added or improved some log messages.
 
-     Revised some documentation.
+     - Revised some documentation.
 
 0.026     2011-12-07 11:47:27 America/Los_Angeles
 
