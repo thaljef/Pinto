@@ -226,53 +226,56 @@ sub register {
 
     $stack->assert_is_open;
     $stack->assert_not_locked;
+    
+    my @package_names = map { $_->name } $self->packages;
+    my $where = {package_name => {in => \@package_names}};
+    my @registrations = $stack->head->registrations($where, {prefetch => 'package'});
+    my %incumbents = map { $_->package_name => $_ } @registrations; 
+    
+    for my $pkg ($self->packages) {
 
-    my @incoming_package_names = map { $_->name } $self->packages;
-    my $where = { package_name => { in => \@incoming_package_names } };
-    my @registrations = $stack->head->registrations( $where, { prefetch => 'package' } );
-    my %incumbents = map { $_->package_name => $_ } @registrations;
+      my $incumbent = $incumbents{$pkg->name};
 
-    for my $pkg ( $self->packages ) {
+      if (not defined $incumbent) {
+          debug( sub {"Registering $pkg on stack $stack"} );
+          $pkg->register(stack => $stack, pin => $pin);
+          $did_register++;
+          next;
+      }
 
-        my $incumbent = $incumbents{ $pkg->name };
+      my $incumbent_pkg = $incumbent->package;
 
-        if ( not defined $incumbent ) {
-            debug( sub {"Registering $pkg on stack $stack"} );
-            $pkg->register( stack => $stack, pin => $pin );
-            $did_register++;
-            next;
-        }
+      if ( $incumbent_pkg == $pkg ) {
+        debug( sub {"Package $pkg is already on stack $stack"} );
+        $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
+        next;
+      }
 
-        my $incumbent_pkg = $incumbent->package;
 
-        if ( $incumbent_pkg == $pkg ) {
-            debug( sub {"Package $pkg is already on stack $stack"} );
-            $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
-            next;
-        }
+      if ( $incumbent->is_pinned ) {
+        my $pkg_name = $pkg->name;
+        throw "Unable to register distribution $self: package $pkg_name is pinned to $incumbent_pkg";
+      }
 
-        if ( $incumbent->is_pinned ) {
-            my $pkg_name = $pkg->name;
-            throw "Unable to register distribution $self: package $pkg_name is pinned to $incumbent_pkg";
-        }
+      whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
+        if $incumbent_pkg > $pkg;
+ 
 
-        whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
-            if $incumbent_pkg > $pkg;
 
-        if ( $stack->prohibits_partial_distributions ) {
+      if ( $stack->prohibits_partial_distributions ) {
+        # If the stack is pure, then completely unregister all the
+        # packages in the incumbent distribution, so there is no overlap
+        $incumbent->distribution->unregister(stack => $stack);
+      }
+      else {
+        # Otherwise, just delete this one registration.  The stack may
+        # end up with some packages from one dist and some from another
+        $incumbent->delete;
+      }
 
-            # If the stack is pure, then completely unregister all the
-            # packages in the incumbent distribution, so there is no overlap
-            $incumbent->distribution->unregister( stack => $stack );
-        }
-        else {
-            # Otherwise, just delete this one registration.  The stack may
-            # end up with some packages from one dist and some from another
-            $incumbent->delete;
-        }
-
-        $pkg->register( stack => $stack, pin => $pin );
-        $did_register++;
+      $pkg->register(stack => $stack, pin => $pin);
+      $did_register++;
+>>>>>>> parent of 5475c25... Better variable names.
     }
 
     $stack->mark_as_changed if $did_register;
