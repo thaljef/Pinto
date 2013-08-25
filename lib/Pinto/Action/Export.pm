@@ -116,7 +116,7 @@ sub get_output_channel {
          extension  => '.tar',
       },
       'tar.bz2' => {
-         short_name => 'Tar',
+         short_name => 'SystemTar',
          extension  => '.tar.bz2',
       },
       'tar.gz' => {

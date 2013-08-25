@@ -1,6 +1,6 @@
-# ABSTRACT: support TAR archive storage for Export action
+# ABSTRACT: support TAR archive storage for Export action, via Archive::Tar
 
-package Pinto::Action::Export::Tar;
+package Pinto::Action::Export::ArchiveTar;
 
 use Moose;
 use MooseX::StrictConstructor;
