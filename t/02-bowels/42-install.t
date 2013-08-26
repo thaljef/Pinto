@@ -11,12 +11,13 @@ use Capture::Tiny qw(capture_stderr);
 
 use lib 't/lib';
 use Pinto::Tester;
-use Pinto::Tester::Util qw(has_cpanm $MINIMUM_CPANM_VERSION);
+use Pinto::Tester::Util qw(has_cpanm);
+use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
-plan skip_all => "Need cpanm $MINIMUM_CPANM_VERSION or newer"
-    unless has_cpanm($MINIMUM_CPANM_VERSION);
+plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
+    unless has_cpanm($PINTO_MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 

@@ -13,12 +13,13 @@ use Pinto::Remote;
 
 use lib 't/lib';
 use Pinto::Server::Tester;
-use Pinto::Tester::Util qw(make_dist_archive has_cpanm $MINIMUM_CPANM_VERSION);
+use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
+use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
 
 #------------------------------------------------------------------------------
 
-plan skip_all => "Need cpanm $MINIMUM_CPANM_VERSION or newer"
-    unless has_cpanm($MINIMUM_CPANM_VERSION);
+plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
+    unless has_cpanm($PINTO_MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
@@ -100,8 +101,8 @@ subtest 'Install a dist with an unusual author id' => sub {
     my $remote     = Pinto::Remote->new( root => $t->server_url );
 
     my $stderr = capture_stderr {
-        $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
-        $remote->run( Install => ( targets => ['PkgB'], %cpanm_opts ) );
+        $remote->run( Install => ( targets => ['FOO-22/DistA-1.tar.gz'], %cpanm_opts ) );
+        $remote->run( Install => ( targets => ['FO/DistB-1.tar.gz'], %cpanm_opts ) );
     };
 
     file_exists_ok( $p5_dir->file('PkgA.pm') );

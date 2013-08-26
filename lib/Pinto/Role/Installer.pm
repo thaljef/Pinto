@@ -10,6 +10,7 @@ use Path::Class qw(dir);
 use File::Which qw(which);
 
 use Pinto::Util qw(throw mask_url_passwords);
+use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 
 #-----------------------------------------------------------------------------
 
@@ -57,9 +58,8 @@ sub _build_cpanm_exe {
     my ($cpanm_version) = $cpanm_version_cmd_output =~ m{version ([\d.]+)}
         or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
 
-    my $min_cpanm_version = '1.6916';
-    if ( $cpanm_version < $min_cpanm_version ) {
-        throw "Your cpanm ($cpanm_version) is too old. Must have $min_cpanm_version or newer";
+    if ( $cpanm_version < $PINTO_MINIMUM_CPANM_VERSION ) {
+        throw "Your cpanm ($cpanm_version) is too old.  Must have $PINTO_MINIMUM_CPANM_VERSION or newer";
     }
 
     return $cpanm_exe;

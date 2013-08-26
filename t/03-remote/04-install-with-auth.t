@@ -15,12 +15,13 @@ use Pinto::Remote;
 
 use lib 't/lib';
 use Pinto::Server::Tester;
-use Pinto::Tester::Util qw(make_htpasswd_file has_cpanm $MINIMUM_CPANM_VERSION);
+use Pinto::Tester::Util qw(make_htpasswd_file has_cpanm);
+use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 
-plan skip_all => "Need cpanm $MINIMUM_CPANM_VERSION or newer"
-    unless has_cpanm($MINIMUM_CPANM_VERSION);
+plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
+    unless has_cpanm($PINTO_MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
 # Setup the server
