@@ -4,7 +4,7 @@ package Pinto::Action::Export;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Str Undef);
+use MooseX::Types::Moose qw(Str Bool Undef);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
@@ -46,6 +46,18 @@ has prefix => (
     is      => 'ro',
     isa     => Str | Undef,
     default => undef,
+);
+
+has tar => (
+   is => 'ro',
+   isa => Str | Undef,
+   default => undef,
+);
+
+has notar => (
+   is => 'ro',
+   isa => Bool | Undef,
+   default => undef,
 );
 
 
@@ -116,7 +128,7 @@ sub get_output_channel {
          extension  => '.tar',
       },
       'tar.bz2' => {
-         short_name => 'SystemTar',
+         short_name => 'Tar',
          extension  => '.tar.bz2',
       },
       'tar.gz' => {

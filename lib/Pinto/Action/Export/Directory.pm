@@ -10,7 +10,6 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Path::Class;
-
 use Pinto::Util qw(mkhardlink mksymlink);
 use File::Copy ();
 
