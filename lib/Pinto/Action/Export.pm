@@ -119,6 +119,10 @@ sub get_output_channel {
 
    my $of = $self->output_format();
    my $output_format = {
+      deployable => {
+         short_name => 'Deployable',
+         extension => '.pl',
+      },
       dir => {
          short_name => 'Directory',
          extension  => '',

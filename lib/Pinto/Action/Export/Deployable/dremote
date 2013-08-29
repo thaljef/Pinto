@@ -3212,6 +3212,8 @@ if ($config{filelist}) {
 } ## end if ($config{filelist})
 
 # go into the working directory, creating any intermediate if needed
+$ENV{OLDPWD} = getcwd();
+$ENV{DEPLOY_CALLER} = __FILE__;
 mkpath($config{workdir});
 chdir($config{workdir});
 print {*STDERR} "### Got into working directory '$config{workdir}'\n\n"
@@ -3523,4 +3525,3 @@ sub extract {
 }
 
 __END__
-
