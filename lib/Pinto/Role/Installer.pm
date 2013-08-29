@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Path::Class qw(dir);
 use File::Which qw(which);
 
-use Pinto::Util qw(throw mask_url_passwords);
+use Pinto::Util qw(throw mask_url_passwords find_cpanm_exe);
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 
 #-----------------------------------------------------------------------------
@@ -44,25 +44,7 @@ with qw( Pinto::Role::Plated );
 
 sub _build_cpanm_exe {
     my ($self) = @_;
-
-    return dir( $ENV{PINTO_HOME} )->subdir('sbin')->file('cpanm')->stringify
-        if $ENV{PINTO_HOME};
-
-    my $cpanm_exe = which('cpanm')
-        or throw 'Could not find cpanm in PATH';
-
-    my $cpanm_version_cmd        = "$cpanm_exe --version";
-    my $cpanm_version_cmd_output = qx{$cpanm_version_cmd};    ## no critic qw(Backtick)
-    throw "Could not learn version of cpanm: $!" if $?;
-
-    my ($cpanm_version) = $cpanm_version_cmd_output =~ m{version ([\d.]+)}
-        or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
-
-    if ( $cpanm_version < $PINTO_MINIMUM_CPANM_VERSION ) {
-        throw "Your cpanm ($cpanm_version) is too old.  Must have $PINTO_MINIMUM_CPANM_VERSION or newer";
-    }
-
-    return $cpanm_exe;
+    return find_cpanm_exe();
 }
 
 #-----------------------------------------------------------------------------
