@@ -41,6 +41,8 @@ Readonly our @EXPORT_OK => qw(
     $PINTO_STACK_NAME_REGEX
     $PINTO_PROPERTY_NAME_REGEX
     $PINTO_REVISION_ID_REGEX
+
+    $PINTO_MINIMUM_CPANM_VERSION
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -96,6 +98,10 @@ Readonly our $PINTO_USERNAME_REGEX      => $PINTO_ALPHANUMERIC_REGEX;
 Readonly our $PINTO_STACK_NAME_REGEX    => $PINTO_ALPHANUMERIC_REGEX;
 Readonly our $PINTO_PROPERTY_NAME_REGEX => $PINTO_ALPHANUMERIC_REGEX;
 Readonly our $PINTO_REVISION_ID_REGEX   => $PINTO_HEXADECIMAL_UUID_REGEX;
+
+#------------------------------------------------------------------------------
+
+Readonly our $PINTO_MINIMUM_CPANM_VERSION => '1.6920';
 
 #------------------------------------------------------------------------------
 1;

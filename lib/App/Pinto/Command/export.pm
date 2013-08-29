@@ -19,9 +19,11 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return ( 
+      [ 'notar|no-tar!' => 'do not check for system tar' ],
       [ 'output|o=s' => 'path to the exported directory/archive' ],
       [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip)' ],
       [ 'prefix|p=s' => 'prefix to add to filenames in archive' ],
+      [ 'tar=s' => 'path to system tar to use' ],
     );
 }
 

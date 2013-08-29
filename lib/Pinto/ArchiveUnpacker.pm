@@ -62,7 +62,7 @@ sub unpack {
     throw "Failed to unpack $archive: " . $ae->error if not $ok;
 
     my @children = dir($temp_dir)->children;
-    return @children == 1 ? $children[0] : dir($temp_dir);
+    return @children == 1 && -d $children[0] ? $children[0] : dir($temp_dir);
 }
 
 #-----------------------------------------------------------------------------

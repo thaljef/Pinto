@@ -13,7 +13,7 @@ use Path::Class qw(dir);
 use Archive::Extract;
 
 use Pinto::Types qw(File Dir);
-use Pinto::Util qw(debug throw);
+use Pinto::Util qw(debug throw whine);
 use Pinto::ArchiveUnpacker;
 
 #-----------------------------------------------------------------------------
@@ -87,6 +87,9 @@ sub provides {
     }
 
     @provides = $self->__apply_workarounds if @provides == 0;
+
+    whine sprintf "%s contains no packages and will not be indexed",
+        $archive->basename if not @provides;
 
     return @provides;
 }
