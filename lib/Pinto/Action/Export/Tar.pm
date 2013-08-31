@@ -19,7 +19,6 @@ sub new {
    if (! $exporter->notar()) {
       try {
          $retval = Pinto::Action::Export::SystemTar->new(%params);
-         my $allowed = $retval->supported_compression();
       }
       catch {
          if (defined(my $tar = $exporter->tar())) {

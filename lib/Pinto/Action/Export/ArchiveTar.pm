@@ -69,11 +69,10 @@ sub link {
 
 sub close {
    my ($self) = @_;
-   my @compression;
-   push @compression, COMPRESS_GZIP
-      if $self->exporter()->output_format() =~ /gz$/mxs;
-   push @compression, COMPRESS_BZIP
-      if $self->exporter()->output_format() eq 'tar.bz2';
+   my $c = $self->exporter()->compression();
+   my @compression = $c eq 'gz'  ? (COMPRESS_GZIP)
+                   : $c eq 'bz2' ? (COMPRESS_BZIP)
+                   :               (); # none
    $self->archive()->write($self->exporter()->output(), @compression);
 }
 

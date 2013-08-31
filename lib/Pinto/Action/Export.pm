@@ -42,6 +42,12 @@ has output_format => (
     default => 'dir',
 );
 
+has _extended_output_format => (
+   is => 'ro',
+   lazy => 1,
+   default => \&_init_extended_output_format,
+);
+
 has prefix => (
     is      => 'ro',
     isa     => Str | Undef,
@@ -114,16 +120,29 @@ sub export_stack {
 
 #------------------------------------------------------------------------------
 
-sub get_output_channel {
-   my ($self, $stack) = @_;
+sub _init_extended_output_format {
+   my ($self) = @_;
 
-   my $of = $self->output_format();
-   my $output_format = {
+   my %record_for = (
       deployable => {
          short_name => 'Deployable',
          extension => '.pl',
       },
+      'deployable.gz' => {
+         short_name => 'Deployable',
+         compression => 'gz',
+         extension => '.pl',
+      },
+      'deployable.bz2' => {
+         short_name => 'Deployable',
+         compression => 'bz2',
+         extension => '.pl',
+      },
       dir => {
+         short_name => 'Directory',
+         extension  => '',
+      },
+      directory => {
          short_name => 'Directory',
          extension  => '',
       },
@@ -133,36 +152,65 @@ sub get_output_channel {
       },
       'tar.bz2' => {
          short_name => 'Tar',
+         compression => 'bz2',
          extension  => '.tar.bz2',
+      },
+      tbz => {
+         short_name => 'Tar',
+         compression => 'bz2',
+         extension  => '.tbz',
       },
       'tar.gz' => {
          short_name => 'Tar',
+         compression => 'gz',
          extension  => '.tar.gz',
       },
       tgz => {
          short_name => 'Tar',
+         compression => 'gz',
          extension  => '.tgz',
       },
       zip => {
          short_name => 'Zip',
+         compression => 'zip',
          extension  => '.zip',
       },
-   }->{lc $of}
+   );
+
+   my $of = $self->output_format();
+   my $record = $record_for{lc $of}
       or die "unsupported output format '$of'\n";
+
+   $record->{compression} ||= 'none';
+   $record->{class} = 'Pinto::Action::Export::' . $record->{short_name};
+
+   return $record;
+}
+
+#------------------------------------------------------------------------------
+
+sub compression { return $_[0]->_extended_output_format()->{compression} }
+sub class { return $_[0]->_extended_output_format()->{class} }
+sub extension { return $_[0]->_extended_output_format()->{extension} }
+
+#------------------------------------------------------------------------------
+
+sub get_output_channel {
+   my ($self, $stack) = @_;
 
    my $output = $self->output();
    if (! defined $output) {
       $stack = $self->repo->get_stack($stack);
       my $head = $stack->head();
-      $output = $stack->to_string() . '-' . $head->uuid_prefix() . $output_format->{extension};
+      $output = $stack->to_string() . '-' . $head->uuid_prefix()
+         . $self->extension();
       $self->output($output);
    }
 
    die "output '$output' is already present\n"
       if -e $output;
 
-   my $class_name = 'Pinto::Action::Export::' . $output_format->{short_name};
-   return load_class($class_name)->new(exporter => $self);
+   return load_class($self->class())->new(exporter => $self);
 }
 
 #------------------------------------------------------------------------------

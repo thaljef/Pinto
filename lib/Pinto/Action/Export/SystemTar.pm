@@ -149,6 +149,19 @@ sub _check_tar {
 
 #------------------------------------------------------------------------------
 
+sub BUILD {
+   my ($self) = @_;
+
+   # Health check
+   # just call compression_type, it will die() if the external tar command
+   # does not exist or the required compression type is not supported
+   my $ct = $self->compression_type();
+
+   return $self;
+}
+
+#------------------------------------------------------------------------------
+
 sub insert {    # proxy to archive
    my ($self, $source, $destination) = @_;
    return $self->archive()->insert($source, $destination);
@@ -181,11 +194,10 @@ sub close {
 sub compression_type {
    my ($self) = @_;
    my $ct = {
-      'tar.gz'  => 'z',
-      'tgz'     => 'z',
-      'tar.bz2' => 'j',
-      'tbz'     => 'j',
-     }->{$self->exporter()->output_format()}
+      bz2  => 'j',
+      gz   => 'z',
+      none => '',
+     }->{$self->exporter()->compression()}
      || '';
    die "unsupported compression type\n"
       unless exists $self->supported_compression()->{$ct};
