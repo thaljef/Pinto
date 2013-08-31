@@ -88,16 +88,22 @@ sub close {
    
    my $sdir = file(__FILE__)->parent()->subdir('Deployable');
    copy_fh($sdir->file('dremote'), $out_fh);
-   print_configuration($out_fh, {
+
+   my %configuration = (
       deploy => [ 'premote' ],
       passthrough => 1,
-      # FIXME handle compression
-   });
+   );
+   my $compression = $self->exporter()->compression();
+   $configuration{bzip2} = 1 if $compression eq 'bz2';
+   $configuration{gzip} = 1 if $compression eq 'gz';
+   print_configuration($out_fh, \%configuration);
+
    print_section($out_fh, 'here', { filename => $base });
    print_section($out_fh, 'root', '');
 
    CORE::close $out_fh
       or die "close('$target'): $!\n";
+   chmod 0755 &~ umask(), $target;
 
    return;
 } ## end sub close
@@ -110,13 +116,14 @@ sub insert_premote {
    binmode $out_fh, ':raw';
 
    copy_fh($sdir->file('premote'), $out_fh);
-   print {$out_fh} join "\n", $self->get_distros(), '';
+
+   print {$out_fh} join "\n", @{$self->exporter()->targets()}, '';
 
    CORE::close($out_fh)
       or die "close(): $!\n";
 
    my $archive = $self->archive();
-   chmod 0755, $filename;
+   chmod 0777 &~ umask(), $filename;
    $archive->insert($filename, 'premote');
    unlink $filename;
    return;
@@ -160,24 +167,6 @@ sub print_section {
 sub print_configuration {
    my ($out_fh, $config) = @_;
    print_section($out_fh, 'config.pl', Dumper($config));
-}
-
-sub get_distros {
-   my ($self) = @_;
-   my $exporter = $self->exporter();
-   my $repo = $exporter->repo();
-   my $stack = $repo->get_stack($exporter->stack());
-
-
-   my $where = { revision => $stack->head->id };
-   my $attrs = { prefetch => [qw(revision package distribution)] };
-   my $rs = $repo->db->schema->search_registration( $where, $attrs );
-   my (%flag, @retval);
-   while ( my $reg = $rs->next ) {
-      next if $flag{$reg->distribution()->name()}++;
-      push @retval, $reg->package()->name();
-   }
-   return @retval;
 }
 
 #------------------------------------------------------------------------------

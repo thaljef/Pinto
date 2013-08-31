@@ -19,6 +19,7 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return ( 
+      [ 'all_targets|all-targets|all|a!' => 'deploy all modules (deployable output-format only)' ],
       [ 'notar|no-tar!' => 'do not check for system tar' ],
       [ 'output|o=s' => 'path to the exported directory/archive' ],
       [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip)' ],
@@ -33,6 +34,10 @@ sub opt_spec {
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
+    if (exists($opts->{all_targets}) && @$args) {
+      $self->usage_error('cannot specify --all with command line args');
+    }
+
     if (exists $opts->{output_format}) {
       my $of = lc(delete $opts->{output_format});
       $of = 'dir' if $of eq 'directory';
@@ -43,8 +48,8 @@ sub validate_args {
 }
 
 #------------------------------------------------------------------------------
-
-sub args_from_stdin { return 1 }
+   
+sub args_attribute { return 'external_targets' }
 
 #------------------------------------------------------------------------------
 
@@ -142,6 +147,18 @@ installed by the resulting program.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --all-targets
+
+=item --all
+
+=item -a
+
+Set all modules in the stack to be installed. This option is considered
+only when exporting to a deployable Perl program.
+
+This option conflicts with command arguments: either you specify the list
+of modules to install in the command arguments list, or you set C<--all>.
 
 =item --output=PATH
 

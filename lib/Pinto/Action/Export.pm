@@ -11,7 +11,7 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Constants qw( $PINTO_LOCK_TYPE_EXCLUSIVE );
-use Pinto::Types qw( StackName StackDefault StackObject );
+use Pinto::Types qw( StackName StackDefault StackObject SpecList );
 use Class::Load qw( load_class );
 
 #------------------------------------------------------------------------------
@@ -64,6 +64,43 @@ has notar => (
    is => 'ro',
    isa => Bool | Undef,
    default => undef,
+);
+
+has all_targets => (
+   is => 'ro',
+   isa => Bool | Undef,
+   default => undef,
+);
+
+has external_targets => (
+   is => 'ro',
+   isa => SpecList | Undef,
+   coerce => 1,
+);
+
+has targets => (
+   is => 'ro',
+   lazy => 1,
+   default => sub {
+      my ($self) = @_;
+      my $external = $self->external_targets();
+      return $external if @$external;
+
+      return [] unless $self->all_targets();
+
+      my $repo = $self->repo();
+      my $stack = $repo->get_stack($self->stack());
+
+      my $where = { revision => $stack->head->id };
+      my $attrs = { prefetch => [qw(revision package distribution)] };
+      my $rs = $repo->db->schema->search_registration( $where, $attrs );
+      my (%flag, @retval);
+      while ( my $reg = $rs->next ) {
+         next if $flag{$reg->distribution()->name()}++;
+         push @retval, $reg->package()->name();
+      }
+      return \@retval;
+   },
 );
 
 
