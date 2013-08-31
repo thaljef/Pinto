@@ -48,13 +48,28 @@
 #
 ##############################################################################
 
-set -ue
+set -xue
 
 #-----------------------------------------------------------------------------
 # You can set these variables beforehand to override defaults
 
 PINTO_REPO_URL=${PINTO_REPO_URL:="https://repo.stratopan.com/thaljef/OpenSource/pinto-release"}
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
+
+#-----------------------------------------------------------------------------
+# Decide which agent to use.  Set PINTO_INSTALLER_AGENT to override
+
+if  [ -z ${PINTO_INSTALLER_AGENT:-} ]; then
+
+    if type curl > /dev/null 2>&1; then
+        PINTO_INSTALLER_AGENT='curl'
+    elif type wget > /dev/null 2>&1; then 
+        PINTO_INSTALLER_AGENT='wget'
+    else
+        echo "Must have curl or wget to install pinto"
+        exit 1
+    fi
+fi
 
 #-----------------------------------------------------------------------------
 # Bootstrap cpanm
@@ -65,12 +80,14 @@ PINTO_CPANM_EXE="$PINTO_SBIN/cpanm"
 
 mkdir -p "$PINTO_SBIN"
 
-if   type curl > /dev/null 2>&1; then
+if   [ $PINTO_INSTALLER_AGENT = 'curl' ]; then
 	curl --silent --show-error --location $CPANM_URL > "$PINTO_CPANM_EXE"
-elif type wget > /dev/null 2>&1; then 
+elif [ $PINTO_INSTALLER_AGENT = 'wget' ]; then 
 	wget --no-verbose --output-document - $CPANM_URL > "$PINTO_CPANM_EXE"
 else
-	echo "Must have curl or wget to install pinto"
+	echo "Invalid PINTO_INSTALLER_AGENT ($PINTO_INSTALLER_AGENT)."
+        echo "If set, PINTO_INSTALLER_AGENT must be 'curl' or 'wget'".
+        exit 1;
 fi
 
 chmod 755 "$PINTO_CPANM_EXE"
