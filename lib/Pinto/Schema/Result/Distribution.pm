@@ -226,12 +226,12 @@ sub register {
 
     $stack->assert_is_open;
     $stack->assert_not_locked;
-    
+
     my @package_names = map { $_->name } $self->packages;
     my $where = {package_name => {in => \@package_names}};
     my @registrations = $stack->head->registrations($where, {prefetch => 'package'});
     my %incumbents = map { $_->package_name => $_ } @registrations; 
-    
+
     for my $pkg ($self->packages) {
 
       my $incumbent = $incumbents{$pkg->name};
@@ -259,7 +259,6 @@ sub register {
 
       whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
         if $incumbent_pkg > $pkg;
- 
 
 
       if ( $stack->prohibits_partial_distributions ) {
@@ -275,7 +274,6 @@ sub register {
 
       $pkg->register(stack => $stack, pin => $pin);
       $did_register++;
->>>>>>> parent of 5475c25... Better variable names.
     }
 
     $stack->mark_as_changed if $did_register;
