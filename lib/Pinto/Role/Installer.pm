@@ -7,7 +7,6 @@ use MooseX::Types::Moose qw(Str HashRef Maybe);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Path::Class qw(dir);
-use File::Which qw(which);
 
 use Pinto::Util qw(throw mask_url_passwords find_cpanm_exe);
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);

@@ -15,6 +15,7 @@ use Digest::SHA;
 use Scalar::Util;
 use UUID::Tiny;
 use Readonly;
+use File::Which qw(which);
 
 use Pinto::Globals;
 use Pinto::Constants qw(:all);
