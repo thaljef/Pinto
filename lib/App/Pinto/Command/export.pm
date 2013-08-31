@@ -23,6 +23,7 @@ sub opt_spec {
       [ 'output|o=s' => 'path to the exported directory/archive' ],
       [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip)' ],
       [ 'prefix|p=s' => 'prefix to add to filenames in archive' ],
+      [ 'stack|s=s' => 'stack/release to export' ],
       [ 'tar=s' => 'path to system tar to use' ],
     );
 }
@@ -31,11 +32,6 @@ sub opt_spec {
 
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
-
-    # one optional STACK, defaults to the default stack
-    $self->usage_error('Must specify at most one stack')
-        if @{$args} > 1;
-    $opts->{stack} = $args->[0] if @{$args};
 
     if (exists $opts->{output_format}) {
       my $of = lc(delete $opts->{output_format});
