@@ -19,7 +19,9 @@ This tutorial walks you through some of the typical use cases for a
 L<Pinto> repository.  Along the way, it demonstrates most of the
 L<pinto> commands.  You are encouraged to try the commands as you read
 along.  If you would prefer to get a more condensed summary of
-features and commands, please read the L<Pinto::Manual::QuickStart>
+features and commands, please read the L<Pinto::Manual::QuickStart>.
+For detailed instructions on installing the software read
+L<Pinto::Manual::Installing>.
 
 =head1 BASIC OPERATIONS
 
