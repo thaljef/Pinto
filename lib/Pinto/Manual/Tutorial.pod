@@ -429,4 +429,14 @@ tutorial, and there are some commands that were not mentioned here at
 all.  So you are encouraged to explore the manual pages for each
 command and learn more.
 
+=head1 SEE ALSO
+
+L<Pinto::Manual::QuickStart>
+
+L<Pinto::Manual::Installing>
+
+L<Pinto> (the library)
+
+L<pinto> (the command)
+
 =cut
