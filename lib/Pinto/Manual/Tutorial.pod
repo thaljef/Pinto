@@ -19,7 +19,9 @@ This tutorial walks you through some of the typical use cases for a
 L<Pinto> repository.  Along the way, it demonstrates most of the
 L<pinto> commands.  You are encouraged to try the commands as you read
 along.  If you would prefer to get a more condensed summary of
-features and commands, please read the L<Pinto::Manual::QuickStart>
+features and commands, please read the L<Pinto::Manual::QuickStart>.
+For detailed instructions on installing the software read
+L<Pinto::Manual::Installing>.
 
 =head1 BASIC OPERATIONS
 
@@ -426,5 +428,15 @@ Each command has several options that were not discussed in this
 tutorial, and there are some commands that were not mentioned here at
 all.  So you are encouraged to explore the manual pages for each
 command and learn more.
+
+=head1 SEE ALSO
+
+L<Pinto::Manual::QuickStart>
+
+L<Pinto::Manual::Installing>
+
+L<Pinto> (the library)
+
+L<pinto> (the command)
 
 =cut
