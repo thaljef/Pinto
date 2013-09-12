@@ -69,6 +69,6 @@ This command shows the complete user manual for a pinto COMMAND.
 
 The argument to this command is the name of the command for which you would
 like to see the manual.  You can also use the L<help|App::Pinto::Command::help> 
-command to get a breif summary of the command.
+command to get a brief summary of the command.
 
 =cut
