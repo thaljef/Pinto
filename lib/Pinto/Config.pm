@@ -182,7 +182,7 @@ sub sources_list {
     my ($self) = @_;
 
     # Some folks tend to put quotes around multi-value configuration
-    # paramaters, even though they shouldn't.  Be kind and remove them.
+    # parameters, even though they shouldn't.  Be kind and remove them.
     my $sources = $self->sources;
     $sources =~ s/ ['"] //gx;
 
