@@ -257,7 +257,7 @@ The output is similar to the diff(1) command. Records starting with a
 
 With URI upgraded on the C<uri_upgrade> stack, you can now try
 building and testing our application.  All you have to do is run the
-L<install|App::Pinto::Command::install> command and point to to the
+L<install|App::Pinto::Command::install> command and point to the
 right stack:
 
   $> pinto -r ~/repo install --stack uri_upgrade My::App

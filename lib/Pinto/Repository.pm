@@ -236,7 +236,7 @@ spec.
 =method get_package( name => $pkg_name )
 
 Returns a L<Pinto:Schema::Result::Package> representing the latest
-version of the package in the repostiory with the given C<$pkg_name>.  
+version of the package in the repository with the given C<$pkg_name>.  
 If there is no such package with that name in the repository, 
 returns nothing.
 
@@ -413,7 +413,7 @@ sub ups_distribution {
 Adds the distribution archive located on the local filesystem at
 C<$path> to the repository in the author directory for the author with
 C<$id>.  The packages provided by the distribution will be indexed,
-and the prerequisites will be recorded.  If the the C<source> is
+and the prerequisites will be recorded.  If the C<source> is
 specified, it must be the URL to the root of the repository where the
 distribution came from.  Otherwise, the C<source> defaults to
 C<LOCAL>.  Returns a L<Pinto::Schema::Result::Distribution> object
