@@ -40,7 +40,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT deiete [OPTIONS] TARGET ...
+  pinto --root=REPOSITORY_ROOT delete [OPTIONS] TARGET ...
 
 =head1 DESCRIPTION
 
