@@ -128,7 +128,7 @@ sub recurse {
         my $pkg_vers = $prereq->package_version;
 
         # version sees undef and 0 as equal, so must also check definedness
-        # when deciding if we've seen this version (or newer) of the packge
+        # when deciding if we've seen this version (or newer) of the package
         return if defined( $latest{$pkg_name} ) && $pkg_vers <= $latest{$pkg_name};
 
         # I think the only time that we won't see a $dist here is when

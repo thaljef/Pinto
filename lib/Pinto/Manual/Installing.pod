@@ -34,7 +34,7 @@ which may conflict with or complicate your code.
 Pinto can also serve as the backend supporting a daemonized Starman server
 exposed to the wilds of the internet.  Doing so opens the door to many 
 additional security concerns.  We suggest below some practices we hope
-will serve to minize the risks of doing so.
+will serve to minimize the risks of doing so.
 
 =head1 INSTALLING AS AN APPLICATION
 

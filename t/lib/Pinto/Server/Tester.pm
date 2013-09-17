@@ -63,6 +63,7 @@ has server_host => (
     isa      => Str,
     init_arg => undef,
     default  => 'localhost',
+    lazy     => 1,
 );
 
 =attr server_pid

@@ -13,7 +13,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 #------------------------------------------------------------------------------
 # TODO: Rethink this API.  Do we need start?  Can we just use queue?  What
-# about filtering, or walking forward?  Sort chronolobical or topological?
+# about filtering, or walking forward?  Sort chronological or topological?
 
 has start => (
     is       => 'ro',

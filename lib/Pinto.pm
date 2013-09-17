@@ -174,7 +174,7 @@ one stack for development, one for production, one for feature-xyz,
 and so on.  You can also branch and merge stacks to experiment with
 new dependencies or upgrades.
 
-=item * Pinto helps manage incompatibilies between dependencies
+=item * Pinto helps manage incompatibles between dependencies
 
 Sometimes, you discover that a new version of a dependency is
 incompatible with your application.  Pinto allows you to "pin" a
@@ -242,7 +242,7 @@ the culprit, but Pinto expects you to be accountable for your actions.
 
 PAUSE requires authors to authenticate themselves before they can
 upload or remove modules.  Pinto does not require authentication, so
-any user with sufficient file permission can potentialy change the
+any user with sufficient file permission can potentially change the
 repository.  However L<pintod> does support HTTP authentication, which
 gives you some control over access to a remote repository.
 
