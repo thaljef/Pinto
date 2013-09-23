@@ -240,7 +240,7 @@ pulled onto the C<uri_upgrade> stack:
 Now lets compare the C<master> and C<uri_upgrade> stacks using the
 L<diff|App::Pinto::Command::diff> command:
 
-  $> pinto -r ~/repos/ diff master uri_upgrade
+  $> pinto -r ~/repo diff master uri_upgrade
 
   +rf URI                                              1.62 GAAS/URI-1.62.tar.gz
   +rf URI::Escape                                      3.31 GAAS/URI-1.62.tar.gz
