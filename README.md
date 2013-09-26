@@ -2,6 +2,8 @@
 
 Pinto - Curate a repository of Perl modules
 
+[![build status](https://secure.travis-ci.org/thaljef/Pinto.png)](https://travis-ci.org/thaljef/Pinto)
+
 # VERSION
 
 version 0.090
