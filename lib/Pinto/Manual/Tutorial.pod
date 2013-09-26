@@ -32,7 +32,7 @@ L<init|App::Pinto::Command::init> command like this:
 
   $> pinto -r ~/repo init
 
-This will create a new repository in the F<~/repos> directory.  If
+This will create a new repository in the F<~/repo> directory.  If
 that directory does not exist, it will be created for you.  If it
 already does exist, then it must be empty.
 
@@ -240,7 +240,7 @@ pulled onto the C<uri_upgrade> stack:
 Now lets compare the C<master> and C<uri_upgrade> stacks using the
 L<diff|App::Pinto::Command::diff> command:
 
-  $> pinto -r ~/repos/ diff master uri_upgrade
+  $> pinto -r ~/repo diff master uri_upgrade
 
   +rf URI                                              1.62 GAAS/URI-1.62.tar.gz
   +rf URI::Escape                                      3.31 GAAS/URI-1.62.tar.gz
