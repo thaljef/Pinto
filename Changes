@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [DOCUMENTATION]
+
+      - Numerous spelling corrections and documentation improvements.
+      Big thanks to David Steinbrunner and Boris Däppen.
+
 0.090     2013-08-23 14:41:34 America/Los_Angeles
 
       [CODE CHANGES]
