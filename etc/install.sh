@@ -51,7 +51,7 @@
 # PINTO_REPO_URL
 #
 #   Sets the URL of the repository that provides pinto's dependencies
-#   Defaults to https://repo.stratopan.com/thaljef/OpenSource/pinto-release
+#   Defaults to https://stratopan.com/thaljef/OpenSource/pinto-release
 #
 # PINTO_INSTALLER_AGENT
 #
