@@ -50,11 +50,11 @@ sub execute {
 
     my $global_opts = $self->app->global_options;
 
-    $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT}
-        || die "Must specify a repository root directory\n";
+    die "Must specify a repository root directory\n"
+        unless $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT};
 
-    is_remote_repo( $global_opts->{root} )
-        && die "Cannot create remote repositories\n";
+    die "Cannot create remote repositories\n"
+        if is_remote_repo( $global_opts->{root} );
 
     # Combine repeatable "source" options into one space-delimited "sources" option.
     # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
