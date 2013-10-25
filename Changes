@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.091     2013-10-25 12:09:52 America/Los_Angeles
+
       [BUG FIXES]
 
       - pinto now accepts remote repository addresses that use SSL
