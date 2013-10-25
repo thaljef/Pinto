@@ -7,6 +7,7 @@ use warnings;
 
 use Class::Load;
 use App::Cmd::Setup -app;
+use Pinto::Util qw(is_remote_repo);
 
 #------------------------------------------------------------------------------
 
@@ -51,7 +52,7 @@ sub pinto {
 
 sub pinto_class_for {
     my ( $self, $root ) = @_;
-    return $root =~ m{^https?://}x ? 'Pinto::Remote' : 'Pinto';
+    return is_remote_repo($root) ? 'Pinto::Remote' : 'Pinto';
 }
 
 #------------------------------------------------------------------------------

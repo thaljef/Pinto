@@ -39,6 +39,7 @@ Readonly our @EXPORT_OK => qw(
     is_blank
     is_not_blank
     is_interactive
+    is_remote_repo
     is_system_prop
     isa_perl
     itis
@@ -661,6 +662,21 @@ sub mask_url_passwords {
     $url =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
 
     return $url;
+}
+
+#-------------------------------------------------------------------------------
+
+=func is_remote_repo {
+
+Returns true if the argument looks like a URL to a remote repository
+
+=cut
+
+sub is_remote_repo {
+    my ($url) = @_;
+
+    return if not $url;
+    return $url =~ m{^https?://}x;
 }
 
 #-------------------------------------------------------------------------------
