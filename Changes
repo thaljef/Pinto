@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - pinto now accepts remote repository addresses that use SSL
+      (i.e. those starting with "https://").  This fixes #123.
+
       [DOCUMENTATION]
 
       - Numerous spelling corrections and documentation improvements.

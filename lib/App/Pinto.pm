@@ -51,7 +51,7 @@ sub pinto {
 
 sub pinto_class_for {
     my ( $self, $root ) = @_;
-    return $root =~ m{^http://}x ? 'Pinto::Remote' : 'Pinto';
+    return $root =~ m{^https?://}x ? 'Pinto::Remote' : 'Pinto';
 }
 
 #------------------------------------------------------------------------------
