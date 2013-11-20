@@ -34,7 +34,8 @@ throws_ok { $t->author('F6') } qr/must match/,      'First 2 chars of author mus
 throws_ok { $t->author(undef) } qr/must match/,     'Author must not be undef';
 throws_ok { $t->author('') } qr/must match/,        'Author must have length';
 
-$t->stack('MyStack');
+lives_ok { $t->stack('MyStack') } q{MyStack is a valid stack name};
+lives_ok { $t->stack('My_Stack-1.2') } q{My_Stack-1.2 is a valid stack name};
 throws_ok { $t->stack('foo bar!') } qr/alphanumeric/, 'StackName must be alphanumeric';
 throws_ok { $t->stack(undef) } qr/alphanumeric/,      'StackName not be undef';
 throws_ok { $t->stack('') } qr/alphanumeric/,         'StackName must have length';
