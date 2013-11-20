@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      - Periods are now allowed in stack names, user names, and
+      property names.  Note that author ids are still limited to
+      uppercase letters and numbers, to be consistent with PAUSE.
+
 0.091     2013-10-25 12:09:52 America/Los_Angeles
 
       [BUG FIXES]
