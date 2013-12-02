@@ -2,8 +2,6 @@
 
 Pinto - Curate a repository of Perl modules
 
-[![build status](https://secure.travis-ci.org/thaljef/Pinto.png)](https://travis-ci.org/thaljef/Pinto)
-
 # VERSION
 
 version 0.092
@@ -193,7 +191,7 @@ from your repository :)
 # CONTRIBUTORS
 
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
-- Boris Däppen <bdaeppen.perl@gmail.com>
+- Boris DÃ¤ppen <bdaeppen.perl@gmail.com>
 - Cory G Watson <gphat@onemogin.com>
 - David Steinbrunner <dsteinbrunner@pobox.com>
 - Glenn Fowler <cebjyre@cpan.org>
