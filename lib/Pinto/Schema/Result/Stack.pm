@@ -311,7 +311,6 @@ sub rename_filesystem {
     throw "Directory $orig_dir does not exist" 
         if not -e $orig_dir;
 
-    $DB::single = 1;
     my $new_dir = $self->repo->config->stacks_dir->subdir($new_name);
     throw "Directory $new_dir already exists" 
         if -e $new_dir && (lc $new_dir ne lc $orig_dir);
