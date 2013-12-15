@@ -25,7 +25,7 @@ sub opt_spec {
         [ 'message|m=s'                       => 'Message to describe the change' ],
         [ 'no-fail'                           => 'Do not fail when there is an error' ],
         [ 'no-index|x=s@'                     => 'Do not index matching packages' ],
-        [ 'no-recurse|n'                      => 'Do not recursively pull prereqs' ],
+        [ 'recurse!'                          => 'Recursively pull prereqs (negatable)' ],
         [ 'pin'                               => 'Pin packages to the stack' ],
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
@@ -150,12 +150,14 @@ index exactly as PAUSE would.  When using a PATTERN, take care to use a
 conservative one so you don't exclude the wrong packages.  Pinto will throw an
 exception if you exclude every package in the distribution.
 
-=item --no-recurse
+=item --recurse
 
-=item -n
+=item --norecurse
 
-Do not recursively pull distributions required to satisfy the
-prerequisites of the added archives.
+Recursively pull any distributions required to satisfy prerequisites
+for the targets.  The default value for this option can be configured
+in the F<pinto.ini> configuration file for the repository (it is usually
+set to 1).  To disable recursion, use C<--norecurse>.
 
 =item --pin
 

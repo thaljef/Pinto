@@ -20,7 +20,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
     # Non-recursive pull
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
-    $local->run_ok( 'Pull', { targets => 'Baz~1.2', no_recurse => 1 } );
+    $local->run_ok( 'Pull', { targets => 'Baz~1.2', recurse => 0 } );
     $local->registration_ok('JOHN/Baz-1.2/Baz~1.2');
     $local->registration_not_ok('PAUL/Nuts-2.3/Nuts~2.3');
 }

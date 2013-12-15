@@ -23,7 +23,7 @@ sub opt_spec {
         [ 'dry-run'                           => 'Do not commit any changes' ],
         [ 'message|m=s'                       => 'Message to describe the change' ],
         [ 'no-fail'                           => 'Do not fail when there is an error' ],
-        [ 'no-recurse|n'                      => 'Do not recursively pull prereqs' ],
+        [ 'recurse!'                          => 'Recursively pull prereqs (negatable)' ],
         [ 'pin'                               => 'Pin the packages to the stack' ],
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
@@ -114,12 +114,14 @@ a repository and see which ones are problematic.  Once you've fixed
 the broken ones, you can throw the whole list at the repository
 again.
 
-=item --no-recurse
+=item --recurse
 
-=item -n
+=item --norecurse
 
-Do not recursively pull any distributions required to satisfy
-prerequisites for the targets.
+Recursively pull any distributions required to satisfy prerequisites
+for the targets.  The default value for this option can be configured
+in the F<pinto.ini> configuration file for the repository (it is usually
+set to 1).  To disable recursion, use C<--norecurse>.
 
 =item --message=TEXT
 

@@ -1,5 +1,23 @@
 {{$NEXT}}
 
+      [INCOMPATIBLE CHANGES]
+
+      - The --no-recurse option on the add and pull commands has been
+      replaced with a --recurse option that can be negated by saying
+      --norecurse.  This allows you to turn recursion off OR on,
+      depending on the default setting for the repository (see more
+      about this under ENHANCEMENTS).
+
+      [ENHANCEMENTS]
+
+      - The pinto.ini configuration file may now contain a "recurse"
+      parameter that determines the default recursion behavior for
+      the "pull" and "add" commands.  Setting it to 1 means those
+      commands are recursive by default.  Setting it to 0 means
+      those commands are not recursive by default.  Either way,
+      each command can override that parameter using either the
+      --recurse or --norecurse switches.
+
 0.092     2013-11-20 11:07:50 America/Los_Angeles
 
       [ENHANCEMENTS]
