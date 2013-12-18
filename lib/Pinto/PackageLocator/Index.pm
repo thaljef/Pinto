@@ -3,8 +3,7 @@
 package Pinto::PackageLocator::Index;
 
 use Moose;
-use MooseX::Types::URI qw(Uri);
-use MooseX::Types::Path::Class;
+use MooseX::Types::Moose qw(Bool HashRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use Carp;
@@ -14,6 +13,8 @@ use IO::Zlib;
 use LWP::UserAgent;
 use URI::Escape;
 use URI;
+
+use Pinto::Types qw(Uri Dir File);
 
 #------------------------------------------------------------------------
 
@@ -66,7 +67,7 @@ be deleted when your application terminates.
 
 has cache_dir => (
    is         => 'ro',
-   isa        => 'Path::Class::Dir',
+   isa        => Dir,
    default    => sub { Path::Class::Dir->new( File::Temp::tempdir(CLEANUP => 1) ) },
    coerce     => 1,
 );
@@ -83,7 +84,7 @@ you specified the C<cache_dir> attribute.  The default is false.
 
 has force => (
    is         => 'ro',
-   isa        => 'Bool',
+   isa        => Bool,
    default    => 0,
 );
 
@@ -98,7 +99,7 @@ L<Path::Class::File>).
 
 has index_file => (
     is         => 'ro',
-    isa        => 'Path::Class::File',
+    isa        => File,
     init_arg   => undef,
     lazy_build => 1,
 );
@@ -121,7 +122,7 @@ values are data structures that look like this:
 
 has distributions => (
    is         => 'ro',
-   isa        => 'HashRef',
+   isa        => HashRef,
    init_arg   => undef,
    default    => sub { $_[0]->_data->{distributions} },
    lazy       => 1,
@@ -147,7 +148,7 @@ like this:
 
 has packages => (
    is         => 'ro',
-   isa        => 'HashRef',
+   isa        => HashRef,
    init_arg   => undef,
    default    => sub { $_[0]->_data->{packages} },
    lazy       => 1,
@@ -159,7 +160,7 @@ has packages => (
 
 has _data => (
     is         => 'ro',
-    isa        => 'HashRef',
+    isa        => HashRef,
     init_arg   => undef,
     lazy_build => 1,
 );
@@ -174,7 +175,7 @@ sub _build_index_file {
     $repos_url = URI->new($repos_url);  # Reconstitute as URI object
 
     my $cache_dir = $self->cache_dir->subdir( URI::Escape::uri_escape($repos_url) );
-    $self->__mkpath($cache_dir);
+    $cache_dir->mkpath;
 
     my $destination = $cache_dir->file('02packages.details.txt.gz');
     $destination->remove() if -e $destination and $self->force();
@@ -238,16 +239,6 @@ sub __handle_ua_response {
     return 1 if $response->is_success();   # Ok
     return 1 if $response->code() == 304;  # Not modified
     croak sprintf 'Request to %s failed: %s', $source, $response->status_line();
-}
-
-#------------------------------------------------------------------------------
-
-sub __mkpath {
-    my ($self, $dir) = @_;
-
-    return 1 if -e $dir;
-    $dir = dir($dir) unless eval { $dir->isa('Path::Class::Dir') };
-    return $dir->mkpath() or croak "Failed to make directory $dir: $!";
 }
 
 #------------------------------------------------------------------------

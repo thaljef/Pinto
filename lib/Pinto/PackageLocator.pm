@@ -3,17 +3,18 @@
 package Pinto::PackageLocator;
 
 use Moose;
+use MooseX::Types::Moose qw(ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
-use MooseX::Types::Path::Class;
 
 use Carp;
 use File::Temp;
 use Path::Class;
 use LWP::UserAgent;
-use CPAN::DistnameInfo;
 use URI;
 
+use Pinto::Types qw(Uri Dir);
 use Pinto::PackageLocator::Index;
+use Pinto::PackageSpec;
 
 use version;
 
@@ -36,7 +37,7 @@ them here.  This defaults to http://cpan.perl.org.
 
 has repository_urls => (
     is         => 'ro',
-    isa        => 'ArrayRef[URI]',
+    isa        => ArrayRef[Uri],
     auto_deref => 1,
     default    => sub { [URI->new('http://cpan.perl.org')] },
 );
@@ -78,7 +79,7 @@ be deleted when your application terminates.
 
 has cache_dir => (
    is         => 'ro',
-   isa        => 'Path::Class::Dir',
+   isa        => Dir,
    default    => sub { Path::Class::Dir->new( File::Temp::tempdir(CLEANUP => 1) ) },
    coerce     => 1,
 );
@@ -203,6 +204,8 @@ sub _validate_locate_args {
 
 sub _locate_package {
     my ($self, $spec, $latest) = @_;
+
+    $spec = Pinto::PackageSpec->new($spec) if not ref $spec;
 
     my ($latest_found_package, $found_in_index);
     for my $index ( $self->indexes() ) {
