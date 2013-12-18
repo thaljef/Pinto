@@ -5,6 +5,8 @@ package Pinto::Role::FileFetcher;
 use Moose::Role;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
+use URI;
+use URI::file;
 use File::Temp;
 use Path::Class;
 use LWP::UserAgent;

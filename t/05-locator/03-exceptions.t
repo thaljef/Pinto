@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More (tests => 6);
+use Test::More;
 use Test::Exception;
 
 use Pinto::PackageLocator;
@@ -25,7 +25,7 @@ throws_ok { $class->new()->locate(distribution => 'Foo.tar.gz', latest => 1) }
     qr/Cannot specify latest and distribution together/;
 
 throws_ok { $class->new()->locate(spec => 'Foo~2.3-RC') }
-    qr/Invalid version/;
+    qr/Invalid prerequisite spec/;
 
 #------------------------------------------------------------------------------
 # This next one seems to throw different exceptions, depending on the
@@ -35,3 +35,7 @@ throws_ok { $class->new()->locate(spec => 'Foo~2.3-RC') }
 
 my $bogus_urls = [ URI->new('http://__bogus__') ];
 dies_ok { $class->new(repository_urls => $bogus_urls)->locate(spec => 'Foo%1.23a') };
+
+#------------------------------------------------------------------------------
+
+done_testing;

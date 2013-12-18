@@ -6,13 +6,14 @@ use Moose;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str);
 
+use Try::Tiny;
 use Module::CoreList;
 use CPAN::Meta::Requirements;
 
 use Pinto::Util qw(throw trim_text);
 
 use version;
-use overload ( '""' => 'to_string', '>=' => 'gte');
+use overload ( '""' => 'to_string');
 
 #------------------------------------------------------------------------------
 
@@ -32,6 +33,13 @@ has version => (
     default => '0',
 );
 
+has _req => (
+    is       => 'ro',
+    isa      => 'CPAN::Meta::Requirements',
+    writer   => '_set_req',
+    init_arg => undef,
+);
+
 #------------------------------------------------------------------------------
 
 around BUILDARGS => sub {
@@ -39,7 +47,6 @@ around BUILDARGS => sub {
     my $class = shift;
 
     my @args = @_;
-    my ($name, $version);
 
     if ( @args == 1 and not ref $args[0] ) {
         my ( $name, $version ) = $_[0] =~ m{^ ([A-Z0-9_:]+) (?:~)? (.*)}ix;
@@ -49,6 +56,25 @@ around BUILDARGS => sub {
 
     return $class->$orig(@args);
 };
+
+#------------------------------------------------------------------------------
+
+sub BUILD {
+    my $self = shift;
+
+    # We want to construct the C::M::Requirements object right away to ensure
+    # $self->version is a valid string.  But if we do this in a builder, it 
+    # has to be lazy because it depends on other attributes. So instead, we
+    # construct it during the BUILD and use a private writer to set it.
+
+    my $args = {$self->name => $self->version};
+
+    my $req = try   { CPAN::Meta::Requirements->from_string_hash( $args) }
+              catch { throw "Invalid prerequisite spec ($self): $_"      };
+
+    $self->_set_req($req);
+    return $self;
+}
 
 #------------------------------------------------------------------------------
 
@@ -110,14 +136,7 @@ Returns true if this prerequisite is satisfied by version C<$version> of the pac
 sub is_satisfied_by {
     my ($self, $version) = @_;
 
-    my $req = eval {
-        my $args = {$self->name => $self->version};
-        CPAN::Meta::Requirements->from_string_hash($args);
-    };
-
-    throw "Invalid prerequisite spec ($self): $@" if $@;
-    return 1 if $req->accepts_module($self->name => $version);
-    return 0;
+    return $self->_req->accepts_module($self->name => $version) ? 1 : 0;
 }
 
 #-------------------------------------------------------------------------------
