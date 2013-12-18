@@ -48,7 +48,7 @@ sub execute {
 sub _pin {
     my ( $self, $target, $stack ) = @_;
 
-    my $dist = $stack->get_distribution( spec => $target );
+    my $dist = $stack->get_distribution( target => $target );
 
     throw "$target is not registered on stack $stack" if not defined $dist;
 

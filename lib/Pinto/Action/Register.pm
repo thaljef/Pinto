@@ -55,7 +55,7 @@ sub execute {
 sub _register {
     my ( $self, $spec, $stack ) = @_;
 
-    my $dist = $self->repo->get_distribution( spec => $spec );
+    my $dist = $self->repo->get_distribution( target => $spec );
 
     throw "Distribution $spec is not in the repository" if not defined $dist;
 

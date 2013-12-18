@@ -476,12 +476,12 @@ sub package_count {
 sub prerequisite_specs {
     my ($self) = @_;
 
-    return map { $_->as_spec } $self->prerequisites;
+    return map { $_->as_target } $self->prerequisites;
 }
 
 #------------------------------------------------------------------------------
 
-sub as_spec {
+sub as_target {
     my ($self) = @_;
 
     return Pinto::Target::Distribution->new( path => $self->path );

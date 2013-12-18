@@ -82,7 +82,7 @@ has store => (
 
 =attr locator
 
-=method locate( spec => );
+=method locate( target => );
 
 =cut
 
@@ -222,13 +222,13 @@ sub get_revision {
 
 #-------------------------------------------------------------------------------
 
-=method get_package( spec => $pkg_spec )
+=method get_package( target => $pkg_spec )
 
 Returns a L<Pinto:Schema::Result::Package> representing the latest
 version of the package in the repository with the same name as
-the package spec B<and the same or higher version> as the package 
+the package target B<and the same or higher version> as the package 
 spec.  See L<Pinto::Target::Package> for the definition of a package
-spec.
+target.
 
 =method get_package( name => $pkg_name )
 
@@ -249,20 +249,20 @@ returns nothing.
 sub get_package {
     my ( $self, %args ) = @_;
 
-    my $spec      = $args{spec};
+    my $target    = $args{target};
     my $pkg_name  = $args{name};
     my $dist_path = $args{path};
 
-    # Retrieve latest version of package that meets the spec
-    if ($spec) {
-        my $pkg_name = $spec->name;
-        my $version  = $spec->version;
+    # Retrieve latest version of package that meets the target
+    if ($target) {
+        my $pkg_name = $target->name;
+        my $version  = $target->version;
 
         my @pkgs = $self->db->schema->search_package( { name => $pkg_name } )->with_distribution;
         return if not @pkgs;
 
         my $latest = ( sort { $a <=> $b } @pkgs )[-1];
-        return $spec->is_satisfied_by($latest->version) ? $latest : ();
+        return $target->is_satisfied_by($latest->version) ? $latest : ();
     }
 
     # Retrieve package from a specific distribution
@@ -296,17 +296,15 @@ sub get_package {
 
 #-------------------------------------------------------------------------------
 
-=method get_distribution( spec => $pkg_spec )
+=method get_distribution( target => $target )
 
 Given a L<Pinto::Target::Package>, returns the L<Pinto::Schema::Result::Distribution>
 that contains the B<latest version of the package> in this repository with the same 
-name as the spec B<and the same or higher version as the spec>.  Returns nothing 
+name as the target B<and the same or higher version as the target>.  Returns nothing 
 if no such distribution is found.
 
-=method get_distribution( spec => $dist_spec )
-
 Given a L<Pinto::Target::Distribution>, returns the L<Pinto::Schema::Result::Distribution>
-from this repository with the same author id and archive attributes as the spec.  
+from this repository with the same author id and archive attributes as the target.  
 Returns nothing if no such distribution is found.
 
 =method get_distribution( path => $dist_path )
@@ -329,13 +327,13 @@ sub get_distribution {
 
     my $rs = $self->db->schema->distribution_rs->with_packages;
 
-    # Retrieve a distribution by DistSpec or PackageSpec
-    if ( my $spec = $args{spec} ) {
-        if ( itis( $spec, 'Pinto::Target::Distribution' ) ) {
-            return $rs->find_by_author_archive( $spec->author, $spec->archive );
+    # Retrieve a distribution by target 
+    if ( my $target = $args{target} ) {
+        if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
+            return $rs->find_by_author_archive( $target->author, $target->archive );
         }
-        elsif ( itis( $spec, 'Pinto::Target::Package' ) ) {
-            return unless my $pkg = $self->get_package( spec => $spec );
+        elsif ( itis( $target, 'Pinto::Target::Package' ) ) {
+            return unless my $pkg = $self->get_package( target => $target );
             return $pkg->distribution;
         }
 
@@ -359,18 +357,16 @@ sub get_distribution {
 
 #-------------------------------------------------------------------------------
 
-=method ups_distribution( spec => $pkg_spec )
+=method ups_distribution( target => target )
 
 Given a L<Pinto::Target::Package>, locates the distribution that contains the latest
 version of the package across all upstream repositories with the same name as 
-the spec, and the same or higher version as the spec.  If such distribution is
+the target, and the same or higher version as the target.  If such distribution is
 found, it is fetched and added to this repository.  If it is not found,
 then an exception is thrown.
 
-=method ups_distribution( spec => $dist_spec )
-
 Given a L<Pinto::Target::Distribution>, locates the first distribution in any 
-upstream repository with the same author and archive as the spec.  If such 
+upstream repository with the same author and archive as the target.  If such 
 distribution is found, it is fetched and added to this repository.  If it 
 is not found, then an exception is thrown.
 
@@ -379,11 +375,11 @@ is not found, then an exception is thrown.
 sub ups_distribution {
     my ( $self, %args ) = @_;
 
-    my $spec = $args{spec} || throw 'Invalid arguments';
+    my $target = $args{target} || throw 'Invalid arguments';
     my $cascade = $args{cascade} || 0;
 
-    my $dist_url = $self->locate( spec => $spec, latest => $cascade );
-    throw "Cannot find $spec anywhere" if not $dist_url;
+    my $dist_url = $self->locate( target => $target, latest => $cascade );
+    throw "Cannot find $target anywhere" if not $dist_url;
 
     return $self->fetch_distribution( url => $dist_url );
 }

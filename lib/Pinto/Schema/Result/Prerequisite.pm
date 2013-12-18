@@ -159,7 +159,7 @@ sub FOREIGNBUILDARGS {
 
 #------------------------------------------------------------------------------
 
-has as_spec => (
+has as_target => (
     is       => 'ro',
     isa      => 'Pinto::Target::Package',
     init_arg => undef,
@@ -178,7 +178,7 @@ has as_spec => (
 sub to_string {
     my ($self) = @_;
 
-    return $self->as_spec->to_string;
+    return $self->as_target->to_string;
 }
 
 #------------------------------------------------------------------------------

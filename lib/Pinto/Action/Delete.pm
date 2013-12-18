@@ -45,7 +45,7 @@ sub execute {
 
     for my $target ( $self->targets ) {
 
-        my $dist = $self->repo->get_distribution( spec => $target );
+        my $dist = $self->repo->get_distribution( target => $target );
 
         throw "Distribution $target is not in the repository" if not defined $dist;
 
