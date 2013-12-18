@@ -62,10 +62,10 @@ sub pull {
     if ( $target->isa('Pinto::Schema::Result::Distribution') ) {
         $dist = $target;
     }
-    elsif ( $target->isa('Pinto::DistributionSpec') ) {
+    elsif ( $target->isa('Pinto::Target::Distribution') ) {
         $dist = $self->find( target => $target );
     }
-    elsif ( $target->isa('Pinto::PackageSpec') ) {
+    elsif ( $target->isa('Pinto::Target::Package') ) {
 
         my $tpv = $stack->target_perl_version;
         if ( $target->is_core( in => $tpv ) ) {

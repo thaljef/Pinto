@@ -1,6 +1,6 @@
 # ABSTRACT: Create Spec objects from strings
 
-package Pinto::SpecFactory;
+package Pinto::Target;
 
 use strict;
 use warnings;
@@ -15,40 +15,40 @@ use Pinto::Util qw(throw);
 
 #-------------------------------------------------------------------------------
 
-=method make_spec( $string )
+=method new( $string )
 
-[Class Method] Returns either a L<Pinto::DistributionSpec> or
-L<Pinto::PackageSpec> object constructed from the given C<$string>.
+[Class Method] Returns either a L<Pinto::Target::Distribution> or
+L<Pinto::Target::Package> object constructed from the given C<$string>.
 
 =cut
 
-sub make_spec {
+sub new {
     my ( $class, $arg ) = @_;
 
     my $type = ref $arg;
-    my $spec_class;
+    my $target_class;
 
     if ( not $type ) {
 
-        $spec_class =
+        $target_class =
             ( $arg =~ m{/}x )
-            ? 'Pinto::DistributionSpec'
-            : 'Pinto::PackageSpec';
+            ? 'Pinto::Target::Distribution'
+            : 'Pinto::Target::Package';
     }
     elsif ( ref $arg eq 'HASH' ) {
 
-        $spec_class =
+        $target_class =
             ( exists $arg->{author} )
-            ? 'Pinto::DistributionSpec'
-            : 'Pinto::PackageSpec';
+            ? 'Pinto::Target::Distribution'
+            : 'Pinto::Target::Package';
     }
     else {
 
-        throw "Don't know how to make spec from $arg";
+        throw "Don't know how to make a target from $arg";
     }
 
-    Class::Load::load_class($spec_class);
-    return $spec_class->new($arg);
+    Class::Load::load_class($target_class);
+    return $target_class->new($arg);
 }
 
 #-------------------------------------------------------------------------------

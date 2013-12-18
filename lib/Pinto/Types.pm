@@ -26,7 +26,7 @@ use IO::String;
 use IO::Handle;
 use IO::File;
 
-use Pinto::SpecFactory;
+use Pinto::Target;
 use Pinto::Constants qw(:all);
 
 #-----------------------------------------------------------------------------
@@ -146,19 +146,19 @@ coerce FileList,
 
 #-----------------------------------------------------------------------------
 
-class_type PkgSpec, { class => 'Pinto::PackageSpec' };
+class_type PkgSpec, { class => 'Pinto::Target::Package' };
 
 coerce PkgSpec,
-    from Str,     via { Pinto::SpecFactory->make_spec($_) },
-    from HashRef, via { Pinto::SpecFactory->make_spec($_) };
+    from Str,     via { Pinto::Target->new($_) },
+    from HashRef, via { Pinto::Target->new($_) };
 
 #-----------------------------------------------------------------------------
 
-class_type DistSpec, { class => 'Pinto::DistributionSpec' };
+class_type DistSpec, { class => 'Pinto::Target::Distribution' };
 
 coerce DistSpec,
-    from Str,     via { Pinto::SpecFactory->make_spec($_) },
-    from HashRef, via { Pinto::SpecFactory->make_spec($_) };
+    from Str,     via { Pinto::Target->new($_) },
+    from HashRef, via { Pinto::Target->new($_) };
 
 #-----------------------------------------------------------------------------
 
@@ -167,8 +167,8 @@ subtype SpecList, as ArrayRef [ PkgSpec | DistSpec ];    ## no critic qw(Prohibi
 coerce SpecList,
     from PkgSpec,       via { [ $_ ] },
     from DistSpec,      via { [ $_ ] }, 
-    from Str,           via { [ Pinto::SpecFactory->make_spec($_) ] },
-    from ArrayRef[Str], via { [ map { Pinto::SpecFactory->make_spec($_) } @$_ ] };
+    from Str,           via { [ Pinto::Target->new($_) ] },
+    from ArrayRef[Str], via { [ map { Pinto::Target->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
@@ -176,8 +176,8 @@ subtype DistSpecList, as ArrayRef [DistSpec];            ## no critic qw(Prohibi
 
 coerce DistSpecList,
     from DistSpec,      via { [$_] }, 
-    from Str,           via { [ Pinto::DistributionSpec->new($_) ] }, 
-    from ArrayRef[Str], via { [ map { Pinto::DistributionSpec->new($_) } @$_ ] };
+    from Str,           via { [ Pinto::Target::Distribution->new($_) ] }, 
+    from ArrayRef[Str], via { [ map { Pinto::Target::Distribution->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
@@ -185,8 +185,8 @@ subtype PkgSpecList, as ArrayRef [PkgSpec];              ## no critic qw(Prohibi
 
 coerce PkgSpecList,
     from DistSpec,      via { [ $_ ] }, 
-    from Str,           via { [ Pinto::PackageSpec->new($_) ] },
-    from ArrayRef[Str], via { [ map { Pinto::PackageSpec->new($_) } @$_ ] };
+    from Str,           via { [ Pinto::Target::Package->new($_) ] },
+    from ArrayRef[Str], via { [ map { Pinto::Target::Package->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 

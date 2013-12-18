@@ -6,13 +6,13 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-use Pinto::DistributionSpec;
+use Pinto::Target::Distribution;
 
 #------------------------------------------------------------------------------
 
 subtest string_constructor => sub {
 
-    my $spec = Pinto::DistributionSpec->new('Author/subdir/Foo-1.2.tar.gz');
+    my $spec = Pinto::Target::Distribution->new('Author/subdir/Foo-1.2.tar.gz');
     is $spec->author,  'AUTHOR',                            'author attribute';
     is $spec->archive, 'Foo-1.2.tar.gz',                    'archive attribute';
     is $spec->path,    'A/AU/AUTHOR/subdir/Foo-1.2.tar.gz', 'Constructed path';
@@ -24,7 +24,7 @@ subtest string_constructor => sub {
 
 subtest hash_constructor => sub {
 
-    my $spec = Pinto::DistributionSpec->new(
+    my $spec = Pinto::Target::Distribution->new(
         author  => 'Author',
         subdirs => [qw(foo bar)],
         archive => 'Foo-1.2.tar.gz'
@@ -41,13 +41,13 @@ subtest hash_constructor => sub {
 
 {
 
-    throws_ok { Pinto::DistributionSpec->new('AUTHOR/') } qr{Invalid distribution spec}, 'Invalid dist spec';
+    throws_ok { Pinto::Target::Distribution->new('AUTHOR/') } qr{Invalid distribution spec}, 'Invalid dist spec';
 
-    throws_ok { Pinto::DistributionSpec->new('/Foo-1.2.tar.gz') } qr{Invalid distribution spec}, 'Invalid dist spec';
+    throws_ok { Pinto::Target::Distribution->new('/Foo-1.2.tar.gz') } qr{Invalid distribution spec}, 'Invalid dist spec';
 
-    throws_ok { Pinto::DistributionSpec->new('Foo-1.2.tar.gz') } qr{Invalid distribution spec}, 'Invalid dist spec';
+    throws_ok { Pinto::Target::Distribution->new('Foo-1.2.tar.gz') } qr{Invalid distribution spec}, 'Invalid dist spec';
 
-    throws_ok { Pinto::DistributionSpec->new('') } qr{Invalid distribution spec}, 'Empty dist spec';
+    throws_ok { Pinto::Target::Distribution->new('') } qr{Invalid distribution spec}, 'Empty dist spec';
 
 }
 

@@ -7,7 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Pinto::SpecFactory;
+use Pinto::Target;
 
 #------------------------------------------------------------------------------
 
@@ -66,8 +66,8 @@ sub execute {
         for my $target ( $self->targets ) {
             next if -d $target or -f $target;
 
-            require Pinto::SpecFactory;
-            $target = Pinto::SpecFactory->make_spec($target);
+            require Pinto::Target;
+            $target = Pinto::Target->new($target);
 
             my $dist = $self->pull( target => $target );
             push @dists, $dist ? $dist : ();

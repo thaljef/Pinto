@@ -1,6 +1,6 @@
 # ABSTRACT: Specifies a distribution by author and path fragments
 
-package Pinto::DistributionSpec;
+package Pinto::Target::Distribution;
 
 use Moose;
 use MooseX::MarkAsMethods ( autoclean => 1 );

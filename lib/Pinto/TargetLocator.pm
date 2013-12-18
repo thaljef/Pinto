@@ -14,7 +14,7 @@ use URI;
 use Pinto::Util qw(throw);
 use Pinto::Types qw(Uri Dir);
 use Pinto::TargetLocator::Index;
-use Pinto::SpecFactory;
+use Pinto::Target;
 
 use version;
 
@@ -172,14 +172,14 @@ sub locate {
 
     $args{spec} || throw 'Invalid arguments';
 
-    $args{spec} = Pinto::SpecFactory->make_spec($args{spec}) 
+    $args{spec} = Pinto::Target->new($args{spec}) 
         if not ref $args{spec};
 
     return $self->_locate_package(%args)
-        if $args{spec}->isa('Pinto::PackageSpec');
+        if $args{spec}->isa('Pinto::Target::Package');
 
     return $self->_locate_distribution(%args)
-        if $args{spec}->isa('Pinto::DistributionSpec');
+        if $args{spec}->isa('Pinto::Target::Distribution');
         
     throw 'Invalid arguments';
 }

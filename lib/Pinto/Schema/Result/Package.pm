@@ -153,7 +153,7 @@ with 'Pinto::Role::Schema::Result';
 
 use String::Format;
 
-use Pinto::PackageSpec;
+use Pinto::Target::Package;
 use Pinto::Util qw(itis throw);
 
 use overload (
@@ -236,7 +236,7 @@ sub vname {
 sub as_spec {
     my ($self) = @_;
 
-    return Pinto::PackageSpec->new(
+    return Pinto::Target::Package->new(
         name    => $self->name,
         version => $self->version
     );

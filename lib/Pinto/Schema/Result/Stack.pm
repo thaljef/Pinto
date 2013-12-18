@@ -230,14 +230,14 @@ before is_default => sub {
 
 =method get_distribution( spec => $dist_spec )
 
-Given a L<Pinto::PackageSpec>, returns the L<Pinto::Schema::Result::Distribution>
+Given a L<Pinto::Target::Package>, returns the L<Pinto::Schema::Result::Distribution>
 which contains the package with the same name as the spec B<and the same or higher 
 version as the spec>.  Returns nothing if no such distribution is found in 
 this stack.
 
 =method get_distribution( spec => $pkg_spec )
 
-Given a L<Pinto::DistributionSpec>, returns the L<Pinto::Schema::Result::Distribution>
+Given a L<Pinto::Target::Distribution>, returns the L<Pinto::Schema::Result::Distribution>
 from this stack with the same author id and archive attributes as the spec.  
 Returns nothing if no such distribution is found in this stack.
 
@@ -247,7 +247,7 @@ sub get_distribution {
     my ( $self, %args ) = @_;
 
     if ( my $spec = $args{spec} ) {
-        if ( itis( $spec, 'Pinto::DistributionSpec' ) ) {
+        if ( itis( $spec, 'Pinto::Target::Distribution' ) ) {
 
             my $attrs = { prefetch => 'distribution', distinct => 1 };
             my $where = {
@@ -260,7 +260,7 @@ sub get_distribution {
 
             return $reg->distribution;
         }
-        elsif ( itis( $spec, 'Pinto::PackageSpec' ) ) {
+        elsif ( itis( $spec, 'Pinto::Target::Package' ) ) {
 
             my $attrs = { prefetch     => 'distribution' };
             my $where = { package_name => $spec->name    };

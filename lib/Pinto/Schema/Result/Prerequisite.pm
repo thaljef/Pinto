@@ -135,7 +135,7 @@ with 'Pinto::Role::Schema::Result';
 
 #------------------------------------------------------------------------------
 
-use Pinto::PackageSpec;
+use Pinto::Target::Package;
 
 use overload ( '""' => 'to_string' );
 
@@ -161,12 +161,12 @@ sub FOREIGNBUILDARGS {
 
 has as_spec => (
     is       => 'ro',
-    isa      => 'Pinto::PackageSpec',
+    isa      => 'Pinto::Target::Package',
     init_arg => undef,
     lazy     => 1,
     handles  => [qw(is_core is_perl)],
     default  => sub {
-        Pinto::PackageSpec->new(
+        Pinto::Target::Package->new(
             name    => $_[0]->package_name,
             version => $_[0]->package_version
         );

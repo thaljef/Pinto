@@ -1,6 +1,6 @@
 # ABSTRACT: Specifies a package by name and version
 
-package Pinto::PackageSpec;
+package Pinto::Target::Package;
 
 use Moose;
 use MooseX::MarkAsMethods ( autoclean => 1 );

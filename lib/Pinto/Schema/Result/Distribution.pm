@@ -184,7 +184,7 @@ use CPAN::DistnameInfo;
 use String::Format;
 
 use Pinto::Util qw(itis debug whine throw);
-use Pinto::DistributionSpec;
+use Pinto::Target::Distribution;
 
 use overload (
     '""'  => 'to_string',
@@ -484,7 +484,7 @@ sub prerequisite_specs {
 sub as_spec {
     my ($self) = @_;
 
-    return Pinto::DistributionSpec->new( path => $self->path );
+    return Pinto::Target::Distribution->new( path => $self->path );
 }
 
 #------------------------------------------------------------------------------
