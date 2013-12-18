@@ -262,9 +262,10 @@ sub get_package {
         my $version  = $spec->version;
 
         my @pkgs = $self->db->schema->search_package( { name => $pkg_name } )->with_distribution;
-        my $latest = ( sort { $a <=> $b } @pkgs )[-1];
+        return if not @pkgs;
 
-        return $latest->version >= $spec->version ? $latest : ();
+        my $latest = ( sort { $a <=> $b } @pkgs )[-1];
+        return $spec->is_satisfied_by($latest->version) ? $latest : ();
     }
 
     # Retrieve package from a specific distribution
@@ -329,17 +330,15 @@ attributes.  Returns nothing if no such distribution exists.
 sub get_distribution {
     my ( $self, %args ) = @_;
 
+    my $rs = $self->db->schema->distribution_rs->with_packages;
+
     # Retrieve a distribution by DistSpec or PackageSpec
     if ( my $spec = $args{spec} ) {
         if ( itis( $spec, 'Pinto::DistributionSpec' ) ) {
-            my $author  = $spec->author;
-            my $archive = $spec->archive;
-
-            return $self->db->schema->distribution_rs->with_packages->find_by_author_archive( $author, $archive );
+            return $rs->find_by_author_archive( $spec->author, $spec->archive );
         }
         elsif ( itis( $spec, 'Pinto::PackageSpec' ) ) {
-            my $pkg = $self->get_package( name => $spec->name );
-            return () if !defined($pkg) or $pkg->version < $spec->version;
+            return unless my $pkg = $self->get_package( spec => $spec );
             return $pkg->distribution;
         }
 
@@ -349,15 +348,13 @@ sub get_distribution {
     # Retrieve a distribution by its path (e.g. AUTHOR/Dist-1.0.tar.gz)
     elsif ( my $path = $args{path} ) {
         my ( $author, $archive ) = Pinto::Util::parse_dist_path($path);
-
-        return $self->db->schema->distribution_rs->with_packages->find_by_author_archive( $author, $archive );
+        return $rs->find_by_author_archive( $author, $archive );
     }
 
     # Retrieve a distribution by author and archive
     elsif ( my $author = $args{author} ) {
         my $archive = $args{archive} or throw "Must specify archive with author";
-
-        return $self->db->schema->distribution_rs->with_packages->find_by_author_archive( $author, $archive );
+        return $rs->find_by_author_archive( $author, $archive );
     }
 
     throw 'Invalid arguments';
@@ -390,7 +387,7 @@ sub ups_distribution {
     my $dist_url;
 
     if ( Pinto::Util::itis( $spec, 'Pinto::PackageSpec' ) ) {
-        $dist_url = $self->locate( package => $spec->name, version => $spec->version, latest => $cascade );
+        $dist_url = $self->locate( spec => $spec, latest => $cascade );
     }
     elsif ( Pinto::Util::itis( $spec, 'Pinto::DistributionSpec' ) ) {
         $dist_url = $self->locate( distribution => $spec->path );

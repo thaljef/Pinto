@@ -7,12 +7,12 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str);
 
 use Module::CoreList;
+use CPAN::Meta::Requirements;
 
-use Pinto::Types qw(Version);
-use Pinto::Util qw(throw);
+use Pinto::Util qw(throw trim_text);
 
 use version;
-use overload ( '""' => 'to_string' );
+use overload ( '""' => 'to_string', '>=' => 'gte');
 
 #------------------------------------------------------------------------------
 
@@ -28,9 +28,8 @@ has name => (
 
 has version => (
     is      => 'ro',
-    isa     => Version,
-    coerce  => 1,
-    default => sub { version->parse(0) }
+    isa     => Str,
+    default => '0',
 );
 
 #------------------------------------------------------------------------------
@@ -40,9 +39,12 @@ around BUILDARGS => sub {
     my $class = shift;
 
     my @args = @_;
+    my ($name, $version);
+
     if ( @args == 1 and not ref $args[0] ) {
-        my ( $name, $version ) = split m{~}x, $_[0], 2;
-        @args = ( name => $name, version => $version || 0 );
+        my ( $name, $version ) = $_[0] =~ m{^ ([A-Z0-9_:]+) (?:~)? (.*)}ix;
+        $version =~ s/^\@/==/; # Allow "@" as a synonym for "=="
+        @args = ( name => $name, version => trim_text($version) || 0 );
     }
 
     return $class->$orig(@args);
@@ -79,8 +81,8 @@ sub is_core {
     # the $core_version is undef.  So force to zero in that case
     my $core_version = $core_modules->{ $self->name } || 0;
 
-    return 0 if $self->version > $core_version;
-    return 1;
+    return 1 if $self->is_satisfied_by( $core_version );
+    return 0;
 }
 
 #-------------------------------------------------------------------------------
@@ -99,6 +101,27 @@ sub is_perl {
 
 #-------------------------------------------------------------------------------
 
+=method is_satisfied_by($version)
+
+Returns true if this prerequisite is satisfied by version C<$version> of the package
+
+=cut
+
+sub is_satisfied_by {
+    my ($self, $version) = @_;
+
+    my $req = eval {
+        my $args = {$self->name => $self->version};
+        CPAN::Meta::Requirements->from_string_hash($args);
+    };
+
+    throw "Invalid prerequisite spec ($self): $@" if $@;
+    return 1 if $req->accepts_module($self->name => $version);
+    return 0;
+}
+
+#-------------------------------------------------------------------------------
+
 =method to_string()
 
 Serializes this PackageSpec to its string form.  This method is called
@@ -108,7 +131,16 @@ whenever the PackageSpec is evaluated in string context.
 
 sub to_string {
     my ($self) = @_;
-    return sprintf '%s~%s', $self->name, $self->version->stringify;
+    my $format = $self->version =~ m/^ [=<>!\@] /x ? '%s%s' : '%s~%s';
+    return sprintf $format, $self->name, $self->version;
+}
+
+#------------------------------------------------------------------------------
+
+sub gte {
+    my ($self, $other, $flip) = @_;
+    return $self->is_satisfied_by($other) if not $flip;
+    return $other->is_satisfied_By($self) if $flip;
 }
 
 #------------------------------------------------------------------------------

@@ -112,8 +112,8 @@ sub requires {
 
         for my $pkg_name ( sort keys %{$required_prereqs} ) {
 
-            my $pkg_ver = version->parse( $required_prereqs->{$pkg_name} );
-            debug "Archive $archive requires ($phase): $pkg_name-$pkg_ver";
+            my $pkg_ver = $required_prereqs->{$pkg_name};
+            debug "Archive $archive requires ($phase): $pkg_name~$pkg_ver";
 
             my $struct = { phase => $phase, name => $pkg_name, version => $pkg_ver };
             push @prereqs, $struct;

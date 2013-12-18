@@ -40,6 +40,59 @@ use Pinto::PackageSpec;
 }
 
 #------------------------------------------------------------------------------
+{
+
+    my %tests = (
+        ''   => [
+            ['1.2' => 1],
+            [undef => 1],
+            [0     => 1],
+        ],
+        '~1.2' => [
+            ['1.2' => 1],
+            ['1.3' => 1],
+            ['1.1' => 0],
+            [undef => 0],
+            [0     => 0],
+        ],
+        '@1.2' => [
+            ['1.1' => 0],
+            ['1.2' => 1],
+            ['1.3' => 0],
+            ['1.1' => 0],
+            [undef => 0],
+            [0     => 0],
+        ],
+        ' 1.2  ' => [            
+            ['1.2' => 1],
+            ['1.3' => 1],
+            ['1.1' => 0],
+            [undef => 0],
+            [0     => 0],
+        ],
+        '~1.2, <= 1.9, != 1.5' => [
+            ['1.1' => 0], 
+            ['1.2' => 1],
+            ['1.5' => 0],
+            ['1.9' => 1],
+            ['2.0' => 0],
+            [undef => 0],
+            [0     => 0],
+        ]
+    );
+
+    while ( my ($req, $cases) = each %tests ) {
+        for my $case ( @$cases ) {
+            my ($version, $expect) = @{$case};
+            my $spec = Pinto::PackageSpec->new("Foo::Bar$req");
+            my $got = $spec->is_satisfied_by($version);
+            ok $got, "Spec $spec should be satisfied by $version" if $expect;
+            ok !$got, "Spec $spec should not be satisfied by $version" if not $expect;
+        }
+    }
+}
+
+#------------------------------------------------------------------------------
 
 {
 

@@ -249,7 +249,7 @@ sub get_distribution {
     if ( my $spec = $args{spec} ) {
         if ( itis( $spec, 'Pinto::DistributionSpec' ) ) {
 
-            my $attrs = { prefetch => [qw(distribution)], distinct => 1 };
+            my $attrs = { prefetch => 'distribution', distinct => 1 };
             my $where = {
                 'distribution.author'  => $spec->author,
                 'distribution.archive' => $spec->archive
@@ -262,13 +262,13 @@ sub get_distribution {
         }
         elsif ( itis( $spec, 'Pinto::PackageSpec' ) ) {
 
-            my $attrs = { prefetch     => [qw(package distribution)] };
-            my $where = { package_name => $spec->name };
+            my $attrs = { prefetch     => 'distribution' };
+            my $where = { package_name => $spec->name    };
 
             my $reg = $self->head->find_related( registrations => $where, $attrs );
             return if not defined $reg;
 
-            return if $reg->package->version < $spec->version;
+            return if not $spec->is_satisfied_by($reg->package->version); 
             return $reg->distribution;
         }
     }

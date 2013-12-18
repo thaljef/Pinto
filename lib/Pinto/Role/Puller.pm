@@ -120,23 +120,27 @@ sub recurse {
     my $dist  = $args{start};
     my $stack = $self->stack;
 
-    my %latest;
+    my %last_seen;
     my $cb = sub {
         my ($prereq) = @_;
 
-        my $pkg_name = $prereq->package_name;
-        my $pkg_vers = $prereq->package_version;
+        my $spec = $prereq->as_spec;
+        my $pkg_name = $spec->name;
+        my $pkg_vers = $spec->version;
 
         # version sees undef and 0 as equal, so must also check definedness
         # when deciding if we've seen this version (or newer) of the package
-        return if defined( $latest{$pkg_name} ) && $pkg_vers <= $latest{$pkg_name};
+        return if defined( $last_seen{$pkg_name} ) && $spec->is_satisfied_by( $last_seen{$pkg_name} );
 
         # I think the only time that we won't see a $dist here is when
         # the prereq resolves to a perl (i.e. its a core-only module).
-        return if not my $dist = $self->find( target => $prereq->as_spec );
+        return if not my $dist = $self->find( target => $spec );
 
         $dist->register( stack => $stack );
-        $latest{$pkg_name} = $pkg_vers;
+
+        # Record the most recent version of the packages that has
+        # been registered, so we don't need to find it again.
+        $last_seen{$_->name} = $_->version for $dist->packages;
 
         return $dist;
     };
