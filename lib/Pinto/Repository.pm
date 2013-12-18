@@ -14,7 +14,7 @@ use Pinto::Store;
 use Pinto::Config;
 use Pinto::Locker;
 use Pinto::Database;
-use Pinto::IndexCache;
+use Pinto::TargetLocator;
 use Pinto::PackageExtractor;
 use Pinto::PrerequisiteWalker;
 use Pinto::Util qw(itis debug mksymlink throw);
@@ -80,20 +80,17 @@ has store => (
     lazy    => 1,
 );
 
-=attr cache
+=attr locator
 
-=method locate( package => );
-
-=method locate( distribution => );
+=method locate( spec => );
 
 =cut
 
-has cache => (
+has locator => (
     is      => 'ro',
-    isa     => 'Pinto::IndexCache',
+    isa     => 'Pinto::TargetLocator',
     handles => [qw(locate)],
-    clearer => '_clear_cache',
-    default => sub { Pinto::IndexCache->new( repo => $_[0] ) },
+    default => sub { Pinto::TargetLocator->new( repo => $_[0] ) },
     lazy    => 1,
 );
 
@@ -864,8 +861,7 @@ sub assert_sanity_ok {
 sub clear_cache {
     my ($self) = @_;
 
-    $self->cache->clear_cache;    # Clears cache file from disk
-    $self->_clear_cache;          # Clears object from memory
+    $self->locator->clear_cache;    # Clears cache file from disk
 
     return $self;
 }

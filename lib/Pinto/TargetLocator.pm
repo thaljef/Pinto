@@ -1,4 +1,4 @@
-# ABSTRACT: Find a package among CPAN-like repositories
+# ABSTRACT: Find a distribution among CPAN-like repositories
 
 package Pinto::TargetLocator;
 
@@ -6,9 +6,6 @@ use Moose;
 use MooseX::Types::Moose qw(ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Carp;
-use File::Temp;
-use LWP::UserAgent;
 use URI;
 
 use Pinto::Util qw(throw);
@@ -25,74 +22,12 @@ use version;
 
 #------------------------------------------------------------------------------
 
-=attr repository_urls => [ qw(http://somewhere http://somewhere.else) ]
-
-An array reference containing the base URLs of the repositories you
-want to search.  These are usually CPAN mirrors, but can be any
-website or local directory that is organized in a CPAN-like structure.
-For each request, repositories are searched in the order you specified
-them here.  This defaults to http://cpan.perl.org.
-
-=cut
-
-has repository_urls => (
-    is         => 'ro',
-    isa        => ArrayRef[Uri],
-    auto_deref => 1,
-    default    => sub { [URI->new('http://cpan.perl.org')] },
+has repo => (
+    is       => 'ro',
+    isa      => 'Pinto::Repository',
+    weak_ref => 1,
+    required => 1,
 );
-
-#------------------------------------------------------------------------------
-
-=attr user_agent => $user_agent_obj
-
-The L<LWP::UserAgent> object that will fetch index files.  If you do
-not provide a user agent, then a default one will be constructed for
-you.
-
-=cut
-
-has user_agent => (
-   is          => 'ro',
-   isa         => 'LWP::UserAgent',
-   builder     => '_build_user_agent',
-);
-
-sub _build_user_agent {
-    my ($self) = @_;
-
-    my $agent = sprintf "%s/%s", ref $self, $self->VERSION || 'UNKNOWN';
-    return LWP::UserAgent->new(agent => $agent, env_proxy => 1, keep_alive => 5);
-}
-
-#------------------------------------------------------------------------------
-
-=attr cache_dir => '/some/directory/path'
-
-The path (as a string or L<Path::Class::Dir> object) to a directory
-where the index file will be cached.  If the directory does not exist,
-it will be created for you.  If you do not specify a cache directory,
-then a temporary directory will be used.  The temporary directory will
-be deleted when your application terminates.
-
-=cut
-
-has cache_dir => (
-   is         => 'ro',
-   isa        => Dir,
-   default    => sub { File::Temp::tempdir(CLEANUP => 1) },
-   coerce     => 1,
-);
-
-#------------------------------------------------------------------------------
-
-=attr force => $boolean
-
-Causes any cached index files to be removed, thus forcing a new one to
-be downloaded when the object is constructed.  This only has effect if
-you specified the C<cache_dir> attribute.  The default is false.
-
-=cut
 
 has force => (
    is         => 'ro',
@@ -126,11 +61,11 @@ has indexes => (
 sub _build_indexes {
     my ($self) = @_;
 
-    my @indexes = map { Pinto::TargetLocator::Index->new( force          => $self->force(),
-                                                      cache_dir      => $self->cache_dir(),
-                                                      user_agent     => $self->user_agent(),
-                                                      repository_url => $_ )
-    } $self->repository_urls();
+    my @indexes = map { Pinto::TargetLocator::Index->new(
+        force          => $self->force,
+        user_agent     => $self->repo->ua,
+        cache_dir      => $self->repo->config->cache_dir,
+        repository_url => $_ ) } $self->repo->config->sources_list;
 
     return \@indexes;
 }
@@ -233,7 +168,7 @@ sub _locate_distribution {
         my $dist_url  = URI->new("$base_url/authors/id/$dist_path");
 
         return $dist_url if $index->distributions->{$dist_path};
-        return $dist_url if $self->user_agent->head($dist_url)->is_success;
+        return $dist_url if $self->repo->ua->head($dist_url)->is_success;
     }
 
     return;
