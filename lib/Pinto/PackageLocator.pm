@@ -8,7 +8,6 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Carp;
 use File::Temp;
-use Path::Class;
 use LWP::UserAgent;
 use URI;
 
@@ -80,7 +79,7 @@ be deleted when your application terminates.
 has cache_dir => (
    is         => 'ro',
    isa        => Dir,
-   default    => sub { Path::Class::Dir->new( File::Temp::tempdir(CLEANUP => 1) ) },
+   default    => sub { File::Temp::tempdir(CLEANUP => 1) },
    coerce     => 1,
 );
 

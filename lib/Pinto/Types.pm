@@ -65,7 +65,8 @@ subtype StackDefault, as Undef;
 
 #-----------------------------------------------------------------------------
 
-class_type StackObject, { class => 'Pinto::Schema::Result::Stack' };
+class_type StackObject, 
+    { class => 'Pinto::Schema::Result::Stack' };
 
 #-----------------------------------------------------------------------------
 
@@ -75,11 +76,14 @@ subtype PropertyName, as Str,
 
 #-----------------------------------------------------------------------------
 
-class_type Version, { class => 'version' };
+class_type Version, 
+    { class => 'version' };
 
-coerce Version, from Str, via { version->parse($_) };
+coerce Version, 
+    from Str, via { version->parse($_) };
 
-coerce Version, from Num, via { version->parse($_) };
+coerce Version, 
+    from Num, via { version->parse($_) };
 
 #-----------------------------------------------------------------------------
 
@@ -87,9 +91,11 @@ subtype PerlVersion, as Object,
     where { $_->isa('version') && exists $Module::CoreList::version{ $_->numify + 0 } },
     message {"perl version ($_) is unknown to me"};
 
-coerce PerlVersion, from Str, via { version->parse($_) };
+coerce PerlVersion, 
+    from Str, via { version->parse($_) };
 
-coerce PerlVersion, from Num, via { version->parse($_) };
+coerce PerlVersion, 
+    from Num, via { version->parse($_) };
 
 #-----------------------------------------------------------------------------
 
@@ -99,33 +105,44 @@ subtype ANSIColor, as Str,
 
 #-----------------------------------------------------------------------------
 
-subtype ANSIColorSet, as ArrayRef [ANSIColor], where { @{$_} == 3 }, message {'Must be exactly three colors'};
+subtype ANSIColorSet, as ArrayRef[ANSIColor],
+    where { @{$_} == 3 },
+    message {'Must be exactly three colors'};
 
 #-----------------------------------------------------------------------------
 
-class_type Uri, { class => 'URI' };
+class_type Uri, 
+    { class => 'URI' };
 
-coerce Uri, from Str, via { URI->new($_) };
-
-#-----------------------------------------------------------------------------
-
-class_type Dir, { class => 'Path::Class::Dir' };
-
-coerce Dir, from Str, via { Path::Class::Dir->new($_) }, from ArrayRef, via { Path::Class::Dir->new( @{$_} ) };
+coerce Uri, 
+    from Str, via { URI->new($_) };
 
 #-----------------------------------------------------------------------------
 
-class_type File, { class => 'Path::Class::File' };
+class_type Dir, 
+    { class => 'Path::Class::Dir' };
 
-coerce File, from Str, via { Path::Class::File->new($_) }, from ArrayRef, via { Path::Class::File->new( @{$_} ) };
+coerce Dir, 
+    from Str,      via { Path::Class::Dir->new($_) }, 
+    from ArrayRef, via { Path::Class::Dir->new( @{$_} ) };
+
+#-----------------------------------------------------------------------------
+
+class_type File, 
+    { class => 'Path::Class::File' };
+
+coerce File, 
+    from Str,      via { Path::Class::File->new($_) }, 
+    from ArrayRef, via { Path::Class::File->new( @{$_} ) };
 
 #-----------------------------------------------------------------------------
 
 subtype FileList, as ArrayRef [File];
 
-coerce FileList, from File, via { [$_] }, from Str, via { [ Path::Class::File->new($_) ] }, from ArrayRef [Str], via {
-    [ map { Path::Class::File->new($_) } @$_ ];
-};
+coerce FileList,
+    from File,          via { [ $_ ] }, 
+    from Str,           via { [ Path::Class::File->new($_) ] }, 
+    from ArrayRef[Str], via { [ map { Path::Class::File->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
@@ -148,36 +165,36 @@ coerce DistSpec,
 subtype SpecList, as ArrayRef [ PkgSpec | DistSpec ];    ## no critic qw(ProhibitBitwiseOperators);
 
 coerce SpecList,
-    from PkgSpec, via { [$_] },
-    from DistSpec, via { [$_] }, from Str, via { [ Pinto::SpecFactory->make_spec($_) ] }, from ArrayRef [Str], via {
-    [ map { Pinto::SpecFactory->make_spec($_) } @$_ ];
-    };
+    from PkgSpec,       via { [ $_ ] },
+    from DistSpec,      via { [ $_ ] }, 
+    from Str,           via { [ Pinto::SpecFactory->make_spec($_) ] },
+    from ArrayRef[Str], via { [ map { Pinto::SpecFactory->make_spec($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
 subtype DistSpecList, as ArrayRef [DistSpec];            ## no critic qw(ProhibitBitwiseOperators);
 
 coerce DistSpecList,
-    from DistSpec, via { [$_] }, from Str, via { [ Pinto::DistributionSpec->new($_) ] }, from ArrayRef [Str], via {
-    [ map { Pinto::DistributionSpec->new($_) } @$_ ];
-    };
+    from DistSpec,      via { [$_] }, 
+    from Str,           via { [ Pinto::DistributionSpec->new($_) ] }, 
+    from ArrayRef[Str], via { [ map { Pinto::DistributionSpec->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
 subtype PkgSpecList, as ArrayRef [PkgSpec];              ## no critic qw(ProhibitBitwiseOperators);
 
 coerce PkgSpecList,
-    from DistSpec, via { [$_] }, from Str, via { [ Pinto::PackageSpec->new($_) ] }, from ArrayRef [Str], via {
-    [ map { Pinto::PackageSpec->new($_) } @$_ ];
-    };
+    from DistSpec,      via { [ $_ ] }, 
+    from Str,           via { [ Pinto::PackageSpec->new($_) ] },
+    from ArrayRef[Str], via { [ map { Pinto::PackageSpec->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
 subtype Io, as Object;
 
 coerce Io,
-    from Str,  via { my $fh = IO::File->new(); $fh->open($_);   return $fh },
-    from File, via { my $fh = IO::File->new(); $fh->open("$_"); return $fh },
+    from Str,       via { my $fh = IO::File->new(); $fh->open($_);   return $fh },
+    from File,      via { my $fh = IO::File->new(); $fh->open("$_"); return $fh },
     from ArrayRef,  via { IO::Handle->new_from_fd(@$_) },
     from ScalarRef, via { IO::String->new( ${$_} ) };
 
