@@ -228,17 +228,15 @@ before is_default => sub {
 
 #------------------------------------------------------------------------------
 
-=method get_distribution( spec => $dist_spec )
+=method get_distribution( target => $target )
 
 Given a L<Pinto::Target::Package>, returns the L<Pinto::Schema::Result::Distribution>
-which contains the package with the same name as the spec B<and the same or higher 
-version as the spec>.  Returns nothing if no such distribution is found in 
+which contains the package with the same name as the target B<and the same or higher 
+version as the target>.  Returns nothing if no such distribution is found in 
 this stack.
 
-=method get_distribution( spec => $pkg_spec )
-
 Given a L<Pinto::Target::Distribution>, returns the L<Pinto::Schema::Result::Distribution>
-from this stack with the same author id and archive attributes as the spec.  
+from this stack with the same author id and archive attributes as the target.  
 Returns nothing if no such distribution is found in this stack.
 
 =cut
@@ -246,13 +244,13 @@ Returns nothing if no such distribution is found in this stack.
 sub get_distribution {
     my ( $self, %args ) = @_;
 
-    if ( my $spec = $args{spec} ) {
-        if ( itis( $spec, 'Pinto::Target::Distribution' ) ) {
+    if ( my $target = $args{target} ) {
+        if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
 
             my $attrs = { prefetch => 'distribution', distinct => 1 };
             my $where = {
-                'distribution.author'  => $spec->author,
-                'distribution.archive' => $spec->archive
+                'distribution.author'  => $target->author,
+                'distribution.archive' => $target->archive
             };
 
             my $reg = $self->head->search_related( registrations => $where, $attrs )->first;
@@ -260,15 +258,15 @@ sub get_distribution {
 
             return $reg->distribution;
         }
-        elsif ( itis( $spec, 'Pinto::Target::Package' ) ) {
+        elsif ( itis( $target, 'Pinto::Target::Package' ) ) {
 
             my $attrs = { prefetch     => 'distribution' };
-            my $where = { package_name => $spec->name    };
+            my $where = { package_name => $target->name    };
 
             my $reg = $self->head->find_related( registrations => $where, $attrs );
             return if not defined $reg;
 
-            return if not $spec->is_satisfied_by($reg->package->version); 
+            return if not $target->is_satisfied_by($reg->package->version); 
             return $reg->distribution;
         }
     }

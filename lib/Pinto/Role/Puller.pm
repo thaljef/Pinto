@@ -96,13 +96,13 @@ sub find {
     my $dist;
     my $msg;
 
-    if ( $dist = $stack->get_distribution( spec => $target ) ) {
+    if ( $dist = $stack->get_distribution( target => $target ) ) {
         $msg = "Found $target on stack $stack in $dist";
     }
-    elsif ( $dist = $stack->repo->get_distribution( spec => $target ) ) {
+    elsif ( $dist = $stack->repo->get_distribution( target => $target ) ) {
         $msg = "Found $target in $dist";
     }
-    elsif ( $dist = $stack->repo->ups_distribution( spec => $target, cascade => $self->cascade ) ) {
+    elsif ( $dist = $stack->repo->ups_distribution( target => $target, cascade => $self->cascade ) ) {
         $msg = "Found $target in " . $dist->source;
     }
 
@@ -124,17 +124,17 @@ sub recurse {
     my $cb = sub {
         my ($prereq) = @_;
 
-        my $spec = $prereq->as_spec;
-        my $pkg_name = $spec->name;
-        my $pkg_vers = $spec->version;
+        my $target   = $prereq->as_target;
+        my $pkg_name = $target->name;
+        my $pkg_vers = $target->version;
 
         # version sees undef and 0 as equal, so must also check definedness
         # when deciding if we've seen this version (or newer) of the package
-        return if defined( $last_seen{$pkg_name} ) && $spec->is_satisfied_by( $last_seen{$pkg_name} );
+        return if defined( $last_seen{$pkg_name} ) && $target->is_satisfied_by( $last_seen{$pkg_name} );
 
         # I think the only time that we won't see a $dist here is when
         # the prereq resolves to a perl (i.e. its a core-only module).
-        return if not my $dist = $self->find( target => $spec );
+        return if not my $dist = $self->find( target => $target );
 
         $dist->register( stack => $stack );
 

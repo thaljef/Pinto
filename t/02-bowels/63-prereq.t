@@ -45,7 +45,7 @@ while ( my ( $pv, $expect ) = each %test_cases ) {
     my $cb = sub {
         my ($prereq) = @_;
         $walked_prereqs->{ $prereq->package_name } = $prereq->package_version;
-        return $t->pinto->repo->get_distribution( spec => $prereq->as_spec );
+        return $t->pinto->repo->get_distribution( target => $prereq->as_target );
     };
 
     # If $pv is not a true value, then do not make a filter

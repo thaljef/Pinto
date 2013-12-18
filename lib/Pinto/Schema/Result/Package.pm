@@ -233,7 +233,7 @@ sub vname {
 
 #------------------------------------------------------------------------------
 
-sub as_spec {
+sub as_target {
     my ($self) = @_;
 
     return Pinto::Target::Package->new(

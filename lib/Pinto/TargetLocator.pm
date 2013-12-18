@@ -105,16 +105,16 @@ of the indexes, returns undef.
 sub locate {
     my ($self, %args) = @_;
 
-    $args{spec} || throw 'Invalid arguments';
+    $args{target} || throw 'Invalid arguments';
 
-    $args{spec} = Pinto::Target->new($args{spec}) 
-        if not ref $args{spec};
+    $args{target} = Pinto::Target->new($args{target}) 
+        if not ref $args{target};
 
     return $self->_locate_package(%args)
-        if $args{spec}->isa('Pinto::Target::Package');
+        if $args{target}->isa('Pinto::Target::Package');
 
     return $self->_locate_distribution(%args)
-        if $args{spec}->isa('Pinto::Target::Distribution');
+        if $args{target}->isa('Pinto::Target::Distribution');
         
     throw 'Invalid arguments';
 }
@@ -124,17 +124,17 @@ sub locate {
 sub _locate_package {
     my ($self, %args) = @_;
 
-    my $spec   = $args{spec};
+    my $target = $args{target};
     my $latest = $args{latest};
 
     my ($latest_found_package, $found_in_index);
     for my $index ( $self->indexes() ) {
 
-        my $found_package = $index->packages->{$spec->name};
+        my $found_package = $index->packages->{$target->name};
         next if not $found_package;
 
         my $found_package_version = version->parse( $found_package->{version} );
-        next if not $spec->is_satisfied_by($found_package_version);
+        next if not $target->is_satisfied_by($found_package_version);
 
         $found_in_index       ||= $index;
         $latest_found_package ||= $found_package;
@@ -159,11 +159,11 @@ sub _locate_package {
 sub _locate_distribution {
     my ($self, %args) = @_;
 
-    my $spec = $args{spec};
+    my $target = $args{target};
 
     for my $index ( $self->indexes ) {
 
-        my $dist_path = $spec->path;
+        my $dist_path = $target->path;
         my $base_url  = $index->repository_url;
         my $dist_url  = URI->new("$base_url/authors/id/$dist_path");
 

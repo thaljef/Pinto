@@ -55,7 +55,7 @@ sub execute {
 sub _unregister {
     my ( $self, $target, $stack ) = @_;
 
-    my $dist = $stack->get_distribution( spec => $target );
+    my $dist = $stack->get_distribution( target => $target );
 
     throw "Target $target is not in the repository" if not defined $dist;
 
