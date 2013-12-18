@@ -50,7 +50,7 @@ around BUILDARGS => sub {
 
     if ( @args == 1 and not ref $args[0] ) {
         my ( $name, $version ) = $_[0] =~ m{^ ([A-Z0-9_:]+) (?:~)? (.*)}ix;
-        $version =~ s/^\@/==/; # Allow "@" as a synonym for "=="
+        $version =~ s/^\@/==/; # Allow "@" to be used as a synonym for "=="
         @args = ( name => $name, version => trim_text($version) || 0 );
     }
 
