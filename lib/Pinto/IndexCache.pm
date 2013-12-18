@@ -6,7 +6,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Pinto::PackageLocator;
+use Pinto::TargetLocator;
 
 #-------------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ has repo => (
 
 has locator => (
     is      => 'ro',
-    isa     => 'Pinto::PackageLocator',
+    isa     => 'Pinto::TargetLocator',
     handles => [qw(clear_cache)],
     builder => '_build_locator',
     lazy    => 1,
@@ -36,7 +36,7 @@ sub _build_locator {
 
     my @urls      = $self->repo->config->sources_list;
     my $cache_dir = $self->repo->config->cache_dir;
-    my $locator   = Pinto::PackageLocator->new(
+    my $locator   = Pinto::TargetLocator->new(
         repository_urls => \@urls,
         cache_dir       => $cache_dir
     );

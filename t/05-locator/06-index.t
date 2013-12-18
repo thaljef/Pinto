@@ -8,13 +8,13 @@ use FindBin qw($Bin);
 
 use Test::More (tests => 8);
 
-use Pinto::PackageLocator::Index;
+use Pinto::TargetLocator::Index;
 
 #------------------------------------------------------------------------------
 
 my $repos_dir = dir($Bin)->as_foreign('Unix')->stringify() . '/repos';
 my $repos_url = URI->new("file://$repos_dir/a");
-my $index     = Pinto::PackageLocator::Index->new( repository_url => $repos_url );
+my $index     = Pinto::TargetLocator::Index->new( repository_url => $repos_url );
 
 #------------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@ use IO::Zlib;
 
 use Test::More;
 
-use Pinto::PackageLocator;
+use Pinto::TargetLocator;
 
 #------------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ my $found;
 my $temp_dir  = tempdir(CLEANUP => 1);
 my $repos_dir = dir($Bin)->as_foreign('Unix')->stringify() . '/repos';
 my @repos_urls = map { URI->new("file://$repos_dir/$_") } qw(a b);
-my $class = 'Pinto::PackageLocator';
+my $class = 'Pinto::TargetLocator';
 
 #------------------------------------------------------------------------------
 

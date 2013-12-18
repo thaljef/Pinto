@@ -1,6 +1,6 @@
 # ABSTRACT: The package index of a repository
 
-package Pinto::PackageLocator::Index;
+package Pinto::TargetLocator::Index;
 
 use Moose;
 use MooseX::Types::Moose qw(Bool HashRef);
@@ -249,39 +249,3 @@ __PACKAGE__->meta->make_immutable();
 1;
 
 __END__
-
-=head1 SYNOPSIS
-
-  use Package::Locator::Index;
-
-  my $index = Package::Locator::Index->new( repository_url => 'http://somewhere' );
-  my $dist  = $index->distributions->{'A/AU/AUTHOR/Foo-Bar-1.0.tar.gz'};
-  my $pkg   = $index->packages->{'Foo::Bar'};
-
-=head1 DESCRIPTION
-
-B<This is a private module and there are no user-serviceable parts
-here.  The API documentation is for my own reference only.>
-
-L<Package::Locator::Index> is yet-another module for parsing the
-contents of the F<02packages.details.txt> file from a CPAN-like
-repository.
-
-=head1 MOTIVATION
-
-There are numerous existing modules for parsing the
-F<02packages.details.txt> file, but I wasn't completely happy with any
-of them.  Most of the existing modules transform the data into various
-flavors of Distribution and Package objects. But I'm not ready to
-commit to any particular API for Distributions and Packages (not even
-one of my own).  So L<Package::Locator::Index> exposes the index data
-as simple data structures.
-
-=head1 CONSTRUCTOR
-
-=head2 new( %attributes )
-
-All the attributes listed below can be passed to the constructor, and
-can be retrieved via accessor methods with the same name.  All
-attributes are read-only, and cannot be changed once the object is
-constructed.

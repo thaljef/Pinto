@@ -382,20 +382,10 @@ is not found, then an exception is thrown.
 sub ups_distribution {
     my ( $self, %args ) = @_;
 
-    my $spec = $args{spec};
+    my $spec = $args{spec} || throw 'Invalid arguments';
     my $cascade = $args{cascade} || 0;
-    my $dist_url;
 
-    if ( Pinto::Util::itis( $spec, 'Pinto::PackageSpec' ) ) {
-        $dist_url = $self->locate( spec => $spec, latest => $cascade );
-    }
-    elsif ( Pinto::Util::itis( $spec, 'Pinto::DistributionSpec' ) ) {
-        $dist_url = $self->locate( distribution => $spec->path );
-    }
-    else {
-        throw 'Invalid arguments';
-    }
-
+    my $dist_url = $self->locate( spec => $spec, latest => $cascade );
     throw "Cannot find $spec anywhere" if not $dist_url;
 
     return $self->fetch_distribution( url => $dist_url );

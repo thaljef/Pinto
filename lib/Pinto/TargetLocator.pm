@@ -1,6 +1,6 @@
 # ABSTRACT: Find a package among CPAN-like repositories
 
-package Pinto::PackageLocator;
+package Pinto::TargetLocator;
 
 use Moose;
 use MooseX::Types::Moose qw(ArrayRef);
@@ -11,9 +11,10 @@ use File::Temp;
 use LWP::UserAgent;
 use URI;
 
+use Pinto::Util qw(throw);
 use Pinto::Types qw(Uri Dir);
-use Pinto::PackageLocator::Index;
-use Pinto::PackageSpec;
+use Pinto::TargetLocator::Index;
+use Pinto::SpecFactory;
 
 use version;
 
@@ -113,7 +114,7 @@ C<repository_urls> attribute.
 
 has indexes => (
    is         => 'ro',
-   isa        => 'ArrayRef[Pinto::PackageLocator::Index]',
+   isa        => 'ArrayRef[Pinto::TargetLocator::Index]',
    auto_deref => 1,
    lazy_build => 1,
    init_arg   => undef,
@@ -125,7 +126,7 @@ has indexes => (
 sub _build_indexes {
     my ($self) = @_;
 
-    my @indexes = map { Pinto::PackageLocator::Index->new( force          => $self->force(),
+    my @indexes = map { Pinto::TargetLocator::Index->new( force          => $self->force(),
                                                       cache_dir      => $self->cache_dir(),
                                                       user_agent     => $self->user_agent(),
                                                       repository_url => $_ )
@@ -169,42 +170,27 @@ of the indexes, returns undef.
 sub locate {
     my ($self, %args) = @_;
 
-    $self->_validate_locate_args(%args);
+    $args{spec} || throw 'Invalid arguments';
 
-    if ($args{spec}) {
-        my $spec   = $args{spec};
-        my $latest = $args{latest} || 0;
-        return $self->_locate_package($spec, $latest);
-    }
-    else {
-        my $dist = $args{distribution};
-        return $self->_locate_dist($dist);
-    }
-}
+    $args{spec} = Pinto::SpecFactory->make_spec($args{spec}) 
+        if not ref $args{spec};
 
-#------------------------------------------------------------------------------
+    return $self->_locate_package(%args)
+        if $args{spec}->isa('Pinto::PackageSpec');
 
-sub _validate_locate_args {
-    my ($self, %args) = @_;
-
-    croak 'Cannot specify latest and distribution together'
-        if $args{distribution} and $args{latest};
-
-    croak 'Cannot specify spec and distribution together'
-        if $args{distribution} and $args{spec};
-
-    croak 'Must specify spec or distribution'
-        if not ( $args{distribution} or $args{spec} );
-
-    return 1;
+    return $self->_locate_distribution(%args)
+        if $args{spec}->isa('Pinto::DistributionSpec');
+        
+    throw 'Invalid arguments';
 }
 
 #------------------------------------------------------------------------------
 
 sub _locate_package {
-    my ($self, $spec, $latest) = @_;
+    my ($self, %args) = @_;
 
-    $spec = Pinto::PackageSpec->new($spec) if not ref $spec;
+    my $spec   = $args{spec};
+    my $latest = $args{latest};
 
     my ($latest_found_package, $found_in_index);
     for my $index ( $self->indexes() ) {
@@ -225,7 +211,7 @@ sub _locate_package {
 
 
     if ($latest_found_package) {
-        my $base_url = $found_in_index->repository_url();
+        my $base_url = $found_in_index->repository_url;
         my $latest_dist_path = $latest_found_package->{distribution};
         return  URI->new( "$base_url/authors/id/" . $latest_dist_path );
     }
@@ -235,17 +221,20 @@ sub _locate_package {
 
 #------------------------------------------------------------------------------
 
-sub _locate_dist {
-    my ($self, $dist_path) = @_;
+sub _locate_distribution {
+    my ($self, %args) = @_;
+
+    my $spec = $args{spec};
 
     for my $index ( $self->indexes ) {
-        my $base_url = $index->repository_url();
-        my $dist_url =  URI->new("$base_url/authors/id/$dist_path");
+
+        my $dist_path = $spec->path;
+        my $base_url  = $index->repository_url;
+        my $dist_url  = URI->new("$base_url/authors/id/$dist_path");
 
         return $dist_url if $index->distributions->{$dist_path};
         return $dist_url if $self->user_agent->head($dist_url)->is_success;
     }
-
 
     return;
 }
@@ -302,80 +291,3 @@ __PACKAGE__->meta->make_immutable();
 1;
 
 __END__
-
-=head1 SYNOPSIS
-
-  use Package::Locator;
-
-  # Basic search...
-  my $locator = Package::Locator->new();
-  my $url = locator->locate( package => 'Test::More' );
-
-  # Search for first within multiple repositories:
-  my $repos = [ qw(http://cpan.pair.com http://my.company.com/DPAN) ];
-  my $locator = Package::Locator->new( repository_urls => $repos );
-  my $url = locator->locate( package => 'Test::More' );
-
-  # Search for first where version >= 0.34:
-  my $repos = [ qw(http://cpan.pair.com http://my.company.com/DPAN) ];
-  my $locator = Package::Locator->new( repository_urls => $repos );
-  my $url = locator->locate( package => 'Test::More' version => 0.34);
-
-  # Search for latest where version  >= 0.34:
-  my $repos = [ qw(http://cpan.pair.com http://my.company.com/DPAN) ];
-  my $locator = Package::Locator->new( repository_urls => $repos );
-  my $url = locator->locate( package => 'Test::More' version => 0.34, latest => 1);
-
-  # Search for specific dist on multiple repositories...:
-  my $repos = [ qw(http://cpan.pair.com http://my.company.com/DPAN) ];
-  my $locator = Package::Locator->new( repository_urls => $repos );
-  my $url = locator->locate( distribution => 'A/AU/AUTHOR/Foo-1.0.tar.gz');
-
-=head1 DESCRIPTION
-
-L<Package::Locator> attempts to answer the question: "Where can I find
-a distribution that will provide this package?"  The answer is divined
-by searching the indexes for one or more CPAN-like repositories.  If
-you also provide a specific version number, L<Package::Locator> will
-attempt to find a distribution with that version of the package, or
-higher.  You can also ask to find the latest version of a package
-across all the indexes.
-
-L<Package::Locator> only looks at the index files for each repository,
-and those indexes only contain information about the latest versions
-of the packages within that repository.  So L<Package::Locator> is not
-BackPAN magic -- you cannot use it to find precisely which
-distribution a particular package (or file) came from.  For that
-stuff, see C<"/See Also">.
-
-=head1 CONSTRUCTOR
-
-=head2 new( %attributes )
-
-All the attributes listed below can be passed to the constructor, and
-retrieved via accessor methods with the same name.  All attributes are
-read-only, and cannot be changed once the object is constructed.
-
-=head1 MOTIVATION
-
-The L<CPAN> module also provides a mechanism for locating packages or
-distributions, much like L<Package::Locator> does.  However, L<CPAN>
-assumes that all repositories are CPAN mirrors, so it only searches
-the first repository that it can contact.
-
-My secret ambition is to fill the world with lots of DarkPAN
-repositories -- each with its own set of distributions.  For that
-scenario, I need to search multiple repositories at the same time.
-
-=head1  SEE ALSO
-
-If you need to locate a distribution that contains a precise version
-of a file rather than just a version that is "new enough", then look
-at some of these:
-
-L<Dist::Surveyor>
-
-L<BackPAN::Index>
-
-L<BackPAN::Version::Discover>
-

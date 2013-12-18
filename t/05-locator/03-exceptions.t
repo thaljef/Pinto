@@ -6,23 +6,16 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-use Pinto::PackageLocator;
+use Pinto::TargetLocator;
 
 #------------------------------------------------------------------------------
 
-my $class = 'Pinto::PackageLocator';
+my $class = 'Pinto::TargetLocator';
 
 #------------------------------------------------------------------------------
-
 
 throws_ok { $class->new()->locate() }
-    qr/Must specify spec or distribution/;
-
-throws_ok { $class->new()->locate(spec => 'Foo', distribution => 'Foo.tar.gz') }
-    qr/Cannot specify spec and distribution together/;
-
-throws_ok { $class->new()->locate(distribution => 'Foo.tar.gz', latest => 1) }
-    qr/Cannot specify latest and distribution together/;
+    qr/Invalid arguments/;
 
 throws_ok { $class->new()->locate(spec => 'Foo~2.3-RC') }
     qr/Invalid prerequisite spec/;
