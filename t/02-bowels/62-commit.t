@@ -39,7 +39,7 @@ use Pinto::Tester;
 local $Pinto::Globals::current_username = 'ME';
 
 my $t           = Pinto::Tester->new;
-my $faked_title = 'Fake Foo, Bar, Baz';
+my $faked_title = 'Fake Bar, Baz, Foo';
 
 #------------------------------------------------------------------------------
 
