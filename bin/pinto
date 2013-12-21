@@ -189,8 +189,9 @@ can save you quite a bit of typing.
 =item C<PINTO_EDITOR>
 
 Sets the path to editor application that will be used to compose log
-messages.  If not set, defaults to C<VISUAL> or C<EDITOR>.  At least
-one of these variables must be defined.
+messages.  If not set, defaults to C<VISUAL> or C<EDITOR>.  If none
+of those are set, either C<nano>, C<pico>, or C<vi> will be used (in 
+that order).
 
 =item C<PINTO_NO_COLOR>
 
