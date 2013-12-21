@@ -7,6 +7,7 @@ use MooseX::Types::Moose qw(Bool Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
+use List::MoreUtils qw(uniq);
 
 use Pinto::CommitMessage;
 use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
@@ -146,7 +147,7 @@ sub generate_message_title {
 
     my $class    = ref $self;
     my ($action) = $class =~ m/ ( [^:]* ) $/x;
-    my $title    = "$action " . join( ', ', @items ) . ( $extra ? " $extra" : '' );
+    my $title    = "$action " . join( ', ', sort uniq(@items) ) . ( $extra ? " $extra" : '' );
 
     return $title;
 }
