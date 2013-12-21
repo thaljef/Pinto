@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      - pinto now falls back to using nano, pico, or vi if none of the
+      usual environment variables for controlling the editor are set.
+      This fixes #119.  Thanks @borisdaeppen for the suggestion.
+
+      - The distributions listed in the generated title of the commit
+      message will now be sorted and deduplicated.
+
 0.092     2013-11-20 11:07:50 America/Los_Angeles
 
       [ENHANCEMENTS]
