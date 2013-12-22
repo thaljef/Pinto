@@ -116,12 +116,12 @@ again.
 
 =item --recurse
 
-=item --norecurse
+=item --no-recurse
 
 Recursively pull any distributions required to satisfy prerequisites
 for the targets.  The default value for this option can be configured
 in the F<pinto.ini> configuration file for the repository (it is usually
-set to 1).  To disable recursion, use C<--norecurse>.
+set to 1).  To disable recursion, use C<--no-recurse>.
 
 =item --message=TEXT
 
