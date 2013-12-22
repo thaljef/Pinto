@@ -75,8 +75,8 @@ a stack's properties after it has been created.
 =head1 COMMAND ARGUMENTS
 
 The two required arguments are the name of the source and target
-stacks.  Stack names must be alphanumeric plus hyphens and underscores,
-and are not case-sensitive.
+stacks.  Stack names must be alphanumeric plus hyphens, underscores,
+and periods, and are not case-sensitive.
 
 =head1 COMMAND OPTIONS
 
