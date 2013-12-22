@@ -47,6 +47,7 @@ sub execute {
    # use a faster algorithm for finding the roots of a DAG. 
 
     for my $dist ( @dists ) {
+        next if $is_prereq_dist{$dist};
         for my $prereq ($dist->prerequisites) {
             my %args = (spec => $prereq->as_spec, cache => \%cache);
             next unless my $prereq_dist = $stack->get_distribution(%args);
