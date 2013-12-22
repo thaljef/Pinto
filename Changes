@@ -1,10 +1,25 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed bug in the new "roots" command that caused it to report
+      far fewer distributions than it should.
+
+      [ENHANCEMENTS]
+
+      - A warning is emitted if you try to pull or add a Bundle
+      distribution.  Pinto does not know how to automatically determine 
+      prerequisites for a Bundle.
+
+      - A better error message is given when repository is not writable.
+      Previously, you were (incorrectly) told that the repository was 
+      locked.
+
 0.094     2013-12-22 00:36:27 America/Los_Angeles
 
       [INCOMPATIBLE CHANGES]
 
-      - When pulling or adding a distribution that contains packages that
+      - When pulling or adding a distribution which contains packages that
       partially overlap with an existing distribution on the stack, then
       all packages from the existing distribution are removed from the
       stack, not just the overlapping ones.  This means it is impossible
