@@ -43,10 +43,8 @@ sub execute {
     my %is_prereq_dist;
     my %cache;
 
-   # There is lots of room for optimization here.  To start with, we could
-   # cache a package -> distribution map so we don't have to make so many
-   # trips to the database.  Also, we could probably apply a bit of graph
-   # theory here and use an algorithm for finding the roots of a DAG. 
+   # We could probably apply a bit of graph theory here and
+   # use a faster algorithm for finding the roots of a DAG. 
 
     for my $dist ( @dists ) {
         for my $prereq ($dist->prerequisites) {
