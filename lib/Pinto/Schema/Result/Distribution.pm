@@ -465,6 +465,37 @@ sub registered_stacks {
 
 #------------------------------------------------------------------------------
 
+sub main_module {
+    my ($self) = @_;
+
+    # We start by sorting packages by the length of their name.  Most of
+    # the time, the shorter one is more likely to be the main module name.
+    my @pkgs = sort { length $a->name <=> length $b->name } $self->packages;
+
+    # Transform the dist name into a package name
+    my $dist_name = $self->name;
+    $dist_name =~ s/-/::/g;
+
+    # First, look for a package name that matches the dist name
+    for my $pkg (@pkgs) {
+        return $pkg->name if $pkg->name eq $dist_name;
+    }
+
+    # Then, look for a package name that matches it's file name
+    for my $pkg (@pkgs) {
+        return $pkg->name if $pkg->is_simile;
+    }
+
+    # Then just use the first (i.e. shortest) package name
+    return $pkgs[0]->name if @pkgs;
+
+    # If we get here, then there are no packages, so we just guess
+    whine "Guessing that main module for $self is $dist_name";
+    return $dist_name;
+}
+
+#------------------------------------------------------------------------------
+
 sub package_count {
     my ($self) = @_;
 
@@ -513,6 +544,7 @@ sub to_string {
         'D' => sub { $self->vname },
         'V' => sub { $self->version },
         'm' => sub { $self->is_devel ? 'd' : 'r' },
+        'M' => sub { $self->main_module },
         'h' => sub { $self->path },
         'H' => sub { $self->native_path },
         'f' => sub { $self->archive },
