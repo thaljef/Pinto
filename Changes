@@ -2,7 +2,7 @@
 
       [INCOMPATIBLE CHANGES]
 
-      - The "add" and "pull" commands now have both --recurse and --no-recurse
+      - The "add" and "pull" commands now have both --no-recurse and --recurse
       options.  This allows you to turn recursion off OR on, depending on 
       the default setting for the repository (see more about that under 
       ENHANCEMENTS).  However, the -n shortcut for --no-recurse is no 
@@ -17,6 +17,13 @@
       those commands are not recursive by default.  Either way,
       commands can always override that parameter using either the
       --recurse or --no-recurse switches.
+
+      - pinto now falls back to using nano, pico, or vi if none of the
+      usual environment variables for controlling the editor are set.
+      This fixes #119.  Thanks @borisdaeppen for the suggestion.
+
+      - The distributions listed in the generated title of the commit
+      message will now be sorted and deduplicated.
 
 0.092     2013-11-20 11:07:50 America/Los_Angeles
 

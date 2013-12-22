@@ -9,6 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Term::ANSIColor;
 use Term::EditorEdit;
+use File::Which qw(which);
 
 use Pinto::Types qw(Io ANSIColorSet);
 use Pinto::Util qw(user_colors itis throw is_interactive);
@@ -145,7 +146,8 @@ sub should_render_progress {
 sub edit {
     my ( $self, $document ) = @_;
 
-    local $ENV{VISUAL} = $ENV{PINTO_EDITOR} if $ENV{PINTO_EDITOR};
+    local $ENV{VISUAL} = $self->find_editor
+        or throw 'Unable to find an editor.  Please set PINTO_EDITOR';
 
     # If this command is reading input from a pipe or file, then
     # STDIN will not be connected to a terminal.  This causes vim
@@ -186,6 +188,25 @@ sub get_color {
     throw "Invalid color number: $color_number" if not defined $color;
 
     return Term::ANSIColor::color($color);
+}
+
+#-----------------------------------------------------------------------------
+
+sub find_editor {
+    my ($self) = @_;
+
+    # Try unsing environment variables first
+    for my $env_var (qw(PINTO_EDITOR VISUAL EDITOR)) {
+        return $ENV{$env_var} if $ENV{$env_var};
+    }
+
+    # Then try typical editor commands
+    for my $cmd (qw(nano pico vi)) {
+        my $found_cmd = which($cmd);
+        return $found_cmd if $found_cmd;
+    }
+
+    return;
 }
 
 #-----------------------------------------------------------------------------

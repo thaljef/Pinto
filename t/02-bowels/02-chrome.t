@@ -71,4 +71,32 @@ use Pinto::Chrome::Term;
 
 #-----------------------------------------------------------------------------
 
+{
+    my $chrome = Pinto::Chrome::Term->new;
+    
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = 'emacs';
+    is $chrome->find_editor, $ENV{PINTO_EDITOR}, 'Editor from PINTO_EDITOR';
+
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = 'emacs';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, $ENV{EDITOR}, 'Editor from EDITOR';
+
+    local $ENV{VISUAL} = 'emacs';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, $ENV{VISUAL}, 'Editor from VISUAL';
+
+    local $ENV{PATH} = '';
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, undef, 'No editor is avaiable';
+
+}
+
+#-----------------------------------------------------------------------------
+
 done_testing;
