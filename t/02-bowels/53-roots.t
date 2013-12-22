@@ -28,23 +28,6 @@ use Pinto::Tester;
 
 {
 
-	# Missing dependency
-
-    my $t = Pinto::Tester->new;
-    $t->populate('ME/Dist-1 = PkgA~1 & PkgB~1');
-
-    $t->run_ok( Roots => {format => '%D'});
-    my @lines = split /\n/, ${ $t->outstr };
-    is_deeply \@lines, [qw(Dist-1)], 'Got expected roots';
-    $t->stderr_like(qr/Prerequisite PkgB~1 seems to be missing/, 'Got missing prereq warning');
-
-}
-
-
-#------------------------------------------------------------------------------
-
-{
-
 	# What if there is a circular dependency?
 
     my $t = Pinto::Tester->new;

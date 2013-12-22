@@ -34,9 +34,6 @@ has format => (
 );
 
 #------------------------------------------------------------------------------
-# TODO: Refactor this to use the PrerequisiteWalker, and add some cache logic
-# to optimize it.  Also, consider moving it to a role (or into the Stack) so
-# it can be used in other situations, like checking for missing prereqs.
 
 sub execute {
     my ($self) = @_;
@@ -52,9 +49,8 @@ sub execute {
 
     for my $dist ( @dists ) {
         for my $prereq ($dist->prerequisites) {
-            my $dependent_dist = $stack->get_distribution(spec => $prereq->as_spec);
-            whine "Prerequisite $prereq seems to be missing for $dist" and next if not $dependent_dist;
-            $is_depended_upon{$dependent_dist}++;
+            next unless my $depending_dist = $stack->get_distribution(spec => $prereq->as_spec);
+            $is_depended_upon{$depending_dist}++;
         }
     }
 
