@@ -36,7 +36,7 @@ has format => (
 #------------------------------------------------------------------------------
 # TODO: Refactor this to use the PrerequisiteWalker, and add some cache logic
 # to optimize it.  Also, consider moving it to a role (or into the Stack) so
-# it can be used in other situations.
+# it can be used in other situations, like checking for missing prereqs.
 
 sub execute {
     my ($self) = @_;
