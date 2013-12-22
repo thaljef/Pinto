@@ -40,7 +40,7 @@ sub execute {
 
     my $stack = $self->repo->get_stack($self->stack);
     my @dists = $stack->head->distributions->all;
-    my %is_depended_upon;
+    my %is_prereq_dist;
 
    # There is lots of room for optimization here.  To start with, we could
    # cache a package -> distribution map so we don't have to make so many
@@ -49,12 +49,14 @@ sub execute {
 
     for my $dist ( @dists ) {
         for my $prereq ($dist->prerequisites) {
-            next unless my $depending_dist = $stack->get_distribution(spec => $prereq->as_spec);
-            $is_depended_upon{$depending_dist}++;
+            my $spec = $prereq->as_spec;
+            my $prereq_dist = $stack->get_distribution(spec => $spec);
+            next unless $prereq_dist; # Maybe unsatisfied?
+            $is_prereq_dist{$prereq_dist}++;
         }
     }
 
-    my @roots = grep { ! $is_depended_upon{$_} } @dists;
+    my @roots = grep { ! $is_prereq_dist{$_} } @dists;
     $self->show( $_->to_string( $self->format ) ) for @roots;
 
     return $self->result;
