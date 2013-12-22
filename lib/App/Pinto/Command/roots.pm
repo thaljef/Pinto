@@ -133,11 +133,11 @@ stacks in the repository.
 
 Install all modules in the stack in one shot:
 
-  pinto -r file:///myrepo roots | cpanm --mirror-only --mirror file:///myrepo
+  pinto -r /myrepo roots | cpanm --mirror-only --mirror file:///myrepo
 
 Generate a basic F<cpanfile> that would install all modules in the stack:
 
-  pinto -r file:///myrepo roots -f 'requires q{%M};' > cpanfile
+  pinto -r /myrepo roots -f 'requires q{%M};' > cpanfile
 
 =head1 CAVEATS
 
