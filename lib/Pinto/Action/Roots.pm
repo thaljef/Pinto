@@ -7,6 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
+use Pinto::Util qw(whine);
 use Pinto::Types qw(StackName StackDefault StackObject);
 
 #------------------------------------------------------------------------------
@@ -33,6 +34,9 @@ has format => (
 );
 
 #------------------------------------------------------------------------------
+# TODO: Refactor this to use the PrerequisiteWalker, and add some cache logic
+# to optimize it.  Also, consider moving it to a role (or into the Stack) so
+# it can be used in other situations.
 
 sub execute {
     my ($self) = @_;
@@ -48,8 +52,9 @@ sub execute {
 
     for my $dist ( @dists ) {
         for my $prereq ($dist->prerequisites) {
-            next unless my $dist = $stack->get_distribution(spec => $prereq->as_spec);
-            $is_depended_upon{$dist}++;
+            my $dependent_dist = $stack->get_distribution(spec => $prereq->as_spec);
+            whine "Prerequisite $prereq seems to be missing for $dist" and next if not $dependent_dist;
+            $is_depended_upon{$dependent_dist}++;
         }
     }
 
