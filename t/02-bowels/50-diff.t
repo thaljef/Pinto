@@ -23,7 +23,7 @@ $t->populate('AUTHOR/Dist-2 = PkgB~2, PkgC~2');
     my $left  = ( $right->parents )[0];
 
     my $expect_adds = [ 'AUTHOR/Dist-2/PkgB~2/-', 'AUTHOR/Dist-2/PkgC~2/-' ];
-    my $expect_dels = ['AUTHOR/Dist-1/PkgB~1/-'];
+    my $expect_dels = [ 'AUTHOR/Dist-1/PkgA~1/-', 'AUTHOR/Dist-1/PkgB~1/-' ];
 
     my $diff = Pinto::Difference->new( left => $left, right => $right );
 

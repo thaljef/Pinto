@@ -1,5 +1,29 @@
 {{$NEXT}}
 
+      [INCOMPATIBLE CHANGES]
+
+      - When pulling or adding a distribution that contains packages that
+      partially overlap with an existing distribution on the stack, then
+      all packages from the existing distribution are removed from the
+      stack, not just the overlapping ones.  This means it is impossible
+      for the stack to contain only *some* of the packages from any
+      distribution.
+
+      In nearly all cases, this is what you want because you never want
+      to end up with an installation that has some packages from one
+      distribution and some packages from another.  If you really want
+      your stack to contain the packages from both distributions like
+      the PAUSE index does, then Pinto probably isn't the right tool
+      for you.
+
+      [NEW COMMANDS]
+
+      - The "roots" command will list all the distributions that are
+      the root ancestors of the dependency graph which includes all
+      distributions in the stack.  This command can be used to install
+      every distribution in the stack in one shot.  There are some
+      caveats though.  See the documentation for details.
+
 0.093     2013-12-21 16:24:39 America/Los_Angeles
 
       [INCOMPATIBLE CHANGES]

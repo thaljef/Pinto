@@ -24,10 +24,9 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Server::Tester->new->start_server;
-$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
-$t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
+$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1');
+$t->populate('PAUL/DistB-1 = PkgB~1 & PkgC~1');
 $t->populate('MARK/DistC-1 = PkgC~1');
-$t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
 
 #------------------------------------------------------------------------------
 subtest 'Install from default stack' => sub {
@@ -44,7 +43,6 @@ subtest 'Install from default stack' => sub {
     file_exists_ok( $p5_dir->file('PkgA.pm') );
     file_exists_ok( $p5_dir->file('PkgB.pm') );
     file_exists_ok( $p5_dir->file('PkgC.pm') );
-    file_exists_ok( $p5_dir->file('PkgD.pm') );
 };
 
 #------------------------------------------------------------------------------
@@ -66,7 +64,6 @@ subtest 'Install from named stack' => sub {
     file_exists_ok( $p5_dir->file('PkgA.pm') );
     file_exists_ok( $p5_dir->file('PkgB.pm') );
     file_exists_ok( $p5_dir->file('PkgC.pm') );
-    file_exists_ok( $p5_dir->file('PkgD.pm') );
 };
 
 #------------------------------------------------------------------------------

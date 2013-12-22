@@ -89,4 +89,29 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 }
 
 #------------------------------------------------------------------------------
+
+{
+
+    # When pulling a new dist, any overlapping packages from an existing 
+    # distribution with the same packages should be removed.  In this case 
+    # it is PkgA and PkgC
+
+    my $t = Pinto::Tester->new;
+
+    $t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1');
+    $t->populate('AUTHOR/Dist-2 = PkgC~1');
+    $t->registration_ok('AUTHOR/Dist-1/PkgA~1');
+    $t->registration_ok('AUTHOR/Dist-1/PkgB~1');
+    $t->registration_ok('AUTHOR/Dist-2/PkgC~1');
+
+    $t->populate('AUTHOR/Dist-3 = PkgB~3, PkgC~3');
+    $t->registration_not_ok('AUTHOR/Dist-1/PkgA~1');
+    $t->registration_not_ok('AUTHOR/Dist-1/PkgB~1');
+    $t->registration_not_ok('AUTHOR/Dist-2/PkgC~2');
+    $t->registration_ok('AUTHOR/Dist-3/PkgB~3');
+    $t->registration_ok('AUTHOR/Dist-3/PkgC~3');
+
+}
+
+#------------------------------------------------------------------------------
 done_testing;

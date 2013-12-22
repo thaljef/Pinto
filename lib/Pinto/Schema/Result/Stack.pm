@@ -749,15 +749,6 @@ sub default_properties {
 
 #-------------------------------------------------------------------------------
 
-sub prohibits_partial_distributions {
-    my ($self) = @_;
-
-    return 1 if $self->get_property('prohibit_partial_distributions');
-    return 0;
-}
-
-#-------------------------------------------------------------------------------
-
 sub numeric_compare {
     my ( $stack_a, $stack_b ) = @_;
 
