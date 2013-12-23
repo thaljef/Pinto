@@ -20,7 +20,7 @@ use Pinto::Tester;
     $t->populate('ME/Dist-3 = PkgC~1');
 
     $t->run_ok( Roots => {format => '%D'});
-    my @lines = sort split /\n/, ${ $t->outstr };
+    my @lines = split /\n/, ${ $t->outstr };
     is_deeply \@lines, [qw(Dist-1 Dist-3)], 'Got expected roots';
 }
 

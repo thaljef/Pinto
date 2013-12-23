@@ -55,8 +55,9 @@ sub execute {
         }
     }
 
-    my @roots = grep { ! $is_prereq_dist{$_} } @dists;
-    $self->show( $_->to_string( $self->format ) ) for @roots;
+    my @roots  = grep { ! $is_prereq_dist{$_} } @dists;
+    my @output = sort map { $_->to_string($self->format) } @roots;
+    $self->show($_) for @output;
 
     return $self->result;
 } 
