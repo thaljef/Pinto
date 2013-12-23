@@ -43,8 +43,9 @@ sub execute {
     my %is_prereq_dist;
     my %cache;
 
-   # We could probably apply a bit of graph theory here and
-   # use a faster algorithm for finding the roots of a DAG. 
+    # Algorithm: Visit each distribution and resolve each of its
+    # dependencies to the prerequisite distribution (if it exists).
+    # Any distribution that is a prerequisite cannot be a root.
 
     for my $dist ( @dists ) {
         next if $is_prereq_dist{$dist};
