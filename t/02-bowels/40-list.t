@@ -65,4 +65,20 @@ $t->run_ok( 'Add' => { archives => $archive3, stack => 'qa',  author => 'BOB' } 
 
 #-----------------------------------------------------------------------------
 
+{
+    # Testing result status...
+
+    my $result;
+    $t->run_ok( New => {stack => 'foo'});
+
+    $result = $t->pinto->run( List => { stack => 'foo' });
+    is $result->was_successful, 0, 'Listing an empty stack is successfull';
+
+    $result = $t->pinto->run( List => { stack => 'foo', author => 'nomatch' });
+    is $result->was_successful, 0, 'No matches means unsuccessful';
+}
+
+
+#-----------------------------------------------------------------------------
+
 done_testing;
