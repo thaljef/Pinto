@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed compatibility with the exception objects thrown by the
+      latest version of Moose.  However, Pinto itself does not require
+      the latest version of Moose.
+
 0.096     2014-01-07 10:32:19 America/Los_Angeles
 
       [ENHANCEMENTS]
