@@ -2,13 +2,13 @@
 
       [ENHANCEMENTS]
 
-      - The exit status of the "list" command will now be an error if
+      - The exit status of the "list" command will now be non-zero if
       you specify any search criteria and no matches are found.  This
       follows the behavior of the Unix "ls" command.
 
       [BUG FIXES]
 
-      - Now requires Module::CoreList 3.02 or newer.
+      - Now requires Module::CoreList 3.03 or newer.
 
 0.095     2013-12-22 23:38:28 America/Los_Angeles
 
