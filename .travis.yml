@@ -9,9 +9,11 @@ perl:
 
 install:
    - unset PERL_CPANM_OPT
-   - cpanm --mirror http://cpan.stratopan.com --quiet --notest Dist::Zilla
-   - dzil authordeps | cpanm --mirror http://cpan.stratopan.com --quiet --notest 
-   - dzil listdeps   | cpanm --mirror http://cpan.stratopan.com --quiet --notest
+   - export CPAN_MIRROR_URL=http://cpan.stratopan.com
+   - cpanm --mirror $CPAN_MIRROR_URL --quiet --notest Dist::Zilla
+   - dzil authordeps | cpanm $CPAN_MIRROR_URL --quiet --notest 
+   - dzil listdeps   | cpanm $CPAN_MIRROR_URL --quiet --notest
 
 script:
+   - export HARNESS_OPTIONS='j:c'
    - dzil smoke --release --author
