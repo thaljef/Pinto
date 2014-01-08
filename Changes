@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.097     2014-01-07 20:53:29 America/Los_Angeles
+
       [BUG FIXES]
 
       - Fixed compatibility with the exception objects thrown by the
