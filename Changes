@@ -4,7 +4,7 @@
 
       - When using the --dry-run option on the "pull" and "add" commands,
       a diff report will be displayed.  This shows the changes that would
-      have been made.
+      have been made.  If there were no changes, nothing is shown.
 
       - The diff reports now default to a concise format which only lists 
       the distributions that have changed in the index rather than each 
