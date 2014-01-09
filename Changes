@@ -12,8 +12,7 @@
       environment variable.
 
       - The "log" command now has a --show-diffs (or -d) option that 
-      causes it to display the diff against the previous revision for
-      each commit.
+      causes it to also display the diff from the previous revision.
 
 0.097     2014-01-07 20:53:29 America/Los_Angeles
 
