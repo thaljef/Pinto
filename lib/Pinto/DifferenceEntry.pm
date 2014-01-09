@@ -1,3 +1,5 @@
+# ABSTRACT: Represents one addition or deletion in a diff
+
 package Pinto::DifferenceEntry;
 
 use Moose;
