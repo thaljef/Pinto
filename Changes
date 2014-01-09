@@ -11,8 +11,8 @@
       package.  To get the old detailed format, set the PINTO_DETAILED_DIFF
       environment variable.
 
-      - The "log" command now has a --show-diffs (or -d) option that 
-      causes it to also display the diff from the previous revision.
+      - The "log" command now has a --show-diffs (or -d) option that causes
+      it to also display the diff from the previous revision.
 
 0.097     2014-01-07 20:53:29 America/Los_Angeles
 
