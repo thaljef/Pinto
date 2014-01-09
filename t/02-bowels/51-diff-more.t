@@ -17,18 +17,18 @@ my $dist2 = make_dist_archive('AUTHOR/Dist-2 = PkgB~2, PkgC~2');
 
 my $t = Pinto::Tester->new;
 
-$t->run_ok( Add => { archives => $dist1, author => 'AUTHOR', stack => 'master' } );
+$t->run_ok( Add  => { archives => $dist1, author => 'AUTHOR', stack => 'master' } );
 $t->run_ok( Copy => { from_stack => 'master', to_stack => 'foo' } );
-$t->run_ok( Add => { archives => $dist2, author => 'AUTHOR', stack => 'foo' } );
+$t->run_ok( Add  => { archives => $dist2, author => 'AUTHOR', stack => 'foo' } );
+$t->run_ok( Pin  => { targets => 'PkgC', stack => 'foo' } );
 
 #------------------------------------------------------------------------------
 
 {
 
     my @expected = (
-        qr{^ \- .+ PkgB \s+ 1 \s+ AUTHOR/Dist-1}mx,
-        qr{^ \+ .+ PkgB \s+ 2 \s+ AUTHOR/Dist-2}mx,
-        qr{^ \+ .+ PkgC \s+ 2 \s+ AUTHOR/Dist-2}mx,
+        qr{^ \Q-[rl-] AUTHOR/Dist-1.tar.gz\E $}mx,
+        qr{^ \Q+[rl!] AUTHOR/Dist-2.tar.gz\E $}mx,
     );
 
     # Compare by revision id

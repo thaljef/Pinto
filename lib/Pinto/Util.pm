@@ -41,6 +41,7 @@ Readonly our @EXPORT_OK => qw(
     is_interactive
     is_remote_repo
     is_system_prop
+    is_detailed_diff_mode
     isa_perl
     itis
     md5
@@ -677,6 +678,14 @@ sub is_remote_repo {
 
     return if not $url;
     return $url =~ m{^https?://}x;
+}
+
+#-------------------------------------------------------------------------------
+
+
+sub is_detailed_diff_mode {
+    
+    return $ENV{PINTO_DETAILED_DIFF} || 0;
 }
 
 #-------------------------------------------------------------------------------

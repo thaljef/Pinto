@@ -4,9 +4,10 @@ package Pinto::Action::Log;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Str);
+use MooseX::Types::Moose qw(Str Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
+use Pinto::Difference;
 use Pinto::RevisionWalker;
 use Pinto::Constants qw(:color);
 use Pinto::Types qw(StackName StackDefault);
@@ -27,10 +28,10 @@ has stack => (
     default => undef,
 );
 
-has format => (
+has show_diffs => (
     is        => 'ro',
-    isa       => Str,
-    predicate => 'has_format',
+    isa       => Bool,
+    default   => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -48,6 +49,12 @@ sub execute {
 
         my $rest = $revision->to_string("Date: %u\nUser: %j\n\n%{4}G\n");
         $self->show($rest);
+
+        if ($self->show_diffs) {
+            my $parent = ($revision->parents)[0];
+            my $diff = Pinto::Difference->new(left => $parent, right => $revision);
+            $self->show($diff);
+        }
     }
 
     return $self->result;

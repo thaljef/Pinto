@@ -60,7 +60,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT diff [OPTIONS] [LEFT] RIGHT
+  pinto --root=REPOSITORY_ROOT diff [OPTIONS] LEFT [RIGHT]
 
 =head1 DESCRIPTION
 
@@ -79,7 +79,9 @@ truncated to uniqueness.
 
 =head1 COMMAND OPTIONS
 
-None.
+None. But see L<"CONFIGURATION"> below.
+
+=back
 
 =head2 EXAMPLES
 
@@ -88,5 +90,15 @@ None.
  pinto diff 1ae834f              # Compare head of default stack with revision 1ae834f
  pinto diff foo 1ae834f          # Compare head of foo stack with revision 1ae834f
  pinto diff 663fd2a 1ae834f      # Compare revision 663fd2a with revision 1ae834f
- 
+
+=head1 CONFIGURATION
+
+By default, this command shows a concise diff which only shows the
+distributions that have changed between the revisions.  But if you set the
+C<PINTO_DETAILED_DIFF> environment variable to a true value, it will show each
+package that has changed between the revisions.  The C<PINTO_DETAILED_DIFF>
+environment variable affects all diffs produced by pinto, such as those
+displayed by the L<log|App::Pinto::Command::log>  command, or when using the
+C<--dry-run> option.
+
 =cut

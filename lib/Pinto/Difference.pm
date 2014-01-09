@@ -7,7 +7,9 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(ArrayRef Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Pinto::Util qw(itis);
+use Pinto::DifferenceEntry;
+use Pinto::Util qw(itis is_detailed_diff_mode);
+
 
 use overload ( q{""} => 'to_string' );
 
@@ -41,12 +43,8 @@ has diffs => (
 has additions => (
     traits  => [qw(Array)],
     handles => { additions => 'elements' },
-    isa     => ArrayRef ['Pinto::Schema::Result::Registration'],
-    default => sub {
-        [   map  { $_->registration }
-            grep { $_->op eq '+' } $_[0]->diffs
-        ];
-    },
+    isa     => ArrayRef ['Pinto::DifferenceEntry'],
+    default => sub { [ grep { $_->op eq '+' } $_[0]->diffs ] },
     init_arg => undef,
     lazy     => 1,
 );
@@ -54,12 +52,8 @@ has additions => (
 has deletions => (
     traits  => [qw(Array)],
     handles => { deletions => 'elements' },
-    isa     => ArrayRef ['Pinto::Schema::Result::Registration'],
-    default => sub {
-        [   map  { $_->registration }
-            grep { $_->op eq '-' } $_[0]->diffs
-        ];
-    },
+    isa     => ArrayRef ['Pinto::DifferenceEntry'],
+    default => sub { [ grep { $_->op eq '-' } $_[0]->diffs ] },
     init_arg => undef,
     lazy     => 1,
 );
@@ -70,6 +64,13 @@ has is_different => (
     init_arg => undef,
     default  => sub { shift->diffs > 0 },
     lazy     => 1,
+);
+
+
+has detailed => (
+    is       => 'ro',
+    isa      => Bool,
+    default  => \&is_detailed_diff_mode,
 );
 
 #------------------------------------------------------------------------------
@@ -100,9 +101,14 @@ sub _build_diffs {
     # side.  Two registrations are the same if they have the same values in
     # the package, distribution, and is_pinned columns.  So we use these
     # columns to construct the keys of a hash.  The value is the id of
-    # the registration.
+    # the registration.  For a concise diff, we just use the distribution
+    # and is_pinned columns, which effectively groups the records so there
+    # is only one diff entry per distribution.  In that case, the package
+    # referenced by the registration won't be meaningful.
 
-    my @fields = qw(distribution package is_pinned);
+    my @fields = $self->detailed
+        ? qw(distribution package is_pinned)
+        : qw(distribution is_pinned);
 
     my $cb = sub {
         my $value = $_[0]->id;
@@ -119,8 +125,8 @@ sub _build_diffs {
     # present on the right but not on the left have been added.  And
     # those present on left but not on the right have been deleted.
 
-    my @add_ids = @right{ grep { not exists $left{$_} } keys %right };
-    my @del_ids = @left{ grep  { not exists $right{$_} } keys %left };
+    my @add_ids = @right{ grep { not exists $left{$_}  } keys %right };
+    my @del_ids = @left{  grep { not exists $right{$_} } keys %left };
 
     # Now we have the ids of all the registrations that were added or
     # deleted between the left and right revisions.  We use those ids to
@@ -133,7 +139,7 @@ sub _build_diffs {
     # the diff is more readable if we group registrations together by
     # distribution name.
 
-    my @diffs = sort @adds, @dels;
+    my @diffs = sort @dels, @adds;
 
     return \@diffs;
 }
@@ -160,7 +166,10 @@ sub _create_entries {
 
     my $where   = { 'me.id' => { in => \"SELECT reg from $tmp_tbl" } };
     my $reg_rs  = $side->registrations($where)->with_distribution->with_package;
-    my @entries = map { Pinto::DifferenceEntry->new( op => $type, registration => $_ ) } $reg_rs->all;
+
+    my @entries = map { Pinto::DifferenceEntry->new( op           => $type,
+                                                     detailed     => $self->detailed, 
+                                                     registration => $_ ) } $reg_rs->all;
 
     $dbh->do("DROP TABLE $tmp_tbl");
 
@@ -182,61 +191,7 @@ sub foreach {
 sub to_string {
     my ($self) = @_;
 
-    return join '', $self->diffs;
-}
-
-#------------------------------------------------------------------------------
-
-__PACKAGE__->meta->make_immutable;
-
-###############################################################################
-###############################################################################
-
-package Pinto::DifferenceEntry;
-
-use Moose;
-use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods ( autoclean => 1 );
-use MooseX::Types::Moose qw(Str);
-
-use overload (
-    q{""} => 'to_string',
-    'cmp' => 'string_compare',
-);
-
-#------------------------------------------------------------------------------
-
-# VERSION
-
-#------------------------------------------------------------------------------
-
-has op => (
-    is       => 'ro',
-    isa      => Str,
-    required => 1
-);
-
-has registration => (
-    is       => 'ro',
-    isa      => 'Pinto::Schema::Result::Registration',
-    required => 1,
-);
-
-#------------------------------------------------------------------------------
-
-sub to_string {
-    my ($self) = @_;
-
-    my $format = "[%F] %-40p %12v %a/%f\n";
-    return $self->op . $self->registration->to_string($format);
-}
-
-#------------------------------------------------------------------------------
-
-sub string_compare {
-    my ( $self, $other ) = @_;
-
-    return ( $self->registration->distribution->name cmp $other->registration->distribution->name );
+    return join("\n", $self->diffs) . "\n";
 }
 
 #------------------------------------------------------------------------------

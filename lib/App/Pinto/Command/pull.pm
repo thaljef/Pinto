@@ -20,6 +20,7 @@ sub opt_spec {
 
     return (
         [ 'cascade'                           => 'Always pick latest upstream package' ],
+        [ 'detailed-diff'                     => 'Show diff report with package details'],
         [ 'dry-run'                           => 'Do not commit any changes' ],
         [ 'message|m=s'                       => 'Message to describe the change' ],
         [ 'no-fail'                           => 'Do not fail when there is an error' ],
@@ -95,9 +96,10 @@ satisfactory version of the package.
 
 =item --dry-run
 
-Go through all the motions, but do not actually commit any changes to
-the repository.  Use this option to see how upgrades would potentially
-impact the stack.
+Go through all the motions, but do not actually commit any changes to the
+repository.  At the conclusion, a diff showing the changes that would have 
+been made will be displayed.  Use this option to see how upgrades would 
+potentially impact the stack.
 
 =item --no-fail
 

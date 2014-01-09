@@ -84,12 +84,12 @@ around execute => sub {
     my @ok = try { $self->$orig(@args) } catch { $self->repo->txn_rollback; throw $_ };
 
     if ( $self->dry_run ) {
-        $self->notice('Dry run -- rolling back database');
+        $stack->refresh->has_changed ? $self->show($stack->diff) : $self->notice('No changes were made');
         $self->repo->txn_rollback;
         $self->repo->clean_files;
     }
     elsif ( $stack->refresh->has_not_changed ) {
-        $self->warning('No index changes were made');
+        $self->warning('No changes were made');
         $self->repo->txn_rollback;
     }
     else {

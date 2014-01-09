@@ -231,6 +231,12 @@ Sets the path to the pager application that will be used to paginate output from
 each command.  Defaults to C<PAGER>.  If none of these are set, then no pager 
 is used.
 
+=item C<PINTO_DETAILED_DIFF>
+
+If set to 1, pinto will default to using a detailed format for all diff reports.
+In other words, it implies the C<--detailed-diff> option on all commands that
+produce diff reports.
+
 =item C<PINTO_DEBUG>
 
 If set to 1, pinto will emit more diagnostic messages to STDERR.  If set to 2, 

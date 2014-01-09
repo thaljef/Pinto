@@ -96,8 +96,9 @@ satisfactory version of the package.
 
 =item --dry-run
 
-Go through all the motions, but do not actually commit any changes to
-the repository.  Use this option to see how the command would
+Go through all the motions, but do not actually commit any changes to the
+repository.  At the conclusion, a diff showing the changes that would have 
+been made will be displayed.  Use this option to see how upgrades would 
 potentially impact the stack.
 
 =item --message=TEXT
