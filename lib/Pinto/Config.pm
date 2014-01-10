@@ -153,7 +153,7 @@ has sources => (
     is            => 'ro',
     isa           => Str,
     key           => 'sources',
-    default       => 'http://cpan.perl.org http://backpan.perl.org',
+    default       => 'http://www.cpan.org http://backpan.perl.org',
     documentation => 'URLs of upstream repositories (space delimited)',
 );
 
@@ -162,8 +162,16 @@ has target_perl_version => (
     isa           => PerlVersion,
     key           => 'target_perl_version',
     documentation => 'Default target perl version for new stacks',
-    default       => $],                                             # Note: $PERL_VERSION is broken on old perls
+    default       => $], # Note: $PERL_VERSION is broken on old perls
     coerce        => 1,
+);
+
+has recurse => (
+    is            => 'ro',
+    isa           => Bool,
+    key           => 'recurse',
+    documentation => 'Default recursive behavior',
+    default       => 1,          
 );
 
 #------------------------------------------------------------------------------

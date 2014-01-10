@@ -4,15 +4,15 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.092
+version 0.097\_01
 
 # SYNOPSIS
 
-See [pinto](http://search.cpan.org/perldoc?pinto) to create and manage a Pinto repository.
+See [pinto](https://metacpan.org/pod/pinto) to create and manage a Pinto repository.
 
-See [pintod](http://search.cpan.org/perldoc?pintod) to allow remote access to your Pinto repository.
+See [pintod](https://metacpan.org/pod/pintod) to allow remote access to your Pinto repository.
 
-See [Pinto::Manual](http://search.cpan.org/perldoc?Pinto::Manual) for more information about the Pinto tools.
+See [Pinto::Manual](https://metacpan.org/pod/Pinto::Manual) for more information about the Pinto tools.
 
 [Stratopan](http://stratopan.com) for hosting your Pinto repository in the cloud.
 
@@ -28,8 +28,8 @@ can control precisely which dependencies go into your application.
 
 # FEATURES
 
-Pinto is inspired by [Carton](http://search.cpan.org/perldoc?Carton), [CPAN::Mini::Inject](http://search.cpan.org/perldoc?CPAN::Mini::Inject), and
-[MyCPAN::App::DPAN](http://search.cpan.org/perldoc?MyCPAN::App::DPAN), but adds a few interesting features:
+Pinto is inspired by [Carton](https://metacpan.org/pod/Carton), [CPAN::Mini::Inject](https://metacpan.org/pod/CPAN::Mini::Inject), and
+[MyCPAN::App::DPAN](https://metacpan.org/pod/MyCPAN::App::DPAN), but adds a few interesting features:
 
 - Pinto supports multiple indexes
 
@@ -62,18 +62,18 @@ Pinto is inspired by [Carton](http://search.cpan.org/perldoc?Carton), [CPAN::Min
 
     Pinto is suitable for small to medium-sized development teams and
     supports concurrent users.  Pinto also has a web service interface
-    (via [pintod](http://search.cpan.org/perldoc?pintod)), so remote developers can use a centrally hosted
+    (via [pintod](https://metacpan.org/pod/pintod)), so remote developers can use a centrally hosted
     repository.
 
 - Pinto has a robust command line interface.
 
-    The [pinto](http://search.cpan.org/perldoc?pinto) utility has commands and options to control every aspect
+    The [pinto](https://metacpan.org/pod/pinto) utility has commands and options to control every aspect
     of your Pinto repository.  They are well documented and behave in the
     customary UNIX fashion.
 
 - Pinto can be extended.
 
-    You can extend Pinto by creating [Pinto::Action](http://search.cpan.org/perldoc?Pinto::Action) subclasses to
+    You can extend Pinto by creating [Pinto::Action](https://metacpan.org/pod/Pinto::Action) subclasses to
     perform new operations on your repository, such as extracting
     documentation from a distribution, or grepping the source code of
     several distributions.
@@ -104,7 +104,7 @@ there are some important differences:
     PAUSE requires authors to authenticate themselves before they can
     upload or remove modules.  Pinto does not require authentication, so
     any user with sufficient file permission can potentially change the
-    repository.  However [pintod](http://search.cpan.org/perldoc?pintod) does support HTTP authentication, which
+    repository.  However [pintod](https://metacpan.org/pod/pintod) does support HTTP authentication, which
     gives you some control over access to a remote repository.
 
 # BUT WHERE IS THE API?
@@ -112,7 +112,7 @@ there are some important differences:
 For now, the Pinto API is private and subject to radical change
 without notice.  Any API documentation you see is purely for my own
 references.  In the meantime, the command line utilities mentioned in
-the ["SYNOPSIS"](#SYNOPSIS) are your public user interface.
+the ["SYNOPSIS"](#synopsis) are your public user interface.
 
 # SUPPORT
 
@@ -166,7 +166,7 @@ in addition to those websites please use your favorite search engine to discover
 ## Internet Relay Chat
 
 You can get live help by using IRC ( Internet Relay Chat ). If you don't know what IRC is,
-please read this excellent guide: [http://en.wikipedia.org/wiki/Internet\_Relay\_Chat](http://en.wikipedia.org/wiki/Internet\_Relay\_Chat). Please
+please read this excellent guide: [http://en.wikipedia.org/wiki/Internet_Relay_Chat](http://en.wikipedia.org/wiki/Internet_Relay_Chat). Please
 be courteous and patient when talking to us, as we might be busy or sleeping! You can join
 those networks/channels and get help:
 

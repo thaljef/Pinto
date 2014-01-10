@@ -22,7 +22,11 @@ sub command_names { return qw(log history) }
 sub opt_spec {
     my ( $self, $app ) = @_;
 
-    return ( [ 'stack|s=s' => 'Show history for this stack' ], );
+    return ( 
+    	[ 'stack|s=s'    => 'Show history for this stack'  ],
+      [ 'with-diffs|d' => 'Show a diff for each revision'], 
+      [ 'diff-style=s' => 'Diff style (concise|detailed)' ],
+    );
 }
 
 #------------------------------------------------------------------------------
@@ -51,9 +55,7 @@ __END__
 
 !! THIS COMMAND IS EXPERIMENTAL !!
 
-This command shows the commit logs for the stack.  To see the precise
-changes in any particular commit, use the L<App::Pinto::Command::show>
-command.
+This command shows the revision logs for the stack.
 
 =head1 COMMAND ARGUMENTS
 
@@ -71,6 +73,14 @@ be shown.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --with-diffs
+
+=item -d
+
+For each revision, also show the diff from the previous revision.
+If the C<PINTO_DETAILED_DIFF> environment varaible is set to a 
+true value, a detailed diff will be shown.
 
 =item --stack NAME
 

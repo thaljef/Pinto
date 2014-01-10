@@ -239,39 +239,40 @@ Given a L<Pinto::Target::Distribution>, returns the L<Pinto::Schema::Result::Dis
 from this stack with the same author id and archive attributes as the target.  
 Returns nothing if no such distribution is found in this stack.
 
+You can also pass a C<cache> argument that must be a reference to a hash.  It will
+be used to cache results so that repeated calls to C<get_distribution> require
+fewer trips to the database.  It is up to you to decide when to expire the cache.
+
 =cut
 
 sub get_distribution {
     my ( $self, %args ) = @_;
 
-    if ( my $target = $args{target} ) {
-        if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
+    my $cache  = $args{cache};
+    my $target = $args{target} or throw 'Invalid arguments';
+    return $cache->{$target} if $cache && exists $cache->{$target};
 
-            my $attrs = { prefetch => 'distribution', distinct => 1 };
-            my $where = {
-                'distribution.author'  => $target->author,
-                'distribution.archive' => $target->archive
-            };
+    my $dist;
+    if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
 
-            my $reg = $self->head->search_related( registrations => $where, $attrs )->first;
-            return if not defined $reg;
+        my $attrs = { prefetch => 'distribution', distinct => 1 };
+        my $where = {'distribution.author'  => $target->author, 'distribution.archive' => $target->archive};
 
-            return $reg->distribution;
-        }
-        elsif ( itis( $target, 'Pinto::Target::Package' ) ) {
+        return unless my $reg = $self->head->find_related( registrations => $where, $attrs );
+        $dist = $reg->distribution;
+    }
+    elsif ( itis( $target, 'Pinto::Target::Package' ) ) {
 
-            my $attrs = { prefetch     => 'distribution' };
-            my $where = { package_name => $target->name    };
+        my $attrs = { prefetch     => 'distribution' };
+        my $where = { package_name => $target->name  };
 
-            my $reg = $self->head->find_related( registrations => $where, $attrs );
-            return if not defined $reg;
-
-            return if not $target->is_satisfied_by($reg->package->version); 
-            return $reg->distribution;
-        }
+        return unless my $reg = $self->head->find_related( registrations => $where, $attrs );
+        return unless $target->is_satisfied_by($reg->package->version);
+        $dist = $reg->distribution;
     }
 
-    throw 'Invalid arguments';
+    $cache->{$target} = $dist if $cache; 
+    return $dist;
 }
 
 #------------------------------------------------------------------------------
@@ -743,15 +744,6 @@ sub default_properties {
         description         => $desc,
         target_perl_version => $tpv
     };
-}
-
-#-------------------------------------------------------------------------------
-
-sub prohibits_partial_distributions {
-    my ($self) = @_;
-
-    return 1 if $self->get_property('prohibit_partial_distributions');
-    return 0;
 }
 
 #-------------------------------------------------------------------------------

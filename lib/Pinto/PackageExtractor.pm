@@ -102,7 +102,8 @@ sub requires {
     my $archive = $self->archive;
     debug "Extracting packages required by archive $archive";
 
-    my $prereqs_meta = try { $self->dm->meta->prereqs } catch { throw "Unable to extract prereqs from $archive: $_" };
+    my $prereqs_meta = try { $self->dm->meta->prereqs } 
+                     catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
     for my $phase ( keys %{$prereqs_meta} ) {
@@ -119,6 +120,14 @@ sub requires {
             push @prereqs, $struct;
         }
     }
+
+    my $base = $archive->basename;
+
+    whine "$base appears to be a bundle.  Prereqs for bundles cannot be determined automatically"
+        if $base =~ m/^ Bundle- /x;
+
+#    whine "$base uses dynamic configuration so prereqs may be incomplete"
+#        if $self->dm->meta->dynamic_config;
 
     return @prereqs;
 }

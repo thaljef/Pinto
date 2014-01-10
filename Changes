@@ -1,5 +1,121 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      - When using the --dry-run option, a diff report will be displayed.  
+      This shows all the changes that would have been made.  If there were no
+      changes, nothing is shown.
+
+      - The diff reports now default to a concise format which only lists 
+      the distributions that have changed in the index rather than each 
+      package.
+
+      - All commands that show diff reports now have a --diff-style option
+      that controls whether to display the concise or detailed report.  You
+      can also set the default style using the PINTO_DIFF_STYLE environment
+      variable.
+
+      - The "log" command now has a --with-diffs (or -d) option that causes
+      it to also display the diff from the previous revision.
+
+      [MISCELLANEOUS]
+
+      - The default upstream repository has been changed from cpan.perl.org
+      to www.cpan.org.  The latter uses DNS magic to balance load and
+      redirect to the mirror closest to your location.  This only affects
+      new repositories.  You can change an existing repository by editing 
+      the .pinto/config/pinto.ini file inside the repository directory.
+
+0.097     2014-01-07 20:53:29 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed compatibility with the exception objects thrown by the
+      latest version of Moose.  However, Pinto itself does not require
+      the latest version of Moose.
+
+0.096     2014-01-07 10:32:19 America/Los_Angeles
+
+      [ENHANCEMENTS]
+
+      - The exit status of the "list" command will now be non-zero if
+      you specify any search criteria and no matches are found.  This
+      follows the behavior of the Unix "ls" command.
+
+      [BUG FIXES]
+
+      - Now requires Module::CoreList 3.03 or newer.
+
+0.095     2013-12-22 23:38:28 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed bug in the new "roots" command that caused it to report
+      far fewer distributions than it should.
+
+      [ENHANCEMENTS]
+
+      - A warning is emitted if you try to pull or add a Bundle
+      distribution.  Pinto does not know how to automatically determine 
+      prerequisites for a Bundle.
+
+      - A better error message is given when repository is not writable.
+      Previously, you were (incorrectly) told that the repository was 
+      locked.
+
+0.094     2013-12-22 00:36:27 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - When pulling or adding a distribution which contains packages that
+      partially overlap with an existing distribution on the stack, then
+      all packages from the existing distribution are removed from the
+      stack, not just the overlapping ones.  This means it is impossible
+      for the stack to contain only *some* of the packages from any
+      distribution.
+
+      In nearly all cases, this is what you want because you never want
+      to end up with an installation that has some packages from one
+      distribution and some packages from another.  If you really want
+      your stack to contain the packages from both distributions like
+      the PAUSE index does, then Pinto probably isn't the right tool
+      for you.
+
+      [NEW COMMANDS]
+
+      - The "roots" command will list all the distributions that are
+      the root ancestors of the dependency graph which includes all
+      distributions in the stack.  This command can be used to install
+      every distribution in the stack in one shot.  There are some
+      caveats though.  See the documentation for details.
+
+0.093     2013-12-21 16:24:39 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - The "add" and "pull" commands now have both --no-recurse and --recurse
+      options.  This allows you to turn recursion off OR on, depending on 
+      the default setting for the repository (see more about that under 
+      ENHANCEMENTS).  However, the -n shortcut for --no-recurse is no 
+      longer available.
+
+      [ENHANCEMENTS]
+
+      - The pinto.ini configuration file may now contain a "recurse"
+      parameter that determines the default recursion behavior for
+      the "pull" and "add" commands.  Setting it to 1 means those
+      commands are recursive by default.  Setting it to 0 means
+      those commands are not recursive by default.  Either way,
+      commands can always override that parameter using either the
+      --recurse or --no-recurse switches.
+
+      - pinto now falls back to using nano, pico, or vi if none of the
+      usual environment variables for controlling the editor are set.
+      This fixes #119.  Thanks @borisdaeppen for the suggestion.
+
+      - The distributions listed in the generated title of the commit
+      message will now be sorted and deduplicated.
+
 0.092     2013-11-20 11:07:50 America/Los_Angeles
 
       [ENHANCEMENTS]

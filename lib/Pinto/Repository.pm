@@ -841,13 +841,13 @@ sub assert_version_ok {
 sub assert_sanity_ok {
     my ($self) = @_;
 
-    unless ( -e $self->config->db_file
-        && -e $self->config->authors_dir )
-    {
+    my $root_dir = $self->config->root_dir;
 
-        my $root_dir = $self->config->root_dir;
-        throw "Directory $root_dir does not look like a Pinto repository";
-    }
+    throw "Directory $root_dir is not writable by you"
+        unless -r $root_dir;
+
+    throw "Directory $root_dir does not look like a Pinto repository"
+        unless -e $self->config->db_file && -e $self->config->authors_dir;
 
     return $self;
 }

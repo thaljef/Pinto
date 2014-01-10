@@ -11,7 +11,8 @@ use MooseX::Types -declare => [
         StackName StackAll StackDefault PropertyName PkgSpec
         PkgSpecList StackObject DistSpec DistSpecList
         Spec SpecList RevisionID RevisionHead
-        ANSIColor ANSIColorSet PerlVersion)
+        ANSIColor ANSIColorSet PerlVersion
+        DiffStyle )
 ];
 
 use MooseX::Types::Moose qw( Str Num ScalarRef ArrayRef Undef
@@ -209,6 +210,10 @@ coerce RevisionID, from Str, via { lc $_ };
 #-----------------------------------------------------------------------------
 
 subtype RevisionHead, as Undef;
+
+#-----------------------------------------------------------------------------
+
+enum DiffStyle, [$PINTO_DIFF_STYLE_CONCISE, $PINTO_DIFF_STYLE_DETAILED];
 
 #-----------------------------------------------------------------------------
 

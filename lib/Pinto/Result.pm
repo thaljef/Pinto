@@ -56,7 +56,7 @@ sub failed {
 
         require Pinto::Exception;
 
-        $reason = Pinto::Exception->new( message => $reason )
+        $reason = Pinto::Exception->new( message => "$reason" )
             if not itis( $reason, 'Pinto::Exception' );
 
         $self->add_exception($reason);

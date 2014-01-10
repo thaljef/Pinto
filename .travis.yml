@@ -14,4 +14,5 @@ install:
    - dzil listdeps   | cpanm --mirror http://cpan.stratopan.com --quiet --notest
 
 script:
+   - export HARNESS_OPTIONS='j:c'
    - dzil smoke --release --author

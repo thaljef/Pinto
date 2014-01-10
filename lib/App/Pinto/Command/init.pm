@@ -24,6 +24,7 @@ sub opt_spec {
     return (
         [ 'description=s'             => 'Description of the initial stack' ],
         [ 'no-default'                => 'Do not mark the initial stack as the default' ],
+        [ 'recurse!'                  => 'Default recursive behavior (negatable)' ],
         [ 'source=s@'                 => 'URL of upstream repository (repeatable)' ],
         [ 'target-perl-version|tpv=s' => 'Default perl version for new stacks' ],
     );
@@ -107,8 +108,8 @@ the new repository using the command line options listed below.
 =head1 COMMAND ARGUMENTS
 
 The argument is the name of the initial stack.  Stack names must be 
-alphanumeric plus hyphens and underscores, and are not case-sensitive.  
-Defaults to C<master>.
+alphanumeric plus hyphens, underscores and periods, and are not 
+case-sensitive.  Defaults to C<master>.
 
 
 =head1 COMMAND OPTIONS
@@ -128,8 +129,19 @@ Do not mark the initial stack as the default stack.
 
 If you choose not to mark the default stack, then you'll be required
 to specify the C<--stack> option for most commands.  You can always
-mark (or unmark) the default stack by at any time by using the
+mark (or unmark) the default stack at any time by using the
 L<default|App::Pinto::Command::default> command.
+
+
+=item --recurse
+
+=item --no-recurse
+
+Sets the default recursion behavior for the L<pull|App::Pinto::Command::pull> 
+add L<add|App::Pinto::Command::add> commands.  C<--recurse> means that commands 
+will be recursive by default.  C<--no-recurse> means commands will not be 
+recursive.  If you do not specify either of these, it defaults to being 
+recursive.  However, each command can always override this default.
 
 
 =item --source=URL

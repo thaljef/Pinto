@@ -7,7 +7,7 @@ use warnings;
 
 use Class::Load;
 
-use Pinto::Util qw(throw);
+use Pinto::Exception;
 
 #-------------------------------------------------------------------------------
 
@@ -44,7 +44,13 @@ sub new {
     }
     else {
 
-        throw "Don't know how to make a target from $arg";
+        # I would just use throw() here, but I need to avoid
+        # creating a circular dependency between this package,
+        # Pinto::Types and Pinto::Util.
+
+        my $message = "Don't know how to make target from $arg";
+        Pinto::Exception->throw( message => $message );
+
     }
 
     Class::Load::load_class($target_class);

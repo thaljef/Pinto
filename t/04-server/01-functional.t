@@ -84,7 +84,7 @@ test_psgi
         app    => $app,
         client => sub {
         my $cb     = shift;
-        my $params = { author => 'THEBARD', no_recurse => 1, message => 'test', archives => [$archive] };
+        my $params = { author => 'THEBARD', recurse => 0, message => 'test', archives => [$archive] };
         my $req    = POST( 'action/add', Content => { action => encode_json($params) } );
         my $res    = $cb->($req);
         action_response_ok($res);
@@ -104,7 +104,7 @@ test_psgi
         app    => $app,
         client => sub {
         my $cb     = shift;
-        my $params = { author => 'THEBARD', no_recurse => 1, message => 'test', archives => [$archive] };
+        my $params = { author => 'THEBARD', recurse => 0, message => 'test', archives => [$archive] };
         my $req    = POST( 'action/add', Content => { action => encode_json($params) } );
         my $res    = $cb->($req);
         action_response_not_ok( $res, qr{is locked} );
@@ -211,7 +211,7 @@ for my $v ( 1, 2 ) {
         app    => $app,
         client => sub {
         my $cb     = shift;
-        my $params = { author => 'JOHN', no_recurse => 1, stack => $stack, message => 'test', archives => [$archive] };
+        my $params = { author => 'JOHN', recurse => 0, stack => $stack, message => 'test', archives => [$archive] };
         my $req    = POST( 'action/add', Content => { action => encode_json($params) } );
         my $res    = $cb->($req);
 

@@ -18,10 +18,11 @@ with qw( Pinto::Role::Plated );
 
 #-----------------------------------------------------------------------------
 
-has no_recurse => (
+has recurse => (
     is      => 'ro',
     isa     => Bool,
-    default => 0,
+    default => sub { shift->stack->repo->config->recurse },
+    lazy    => 1,
 );
 
 has cascade => (
@@ -80,7 +81,7 @@ sub pull {
     }
 
     $dist->register( stack => $stack, pin => $self->pin );
-    $self->recurse( start => $dist ) unless $self->no_recurse;
+    $self->do_recursion( start => $dist ) if $self->recurse;
 
     return $dist;
 }
@@ -114,7 +115,7 @@ sub find {
 
 #-----------------------------------------------------------------------------
 
-sub recurse {
+sub do_recursion {
     my ( $self, %args ) = @_;
 
     my $dist  = $args{start};

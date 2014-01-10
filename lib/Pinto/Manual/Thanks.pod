@@ -45,7 +45,7 @@ generous support, I can continue doing the work I love most.
   Yanick Champoux         Andrey Khozov           Craig Scrivner          
   Gustavo Chaves          Wolfgang Kinkeldei      Li Sen                  
   Peter Chines            Yaroslav Korshak        Michael South           
-  Adam Clarke             Damien Krotkine         Tadeusz Sośnierz        
+  Adam Clarke             Damien Krotkine         Tadeusz Sosnierz        
   Olav Cleemann           Michael Kröll           Marc St Raymond         
   Jody Clements           Tom Legrady             Seth Surchin            
   Greg Cole               Felipe Leprevost        Gabor Szabo             

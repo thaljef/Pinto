@@ -7,10 +7,10 @@ use MooseX::Types::Moose qw(Bool Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
+use List::MoreUtils qw(uniq);
 
-use Pinto::CommitMessage;
 use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
-use Pinto::Types qw(StackName StackDefault StackObject);
+use Pinto::Types qw(StackName StackDefault StackObject DiffStyle);
 use Pinto::Util qw(is_interactive throw is_blank is_not_blank);
 
 #------------------------------------------------------------------------------
@@ -48,6 +48,12 @@ has use_default_message => (
     default => 0,
 );
 
+has diff_style => (
+    is        => 'ro',
+    isa       => DiffStyle,
+    predicate => 'has_diff_style',
+);
+
 has lock_type => (
     is       => 'ro',
     isa      => Str,
@@ -80,16 +86,17 @@ around execute => sub {
 
     $self->repo->txn_begin;
     my $stack = $self->stack->start_revision;
+    local $ENV{PINTO_DIFF_STYLE} = $self->diff_style if $self->has_diff_style;
 
     my @ok = try { $self->$orig(@args) } catch { $self->repo->txn_rollback; throw $_ };
 
     if ( $self->dry_run ) {
-        $self->notice('Dry run -- rolling back database');
+        $stack->refresh->has_changed ? $self->show($stack->diff) : $self->notice('No changes were made');
         $self->repo->txn_rollback;
         $self->repo->clean_files;
     }
     elsif ( $stack->refresh->has_not_changed ) {
-        $self->warning('No index changes were made');
+        $self->warning('No changes were made');
         $self->repo->txn_rollback;
     }
     else {
@@ -125,14 +132,9 @@ sub compose_message {
     return $title
         if not is_interactive;
 
-    my $cm = Pinto::CommitMessage->new(
-        title => $title,
-        stack => $stack,
-        diff  => $diff
-    );
-
-    my $message = $self->chrome->edit( $cm->to_string );
-    $message =~ s/^ [#] .* $//gmsx;    # Strip comments
+    my $cm = $self->generate_message_template($title, $stack, $diff);
+    my $message = $self->chrome->edit( $cm );
+    $message =~ s/^ [#] .* $//gmsx; # Strip comments
 
     throw 'Aborting due to empty commit message' if is_blank($message);
 
@@ -146,9 +148,37 @@ sub generate_message_title {
 
     my $class    = ref $self;
     my ($action) = $class =~ m/ ( [^:]* ) $/x;
-    my $title    = "$action " . join( ', ', @items ) . ( $extra ? " $extra" : '' );
+    my $title    = "$action " . join( ', ', uniq(sort @items) ) . ( $extra ? " $extra" : '' );
 
     return $title;
+}
+
+#------------------------------------------------------------------------------
+
+sub generate_message_template {
+    my ( $self, $title, $stack, $diff ) = @_;
+
+    # Prepend "#" to each line of the diff,
+    # so they are treated as comments.
+    $diff =~ s/^/# /gm;
+
+    my $msg = <<"END_MESSAGE";
+$title
+
+
+#-------------------------------------------------------------------------------
+# Please edit or amend the message above as you see fit.  The first line of the 
+# message will be used as the title.  Any line that starts with a "#" will be 
+# ignored.  To abort the commit, delete the entire message above, save the file, 
+# and close the editor. 
+#
+# Changes to be committed to stack $stack:
+#
+$diff
+END_MESSAGE
+
+    chomp $msg;
+    return $msg;
 }
 
 #------------------------------------------------------------------------------

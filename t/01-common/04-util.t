@@ -4,8 +4,11 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Exception;
 use Path::Class;
+
 use Pinto::Util qw(:all);
+use Pinto::Constants qw(:all);
 
 #-----------------------------------------------------------------------------
 
@@ -132,6 +135,22 @@ use Pinto::Util qw(:all);
 
 }
 
+#-----------------------------------------------------------------------------
+
+{
+
+    is default_diff_style, $PINTO_DIFF_STYLE_CONCISE, 
+        'Got default diff style';
+
+    local $ENV{PINTO_DIFF_STYLE} = 'detailed';
+    is default_diff_style, $PINTO_DIFF_STYLE_DETAILED, 
+        'Got default diff style from ENV';
+
+    local $ENV{PINTO_DIFF_STYLE} = 'pretty';
+    throws_ok { default_diff_style() } qr/\QPINTO_DIFF_STYLE (pretty) is invalid\E/, 
+        'Invalid default diff style from ENV';
+
+}
 #-----------------------------------------------------------------------------
 
 done_testing;

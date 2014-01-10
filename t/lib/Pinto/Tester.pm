@@ -528,7 +528,7 @@ sub populate {
         my $message = "Populated repository with $spec";
 
         my $args = {
-            no_recurse => 1,
+            recurse    => 0,
             archives   => $archive,
             author     => $struct->{cpan_author},
             message    => $message
