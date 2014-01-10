@@ -18,7 +18,7 @@
 unset PINTO_HOME;
 MODULES_TO_SMOKE=${1:-Pinto};
 SMOKE_BASE_DIR=$HOME/tmp/smoke
-CPAN_MIRROR_URL=https://stratopan.com/thaljef/OpenSource/pinto-release-2
+CPAN_MIRROR_URL=https://stratopan.com/thaljef/OpenSource/pinto-release
 PERLS_TO_SMOKE=${2:-'5.8.9 5.10.1 5.12.5 5.14.4 5.16.3 5.18.2'}
 
 for pv in $PERLS_TO_SMOKE; do
@@ -28,7 +28,7 @@ for pv in $PERLS_TO_SMOKE; do
     # TODO: add a command-line option to control whether 
     # or not to blow away an existing local-lib directory
 
-    # rm -rf "$SMOKE_WORK_DIR";
+    rm -rf "$SMOKE_WORK_DIR";
     mkdir -p "$SMOKE_WORK_DIR";
 
     for mod in $MODULES_TO_SMOKE; do
