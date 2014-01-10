@@ -27,7 +27,7 @@ sub opt_spec {
         [ 'local-lib-contained|L=s' => 'install into a contained local lib directory' ],
         [ 'message|m=s'             => 'Message to describe the change' ],
         [ 'do-pull'                 => 'pull missing prereqs onto the stack first' ],
-        [ 'stack|s=s'               => 'Use the index for this stack' ],
+        [ 'stack|s=s'               => 'Install modules from this stack' ],
 
     );
 }
