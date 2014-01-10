@@ -231,11 +231,11 @@ Sets the path to the pager application that will be used to paginate output from
 each command.  Defaults to C<PAGER>.  If none of these are set, then no pager 
 is used.
 
-=item C<PINTO_DETAILED_DIFF>
+=item C<PINTO_DIFF_STYLE>
 
-If set to 1, pinto will default to using a detailed format for all diff reports.
-In other words, it implies the C<--detailed-diff> option on all commands that
-produce diff reports.
+Sets the default style for diff reports.  Valid styles are C<detailed> and
+C<concise>.  The default is C<concise>.  For commands that produce diff reports,
+this can be overriden with the C<--diff-style> option.
 
 =item C<PINTO_DEBUG>
 

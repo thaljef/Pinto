@@ -83,7 +83,7 @@ truncated to uniqueness.
 
 =over 4
 
-=item --diff-style STYLE
+=item --diff-style=STYLE
 
 Controls the style of the diff reports.  STYLE must be either C<concise> or
 C<detailed>.  Concise reports show only one record for each distribution added

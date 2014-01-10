@@ -10,7 +10,7 @@ use Try::Tiny;
 use List::MoreUtils qw(uniq);
 
 use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
-use Pinto::Types qw(StackName StackDefault StackObject);
+use Pinto::Types qw(StackName StackDefault StackObject DiffStyle);
 use Pinto::Util qw(is_interactive throw is_blank is_not_blank);
 
 #------------------------------------------------------------------------------
@@ -48,6 +48,12 @@ has use_default_message => (
     default => 0,
 );
 
+has diff_style => (
+    is        => 'ro',
+    isa       => DiffStyle,
+    predicate => 'has_diff_style',
+);
+
 has lock_type => (
     is       => 'ro',
     isa      => Str,
@@ -80,6 +86,7 @@ around execute => sub {
 
     $self->repo->txn_begin;
     my $stack = $self->stack->start_revision;
+    local $ENV{PINTO_DIFF_STYLE} = $self->diff_style if $self->has_diff_style;
 
     my @ok = try { $self->$orig(@args) } catch { $self->repo->txn_rollback; throw $_ };
 
