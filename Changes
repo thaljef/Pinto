@@ -18,6 +18,14 @@
       - The "log" command now has a --with-diffs (or -d) option that causes
       it to also display the diff from the previous revision.
 
+      [MISCELLANEOUS]
+
+      - The default upstream repository has been changed from cpan.perl.org
+      to www.cpan.org.  The latter uses DNS magic to balance load and
+      redirect to the mirror closest to your location.  This only affects
+      new repositories.  You can change an existing repository by editing 
+      the .pinto/config/pinto.ini file inside the repository directory.
+
 0.097     2014-01-07 20:53:29 America/Los_Angeles
 
       [BUG FIXES]
