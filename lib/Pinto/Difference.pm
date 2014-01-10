@@ -8,8 +8,9 @@ use MooseX::Types::Moose qw(ArrayRef Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::DifferenceEntry;
-use Pinto::Util qw(itis is_detailed_diff_mode);
-
+use Pinto::Constants qw(:diff);
+use Pinto::Types qw(DiffStyle);
+use Pinto::Util qw(itis default_diff_style);
 
 use overload ( q{""} => 'to_string' );
 
@@ -31,9 +32,9 @@ has right => (
     required => 1,
 );
 
-has diffs => (
+has entries => (
     traits   => [qw(Array)],
-    handles  => { diffs => 'elements' },
+    handles  => { entries => 'elements' },
     isa      => ArrayRef ['Pinto::DifferenceEntry'],
     builder  => '_build_diffs',
     init_arg => undef,
@@ -44,7 +45,7 @@ has additions => (
     traits  => [qw(Array)],
     handles => { additions => 'elements' },
     isa     => ArrayRef ['Pinto::DifferenceEntry'],
-    default => sub { [ grep { $_->op eq '+' } $_[0]->diffs ] },
+    default => sub { [ grep { $_->op eq '+' } shift->entries ] },
     init_arg => undef,
     lazy     => 1,
 );
@@ -53,7 +54,7 @@ has deletions => (
     traits  => [qw(Array)],
     handles => { deletions => 'elements' },
     isa     => ArrayRef ['Pinto::DifferenceEntry'],
-    default => sub { [ grep { $_->op eq '-' } $_[0]->diffs ] },
+    default => sub { [ grep { $_->op eq '-' } shift->entries ] },
     init_arg => undef,
     lazy     => 1,
 );
@@ -62,15 +63,14 @@ has is_different => (
     is       => 'ro',
     isa      => Bool,
     init_arg => undef,
-    default  => sub { shift->diffs > 0 },
+    default  => sub { shift->entries > 0 },
     lazy     => 1,
 );
 
-
-has detailed => (
+has style => (
     is       => 'ro',
-    isa      => Bool,
-    default  => \&is_detailed_diff_mode,
+    isa      => DiffStyle,
+    default  => \&default_diff_style,
 );
 
 #------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ sub _build_diffs {
     # is only one diff entry per distribution.  In that case, the package
     # referenced by the registration won't be meaningful.
 
-    my @fields = $self->detailed
+    my @fields = $self->style eq $PINTO_DIFF_STYLE_DETAILED
         ? qw(distribution package is_pinned)
         : qw(distribution is_pinned);
 
@@ -167,8 +167,7 @@ sub _create_entries {
     my $where   = { 'me.id' => { in => \"SELECT reg from $tmp_tbl" } };
     my $reg_rs  = $side->registrations($where)->with_distribution->with_package;
 
-    my @entries = map { Pinto::DifferenceEntry->new( op           => $type,
-                                                     detailed     => $self->detailed, 
+    my @entries = map { Pinto::DifferenceEntry->new( op => $type,
                                                      registration => $_ ) } $reg_rs->all;
 
     $dbh->do("DROP TABLE $tmp_tbl");
@@ -181,7 +180,7 @@ sub _create_entries {
 sub foreach {
     my ( $self, $cb ) = @_;
 
-    $cb->($_) for $self->diffs;
+    $cb->($_) for $self->entries;
 
     return $self;
 }
@@ -191,7 +190,11 @@ sub foreach {
 sub to_string {
     my ($self) = @_;
 
-    return join("\n", $self->diffs) . "\n";
+    my $format = $self->style eq $PINTO_DIFF_STYLE_CONCISE
+        ? '%o[%F] %a/%f'
+        : '';
+
+    return join("\n", map {$_->to_string($format) } $self->entries) . "\n";
 }
 
 #------------------------------------------------------------------------------

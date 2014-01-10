@@ -18,6 +18,7 @@ use Readonly;
 
 use Pinto::Globals;
 use Pinto::Constants qw(:all);
+use Pinto::Types qw(DiffStyle);
 
 #-------------------------------------------------------------------------------
 
@@ -34,6 +35,7 @@ Readonly our @EXPORT_OK => qw(
     current_username
     debug
     decamelize
+    default_diff_style
     indent_text
     interpolate
     is_blank
@@ -41,7 +43,6 @@ Readonly our @EXPORT_OK => qw(
     is_interactive
     is_remote_repo
     is_system_prop
-    is_detailed_diff_mode
     isa_perl
     itis
     md5
@@ -76,7 +77,7 @@ sub throw {
     my ($error) = @_;
 
     # Rethrowing...
-    die $error if itis( $error, 'Pinto::Exception' );    ## no critic (Carping)
+    $error->throw if itis( $error, 'Pinto::Exception' );
 
     require Pinto::Exception;
     Pinto::Exception->throw( message => "$error" );
@@ -683,9 +684,17 @@ sub is_remote_repo {
 #-------------------------------------------------------------------------------
 
 
-sub is_detailed_diff_mode {
+sub default_diff_style {
     
-    return $ENV{PINTO_DETAILED_DIFF} || 0;
+    if (my $style = $ENV{PINTO_DIFF_STYLE}) {
+
+        throw "PINTO_DIFF_STYLE ($style) is invalid.  Must be one of (@PINTO_DIFF_STYLES)"
+            unless DiffStyle->check($style);
+        
+        return $style;
+    }
+
+    return $PINTO_DIFF_STYLE_CONCISE;
 }
 
 #-------------------------------------------------------------------------------

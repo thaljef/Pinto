@@ -21,6 +21,7 @@ use Pinto::Types qw(
     RevisionID
     ANSIColor
     ANSIColorSet
+    DiffStyle
 );
 
 #-----------------------------------------------------------------------------
@@ -125,6 +126,11 @@ has color => (
 has colorset => (
     is  => 'rw',
     isa => ANSIColorSet,
+);
+
+has diffstyle => (
+    is  => 'rw',
+    isa => DiffStyle,
 );
 
 #-----------------------------------------------------------------------------

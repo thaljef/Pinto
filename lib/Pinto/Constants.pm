@@ -43,6 +43,10 @@ Readonly our @EXPORT_OK => qw(
     $PINTO_REVISION_ID_REGEX
 
     $PINTO_MINIMUM_CPANM_VERSION
+
+    $PINTO_DIFF_STYLE_CONCISE
+    $PINTO_DIFF_STYLE_DETAILED
+    @PINTO_DIFF_STYLES
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -51,6 +55,7 @@ Readonly our %EXPORT_TAGS => (
     server => [ grep {m/SERVER/x} @EXPORT_OK ],
     regex  => [ grep {m/REGEX/x} @EXPORT_OK ],
     lock   => [ grep {m/LOCK/x} @EXPORT_OK ],
+    diff   => [ grep {m/DIFF/x} @EXPORT_OK ],
 );
 
 #------------------------------------------------------------------------------
@@ -102,6 +107,13 @@ Readonly our $PINTO_REVISION_ID_REGEX   => $PINTO_HEXADECIMAL_UUID_REGEX;
 #------------------------------------------------------------------------------
 
 Readonly our $PINTO_MINIMUM_CPANM_VERSION => '1.6920';
+
+#------------------------------------------------------------------------------
+
+Readonly our $PINTO_DIFF_STYLE_CONCISE  => 'concise';
+Readonly our $PINTO_DIFF_STYLE_DETAILED => 'detailed';
+
+Readonly our @PINTO_DIFF_STYLES = ($PINTO_DIFF_STYLE_CONCISE, $PINTO_DIFF_STYLE_DETAILED);
 
 #------------------------------------------------------------------------------
 1;

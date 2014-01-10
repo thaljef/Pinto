@@ -102,6 +102,10 @@ dies_ok { $t->colorset( [qw(a b c)] ) } 'Colorset must be valid colors';
 dies_ok { $t->colorset(undef) };
 dies_ok { $t->colorset( [] ) };
 
+lives_ok { $t->diffstyle('concise') } 'Valid DiffStyle';
+lives_ok { $t->diffstyle('detailed') } 'Valid DiffStyle';
+dies_ok { $t->diffstyle('pretty') } 'Invalid DiffStyle';
+
 #-----------------------------------------------------------------------------
 
 done_testing;

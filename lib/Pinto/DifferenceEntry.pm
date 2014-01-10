@@ -5,9 +5,9 @@ package Pinto::DifferenceEntry;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
-use MooseX::Types::Moose qw(Str Bool);
+use MooseX::Types::Moose qw(Str);
 
-use Pinto::Util qw(is_detailed_diff_mode);
+use String::Format;
 
 #------------------------------------------------------------------------------
 
@@ -40,25 +40,29 @@ has registration => (
     required => 1,
 );
 
-has detailed => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => \&is_detailed_diff_mode,
-);
+#------------------------------------------------------------------------------
 
-has format => (
-    is      => 'ro',
-    isa     => Str,
-    default => sub { $_[0]->detailed ? "[%F] %-40p %12v %a/%f" : "[%F] %a/%f" },
-    lazy    => 1,
-);
+sub is_addition { shift->op eq '+' }
+
+sub is_deletion { shift->op eq '-' }
 
 #------------------------------------------------------------------------------
 
 sub to_string {
+    my ( $self, $format ) = @_;
+
+    my %fspec = ( o => $self->op );
+
+    $format ||= $self->default_format;
+    return $self->registration->to_string( String::Format::stringf($format, %fspec) );
+}
+
+#------------------------------------------------------------------------------
+
+sub default_format {
     my ($self) = @_;
 
-    return $self->op . $self->registration->to_string( $self->format );
+    return '%o[%F] %-40p %12v %a/%f',
 }
 
 #------------------------------------------------------------------------------

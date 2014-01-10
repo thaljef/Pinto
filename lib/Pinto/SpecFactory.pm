@@ -7,8 +7,6 @@ use warnings;
 
 use Class::Load;
 
-use Pinto::Util qw(throw);
-
 #-------------------------------------------------------------------------------
 
 # VERSION
@@ -44,7 +42,13 @@ sub make_spec {
     }
     else {
 
-        throw "Don't know how to make spec from $arg";
+        # I would just use throw() here, but I need to avoid
+        # creating a circular dependency between this package,
+        # Pinto::Types and Pinto::Util.
+
+        require Pinto::Excpetion;
+        my $message = "Don't know how to make spec from $arg";
+        Pinto::Exception->throw( message => $message );
     }
 
     Class::Load::load_class($spec_class);

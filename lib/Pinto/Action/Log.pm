@@ -10,7 +10,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Pinto::Difference;
 use Pinto::RevisionWalker;
 use Pinto::Constants qw(:color);
-use Pinto::Types qw(StackName StackDefault);
+use Pinto::Types qw(StackName StackDefault DiffStyle);
 
 #------------------------------------------------------------------------------
 
@@ -34,6 +34,14 @@ has show_diffs => (
     default   => 1,
 );
 
+has diff_style => (
+    is        => 'ro',
+    isa       => DiffStyle,
+    default   => \&default_diff_style,
+    predicate => 'has_diff_style',
+);
+
+
 #------------------------------------------------------------------------------
 
 sub execute {
@@ -52,6 +60,7 @@ sub execute {
 
         if ($self->show_diffs) {
             my $parent = ($revision->parents)[0];
+            local $ENV{PINTO_DIFF_STYLE} = $self->diff_style if $self->has_diff_style;
             my $diff = Pinto::Difference->new(left => $parent, right => $revision);
             $self->show($diff);
         }
