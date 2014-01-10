@@ -19,7 +19,7 @@ my $auth    = 'ME';
 my $pkg1    = 'Foo~0.01';
 my $pkg2    = 'Bar~0.01';
 my $dist    = 'Foo-Bar-0.01';
-my $archive = make_dist_archive("$dist=$pkg1,$pkg2");
+my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 
 #------------------------------------------------------------------------------
 # Adding a local dist...

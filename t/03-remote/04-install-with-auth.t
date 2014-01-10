@@ -29,10 +29,10 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 my $htpasswd = make_htpasswd_file(qw(my_login my_password));
 my @auth     = ( qw(--auth backend=Passwd --auth), "path=$htpasswd" );
 my $t        = Pinto::Server::Tester->new( pintod_opts => \@auth )->start_server;
-$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
+$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1; PkgC~1');
 $t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
 $t->populate('MARK/DistC-1 = PkgC~1');
-$t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
+$t->populate('MARK/DistC-2 = PkgC~2; PkgD~2');
 
 #------------------------------------------------------------------------------
 

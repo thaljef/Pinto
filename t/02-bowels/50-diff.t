@@ -15,8 +15,8 @@ use Pinto::Constants qw(:diff);
 
 my $t = Pinto::Tester->new;
 
-$t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1');
-$t->populate('AUTHOR/Dist-2 = PkgB~2, PkgC~2');
+$t->populate('AUTHOR/Dist-1 = PkgA~1; PkgB~1');
+$t->populate('AUTHOR/Dist-2 = PkgB~2; PkgC~2');
 
 #------------------------------------------------------------------------------
 subtest 'detailed diff' => sub {

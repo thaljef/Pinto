@@ -12,8 +12,8 @@ use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
-my $dist1 = make_dist_archive('AUTHOR/Dist-1 = PkgA~1, PkgB~1');
-my $dist2 = make_dist_archive('AUTHOR/Dist-2 = PkgB~2, PkgC~2');
+my $dist1 = make_dist_archive('AUTHOR/Dist-1 = PkgA~1; PkgB~1');
+my $dist2 = make_dist_archive('AUTHOR/Dist-2 = PkgB~2; PkgC~2');
 
 my $t = Pinto::Tester->new;
 

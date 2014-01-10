@@ -34,6 +34,14 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
     # The dev stack should still be the same
     $t->registration_ok('JOHN/Dist-1/PkgA~1/dev');
+
+    # Now delete the "dev" stack too
+    $t->run_ok( Kill => { stack => 'dev' } );
+    $t->stack_not_exists_ok('dev');
+
+    # All registration should be gone now
+    is $schema->search_registration->count, 0, 
+        'All records are gone from registration table';
 }
 
 #------------------------------------------------------------------------------

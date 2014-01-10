@@ -16,7 +16,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
-$t->populate('AUTHOR/Foo-3 = Foo-4 & Bar~1, perl~5.6.0, strict');
+$t->populate('AUTHOR/Foo-3 = Foo-4 & Bar~1; perl~5.6.0; strict');
 my $dist = $t->get_distribution( author => 'AUTHOR', archive => 'Foo-3.tar.gz' );
 ok defined $dist, 'Got the distribution back';
 

@@ -16,7 +16,7 @@ use Pinto::Tester;
 # Module::Build~0.2808_01 entered perl in 5.10.0
 
 my $t = Pinto::Tester->new;
-$t->populate('AUTHOR/Foo-1 = Foo-1 & Bar~1, perl~5.6.0, strict');
+$t->populate('AUTHOR/Foo-1 = Foo-1 & Bar~1; perl~5.6.0; strict');
 $t->populate('AUTHOR/Bar-1 = Bar-1 & Module::Build~0.2808_01');
 
 my $dist = $t->pinto->repo->get_distribution( path => 'A/AU/AUTHOR/Foo-1.tar.gz' );

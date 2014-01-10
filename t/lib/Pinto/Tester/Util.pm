@@ -95,7 +95,7 @@ sub make_dist_struct {
 sub parse_dist_spec {
     my ($spec) = @_;
 
-    # AUTHOR / Foo-1.2 .tar.gz = Foo~1.0,Bar~2 & Baz~1.1,Nuts~2.3
+    # AUTHOR / Foo-1.2 .tar.gz = Foo~1.0;Bar~2 & Baz~1.1;Nuts~2.3
     # -------- ------- -------   ------------- ------------------
     #    |        |       |           |               |
     #  auth     dist     ext       provides       requires
@@ -114,8 +114,8 @@ sub parse_dist_spec {
     $dist = parse_pkg_spec($dist);
     $dist->{cpan_author} = $author || 'LOCAL';
 
-    my @provides = map { parse_pkg_spec($_) } split /,/, $provides || '';
-    my @requires = map { parse_pkg_spec($_) } split /,/, $requires || '';
+    my @provides = map { parse_pkg_spec($_) } split /;/, $provides || '';
+    my @requires = map { parse_pkg_spec($_) } split /;/, $requires || '';
 
     return ( $dist, \@provides, \@requires );
 }
@@ -126,8 +126,11 @@ sub parse_pkg_spec {
     my ($spec) = @_;
 
     # Looks like: "Foo" or "Foo-1" or "Foo-Bar-2.3.4_1"
-    $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x
+    $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x 
         or throw "Could not parse spec: $spec";
+
+    # Permit '@' as alternative to '==''
+    $2 =~ s/^ @ / == /x if $2;
 
     return { name => $1, version => $2 || 0 };
 }
@@ -186,6 +189,8 @@ sub has_cpanm {
     my $cpanm_exe = File::Which::which('cpanm') or return 0;
 
     my ($cpanm_ver) = qx{$cpanm_exe --version} =~ m{version ([\d._]+)};
+
+    throw "Failed to determine the version of $cpanm_exe" if $? >> 8;
 
     return $cpanm_ver >= $min_version;
 }

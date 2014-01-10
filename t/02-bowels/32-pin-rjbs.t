@@ -22,7 +22,7 @@ $cpan->populate( 'JOHN/DistA-1 = PkgA~1 & PkgB~1', 'FRED/DistB-1 = PkgB~1', );
 my $local = Pinto::Tester->new( init_args => { sources => $cpan->stack_url } );
 
 # PkgA requires PkgB (above). MyDist requires both PkgA and PkgB...
-my $archive = make_dist_archive('MyDist-1=MyPkg-1 & PkgA~1,PkgB~1');
+my $archive = make_dist_archive('MyDist-1=MyPkg-1 & PkgA~1; PkgB~1');
 $local->run_ok( 'Add', { archives => $archive, author => 'ME' } );
 
 # So we should have pulled in PkgA and PkgB...

@@ -12,7 +12,7 @@ use Pinto::Tester;
 
 my $source = Pinto::Tester->new;
 $source->populate('AUTHOR/DistA-1 = PkgA~1');
-$source->populate('AUTHOR/DistB-1 = PkgB~1 & PkgD~1, PkgE~1');    # Depends on Pkge, but it does not exist!
+$source->populate('AUTHOR/DistB-1 = PkgB~1 & PkgD~1; PkgE~1');    # Depends on Pkge, but it does not exist!
 $source->populate('AUTHOR/DistC-1 = PkgC~1');
 $source->populate('AUTHOR/DistD-1 = PkgD~1');
 

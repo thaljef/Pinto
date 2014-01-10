@@ -22,10 +22,10 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
-$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
+$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1; PkgC~1');
 $t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
 $t->populate('MARK/DistC-1 = PkgC~1');
-$t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
+$t->populate('MARK/DistC-2 = PkgC~2; PkgD~2');
 
 #------------------------------------------------------------------------------
 
@@ -106,6 +106,10 @@ subtest 'Install target with unusual author ID' => sub {
     file_exists_ok( $p5_dir->file('PkgA.pm') );
     file_exists_ok( $p5_dir->file('PkgB.pm') );
 };
+
+#------------------------------------------------------------------------------
+
+# TODO: Install (and maybe pull) target with complex vreq
 
 #------------------------------------------------------------------------------
 done_testing;

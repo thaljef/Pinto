@@ -98,13 +98,13 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
     my $t = Pinto::Tester->new;
 
-    $t->populate('AUTHOR/Dist-1 = PkgA~1, PkgB~1');
+    $t->populate('AUTHOR/Dist-1 = PkgA~1; PkgB~1');
     $t->populate('AUTHOR/Dist-2 = PkgC~1');
     $t->registration_ok('AUTHOR/Dist-1/PkgA~1');
     $t->registration_ok('AUTHOR/Dist-1/PkgB~1');
     $t->registration_ok('AUTHOR/Dist-2/PkgC~1');
 
-    $t->populate('AUTHOR/Dist-3 = PkgB~3, PkgC~3');
+    $t->populate('AUTHOR/Dist-3 = PkgB~3; PkgC~3');
     $t->registration_not_ok('AUTHOR/Dist-1/PkgA~1');
     $t->registration_not_ok('AUTHOR/Dist-1/PkgB~1');
     $t->registration_not_ok('AUTHOR/Dist-2/PkgC~2');
