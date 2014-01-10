@@ -24,7 +24,8 @@ sub opt_spec {
 
     return ( 
     	[ 'stack|s=s'    => 'Show history for this stack'  ],
-        [ 'show-diffs|d' => 'Show a diff for each revision'], 
+      [ 'with-diffs|d' => 'Show a diff for each revision'], 
+      [ 'diff-style=s' => 'Diff style (concise|detailed)' ],
     );
 }
 
@@ -73,7 +74,7 @@ be shown.
 
 =over 4
 
-=item --show-diffs
+=item --with-diffs
 
 =item -d
 

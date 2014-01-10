@@ -28,16 +28,15 @@ has stack => (
     default => undef,
 );
 
-has show_diffs => (
+has with_diffs => (
     is        => 'ro',
     isa       => Bool,
-    default   => 1,
+    default   => 0,
 );
 
 has diff_style => (
     is        => 'ro',
     isa       => DiffStyle,
-    default   => \&default_diff_style,
     predicate => 'has_diff_style',
 );
 
@@ -58,7 +57,7 @@ sub execute {
         my $rest = $revision->to_string("Date: %u\nUser: %j\n\n%{4}G\n");
         $self->show($rest);
 
-        if ($self->show_diffs) {
+        if ($self->with_diffs) {
             my $parent = ($revision->parents)[0];
             local $ENV{PINTO_DIFF_STYLE} = $self->diff_style if $self->has_diff_style;
             my $diff = Pinto::Difference->new(left => $parent, right => $revision);
