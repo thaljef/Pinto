@@ -78,7 +78,7 @@ test_psgi
 
 {
 
-    my $archive = make_dist_archive('TestDist-1.0=Foo~0.7,Bar~0.8')->stringify;
+    my $archive = make_dist_archive('TestDist-1.0=Foo~0.7; Bar~0.8')->stringify;
 
     test_psgi
         app    => $app,
@@ -194,7 +194,7 @@ test_psgi
 for my $v ( 1, 2 ) {
 
     my $stack   = "stack_$v";
-    my $archive = make_dist_archive("Fruit-$v=Apple~$v,Orange~$v")->stringify;
+    my $archive = make_dist_archive("Fruit-$v=Apple~$v; Orange~$v")->stringify;
 
     test_psgi
         app    => $app,

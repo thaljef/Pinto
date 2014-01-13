@@ -24,7 +24,7 @@ my $t = Pinto::Tester->new;
     is $stack->name, $stk_name, 'Got correct stack name';
 
     # Add to the stack...
-    my $foo_and_bar_1 = make_dist_archive('FooAndBar-1 = Foo~1,Bar~1');
+    my $foo_and_bar_1 = make_dist_archive('FooAndBar-1 = Foo~1; Bar~1');
     $t->run_ok( Add => { author => 'ME', stack => $stk_name, archives => $foo_and_bar_1 } );
 
     # Note the time of last commit
@@ -34,7 +34,7 @@ my $t = Pinto::Tester->new;
     sleep 2;
 
     # Add more stuff to the stack...
-    my $foo_and_bar_2 = make_dist_archive('FooAndBar-2 = Foo~2,Bar~2');
+    my $foo_and_bar_2 = make_dist_archive('FooAndBar-2 = Foo~2; Bar~2');
     $t->run_ok( Add => { author => 'ME', stack => $stk_name, archives => $foo_and_bar_2 } );
 
     # Check that mtime was updated...
