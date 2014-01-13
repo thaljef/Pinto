@@ -90,7 +90,9 @@ has locator => (
     is      => 'ro',
     isa     => 'Pinto::TargetLocator',
     handles => [qw(locate)],
-    default => sub { Pinto::TargetLocator->new( repo => $_[0] ) },
+    default => sub { Pinto::TargetLocator->new( repository_urls => [ $_[0]->config->sources_list ],
+                                                cache_dir       => $_[0]->config->cache_dir,
+                                                user_agent      => $_[0]->ua ) },
     lazy    => 1,
 );
 

@@ -21,43 +21,43 @@ my $locator = Pinto::TargetLocator->new( repository_urls => \@repos_urls );
 # Locate first...
 
 
-$found = $locator->locate(spec => 'Foo');
+$found = $locator->locate(target => 'Foo');
 is($found, "file://$repos_dir/a/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz",
-   'Locate by package spec');
+   'Locate by package target');
 
-$found = $locator->locate(spec => 'Bar');
-is($found, undef, 'Locate non-existant package spec');
+$found = $locator->locate(target => 'Bar');
+is($found, undef, 'Locate non-existant package target');
 
-$found = $locator->locate(spec => 'AUTHOR/Foo-1.0.tar.gz');
+$found = $locator->locate(target => 'AUTHOR/Foo-1.0.tar.gz');
 is($found, "file://$repos_dir/a/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz",
     'Locate by dist path');
 
-$found = $locator->locate(spec => 'AUTHOR/Bar-1.0.tar.gz');
+$found = $locator->locate(target => 'AUTHOR/Bar-1.0.tar.gz');
 is($found, undef, 'Locate non-existant dist path');
 
-$found = $locator->locate(spec => 'Foo~2.0');
+$found = $locator->locate(target => 'Foo~2.0');
 is($found, "file://$repos_dir/b/authors/id/A/AU/AUTHOR/Foo-2.0.tar.gz",
     'Locate by package name and decimal version');
 
-$found = $locator->locate(spec => 'Foo~v1.2.0');
+$found = $locator->locate(target => 'Foo~v1.2.0');
 is($found, "file://$repos_dir/b/authors/id/A/AU/AUTHOR/Foo-2.0.tar.gz",
     'Locate by package name and vstring');
 
-$found = $locator->locate(spec => 'Foo@3.0');
+$found = $locator->locate(target => 'Foo@3.0');
 is($found, undef, 'Locate non-existant version');
 
 #------------------------------------------------------------------------------
 # Locate latest...
 
-$found = $locator->locate(spec => 'Foo', latest => 1);
+$found = $locator->locate(target => 'Foo', latest => 1);
 is($found, "file://$repos_dir/b/authors/id/A/AU/AUTHOR/Foo-2.0.tar.gz",
    'Locate latest by package name');
 
-$found = $locator->locate(spec => 'Foo~1.0', latest => 1);
+$found = $locator->locate(target => 'Foo~1.0', latest => 1);
 is($found, "file://$repos_dir/b/authors/id/A/AU/AUTHOR/Foo-2.0.tar.gz",
    'Locate latest by package name and decimal version');
 
-$found = $locator->locate(spec => 'Foo>=v1.0.5', latest => 1);
+$found = $locator->locate(target => 'Foo>=v1.0.5', latest => 1);
 is($found, "file://$repos_dir/b/authors/id/A/AU/AUTHOR/Foo-2.0.tar.gz",
    'Locate latest by package name and vstring');
 

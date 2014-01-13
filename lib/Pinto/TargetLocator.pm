@@ -7,6 +7,9 @@ use MooseX::Types::Moose qw(ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
 use URI;
+use LWP::UserAgent;
+use File::Temp qw(tempdir);
+use Path::Class qw(dir);
 
 use Pinto::Util qw(throw);
 use Pinto::Types qw(Uri Dir);
@@ -15,18 +18,30 @@ use Pinto::Target;
 
 use version;
 
-
 #------------------------------------------------------------------------------
 
 # VERSION
 
 #------------------------------------------------------------------------------
 
-has repo => (
-    is       => 'ro',
-    isa      => 'Pinto::Repository',
-    weak_ref => 1,
-    required => 1,
+has repository_urls => (
+    is         => 'ro',
+    isa        => ArrayRef[Uri],
+    auto_deref => 1,
+    default    => sub { [URI->new('http://cpan.perl.org')] },
+);
+
+has user_agent => (
+   is          => 'ro',
+   isa         => 'LWP::UserAgent',
+   default     => sub { LWP::UserAgent->new },
+);
+
+has cache_dir => (
+   is         => 'ro',
+   isa        => Dir,
+   default    => sub { dir( tempdir(CLEANUP => 1) ) },
+   coerce     => 1,
 );
 
 has force => (
@@ -63,9 +78,9 @@ sub _build_indexes {
 
     my @indexes = map { Pinto::TargetLocator::Index->new(
         force          => $self->force,
-        user_agent     => $self->repo->ua,
-        cache_dir      => $self->repo->config->cache_dir,
-        repository_url => $_ ) } $self->repo->config->sources_list;
+        user_agent     => $self->user_agent,
+        cache_dir      => $self->cache_dir,
+        repository_url => $_ ) } $self->repository_urls;
 
     return \@indexes;
 }
@@ -168,7 +183,7 @@ sub _locate_distribution {
         my $dist_url  = URI->new("$base_url/authors/id/$dist_path");
 
         return $dist_url if $index->distributions->{$dist_path};
-        return $dist_url if $self->repo->ua->head($dist_url)->is_success;
+        return $dist_url if $self->user_agent->head($dist_url)->is_success;
     }
 
     return;

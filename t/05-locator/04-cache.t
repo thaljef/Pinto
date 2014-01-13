@@ -26,10 +26,10 @@ my $class = 'Pinto::TargetLocator';
 my $locator = $class->new( repository_urls => \@repos_urls,
                                  cache_dir => $temp_dir );
 
-$found = $locator->locate(spec => 'Foo~1.0');
+$found = $locator->locate(target => 'Foo~1.0');
 is($found, "file://$repos_dir/a/authors/id/A/AU/AUTHOR/Foo-1.0.tar.gz", 'Located Foo-1.0');
 
-$found = $locator->locate(spec => 'Foo~2.0');
+$found = $locator->locate(target => 'Foo~2.0');
 is($found, "file://$repos_dir/b/authors/id/A/AU/AUTHOR/Foo-2.0.tar.gz", 'Located Foo-2.0');
 
 for my $url (@repos_urls) {
@@ -47,10 +47,10 @@ for my $url (@repos_urls) {
 $locator = $class->new( repository_urls => \@repos_urls,
                               cache_dir => $temp_dir );
 
-$found = $locator->locate(spec => 'Foo~1.0');
+$found = $locator->locate(target => 'Foo~1.0');
 is($found, undef, 'Did not find Foo-1.0 in empty cache');
 
-$found = $locator->locate(spec => 'Foo~2.0');
+$found = $locator->locate(target => 'Foo~2.0');
 is($found, undef, 'Did not find Foo-2.0 in empty cache');
 
 #------------------------------------------------------------------------------
