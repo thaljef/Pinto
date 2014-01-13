@@ -2,6 +2,11 @@
 
       [ENHANCEMENTS]
 
+      - Pinto can now handle META files that contain prerequisites with
+      version ranges such as ">4, !=5, <=7".  These are currently used by a 
+      handful of distributions on CPAN, and they are gradually becoming more
+      common.
+
       - When using the --dry-run option, a diff report will be displayed.  
       This shows all the changes that would have been made.  If there were no
       changes, nothing is shown.
