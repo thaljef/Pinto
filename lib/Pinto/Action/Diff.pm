@@ -50,12 +50,12 @@ sub execute {
     my $error_message = qq{"%s" does not match any stack or revision};
 
     my $left =
-           $self->repo->get_stack( $self->left, ( nocroak => 1 ) )
+           $self->repo->get_stack_maybe( $self->left )
         || $self->repo->get_revision( $self->left )
         || throw sprintf $error_message, $self->left;
 
     my $right =
-           $self->repo->get_stack( $self->right, ( nocroak => 1 ) )
+           $self->repo->get_stack_maybe( $self->right )
         || $self->repo->get_revision( $self->right )
         || throw sprintf $error_message, $self->right;
 

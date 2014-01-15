@@ -6,11 +6,11 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-use Pinto::TargetLocator;
+use Pinto::Locator;
 
 #------------------------------------------------------------------------------
 
-my $class = 'Pinto::TargetLocator';
+my $class = 'Pinto::Locator';
 
 #------------------------------------------------------------------------------
 

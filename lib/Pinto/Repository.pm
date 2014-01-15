@@ -14,8 +14,8 @@ use Pinto::Store;
 use Pinto::Config;
 use Pinto::Locker;
 use Pinto::Database;
-use Pinto::TargetLocator;
 use Pinto::PackageExtractor;
+use Pinto::Locator::Multiplex;
 use Pinto::PrerequisiteWalker;
 use Pinto::Util qw(itis debug mksymlink throw);
 use Pinto::Types qw(Dir);
@@ -88,11 +88,14 @@ has store => (
 
 has locator => (
     is      => 'ro',
-    isa     => 'Pinto::TargetLocator',
-    handles => [qw(locate)],
-    default => sub { Pinto::TargetLocator->new( repository_urls => [ $_[0]->config->sources_list ],
-                                                cache_dir       => $_[0]->config->cache_dir,
-                                                user_agent      => $_[0]->ua ) },
+    isa     => 'Pinto::Locator',
+    handles => [ qw(locate) ],
+    default => sub {
+        my $self = shift;
+        my $cache_dir = $self->config->cache_dir;
+        my $mux = Pinto::Locator::Multiplex->new(cache_dir => $cache_dir);
+        return $mux->assemble($self->config->sources_list) 
+    },
     lazy    => 1,
 );
 
@@ -120,35 +123,48 @@ has locker => (
 
 =method get_stack( $stack_object )
 
-=method get_stack( $stack_name_or_object, nocroak => 1 )
-
 Returns the L<Pinto::Schema::Result::Stack> object with the given
-C<$stack_name>.  If the argument is a L<Pinto::Schema::Result::Stack>,
-then it just returns that.  If there is no stack with such a name in the
-repository, throws an exception.  If the C<nocroak> option is true,
-than an exception will not be thrown and undef will be returned.  If
-you do not specify a stack name (or it is undefined) then you'll get
-whatever stack is currently marked as the default stack.
+C<$stack_name>.  If the argument is a L<Pinto::Schema::Result::Stack>, then it
+just returns that.  If there is no stack with such a name in the repository,
+throws an exception.  If you do not specify a stack name (or it is undefined)
+then you'll get whatever stack is currently marked as the default stack.
 
-The stack object will not be open for revision, so you will not be
-able to change any of the registrations for that stack.  To get a
-stack that you can modify, use C<open_stack>.
+The stack object will not be open for revision, so you will not be able to
+change any of the registrations for that stack.  To get a stack that you can
+modify, use C<open_stack>.
 
 =cut
 
 sub get_stack {
-    my ( $self, $stack, %opts ) = @_;
+    my ( $self, $stack ) = @_;
+
+    my $got = $self->get_stack_maybe($stack)
+        or throw "Stack $stack does not exist";
+
+    return $got;
+}
+
+#-------------------------------------------------------------------------------
+
+=method get_stack_maybe()
+
+=method get_stack_maybe( $stack_name )
+
+=method get_stack_maybe( $stack_object )
+
+Same as C<get_stack> but simply returns undef if the stack does not exist
+rather than throwing an exception.
+
+=cut
+
+sub get_stack_maybe {
+    my ( $self, $stack ) = @_;
 
     return $stack if itis( $stack, 'Pinto::Schema::Result::Stack' );
     return $self->get_default_stack if not $stack;
 
     my $where = { name => $stack };
-    my $got_stack = $self->db->schema->find_stack($where);
-
-    throw "Stack $stack does not exist"
-        unless $got_stack or $opts{nocroak};
-
-    return $got_stack;
+    return $self->db->schema->find_stack($where);
 }
 
 #-------------------------------------------------------------------------------
@@ -377,13 +393,11 @@ is not found, then an exception is thrown.
 sub ups_distribution {
     my ( $self, %args ) = @_;
 
-    my $target = $args{target} || throw 'Invalid arguments';
-    my $cascade = $args{cascade} || 0;
+    my $target = $args{target};
+    my $found = $self->locate( %args );
+    throw "Cannot find $target anywhere" if not $found;
 
-    my $dist_url = $self->locate( target => $target, latest => $cascade );
-    throw "Cannot find $target anywhere" if not $dist_url;
-
-    return $self->fetch_distribution( url => $dist_url );
+    return $self->fetch_distribution( url => $found->{url} );
 }
 
 #-------------------------------------------------------------------------------
@@ -592,6 +606,7 @@ sub svp_rollback {
 }
 
 #-------------------------------------------------------------------------------
+
 sub svp_release {
     my ( $self, $name ) = @_;
 
@@ -610,7 +625,7 @@ sub create_stack {
     my $stk_name = $args{name};
 
     throw "Stack $stk_name already exists"
-        if $self->get_stack( $stk_name, nocroak => 1 );
+        if $self->get_stack_maybe( $stk_name );
 
     my $root = $self->db->get_root_revision;
     my $stack = $self->db->schema->create_stack( { %args, head => $root } );
@@ -630,7 +645,7 @@ sub copy_stack {
     my $stack     = delete $args{stack};
     my $orig_name = $stack->name;
 
-    if ( my $existing = $self->get_stack( $copy_name, nocroak => 1 ) ) {
+    if ( my $existing = $self->get_stack_maybe( $copy_name ) ) {
         throw "Stack $existing already exists";
     }
 
@@ -651,7 +666,7 @@ sub rename_stack {
     my $stack    = delete $args{stack};
     my $old_name = $stack->name;
 
-    if (my $existing_stack = $self->get_stack( $new_name, nocroak => 1 )) {
+    if (my $existing_stack = $self->get_stack_maybe( $new_name )) {
         my $is_different_stack = lc $new_name ne lc $existing_stack->name;
         throw "Stack $new_name already exists" if $is_different_stack || $new_name eq $old_name;
     }
@@ -859,7 +874,7 @@ sub assert_sanity_ok {
 sub clear_cache {
     my ($self) = @_;
 
-    $self->locator->clear_cache;    # Clears cache file from disk
+    $self->locator->refresh;    # Clears cache file from disk
 
     return $self;
 }

@@ -202,7 +202,8 @@ sub sources_list {
 sub directories {
     my ($self) = @_;
 
-    return ( $self->root_dir, $self->config_dir, $self->cache_dir, $self->authors_dir, $self->log_dir, $self->db_dir );
+    return ( $self->root_dir, $self->config_dir, $self->cache_dir, 
+             $self->authors_dir, $self->log_dir, $self->db_dir );
 }
 
 #------------------------------------------------------------------------------

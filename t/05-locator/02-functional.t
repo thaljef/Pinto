@@ -7,7 +7,7 @@ use FindBin qw($Bin);
 use Path::Class;
 use Test::More (tests => 10);
 
-use Pinto::TargetLocator;
+use Pinto::Locator;
 
 #------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ my $found;
 my $repos_dir = dir($Bin)->as_foreign('Unix')->stringify() . '/repos';
 my @repos_urls = map { URI->new("file://$repos_dir/$_") } qw(a b);
 
-my $locator = Pinto::TargetLocator->new( repository_urls => \@repos_urls );
+my $locator = Pinto::Locator->new( repository_urls => \@repos_urls );
 
 #------------------------------------------------------------------------------
 # Locate first...

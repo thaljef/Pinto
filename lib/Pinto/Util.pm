@@ -9,6 +9,7 @@ use base qw(Exporter);
 
 use Carp;
 use DateTime;
+use File::Temp;
 use Path::Class;
 use Digest::MD5;
 use Digest::SHA;
@@ -51,6 +52,7 @@ Readonly our @EXPORT_OK => qw(
     parse_dist_path
     mask_url_passwords
     sha256
+    tempdir
     title_text
     throw
     trim_text
@@ -680,6 +682,14 @@ sub is_remote_repo {
     return if not $url;
     return $url =~ m{^https?://}x;
 }
+
+#-------------------------------------------------------------------------------
+
+sub tempdir {
+    
+    return Path::Class::dir(File::Temp::tempdir(CLEANUP => 1));
+}
+
 
 #-------------------------------------------------------------------------------
 

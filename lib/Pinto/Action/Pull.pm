@@ -58,9 +58,7 @@ sub execute {
     my ( @successful, @failed );
     for my $target ( $self->targets ) {
 
-
         try {
-            $DB::single = 1;
             $self->repo->svp_begin;
             $self->notice( "Pulling target $target to stack " . $self->stack );
             my $dist = $self->pull( target => $target );
