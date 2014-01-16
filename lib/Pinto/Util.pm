@@ -7,6 +7,7 @@ use warnings;
 use version;
 use base qw(Exporter);
 
+use URI;
 use Carp;
 use DateTime;
 use File::Temp;
@@ -46,6 +47,7 @@ Readonly our @EXPORT_OK => qw(
     is_system_prop
     isa_perl
     itis
+    make_uri
     md5
     mksymlink
     mtime
@@ -705,6 +707,23 @@ sub default_diff_style {
     }
 
     return $PINTO_DIFF_STYLE_CONCISE;
+}
+
+#-------------------------------------------------------------------------------
+
+sub make_uri {
+    my ($it) = @_;
+
+    return $it
+        if itis( $it, 'URI' );
+
+    return URI::file->new( $it->absolute )
+        if itis( $it, 'Path::Class::File' );
+
+    return URI::file->new( file($it)->absolute )
+        if -e $it;
+
+    return URI->new($it);
 }
 
 #-------------------------------------------------------------------------------

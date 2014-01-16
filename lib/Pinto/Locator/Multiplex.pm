@@ -6,19 +6,23 @@ use Moose;
 use MooseX::Types::Moose qw(ArrayRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
+use Pinto::Locator::Mirror;
+use Pinto::Locator::Stratopan;
+
 #------------------------------------------------------------------------------
 
 # VERSION
 
-#------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 extends qw(Pinto::Locator);
 
 #------------------------------------------------------------------------------
 
 has locators => (
-    is         => 'rw',
+    is         => 'ro',
     isa        => ArrayRef['Pinto::Locator'],
+    writer     => '_set_locators',
     default    => sub { [] },
     lazy       => 1,
 );
@@ -29,26 +33,14 @@ sub assemble {
     my ($self, @urls) = @_;
 
     my @locators;
+    push @locators, Pinto::Locator::Stratopan->new; # Make optional!
+
     for my $url (@urls) {
-    
-        my $locator;
-        if ($url->host eq 'cpan.stratopan.com'){
-
-            require Pinto::Locator::Stratopan;
-            $locator = Pinto::Locator::Sratopan->new;
-
-        }
-        else {
-
-            require Pinto::Locator::Mirror;
-            my %args = ( url => $url, cache_dir => $self->cache_dir );
-            $locator = Pinto::Locator::Mirror->new( %args );
-        }
-
-        push @locators, $locator;
+        my %args = ( url => $url, cache_dir => $self->cache_dir );
+        push @locators, Pinto::Locator::Mirror->new( %args );
     }
 
-    $self->locators(\@locators);
+    $self->_set_locators(\@locators);
     return $self;
 }
 

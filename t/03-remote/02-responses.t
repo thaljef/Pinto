@@ -10,6 +10,7 @@ use IO::String;
 use HTTP::Response;
 
 use Pinto::Remote;
+use Pinto::Globals;
 use Pinto::Chrome::Term;
 use Pinto::Constants qw(:server);
 
@@ -17,10 +18,10 @@ use Pinto::Constants qw(:server);
 
 {
 
+    my $ua = local $Pinto::Globals::UA = Test::LWP::UserAgent->new;
+
     my $res = HTTP::Response->new(200);
     $res->content("DATA-GOES-HERE\n## DIAG-MSG-HERE\n$PINTO_SERVER_STATUS_OK\n");
-
-    my $ua = Test::LWP::UserAgent->new;
     $ua->map_response( qr{.*}, $res );
 
     my $out_buffer = '';
@@ -30,7 +31,7 @@ use Pinto::Constants qw(:server);
     my $err_fh     = IO::String->new( \$err_buffer );
 
     my $chrome = Pinto::Chrome::Term->new( stdout => $out_fh, stderr => $err_fh );
-    my $pinto = Pinto::Remote->new( ua => $ua, chrome => $chrome, root => 'localhost' );
+    my $pinto = Pinto::Remote->new( chrome => $chrome, root => 'localhost' );
     my $result = $pinto->run('List');
 
     is $result->was_successful, 1, 'Got successful result' or diag $err_buffer;

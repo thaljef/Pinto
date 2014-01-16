@@ -21,7 +21,7 @@ use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Plated);
+with qw(Pinto::Role::Plated Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
@@ -41,20 +41,6 @@ has username => (
 has password => (
     is  => 'ro',
     isa => Maybe [Str],
-);
-
-has ua => (
-    is      => 'ro',
-    isa     => 'LWP::UserAgent',
-    default => sub { LWP::UserAgent->new( agent => $_[0]->ua_name, env_proxy => 1 ) },
-    lazy    => 1,
-);
-
-has ua_name => (
-    is      => 'ro',
-    isa     => Str,
-    default => sub { sprintf '%s/%s', ref $_[0], $_[0]->VERSION || '??' },
-    lazy    => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -106,7 +92,6 @@ sub run {
         username => $self->username,
         password => $self->password,
         chrome   => $self->chrome,
-        ua       => $self->ua
     );
 
     return $action->execute;

@@ -32,7 +32,7 @@ Readonly our $REPOSITORY_VERSION => 1;
 
 #-------------------------------------------------------------------------------
 
-with qw( Pinto::Role::FileFetcher );
+with qw( Pinto::Role::UserAgent );
 
 #-------------------------------------------------------------------------------
 
@@ -393,10 +393,7 @@ is not found, then an exception is thrown.
 sub ups_distribution {
     my ( $self, %args ) = @_;
 
-    my $target = $args{target};
-    my $found = $self->locate( %args );
-    throw "Cannot find $target anywhere" if not $found;
-
+    return unless my $found = $self->locate( %args );
     return $self->fetch_distribution( url => $found->{url} );
 }
 

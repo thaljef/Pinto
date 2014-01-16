@@ -1,33 +1,23 @@
-# ABSTRACT: Something that fetches remote files
+# ABSTRACT: Something that makes HTTP requests
 
-package Pinto::Role::FileFetcher;
+package Pinto::Role::UserAgent;
 
 use Moose::Role;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use URI;
 use URI::file;
-use File::Temp;
 use Path::Class;
 use LWP::UserAgent;
 
-use Pinto::Util qw(itis debug mtime throw);
+use Pinto::Globals;
+use Pinto::Util qw(itis debug throw tempdir make_uri);
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 # VERSION
 
-#------------------------------------------------------------------------------
-# Attributes
-
-has ua => (
-    is      => 'ro',
-    isa     => 'LWP::UserAgent',
-    builder => '_build_ua',
-    lazy    => 1,
-);
-
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 =method fetch(from => 'http://someplace' to => 'some/path')
 
@@ -48,7 +38,7 @@ sub fetch {
     my ( $self, %args ) = @_;
 
     my $from     = $args{from};
-    my $from_uri = _make_uri($from);
+    my $from_uri = make_uri($from);
     my $to       = itis( $args{to}, 'Path::Class' ) ? $args{to} : file( $args{to} );
 
     debug("Skipping $from: already fetched to $to") and return 0 if -e $to;
@@ -74,17 +64,31 @@ and all its contents will be deleted when the process terminates.
 sub fetch_temporary {
     my ( $self, %args ) = @_;
 
-    my $url  = URI->new( $args{url} )->canonical();
-    my $path = Path::Class::file( $url->path() );
+    my $url  = URI->new( $args{url} )->canonical;
+    my $path = file( $url->path );
     return $path if $url->scheme() eq 'file';
 
-    my $base     = $path->basename();
-    my $tempdir  = File::Temp::tempdir( CLEANUP => 1 );
-    my $tempfile = Path::Class::file( $tempdir, $base );
+    my $base     = $path->basename;
+    my $tempfile = file( tempdir(), $base );
 
     $self->fetch( from => $url, to => $tempfile );
 
-    return Path::Class::file($tempfile);
+    return file($tempfile);
+}
+
+#------------------------------------------------------------------------------
+
+sub head { 
+    my $self = shift;
+
+    return $Pinto::Globals::UA->head(@_);
+}
+
+#------------------------------------------------------------------------------
+sub request {
+    my $self = shift;
+
+    return $Pinto::Globals::UA->request(@_);
 }
 
 #------------------------------------------------------------------------------
@@ -94,7 +98,7 @@ sub _fetch {
 
     debug("Fetching $url");
 
-    my $result = eval { $self->ua->mirror( $url, $to ) }
+    my $result = eval { $Pinto::Globals::UA->mirror( $url, $to ) }
         or throw $@;
 
     if ( $result->is_success() ) {
@@ -110,39 +114,7 @@ sub _fetch {
     # Should never get here
 }
 
-#------------------------------------------------------------------------------
-
-sub _build_ua {
-    my ($self) = @_;
-
-    # TODO: Do we need to make some of this configurable?
-    my $agent = sprintf "%s/%s", ref $self, 'VERSION';
-    my $ua = LWP::UserAgent->new(
-        agent      => $agent,
-        env_proxy  => 1,
-        keep_alive => 5
-    );
-    return $ua;
-}
-
-#------------------------------------------------------------------------------
-
-sub _make_uri {
-    my ($it) = @_;
-
-    return $it
-        if itis( $it, 'URI' );
-
-    return URI::file->new( $it->absolute )
-        if itis( $it, 'Path::Class::File' );
-
-    return URI::file->new( file($it)->absolute )
-        if -e $it;
-
-    return URI->new($it);
-}
-
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 1;
 
 __END__

@@ -26,6 +26,7 @@ sub opt_spec {
         [ 'no-fail'                           => 'Do not fail when there is an error' ],
         [ 'recurse!'                          => 'Recursively pull prereqs (negatable)' ],
         [ 'pin'                               => 'Pin the packages to the stack' ],
+        [ 'skip-prerequisite|k:s@'            => 'Skip unsatisfiable prereqs (repeatable)' ],
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
@@ -128,15 +129,6 @@ a repository and see which ones are problematic.  Once you've fixed
 the broken ones, you can throw the whole list at the repository
 again.
 
-=item --recurse
-
-=item --no-recurse
-
-Recursively pull any distributions required to satisfy prerequisites
-for the targets.  The default value for this option can be configured
-in the F<pinto.ini> configuration file for the repository (it is usually
-set to 1).  To disable recursion, use C<--no-recurse>.
-
 =item --message=TEXT
 
 =item -m TEXT
@@ -151,29 +143,49 @@ repository.
 
 =item --pin
 
-Pins the packages to the stack, so they cannot be changed until you
-unpin them.  Only the packages in the requested targets will be pinned
--- packages in prerequisites will not be pinned.  However, you may pin
-them separately with the L<pin|App::Pinto::Command::pin> command if
-you so desire.
+Pins the packages to the stack, so they cannot be changed until you unpin
+them.  Only the packages in the requested targets will be pinned -- packages
+in prerequisites will not be pinned.  However, you may pin them separately
+with the L<pin|App::Pinto::Command::pin> command if you so desire.
+
+=item --recurse
+
+=item --no-recurse
+
+Recursively pull any distributions required to satisfy prerequisites
+for the targets.  The default value for this option can be configured
+in the F<pinto.ini> configuration file for the repository (it is usually
+set to 1).  To disable recursion, use C<--no-recurse>.
+
+=item --skip-prerequisite[=PACKAGE]
+
+=item -k[=PACKAGE]
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Skip any prerequisite with name PACKAGE if it can't be satisfied.  However, a
+warning will be given whenever this occurrs.  If PACKAGE is not specified,
+then all unsatisfiable prerequisites wil be skipeed. This option only has
+effect when recursively fetching prerequisites for the targets (See also the
+C<--recurse> option). This option can be repeated.
 
 =item --stack=NAME
 
 =item -s NAME
 
-Puts all the packages onto the stack with the given NAME.  Defaults
-to the name of whichever stack is currently marked as the default
-stack.  Use the L<stacks|App::Pinto::Command::stacks> command
-to see the stacks in the repository.
+Puts all the packages onto the stack with the given NAME.  Defaults to the
+name of whichever stack is currently marked as the default stack.  Use the
+L<stacks|App::Pinto::Command::stacks> command to see the stacks in the
+repository.
 
 =item --use-default-message
 
 =item -M
 
-Use the default value for the revision history log message.  Pinto
-will generate a semi-informative log message just based on the command
-and its arguments.  If you set an explicit message with C<--message>,
-the C<--use-default-message> option will be silently ignored.
+Use the default value for the revision history log message.  Pinto will
+generate a semi-informative log message just based on the command and its
+arguments.  If you set an explicit message with C<--message>, the C<--use-
+default-message> option will be silently ignored.
 
 =item --with-development-prerequisites
 

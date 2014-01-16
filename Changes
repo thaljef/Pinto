@@ -7,6 +7,12 @@
       handful of distributions on CPAN, and they are gradually becoming more
       common.
 
+      - The "pull" and "add" commands now have a --skip-prerequisite flag that 
+      causes it to skip (but warn about) any prerequisite packages that it 
+      cannot satisfy.  You can use it to specify precisely which packages to 
+      skip, or to skip all unsatisfiable packages. This option only has effect 
+      when recursively fetching prerequisites.  See POD for details.
+
       - When using the --dry-run option, a diff report will be displayed.  
       This shows all the changes that would have been made.  If there were no
       changes, nothing is shown.

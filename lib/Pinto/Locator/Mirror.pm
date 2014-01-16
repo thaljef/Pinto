@@ -3,6 +3,7 @@
 package Pinto::Locator::Mirror;
 
 use Moose;
+use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(HashRef);
 use MooseX::MarkAsMethods (autoclean => 1);
 
@@ -25,7 +26,7 @@ extends qw(Pinto::Locator);
 
 #------------------------------------------------------------------------
 
-with qw(Pinto::Role::FileFetcher);
+with qw(Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------
 
@@ -101,7 +102,7 @@ sub locate_distribution {
 
     for my $path (@paths_to_try) {
         my $url  = URI->new($self->url . '/authors/id/' . $path);
-        return {url => $url} if $self->ua->head($url)->is_success;
+        return {url => $url} if $self->head($url)->is_success;
     }
 
     return;

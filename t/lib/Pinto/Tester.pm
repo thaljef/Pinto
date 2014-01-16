@@ -75,6 +75,7 @@ has pinto => (
 has repo => (
     is       => 'ro',
     isa      => 'Pinto::Repository',
+    handles  => [ qw(get_stack get_stack_maybe get_distribution) ],
     default  => sub { $_[0]->pinto->repo },
     init_arg => undef,
     lazy     => 1,
@@ -125,22 +126,6 @@ sub _build_pinto {
     $initializer->init( %defaults, $self->init_args );
 
     return Pinto->new( %defaults, chrome => $chrome, $self->pinto_args );
-}
-
-#------------------------------------------------------------------------------
-
-sub get_stack {
-    my ( $self, @args ) = @_;
-
-    return $self->repo->get_stack(@args);
-}
-
-#------------------------------------------------------------------------------
-
-sub get_distribution {
-    my ( $self, @args ) = @_;
-
-    return $self->repo->get_distribution(@args);
 }
 
 #------------------------------------------------------------------------------
@@ -457,7 +442,7 @@ sub no_default_stack_ok {
     my ($self) = @_;
 
     my $stack = eval { $self->get_stack };
-    $self->ok( !$stack, "No stack is marked as default" );
+    $self->ok( !$stack, "No stack should be marked as default" );
 
     my $modules_dir = $self->pinto->repo->config->modules_dir;
     $self->ok( !-l $modules_dir, "The modules dir is not linked anywhere" );
@@ -484,7 +469,7 @@ sub stack_exists_ok {
 sub stack_not_exists_ok {
     my ( $self, $stack_name ) = @_;
 
-    my $stack = eval { $self->get_stack($stack_name) };
+    my $stack = $self->get_stack_maybe($stack_name);
     $self->ok( !$stack, "Stack $stack_name should not exist in DB" );
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
@@ -498,7 +483,7 @@ sub stack_not_exists_ok {
 sub stack_is_locked_ok {
     my ( $self, $stack_name ) = @_;
 
-    my $stack = eval { $self->get_stack($stack_name) };
+    my $stack = $self->get_stack_maybe($stack_name);
     $self->ok( $stack, "Stack $stack_name should exist in DB" ) or return;
     $self->ok( $stack->is_locked, "Stack $stack_name should be locked" );
 
@@ -510,13 +495,24 @@ sub stack_is_locked_ok {
 sub stack_is_not_locked_ok {
     my ( $self, $stack_name ) = @_;
 
-    my $stack = eval { $self->get_stack($stack_name) };
+    my $stack = $self->get_stack_maybe($stack_name);
     $self->ok( $stack, "Stack $stack_name should exist in DB" ) or return;
     $self->ok( !$stack->is_locked, "Stack $stack_name should not be locked" );
 
     return;
 }
 
+#------------------------------------------------------------------------------
+
+sub stack_is_empty_ok {
+    my ($self, $stack_name ) = @_;
+
+    my $stack = $self->get_stack_maybe($stack_name);
+    $self->ok( $stack, "Stack $stack_name should exist in DB" ) or return;
+    $self->is_eq($stack->head->registrations->count, 0, "Stack $stack_name should be empty" );
+
+    return;
+}
 #------------------------------------------------------------------------------
 
 sub populate {

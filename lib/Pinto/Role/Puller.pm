@@ -3,10 +3,10 @@
 package Pinto::Role::Puller;
 
 use Moose::Role;
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(ArrayRef Bool Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Pinto::Util qw(throw);
+use Pinto::Util qw(throw whine);
 
 #-----------------------------------------------------------------------------
 
@@ -35,6 +35,12 @@ has pin => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
+);
+
+has skip_prerequisite => (
+    is        => 'ro',
+    isa       => ArrayRef[Str],
+    predicate => 'has_skip_prerequisite',
 );
 
 has with_development_prerequisites => (
@@ -106,6 +112,13 @@ sub find {
     elsif ( $dist = $stack->repo->ups_distribution( target => $target, cascade => $self->cascade ) ) {
         $msg = "Found $target in " . $dist->source;
     }
+    elsif ( $self->should_skip_prerequisite($target) ) {
+        whine "Cannot find $target anywhere.  Skipping it";
+        return;
+    }
+    else {
+        throw "Cannot find $target anywhere";
+    }
 
     $self->chrome->show_progress;
     $self->info($msg) if defined $msg;
@@ -133,8 +146,6 @@ sub do_recursion {
         # when deciding if we've seen this version (or newer) of the package
         return if defined( $last_seen{$pkg_name} ) && $target->is_satisfied_by( $last_seen{$pkg_name} );
 
-        # I think the only time that we won't see a $dist here is when
-        # the prereq resolves to a perl (i.e. its a core-only module).
         return if not my $dist = $self->find( target => $target );
 
         $dist->register( stack => $stack );
@@ -161,6 +172,16 @@ sub do_recursion {
     while ( $walker->next ) { };    # Just want the callback side effects
 
     return $self;
+}
+
+#-----------------------------------------------------------------------------
+
+sub should_skip_prerequisite {
+    my ($self, $target) = @_;
+
+    return 0 unless $self->has_skip_prerequisite;
+    return 1 unless my @packages_to_skip = @{ $self->skip_prerequisite };
+    return scalar grep { $target->name eq $_ } @packages_to_skip;
 }
 
 #-----------------------------------------------------------------------------

@@ -28,6 +28,7 @@ sub opt_spec {
         [ 'no-index|x=s@'                     => 'Do not index matching packages' ],
         [ 'recurse!'                          => 'Recursively pull prereqs (negatable)' ],
         [ 'pin'                               => 'Pin packages to the stack' ],
+        [ 'skip-prerequisite|k:s@'            => 'Skip unsatisfiable prereqs (repeatable)' ],
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
@@ -164,6 +165,14 @@ index exactly as PAUSE would.  When using a PATTERN, take care to use a
 conservative one so you don't exclude the wrong packages.  Pinto will throw an
 exception if you exclude every package in the distribution.
 
+=item --pin
+
+Pins all the packages in the added distributions to the stack, so they
+cannot be changed until you unpin them.  The pin does not apply to any
+prerequisites that are pulled in for this distribution.  However, you
+may pin them separately with the
+L<pin|App::Pinto::Command::pin> command, if you so desire.
+
 =item --recurse
 
 =item --no-recurse
@@ -173,13 +182,17 @@ for the targets.  The default value for this option can be configured
 in the F<pinto.ini> configuration file for the repository (it is usually
 set to 1).  To disable recursion, use C<--no-recurse>.
 
-=item --pin
+=item --skip-prerequisite[=PACKAGE]
 
-Pins all the packages in the added distributions to the stack, so they
-cannot be changed until you unpin them.  The pin does not apply to any
-prerequisites that are pulled in for this distribution.  However, you
-may pin them separately with the
-L<pin|App::Pinto::Command::pin> command, if you so desire.
+=item -k[=PACKAGE]
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Skip any prerequisite with name PACKAGE if it can't be satisfied.  However, a
+warning will be given whenever this occurrs.  If PACKAGE is not specified,
+then all unsatisfiable prerequisites wil be skipeed. This option only has
+effect when recursively fetching prerequisites for the targets (See also the
+C<--recurse> option). This option can be repeated.
 
 =item --stack NAME
 

@@ -21,7 +21,7 @@ use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Plated);
+with qw(Pinto::Role::Plated Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
@@ -52,12 +52,6 @@ has username => (
 has password => (
     is       => 'ro',
     isa      => Maybe [Str],
-    required => 1,
-);
-
-has ua => (
-    is       => 'ro',
-    isa      => 'LWP::UserAgent',
     required => 1,
 );
 
@@ -157,7 +151,7 @@ sub _send_request {
 
     # Currying in some extra args to the callback...
     my $callback = sub { $self->_response_callback( \$status, @_ ) };
-    my $response = $self->ua->request( $request, $callback );
+    my $response = $self->request( $request, $callback );
 
     if ( not $response->is_success ) {
         $self->error( $response->content );
