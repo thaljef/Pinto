@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use JSON qw(decode_json);
 use URI::Escape qw(uri_escape);
-use HTTP::Request::Common;
+use HTTP::Request::Common qw(GET);
 
 #-----------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ sub locate_distribution {
 	my $url = $self->build_query_url("$target")
 	my $res = $self->request(GET(url));
 	my $struct = decode_json($res->content);
-	
+
 }
 
 #-----------------------------------------------------------------------------
