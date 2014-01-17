@@ -124,11 +124,14 @@ Readonly our @PINTO_DIFF_STYLES => ($PINTO_DIFF_STYLE_CONCISE, $PINTO_DIFF_STYLE
 #------------------------------------------------------------------------------
 # TODO: Make these configurable via ENV vars
 
+Readonly our $PINTO_PUBLIC_CPAN_URI       => URI->new('http://www.cpan.org');
 Readonly our $PINTO_BACKPAN_CPAN_URI      => URI->new('http://backpan.perl.org');
 Readonly our $PINTO_STRATOPAN_CPAN_URI    => URI->new('http://cpan.stratopan.com'); 
 Readonly our $PINTO_STRATOPAN_LOCATOR_URI => URI->new('http://meta.stratopan.com/locate');
 
-Readonly our @PINTO_DEFAULT_SOURCE_URIS => ($PINTO_STRATOPAN_CPAN_URI, $PINTO_BACKPAN_CPAN_URI);
+Readonly our @PINTO_DEFAULT_SOURCE_URIS => ( $PINTO_STRATOPAN_CPAN_URI, 
+                                             $PINTO_PUBLIC_CPAN_URI, 
+                                             $PINTO_BACKPAN_CPAN_URI );
 
 #------------------------------------------------------------------------------
 
