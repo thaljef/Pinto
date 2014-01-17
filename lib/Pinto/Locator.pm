@@ -6,7 +6,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods (autoclean => 1);
 
-use Pinto::Types qw(Dir);
+use Pinto::Types qw(Dir Uri);
 use Pinto::Util qw(throw tempdir);
 
 #------------------------------------------------------------------------
@@ -18,6 +18,13 @@ use Pinto::Util qw(throw tempdir);
 with qw(Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------
+
+has url => (
+    is        => 'ro',
+    isa       => Uri,
+    default   => 'http://backpan.perl.org',
+    coerce    => 1,
+);
 
 has cache_dir => (
     is         => 'ro',

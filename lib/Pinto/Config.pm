@@ -11,6 +11,7 @@ use MooseX::Aliases;
 
 use URI;
 
+use Pinto::Constants qw(@PINTO_DEFAULT_SOURCE_URLS);
 use Pinto::Types qw(Dir File Username PerlVersion);
 use Pinto::Util qw(current_username current_time_offset);
 
@@ -153,7 +154,7 @@ has sources => (
     is            => 'ro',
     isa           => Str,
     key           => 'sources',
-    default       => 'http://www.cpan.org http://backpan.perl.org',
+    default       => "@PINTO_DEFAULT_SOURCE_URLS",
     documentation => 'URLs of upstream repositories (space delimited)',
 );
 

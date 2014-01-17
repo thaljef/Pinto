@@ -8,6 +8,7 @@ use MooseX::MarkAsMethods (autoclean => 1);
 
 use Pinto::Locator::Mirror;
 use Pinto::Locator::Stratopan;
+use Pinto::Constants qw(:stratopan);
 
 #------------------------------------------------------------------------------
 
@@ -33,11 +34,11 @@ sub assemble {
     my ($self, @urls) = @_;
 
     my @locators;
-    push @locators, Pinto::Locator::Stratopan->new; # Make optional!
-
     for my $url (@urls) {
+        my $class = $self->locator_class_for_url($url);
+        # Ick: This assumes all Locators have same attributes
         my %args = ( url => $url, cache_dir => $self->cache_dir );
-        push @locators, Pinto::Locator::Mirror->new( %args );
+        push @locators, $class->new( %args );
     }
 
     $self->_set_locators(\@locators);
@@ -72,6 +73,17 @@ sub locate_distribution {
     }
 
     return;
+}
+
+#------------------------------------------------------------------------------
+
+sub locator_class_for_url {
+    my ($self, $url) = @_;
+
+    my $baseclass = 'Pinto::Locator';
+    my $subclass  = $url eq $PINTO_STRATOPAN_CPAN_URL ? 'Stratopan' : 'Mirror';
+
+    return $baseclass . '::' . $subclass;
 }
 
 #------------------------------------------------------------------------------

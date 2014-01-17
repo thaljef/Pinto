@@ -30,13 +30,6 @@ with qw(Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------
 
-has url => (
-    is        => 'ro',
-    isa       => Uri,
-    required  => 1,
-    coerce    => 1,
-);
-
 has index_file => (
     is         => 'ro',
     isa        => File,

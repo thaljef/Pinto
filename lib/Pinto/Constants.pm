@@ -47,15 +47,21 @@ Readonly our @EXPORT_OK => qw(
     $PINTO_DIFF_STYLE_CONCISE
     $PINTO_DIFF_STYLE_DETAILED
     @PINTO_DIFF_STYLES
+
+    $PINTO_STRATOPAN_CPAN_URL
+    $PINTO_STRATOPAN_LOCATOR_URL
+    $PINTO_BACKPAN_CPAN_URL
+    @PINTO_DEFAULT_SOURCE_URLS
 );
 
 Readonly our %EXPORT_TAGS => (
-    all    => \@EXPORT_OK,
-    color  => [ grep {m/COLOR/x} @EXPORT_OK ],
-    server => [ grep {m/SERVER/x} @EXPORT_OK ],
-    regex  => [ grep {m/REGEX/x} @EXPORT_OK ],
-    lock   => [ grep {m/LOCK/x} @EXPORT_OK ],
-    diff   => [ grep {m/DIFF/x} @EXPORT_OK ],
+    all        => \@EXPORT_OK,
+    color      => [ grep {m/COLOR/x} @EXPORT_OK ],
+    server     => [ grep {m/SERVER/x} @EXPORT_OK ],
+    regex      => [ grep {m/REGEX/x} @EXPORT_OK ],
+    lock       => [ grep {m/LOCK/x} @EXPORT_OK ],
+    diff       => [ grep {m/DIFF/x} @EXPORT_OK ],
+    stratopan  => [ grep {m/STRATOPAN/x} @EXPORT_OK ],
 );
 
 #------------------------------------------------------------------------------
@@ -116,6 +122,17 @@ Readonly our $PINTO_DIFF_STYLE_DETAILED => 'detailed';
 Readonly our @PINTO_DIFF_STYLES => ($PINTO_DIFF_STYLE_CONCISE, $PINTO_DIFF_STYLE_DETAILED);
 
 #------------------------------------------------------------------------------
+# TODO: Make these configurable via ENV vars
+
+Readonly our $PINTO_BACKPAN_CPAN_URL      => URI->new('http://backpan.perl.org');
+Readonly our $PINTO_STRATOPAN_CPAN_URL    => URI->new('http://cpan.stratopan.com'); 
+Readonly our $PINTO_STRATOPAN_LOCATOR_URL => URI->new('http://meta.stratopan.com/locate');
+
+Readonly our @PINTO_DEFAULT_SOURCE_URLS => ($PINTO_STRATOPAN_CPAN_URL, $PINTO_BACKPAN_CPAN_URL);
+
+#------------------------------------------------------------------------------
+
+
 1;
 
 __END__

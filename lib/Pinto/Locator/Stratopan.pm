@@ -12,6 +12,7 @@ use URI::Escape qw(uri_escape);
 use HTTP::Request::Common qw(GET);
 
 use Pinto::Util qw(whine);
+use Pinto::Constants qw(:stratopan);
 
 #-----------------------------------------------------------------------------
 
@@ -20,10 +21,6 @@ use Pinto::Util qw(whine);
 #-----------------------------------------------------------------------------
 
 extends qw(Pinto::Locator);
-
-#-----------------------------------------------------------------------------
-
-my $stratopan_base_url = URI->new('http://meta.stratopan.com/locate');
 
 #-----------------------------------------------------------------------------
 
@@ -76,7 +73,7 @@ sub locate_distribution {
 sub build_query_url {
 	my ($self, $query) = @_;
 
-	return sprintf "%s?q=%s", $stratopan_base_url, uri_escape($query);
+	return sprintf "%s?q=%s", $PINTO_STRATOPAN_LOCATOR_URL, uri_escape($query);
 }
 
 #-----------------------------------------------------------------------------

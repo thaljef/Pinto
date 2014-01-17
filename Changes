@@ -1,20 +1,35 @@
 {{$NEXT}}
 
+      [IMPORTANT]
+
+      - This release contains a lot of new features.  I strongly recommend
+      reading the manual pages for the "pull", "add", "log",  and "diff"
+      commands as well as "pinto" itself for further explanation of the
+      enhancements mentioned below.
+
       [ENHANCEMENTS]
 
-      - Pinto can now handle META files that contain prerequisites with
-      version ranges such as ">4, !=5, <=7".  These are currently used by a 
-      handful of distributions on CPAN, and they are gradually becoming more
-      common.
+      - Pinto now uses a web service provided by stratopan.com to locate
+      upstream packages and distributions.  This can reduce memory consumption
+      during the "pull" and "add" commands by about 50%.  And for distributions 
+      with few dependencies, it can increase the speed of those commands by as 
+      much as 300%.  This feature is enabled by default for new repositories.
+      For existing repositories it must be enabled manually.
+
+      - The "pull" command can now fetch a precise version of a package using
+      a version specification string such as "Moose@1.34".  This means you can
+      quickly build a repository with your current depedencies and you only need
+      to know the package name and version.  This feature only works if the
+      stratopan.com locator service is enabled.
 
       - The "pull" and "add" commands now have a --skip-prerequisite flag that 
       causes it to skip (but warn about) any prerequisite packages that it 
       cannot satisfy.  You can use it to specify precisely which packages to 
       skip, or to skip all unsatisfiable packages. This option only has effect 
-      when recursively fetching prerequisites.  See POD for details.
+      when recursively pulling prerequisites.
 
-      - When using the --dry-run option, a diff report will be displayed.  
-      This shows all the changes that would have been made.  If there were no
+      - When using the --dry-run option, a diff report will be displayed, 
+      showing all the changes that would have been made.  If there were no
       changes, nothing is shown.
 
       - The diff reports now default to a concise format which only lists 
@@ -28,6 +43,11 @@
 
       - The "log" command now has a --with-diffs (or -d) option that causes
       it to also display the diff from the previous revision.
+
+      - Pinto can now handle META files that contain prerequisites with
+      version ranges such as ">4, !=5, <=7".  These are currently used by a 
+      handful of distributions on CPAN, and they are gradually becoming more
+      common.
 
       [MISCELLANEOUS]
 

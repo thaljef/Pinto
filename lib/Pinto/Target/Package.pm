@@ -122,7 +122,7 @@ Returns true if this package is perl itself.
 sub is_perl {
     my ($self) = @_;
 
-    return $self->name eq 'perl' ? 1 : 0;
+    return !! $self->name eq 'perl';
 }
 
 #-------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ Returns true if this prerequisite is satisfied by version C<$version> of the pac
 sub is_satisfied_by {
     my ($self, $version) = @_;
 
-    return $self->_req->accepts_module($self->name => $version) ? 1 : 0;
+    return !! $self->_req->accepts_module($self->name => $version);
 }
 
 #-------------------------------------------------------------------------------
@@ -155,11 +155,12 @@ sub to_string {
 }
 
 #------------------------------------------------------------------------------
+# XXX Are we using this?
 
 sub gte {
     my ($self, $other, $flip) = @_;
     return $self->is_satisfied_by($other) if not $flip;
-    return $other->is_satisfied_By($self) if $flip;
+    return $other->is_satisfied_by($self) if $flip;
 }
 
 #------------------------------------------------------------------------------
