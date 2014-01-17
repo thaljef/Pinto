@@ -63,7 +63,7 @@ sub _write_header {
     my ( $self, $fh, $filename, $line_count ) = @_;
 
     my $base = $filename->basename;
-    my $url  = 'file://' . $filename->absolute->as_foreign('Unix');
+    my $uri  = 'file://' . $filename->absolute->as_foreign('Unix');
 
     my $writer  = ref $self;
     my $version = $self->VERSION || 'UNKNOWN';
@@ -71,7 +71,7 @@ sub _write_header {
 
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $base
-URL:          $url
+URL:          $uri
 Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.

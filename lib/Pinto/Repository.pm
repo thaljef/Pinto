@@ -394,20 +394,20 @@ sub ups_distribution {
     my ( $self, %args ) = @_;
 
     return unless my $found = $self->locate( %args );
-    return $self->fetch_distribution( url => $found->{url} );
+    return $self->fetch_distribution( uri => $found->{uri} );
 }
 
 #-------------------------------------------------------------------------------
 
 =method add( archive => $path, author => $id )
 
-=method add( archive => $path, author => $id, source => $url )
+=method add( archive => $path, author => $id, source => $uri )
 
 Adds the distribution archive located on the local filesystem at
 C<$path> to the repository in the author directory for the author with
 C<$id>.  The packages provided by the distribution will be indexed,
 and the prerequisites will be recorded.  If the C<source> is
-specified, it must be the URL to the root of the repository where the
+specified, it must be the URI to the root of the repository where the
 distribution came from.  Otherwise, the C<source> defaults to
 C<LOCAL>.  Returns a L<Pinto::Schema::Result::Distribution> object
 representing the newly added distribution.
@@ -463,9 +463,9 @@ sub add_distribution {
 
 #------------------------------------------------------------------------------
 
-=method fetch_distribution( url => $url )
+=method fetch_distribution( uri => $uri )
 
-Fetches a distribution archive from a remote URL and adds it to this
+Fetches a distribution archive from a remote URI and adds it to this
 repository.  The packages provided by the distribution will be
 indexed, and the prerequisites will be recorded.  Returns a
 L<Pinto::Schema::Result::Distribution> object representing the fetched 
@@ -476,19 +476,19 @@ distribution.
 sub fetch_distribution {
     my ( $self, %args ) = @_;
 
-    my $url  = $args{url};
-    my $path = $url->path;
+    my $uri  = $args{uri};
+    my $path = $uri->path;
 
     my $existing = $self->get_distribution( path => $path );
     throw "Distribution $existing already exists" if $existing;
 
     my ( $author, undef ) = Pinto::Util::parse_dist_path($path);
-    my $archive = $self->fetch_temporary( url => $url );
+    my $archive = $self->fetch_temporary( uri => $uri );
 
     my $dist = $self->add_distribution(
         archive => $archive,
         author  => $author,
-        source  => $url
+        source  => $uri,
     );
     return $dist;
 }

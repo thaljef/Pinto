@@ -122,7 +122,7 @@ Returns true if this Target is a perl version of perl itself.
 sub is_perl {
     my ($self) = @_;
 
-    return !! $self->name eq 'perl';
+    return $self->name eq 'perl';
 }
 
 #-------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ Returns true if this Target is satisfied by version C<$version> of the package.
 sub is_satisfied_by {
     my ($self, $version) = @_;
 
-    return !! $self->_vreq->accepts_module($self->name => $version);
+    return $self->_vreq->accepts_module($self->name => $version);
 }
 
 #-------------------------------------------------------------------------------

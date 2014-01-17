@@ -11,7 +11,7 @@ use MooseX::Aliases;
 
 use URI;
 
-use Pinto::Constants qw(@PINTO_DEFAULT_SOURCE_URLS);
+use Pinto::Constants qw(@PINTO_DEFAULT_SOURCE_URIS);
 use Pinto::Types qw(Dir File Username PerlVersion);
 use Pinto::Util qw(current_username current_time_offset);
 
@@ -154,8 +154,8 @@ has sources => (
     is            => 'ro',
     isa           => Str,
     key           => 'sources',
-    default       => "@PINTO_DEFAULT_SOURCE_URLS",
-    documentation => 'URLs of upstream repositories (space delimited)',
+    default       => "@PINTO_DEFAULT_SOURCE_URIS",
+    documentation => 'URIs of upstream repositories (space delimited)',
 );
 
 has target_perl_version => (

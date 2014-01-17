@@ -81,11 +81,11 @@ sub _make_request {
     my $action_name  = $args{name} || $self->name;
     my $request_body = $args{body} || $self->_make_request_body;
 
-    my $url = URI->new( $self->root );
-    $url->path_segments( '', 'action', lc $action_name );
+    my $uri = URI->new( $self->root );
+    $uri->path_segments( '', 'action', lc $action_name );
 
     my $request = POST(
-        $url,
+        $uri,
         Content_Type => 'form-data',
         Content      => $request_body
     );

@@ -28,8 +28,8 @@ sub locate_package {
 	my ($self, %args) = @_;
 
 	my $target = $args{target};
-	my $url = $self->build_query_url("$target");
-	my $res = $self->request(GET($url));
+	my $uri = $self->build_query_uri("$target");
+	my $res = $self->request(GET($uri));
 
 	if (!$res->is_success) {
 		whine "Stratopan is not responding: " . $res->status_line;
@@ -40,7 +40,7 @@ sub locate_package {
 	return unless my $latest = $structs->[0];
 
 	$latest->{version} = version->parse($latest->{version});
-	$latest->{url} = URI->new($latest->{url});
+	$latest->{uri} = URI->new($latest->{uri});
 
 	return $latest;
 }
@@ -51,8 +51,8 @@ sub locate_distribution {
 	my ($self, %args) = @_;
 
 	my $target = $args{target};
-	my $url = $self->build_query_url("$target");
-	my $res = $self->request(GET($url));
+	my $uri = $self->build_query_uri("$target");
+	my $res = $self->request(GET($uri));
 
 	if (!$res->is_success) {
 		whine "Stratopan is not responding: " . $res->status_line;
@@ -63,17 +63,17 @@ sub locate_distribution {
 	return unless my $latest = $structs->[0];
 
 	$latest->{version} = version->parse($latest->{version});
-	$latest->{url} = URI->new($latest->{url});
+	$latest->{uri} = URI->new($latest->{uri});
 
 	return $latest;
 }
 
 #-----------------------------------------------------------------------------
 
-sub build_query_url {
+sub build_query_uri {
 	my ($self, $query) = @_;
 
-	return sprintf "%s?q=%s", $PINTO_STRATOPAN_LOCATOR_URL, uri_escape($query);
+	return sprintf "%s?q=%s", $PINTO_STRATOPAN_LOCATOR_URI, uri_escape($query);
 }
 
 #-----------------------------------------------------------------------------

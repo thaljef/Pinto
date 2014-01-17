@@ -279,7 +279,7 @@ sub to_string {
         'd' => sub { $self->distribution->name() },
         'D' => sub { $self->distribution->vname() },
         'V' => sub { $self->distribution->version() },
-        'u' => sub { $self->distribution->url() },
+        'u' => sub { $self->distribution->uri() },
     );
 
     # Some attributes are just undefined, usually because of

@@ -289,7 +289,7 @@ sub to_string {
         d => sub { $self->distribution->name },
         D => sub { $self->distribution->vname },
         V => sub { $self->distribution->version },
-        u => sub { $self->distribution->url },
+        u => sub { $self->distribution->uri },
         i => sub { $self->revision->uuid_prefix },
         F => sub { $self->flags },
     );

@@ -105,7 +105,7 @@ placeholders are:
   %d             Distribution name
   %D             Distribution name-version
   %V             Distribution version
-  %u             Distribution url
+  %u             Distribution URI
   %%             A literal '%'
 
 

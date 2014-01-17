@@ -51,14 +51,14 @@ has reader => (
 sub _build_index_file {
     my ($self) = @_;
 
-    my $url = $self->url->canonical->as_string;
-    $url =~ s{ /*$ }{}mx;   # Remove trailing slash
-    $url = URI->new($url);  # Reconstitute as URI object (why?)
+    my $uri = $self->uri->canonical->as_string;
+    $uri =~ s{ /*$ }{}mx;   # Remove trailing slash
+    $uri = URI->new($uri);  # Reconstitute as URI object (why?)
 
     my $details_filename = '02packages.details.txt.gz';
-    my $cache_dir = $self->cache_dir->subdir( URI::Escape::uri_escape($url) );
+    my $cache_dir = $self->cache_dir->subdir( URI::Escape::uri_escape($uri) );
     my $destination = $cache_dir->file($details_filename);
-    my $source = URI->new( "$url/modules/$details_filename" );
+    my $source = URI->new( "$uri/modules/$details_filename" );
 
     $self->fetch(from => $source, to => $destination);
 
@@ -75,7 +75,7 @@ sub locate_package {
     return unless my $found = $self->reader->packages->{$target->name};
     return unless $target->is_satisfied_by( $found->{version} );
 
-    $found->{url} = URI->new($self->url . "/authors/id/$found->{path}");
+    $found->{uri} = URI->new($self->uri . "/authors/id/$found->{path}");
     $found->{version} = version->parse($found->{version});
 
     return $found;
@@ -94,8 +94,8 @@ sub locate_distribution {
     my @paths_to_try = $has_extension ? ($path) : map { "$path.$_" } @extensions;
 
     for my $path (@paths_to_try) {
-        my $url  = URI->new($self->url . '/authors/id/' . $path);
-        return {url => $url} if $self->head($url)->is_success;
+        my $uri  = URI->new($self->uri . '/authors/id/' . $path);
+        return {uri => $uri} if $self->head($uri)->is_success;
     }
 
     return;

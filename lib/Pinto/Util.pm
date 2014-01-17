@@ -52,7 +52,7 @@ Readonly our @EXPORT_OK => qw(
     mksymlink
     mtime
     parse_dist_path
-    mask_url_passwords
+    mask_uri_passwords
     sha256
     tempdir
     title_text
@@ -176,8 +176,8 @@ sub itis {
 
 =func parse_dist_path( $path )
 
-Parses a path like the ones you would see in a full URL to a
-distribution in a CPAN repository, or the URL fragment you would see
+Parses a path like the ones you would see in a full URI to a
+distribution in a CPAN repository, or the URI fragment you would see
 in a CPAN index.  Returns the author and file name of the
 distribution.  Subdirectories between the author name and the file
 name are discarded.
@@ -204,18 +204,18 @@ sub parse_dist_path {
 
 #-------------------------------------------------------------------------------
 
-=func isa_perl( $path_or_url )
+=func isa_perl( $path_or_uri )
 
-Return true if C<$path_or_url> appears to point to a release of perl
+Return true if C<$path_or_uri> appears to point to a release of perl
 itself.  This is based on some file naming patterns that I've seen in
 the wild.  It may not be completely accurate.
 
 =cut
 
 sub isa_perl {
-    my ($path_or_url) = @_;
+    my ($path_or_uri) = @_;
 
-    return $path_or_url =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
+    return $path_or_uri =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
 }
 
 #-------------------------------------------------------------------------------
@@ -654,35 +654,35 @@ sub is_not_blank {
 
 #-------------------------------------------------------------------------------
 
-=func mask_url_passwords($string)
+=func mask_uri_passwords($string)
 
 Masks the parts the string that look like a password embedded in an http or
-https URL. For example, C<http://joe:secret@foo.com> would return 
+https URI. For example, C<http://joe:secret@foo.com> would return 
 C<http://joe:*password*@foo.com>
 
 =cut
 
-sub mask_url_passwords {
-    my ($url) = @_;
+sub mask_uri_passwords {
+    my ($uri) = @_;
 
-    $url =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
+    $uri =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
 
-    return $url;
+    return $uri;
 }
 
 #-------------------------------------------------------------------------------
 
 =func is_remote_repo {
 
-Returns true if the argument looks like a URL to a remote repository
+Returns true if the argument looks like a URI to a remote repository
 
 =cut
 
 sub is_remote_repo {
-    my ($url) = @_;
+    my ($uri) = @_;
 
-    return if not $url;
-    return $url =~ m{^https?://}x;
+    return if not $uri;
+    return $uri =~ m{^https?://}x;
 }
 
 #-------------------------------------------------------------------------------

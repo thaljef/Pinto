@@ -145,6 +145,6 @@ on the remote host.
 
 If you are using the L<pinto> application, it will automatically load
 either Pinto or Pinto::Remote depending on whether your repository
-root looks like a local directory path or a remote URL.
+root looks like a local directory path or a remote URI.
 
 =cut

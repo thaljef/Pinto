@@ -92,7 +92,7 @@ proceed.
 =head1 COMMAND ARGUMENTS
 
 Arguments are the things you want to install.  These can be package
-names, distribution paths, URLs, local files, or directories.  Look at
+names, distribution paths, URIs, local files, or directories.  Look at
 the L<cpanm> documentation to see all the different ways of specifying
 what to install.
 
@@ -195,8 +195,8 @@ the repository.
 
 On the surface, A Pinto repository looks like an ordinary CPAN repository, so
 you can use any client to install modules.  All you have to do is "point"  it
-at the URL of your Pinto repository.  Each client has a slightly different
-interface for setting the URL.
+at the URI of your Pinto repository.  Each client has a slightly different
+interface for setting the URI.
 
 For L<cpanm>, use the C<--mirror> and C<--mirror-only> options like this:
 
@@ -212,14 +212,14 @@ For L<cpan>, set the C<urllist> config option via the shell like this:
 
 Pointing your client at the top of your repository will install modules from
 the default stack.  To install from a particular stack, just append the stack
-name to the URL.  For example:
+name to the URI.  For example:
 
   file:///path/to/repo                # Install from default stack
   file:///path/to/repo/stacks/dev     # Install from "dev" stack
   file:///path/to/repo/stacks/prod    # Install from "prod" stack
 
 If your repository does not have a default stack then you must specify the
-full URL to one of the stacks as shown above.
+full URI to one of the stacks as shown above.
 
 =head1 COMPATIBILITY
 

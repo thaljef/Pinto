@@ -5,9 +5,9 @@ package Pinto::Constants;
 use strict;
 use warnings;
 
+use URI;
 use Readonly;
-
-use base 'Exporter';
+use Exporter qw(import);
 
 #------------------------------------------------------------------------------
 
@@ -48,10 +48,10 @@ Readonly our @EXPORT_OK => qw(
     $PINTO_DIFF_STYLE_DETAILED
     @PINTO_DIFF_STYLES
 
-    $PINTO_STRATOPAN_CPAN_URL
-    $PINTO_STRATOPAN_LOCATOR_URL
-    $PINTO_BACKPAN_CPAN_URL
-    @PINTO_DEFAULT_SOURCE_URLS
+    $PINTO_STRATOPAN_CPAN_URI
+    $PINTO_STRATOPAN_LOCATOR_URI
+    $PINTO_BACKPAN_CPAN_URI
+    @PINTO_DEFAULT_SOURCE_URIS
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -124,11 +124,11 @@ Readonly our @PINTO_DIFF_STYLES => ($PINTO_DIFF_STYLE_CONCISE, $PINTO_DIFF_STYLE
 #------------------------------------------------------------------------------
 # TODO: Make these configurable via ENV vars
 
-Readonly our $PINTO_BACKPAN_CPAN_URL      => URI->new('http://backpan.perl.org');
-Readonly our $PINTO_STRATOPAN_CPAN_URL    => URI->new('http://cpan.stratopan.com'); 
-Readonly our $PINTO_STRATOPAN_LOCATOR_URL => URI->new('http://meta.stratopan.com/locate');
+Readonly our $PINTO_BACKPAN_CPAN_URI      => URI->new('http://backpan.perl.org');
+Readonly our $PINTO_STRATOPAN_CPAN_URI    => URI->new('http://cpan.stratopan.com'); 
+Readonly our $PINTO_STRATOPAN_LOCATOR_URI => URI->new('http://meta.stratopan.com/locate');
 
-Readonly our @PINTO_DEFAULT_SOURCE_URLS => ($PINTO_STRATOPAN_CPAN_URL, $PINTO_BACKPAN_CPAN_URL);
+Readonly our @PINTO_DEFAULT_SOURCE_URIS => ($PINTO_STRATOPAN_CPAN_URI, $PINTO_BACKPAN_CPAN_URI);
 
 #------------------------------------------------------------------------------
 

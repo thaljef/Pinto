@@ -5,37 +5,37 @@ use warnings;
 use version;
 
 use Test::More;
-use English qw(-no_match_vars);
 
 use Pinto::Target::Package;
 
 #------------------------------------------------------------------------------
 {
 
-    my $spec = Pinto::Target::Package->new('Foo~1.2');
-    is $spec->name,    'Foo', 'Parsed package name from string';
-    is $spec->version, '1.2', 'Parsed package version from string';
-    is "$spec", 'Foo~1.2', 'Stringified PackageSpec object';
+    my $target = Pinto::Target::Package->new('Foo~1.2');
+    is $target->name,    'Foo', 'Parsed package name from string';
+    is $target->version, '1.2', 'Parsed package version from string';
+    is "$target", 'Foo~1.2', 'Stringified Target object';
 
 }
 
 #------------------------------------------------------------------------------
 {
 
-    my $spec = Pinto::Target::Package->new('Foo');
-    is $spec->name,    'Foo', 'Parsed package name from string';
-    is $spec->version, '0',   'Parsed package version from string without version';
-    is "$spec", 'Foo~0', 'Stringified PackageSpec object';
+    my $target = Pinto::Target::Package->new('Foo');
+    is $target->name,    'Foo', 'Parsed package name from string';
+    is $target->version, '0',   'Parsed package version from string without version';
+    is "$target", 'Foo~0', 'Stringified Target object';
 
 }
 
 #------------------------------------------------------------------------------
+
 {
 
-    my $spec = Pinto::Target::Package->new( name => 'Foo', version => 1.2 );
-    is $spec->name,    'Foo', 'Constructor with normal name attribute';
-    is $spec->version, '1.2', 'Constructor with normal version version';
-    is "$spec", 'Foo~1.2', 'Stringified PackageSpec object';
+    my $target = Pinto::Target::Package->new( name => 'Foo', version => 1.2 );
+    is $target->name,    'Foo', 'Constructor with normal name attribute';
+    is $target->version, '1.2', 'Constructor with normal version version';
+    is "$target", 'Foo~1.2', 'Stringified Target object';
 
 }
 
@@ -84,10 +84,10 @@ use Pinto::Target::Package;
     while ( my ($req, $cases) = each %tests ) {
         for my $case ( @$cases ) {
             my ($version, $expect) = @{$case};
-            my $spec = Pinto::Target::Package->new("Foo::Bar$req");
-            my $got = $spec->is_satisfied_by($version);
-            ok $got, "Spec $spec should be satisfied by $version" if $expect;
-            ok !$got, "Spec $spec should not be satisfied by $version" if not $expect;
+            my $target = Pinto::Target::Package->new("Foo::Bar$req");
+            my $got = $target->is_satisfied_by($version);
+            ok $got, "Target $target should be satisfied by $version" if $expect;
+            ok !$got, "Target $target should not be satisfied by $version" if not $expect;
         }
     }
 }
@@ -99,13 +99,13 @@ use Pinto::Target::Package;
     # Module::Build first introduced into core in perl 5.9.4
     # Module::Build was first upgraded to 0.038 in perl 5.13.11
 
-    my $spec = Pinto::Target::Package->new( name => 'Module::Build', version => 0.38 );
-    is $spec->is_core( in => 'v5.6.1' ),  0, "$spec is not in perl 5.6.1";
-    is $spec->is_core( in => 'v5.10.1' ), 0, "$spec is not in perl 5.10.1";
-    is $spec->is_core( in => 'v5.14.2' ), 1, "$spec is in perl 5.14.2";
+    my $target = Pinto::Target::Package->new( name => 'Module::Build', version => 0.38 );
+    is $target->is_core( in => 'v5.6.1' ),  0, "$target is not in perl 5.6.1";
+    is $target->is_core( in => 'v5.10.1' ), 0, "$target is not in perl 5.10.1";
+    is $target->is_core( in => 'v5.14.2' ), 1, "$target is in perl 5.14.2";
 
     local $] = 5.013011;
-    is $spec->is_core, 1, "$spec is in *this* perl, pretending we are $]"
+    is $target->is_core, 1, "$target is in *this* perl, pretending we are $]"
 
 }
 

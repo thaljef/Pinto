@@ -31,13 +31,13 @@ has locators => (
 #------------------------------------------------------------------------------
 
 sub assemble {
-    my ($self, @urls) = @_;
+    my ($self, @uris) = @_;
 
     my @locators;
-    for my $url (@urls) {
-        my $class = $self->locator_class_for_url($url);
+    for my $uri (@uris) {
+        my $class = $self->locator_class_for_uri($uri);
         # Ick: This assumes all Locators have same attributes
-        my %args = ( url => $url, cache_dir => $self->cache_dir );
+        my %args = ( uri => $uri, cache_dir => $self->cache_dir );
         push @locators, $class->new( %args );
     }
 
@@ -77,11 +77,11 @@ sub locate_distribution {
 
 #------------------------------------------------------------------------------
 
-sub locator_class_for_url {
-    my ($self, $url) = @_;
+sub locator_class_for_uri {
+    my ($self, $uri) = @_;
 
     my $baseclass = 'Pinto::Locator';
-    my $subclass  = $url eq $PINTO_STRATOPAN_CPAN_URL ? 'Stratopan' : 'Mirror';
+    my $subclass  = $uri eq $PINTO_STRATOPAN_CPAN_URI ? 'Stratopan' : 'Mirror';
 
     return $baseclass . '::' . $subclass;
 }

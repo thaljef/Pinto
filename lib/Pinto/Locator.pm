@@ -19,7 +19,7 @@ with qw(Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------
 
-has url => (
+has uri => (
     is        => 'ro',
     isa       => Uri,
     default   => 'http://backpan.perl.org',

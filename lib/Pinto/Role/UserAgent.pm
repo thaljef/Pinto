@@ -51,10 +51,10 @@ sub fetch {
 
 #------------------------------------------------------------------------------
 
-=method fetch_temporary(url => 'http://someplace')
+=method fetch_temporary(uri => 'http://someplace')
 
-Fetches the file located at the C<url> to a file in a temporary
-directory.  The file will have the same basename as the C<url>.
+Fetches the file located at the C<uri> to a file in a temporary
+directory.  The file will have the same basename as the C<uri>.
 Returns a L<Path::Class::File> that points to the new file.  Throws
 and exception if anything goes wrong.  Note the temporary directory
 and all its contents will be deleted when the process terminates.
@@ -64,14 +64,14 @@ and all its contents will be deleted when the process terminates.
 sub fetch_temporary {
     my ( $self, %args ) = @_;
 
-    my $url  = URI->new( $args{url} )->canonical;
-    my $path = file( $url->path );
-    return $path if $url->scheme() eq 'file';
+    my $uri  = URI->new( $args{uri} )->canonical;
+    my $path = file( $uri->path );
+    return $path if $uri->scheme() eq 'file';
 
     my $base     = $path->basename;
     my $tempfile = file( tempdir(), $base );
 
-    $self->fetch( from => $url, to => $tempfile );
+    $self->fetch( from => $uri, to => $tempfile );
 
     return file($tempfile);
 }
@@ -94,11 +94,11 @@ sub request {
 #------------------------------------------------------------------------------
 
 sub _fetch {
-    my ( $self, $url, $to ) = @_;
+    my ( $self, $uri, $to ) = @_;
 
-    debug("Fetching $url");
+    debug("Fetching $uri");
 
-    my $result = eval { $Pinto::Globals::UA->mirror( $url, $to ) }
+    my $result = eval { $Pinto::Globals::UA->mirror( $uri, $to ) }
         or throw $@;
 
     if ( $result->is_success() ) {
@@ -108,7 +108,7 @@ sub _fetch {
         return 0;
     }
     else {
-        throw "Failed to fetch $url: " . $result->status_line;
+        throw "Failed to fetch $uri: " . $result->status_line;
     }
 
     # Should never get here

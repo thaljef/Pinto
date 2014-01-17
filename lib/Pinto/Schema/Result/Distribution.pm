@@ -400,10 +400,10 @@ sub native_path {
 
 #------------------------------------------------------------------------------
 
-sub url {
+sub uri {
     my ( $self, $base ) = @_;
 
-    # TODO: Is there a sensible URL for local dists?
+    # TODO: Is there a sensible URI for local dists?
     return 'UNKNOWN' if $self->is_local;
 
     $base ||= $self->source;
@@ -541,7 +541,7 @@ sub to_string {
         's' => sub { $self->is_local ? 'l' : 'f' },
         'S' => sub { $self->source },
         'a' => sub { $self->author },
-        'u' => sub { $self->url },
+        'u' => sub { $self->uri },
         'c' => sub { $self->package_count },
     );
 
