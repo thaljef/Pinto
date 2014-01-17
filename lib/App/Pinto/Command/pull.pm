@@ -69,7 +69,7 @@ on the upstream repositories.
 
 Arguments are the targets that you want to pull.  Targets can be specified as
 packages (with or without a version specification) or as distributions.
-Targets can be expressed in a number of ways, so please see L<"TARGETS"> below
+Targets can be expressed in a number of ways, so please see L</TARGETS> below
 for more information.
 
 You can also pipe arguments to this command over STDIN.  In that case, blank
@@ -196,10 +196,60 @@ their development prerequisites.
 
 =head1 TARGETS
 
-  Foo::Bar                                 # Pulls any version of Foo::Bar
-  Foo::Bar~1.2                             # Pulls Foo::Bar 1.2 or higher
-  SHAKESPEARE/King-Lear-1.2.tar.gz         # Pulls a specific distribuion
-  SHAKESPEARE/tragedies/Hamlet-4.2.tar.gz  # Ditto, but from a subdirectory
+Targets are a compact notation that identifies the things you want to  pull
+into your repository.  Targets come in two flavors: package targets and
+distribution targets.
+
+=head2 Package Targets
+
+A package target consists of a package name and (optionally) a version
+specification.  Here are some examples:
+
+  Foo::Bar                                 # Any version of Foo::Bar
+  Foo::Bar~1.2                             # Foo::Bar version 1.2 or higher
+  Foo::Bar==1.2                            # Only version 1.2 of Foo::Bar
+  Foo::Bar<1,2!=1.3,<=1.9                  # Complex version range
+
+Package names are case-sensitive, and the version specification must follow
+the format used by L<CPAN::Meta::Requirements>.  All whitespace within the
+target will be discarded.  If your version specification contains any special
+shell characters, take care to quote or escape them in your command.
+
+In all cases, pinto queries the local repository and then each upstream
+repository in order, and pulls the first distribution it can find that
+provides a package which satisfies the version specification.
+
+=head2 Distribution Targets
+
+A distribution target consists of an author ID, zero or more subdirectories,
+and the distribution name and version number.   This corresponds to the actual
+path where the distribution archive lives in the repository or CPAN mirror.
+Here are some examples.
+
+  SHAKESPEARE/King-Lear-1.2                # A specific distribution
+  SHAKESPEARE/King-Lear-1.2.tar.gz         # Same, but with file extension
+  SHAKESPEARE/tragedies/Hamlet-4.2.tar.gz  # Same, but with a subdirectory
+
+The author ID will always be forced to uppercase, but the reset of the path is
+case-sensitive.  If you omit the file extension, pinto will try using each of
+the customary ones.
+
+=head2 Caveats
+
+Package targets always resolve to production releases.  If you wish to
+pull a developer release, you must use a distribution target.  Remember that
+developer releases are those with an underscore in the version number.
+
+Since most CPAN mirrors can only report the latest version of a package they
+have available,  they often cannot satisfy package targets that have a precise
+version specification.  However, the mirror at
+L<cpan.stratopan.com|http://cpan.stratopan.com> is special and can locate a
+precise version of any package.
+
+By default, new repositories use C<http://cpan.stratopan.com> as the first
+upstream source.  For an existing repository, you may add
+C<http://cpan.stratopan.com> as an upstream source in the configuration file
+located at F<.pinto/config/pinto.ini> within the repository.
 
 
 =cut
