@@ -17,10 +17,10 @@
       For existing repositories it must be enabled manually.
 
       - The "pull" command can now fetch a precise version of a package using
-      a version specification string such as "Moose@1.34".  This means you can
-      quickly build a repository with your current depedencies and you only need
-      to know the package name and version.  This feature only works if the
-      stratopan.com locator service is enabled.
+      a version specification string such as "Moose==1.34" or "Plack>=2,!=4".  
+      This means you can quickly build a repository with your current depedencies
+      and you only need to know the package name and version.  This feature only
+      works if http://cpan.stratopan.com is your upstream source.
 
       - The "pull" and "add" commands now have a --skip-prerequisite flag that 
       causes it to skip (but warn about) any prerequisite packages that it 
