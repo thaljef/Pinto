@@ -82,8 +82,8 @@ sub path {
 
 =method to_string
 
-This method is called when the DistributionSpec is evaluated in string
-context.  Returns the same result as the C<path> method.
+Serializes this Target to its string form.  This method is called whenever the
+Target is evaluated in string context.
 
 =cut
 

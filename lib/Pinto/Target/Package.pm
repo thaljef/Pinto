@@ -33,10 +33,10 @@ has version => (
     default => '0',
 );
 
-has _req => (
+has _vreq => (
     is       => 'ro',
     isa      => 'CPAN::Meta::Requirements',
-    writer   => '_set_req',
+    writer   => '_set_vreq',
     init_arg => undef,
 );
 
@@ -70,9 +70,9 @@ sub BUILD {
     my $args = {$self->name => $self->version};
 
     my $req = try   { CPAN::Meta::Requirements->from_string_hash( $args) }
-              catch { throw "Invalid prerequisite spec ($self): $_"      };
+              catch { throw "Invalid package target ($self): $_"      };
 
-    $self->_set_req($req);
+    $self->_set_vreq($req);
     return $self;
 }
 
@@ -82,9 +82,9 @@ sub BUILD {
 
 =method is_core(in => $version)
 
-Returns true if this package is satisfied by the perl core as-of a particular
-version.  If the version is not specified, it defaults to whatever version
-you are using now.
+Returns true if this Target is satisfied by the perl core as-of a particular
+version.  If the version is not specified, it defaults to whatever version you
+are using now.
 
 =cut
 
@@ -115,7 +115,7 @@ sub is_core {
 
 =method is_perl()
 
-Returns true if this package is perl itself.
+Returns true if this Target is a perl version of perl itself.
 
 =cut
 
@@ -129,22 +129,22 @@ sub is_perl {
 
 =method is_satisfied_by($version)
 
-Returns true if this prerequisite is satisfied by version C<$version> of the package
+Returns true if this Target is satisfied by version C<$version> of the package.
 
 =cut
 
 sub is_satisfied_by {
     my ($self, $version) = @_;
 
-    return !! $self->_req->accepts_module($self->name => $version);
+    return !! $self->_vreq->accepts_module($self->name => $version);
 }
 
 #-------------------------------------------------------------------------------
 
 =method to_string()
 
-Serializes this PackageSpec to its string form.  This method is called
-whenever the PackageSpec is evaluated in string context.
+Serializes this Target to its string form.  This method is called whenever the
+Target is evaluated in string context.
 
 =cut
 
