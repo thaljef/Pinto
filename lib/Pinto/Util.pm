@@ -8,6 +8,7 @@ use version;
 use base qw(Exporter);
 
 use URI;
+use URI::file;
 use Carp;
 use DateTime;
 use File::Temp;
