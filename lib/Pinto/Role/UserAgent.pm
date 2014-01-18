@@ -69,7 +69,7 @@ sub fetch_temporary {
     return $path if $uri->scheme() eq 'file';
 
     my $base     = $path->basename;
-    my $tempfile = file( tempdir(), $base );
+    my $tempfile = file( tempdir, $base );
 
     $self->fetch( from => $uri, to => $tempfile );
 
@@ -79,16 +79,20 @@ sub fetch_temporary {
 #------------------------------------------------------------------------------
 
 sub head { 
-    my $self = shift;
+    my ($self, @args) = @_;
 
-    return $Pinto::Globals::UA->head(@_);
+    # TODO: Argument check?
+    debug sub { $args[0]->as_string(0) };
+    return $Pinto::Globals::UA->head(@args);
 }
 
 #------------------------------------------------------------------------------
 sub request {
-    my $self = shift;
+    my ($self, @args) = @_;
 
-    return $Pinto::Globals::UA->request(@_);
+    # TODO: Argument check?
+    debug sub { $args[0]->as_string(0) };
+    return $Pinto::Globals::UA->request(@args);
 }
 
 #------------------------------------------------------------------------------
