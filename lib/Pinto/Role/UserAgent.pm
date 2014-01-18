@@ -18,7 +18,7 @@ use Pinto::Util qw(debug throw tempdir make_uri);
 # VERSION
 
 #-----------------------------------------------------------------------------
-# TODO: Better interface: fetch( $here => $there );
+# TODO: Better interface: mirror( $here => $there );
 
 =method fetch(from => 'http://something' to => 'some/path')
 
@@ -55,7 +55,7 @@ sub fetch {
 }
 
 #------------------------------------------------------------------------------
-# TODO: Better interface: fetch_temporary($here);
+# TODO: Better interface: mirror_temporary($here);
 
 =method fetch_temporary(uri => 'http://someplace')
 
