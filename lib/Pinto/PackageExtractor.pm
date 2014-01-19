@@ -110,6 +110,9 @@ sub requires {
     my @prereqs;
     for my $phase ( keys %{$prereqs_meta} ) {
 
+        # TODO: Also capture the relation (suggested, requires, recomends, etc.)
+        # But that will require a schema change to add another column to the table.
+
         my $prereqs_for_phase = $prereqs_meta->{$phase}        || {};
         my $required_prereqs  = $prereqs_for_phase->{requires} || {};
 
