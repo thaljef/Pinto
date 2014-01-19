@@ -196,7 +196,7 @@ their development prerequisites.
 
 =head1 TARGETS
 
-Targets are a compact notation that identifies the things you want to  pull
+Targets are a compact notation that identifies the things you want to pull
 into your repository.  Targets come in two flavors: package targets and
 distribution targets.
 
@@ -239,6 +239,14 @@ the customary ones.
 Package targets always resolve to production releases.  If you wish to
 pull a developer release, you must use a distribution target.  Remember that
 developer releases are those with an underscore in the version number.
+
+PAUSE has very few policies on how packages are versioned.  It is quite common
+to see a package with the same verison number (or no version at all) in many
+releases of a distributions.  So when you specify a package target with a
+precise version or version range, what you actually get is the latest
+distribution (chronologically) that has a package which satisfies the target.
+Most of the time this works out fine because you usally pull the "main module"
+of the distribution and authors always increment that version in each release.
 
 Since most CPAN mirrors can only report the latest version of a package they
 have available,  they often cannot satisfy package targets that have a precise
