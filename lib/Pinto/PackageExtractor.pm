@@ -4,13 +4,10 @@ package Pinto::PackageExtractor;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(HashRef Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Dist::Metadata;
-use Path::Class qw(dir);
-use Archive::Extract;
 
 use Pinto::Types qw(File Dir);
 use Pinto::Util qw(debug throw whine);
@@ -59,7 +56,8 @@ sub provides {
     my ($self) = @_;
 
     my $archive = $self->archive;
-    debug "Extracting packages provided by archive $archive";
+    my $basename = $archive->basename;
+    debug "Extracting packages provided by archive $basename";
 
     my $mod_info = try {
 
@@ -73,23 +71,27 @@ sub provides {
         $self->dm->module_info;    # returned from try{}
     }
     catch {
-        throw "Unable to extract packages from $archive: $_";
+        throw "Unable to extract packages from $basename: $_";
     };
 
     my @provides;
-    for my $pkg_name ( sort keys %{$mod_info} ) {
+    for my $pkg ( sort keys %{$mod_info} ) {
 
-        my $info    = $mod_info->{$pkg_name};
-        my $pkg_ver = version->parse( $info->{version} );
-        debug "Archive $archive provides: $pkg_name-$pkg_ver";
+        my $info    = $mod_info->{$pkg};
+        my $version = version->parse( $info->{version} );
+        debug "Archive $basename provides: $pkg-$version";
 
-        push @provides, { name => $pkg_name, version => $pkg_ver };
+        push @provides, { 
+            name    => $pkg, 
+            version => $version,
+            file    => $info->{file},
+        };
     }
 
     @provides = $self->__apply_workarounds if @provides == 0;
 
-    whine sprintf "%s contains no packages and will not be indexed",
-        $archive->basename if not @provides;
+    whine "$basename contains no packages and will not be indexed" 
+        if not @provides;
 
     return @provides;
 }
