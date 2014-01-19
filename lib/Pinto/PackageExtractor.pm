@@ -75,14 +75,14 @@ sub provides {
     };
 
     my @provides;
-    for my $pkg ( sort keys %{$mod_info} ) {
+    for my $package ( sort keys %{$mod_info} ) {
 
-        my $info    = $mod_info->{$pkg};
+        my $info    = $mod_info->{$package};
         my $version = version->parse( $info->{version} );
-        debug "Archive $basename provides: $pkg-$version";
+        debug "Archive $basename provides: $package-$version";
 
         push @provides, { 
-            name    => $pkg, 
+            name    => $package, 
             version => $version,
             file    => $info->{file},
         };
@@ -113,13 +113,17 @@ sub requires {
         my $prereqs_for_phase = $prereqs_meta->{$phase}        || {};
         my $required_prereqs  = $prereqs_for_phase->{requires} || {};
 
-        for my $pkg_name ( sort keys %{$required_prereqs} ) {
+        for my $package ( sort keys %{$required_prereqs} ) {
 
-            my $pkg_ver = $required_prereqs->{$pkg_name};
-            debug "Archive $archive requires ($phase): $pkg_name~$pkg_ver";
+            my $version = $required_prereqs->{$package};
+            debug "Archive $archive requires ($phase): $package~$version";
 
-            my $struct = { phase => $phase, name => $pkg_name, version => $pkg_ver };
-            push @prereqs, $struct;
+            push @prereqs, { 
+                name    => $package, 
+                version => $version,
+                phase   => $phase, 
+            };
+
         }
     }
 
