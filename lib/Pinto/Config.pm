@@ -175,6 +175,14 @@ has recurse => (
     default       => 1,          
 );
 
+has intermingle => (
+    is            => 'ro',
+    isa           => Bool,
+    key           => 'intermingle',
+    documentation => 'Allow stacks to intermingle distributions',
+    default       => 0,          
+);
+
 #------------------------------------------------------------------------------
 
 sub _build_config_file {

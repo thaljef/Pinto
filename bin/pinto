@@ -159,6 +159,16 @@ Otherwise, all new stacks will target the version of perl that you first used
 to create the repository.  You can always configure the target perl for each
 stack independently by using the L<props|App::Pinto::Command::props> command.
 
+=item intermingle = 1 | 0
+
+If true, stacks will be allowed to "intermingle" distributions that have
+partially overlapping packages.  This makes pinto behave like PAUSE which
+allows a package to remain in the index until it is replaced by a distribution
+containing the same package.  Thus, it becomes possible to have an index that
+contains just C<some> of the packages in a particular distribution.  This
+typically occurrs when a package in a prior release is absent from a
+subsequent release.  The default is false.
+
 =back
 
 B<BEWARE:> The above configuration properties are global -- they affect every
