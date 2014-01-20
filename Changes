@@ -49,7 +49,8 @@
       - Pinto can now handle META files that contain prerequisites with
       version ranges such as ">4, !=5, <=7".  These are currently used by a 
       handful of distributions on CPAN, and they are gradually becoming more
-      common.
+      common. Some of this work was funded by a Crowdtilt campaign 
+      (https://www.crowdtilt.com/campaigns/specify-module-version-ranges-in-pint)
 
       [MISCELLANEOUS]
 
@@ -317,6 +318,7 @@
       Pinto through the crowdfunding campaing on Crowdtilt are now
       listed in Pinto::Manual::Thanks.  There is also a related Easter
       egg among the pinto(1) commands -- see if you can find it!
+      (https://www.crowdtilt.com/campaigns/specify-module-version-ranges-in-pint)
 
      - Pinto::Server (a.k.a. pintod) will abort the action if it
       looses the connection with the client.  So, for example, you can
