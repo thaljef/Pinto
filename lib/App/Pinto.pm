@@ -38,6 +38,11 @@ sub pinto {
         $global_options->{root} ||= $ENV{PINTO_REPOSITORY_ROOT}
             || $self->usage_error('Must specify a repository root');
 
+        # Discard password and username arguments if this is not a 
+        # remote repository.  StrictConstrutor will not allow them.
+        delete @{$global_options}{qw(username password)}
+            if not is_remote_repo($global_options->{root});
+
         $global_options->{password} = $self->_prompt_for_password
             if defined $global_options->{password} and $global_options->{password} eq '-';
 
