@@ -19,6 +19,8 @@ use Pinto::Tester::Util qw(:all);
 use Pinto::Types qw(Uri Dir);
 use Pinto::Util qw(:all);
 
+use overload (q{""} => 'to_string');
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -566,6 +568,13 @@ sub stack_url {
     $stack_name ||= 'master';
 
     return URI->new( 'file://' . $self->root->resolve->absolute . "/stacks/$stack_name" );
+}
+#-------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+
+    return $self->root->stringify; 
 }
 
 #------------------------------------------------------------------------------
