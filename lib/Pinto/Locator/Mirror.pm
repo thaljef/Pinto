@@ -60,7 +60,7 @@ sub _build_index_file {
     my $destination = $cache_dir->file($details_filename);
     my $source = URI->new( "$uri/modules/$details_filename" );
 
-    $self->fetch(from => $source, to => $destination);
+    $self->mirror($source => $destination);
 
     return $destination;
 }

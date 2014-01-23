@@ -483,7 +483,7 @@ sub fetch_distribution {
     throw "Distribution $existing already exists" if $existing;
 
     my ( $author, undef ) = Pinto::Util::parse_dist_path($path);
-    my $archive = $self->fetch_temporary( uri => $uri );
+    my $archive = $self->mirror_temporary( $uri );
 
     my $dist = $self->add_distribution(
         archive => $archive,
