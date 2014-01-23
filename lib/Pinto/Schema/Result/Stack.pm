@@ -748,6 +748,33 @@ sub default_properties {
 
 #-------------------------------------------------------------------------------
 
+sub roots {
+    my ($self) = @_;
+
+    my @dists = $self->head->distributions->all;
+    my $tpv   = $self->target_perl_version;
+    my %is_prereq_dist;
+    my %cache;
+
+    # Algorithm: Visit each distribution and resolve each of its
+    # dependencies to the prerequisite distribution (if it exists).
+    # Any distribution that is a prerequisite cannot be a root.
+
+    for my $dist ( @dists ) {
+        for my $prereq ($dist->prerequisites) {
+            # TODO: Decide what to do about development prereqs
+            next if $prereq->is_core(in => $tpv) or $prereq->is_perl;
+            my %args = (target => $prereq->as_target, cache => \%cache);
+            next unless my $prereq_dist = $self->get_distribution(%args);
+            $is_prereq_dist{$prereq_dist} = 1;
+        }
+    }
+
+    return grep { not $is_prereq_dist{$_} } @dists;
+}
+
+#-------------------------------------------------------------------------------
+
 sub numeric_compare {
     my ( $stack_a, $stack_b ) = @_;
 
