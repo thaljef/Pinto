@@ -234,28 +234,31 @@ case-sensitive.
 
 =head2 Caveats
 
-Package targets always resolve to production releases.  If you wish to
-pull a developer release, you must use a distribution target.  Remember that
-developer releases are those with an underscore in the version number.
+L<PAUSE|http://pause.perl.org> has no strict rules on how packages are
+versioned.  It is quite common to see a package with the same verison number
+(or no version at all) in many releases of a distribution.  So when you
+specify a package target with a precise version or version range, what you
+actually get is the latest distribution (chronologically) that has a package
+which satisfies the target.  Most of the time this works out fine because you
+usally pull the "main module" of the distribution and authors always increment
+that version in each release.
 
-PAUSE has very few policies on how packages are versioned.  It is quite common
-to see a package with the same verison number (or no version at all) in many
-releases of a distributions.  So when you specify a package target with a
-precise version or version range, what you actually get is the latest
-distribution (chronologically) that has a package which satisfies the target.
-Most of the time this works out fine because you usally pull the "main module"
-of the distribution and authors always increment that version in each release.
+Since most CPAN mirrors only report the latest version of a package they have,
+they often cannot satisfy package targets that have a precise version
+specification.  However, the mirror at L<http://cpan.stratopan.com> is special
+and can locate a precise version of any package. 
 
-Since most CPAN mirrors can only report the latest version of a package they
-have available,  they often cannot satisfy package targets that have a precise
-version specification.  However, the mirror at
-L<cpan.stratopan.com|http://cpan.stratopan.com> is special and can locate a
-precise version of any package.
+Package targets always resolve to production releases, unless you specify a
+precise developer release version (e.g. C<Foo::Bar==1.03_01>).  But since most
+CPAN mirrors do not index developer releases, this only works when using the
+mirror at L<http://cpan.stratopan.com>.  However, you can usually pull a
+developer release from any mirror by using a distribution target.  Remember
+that developer releases are those with an underscore in the version number.
 
-By default, new repositories use C<http://cpan.stratopan.com> as the first
-upstream source.  For an existing repository, you may add
-C<http://cpan.stratopan.com> as an upstream source in the configuration file
-located at F<.pinto/config/pinto.ini> within the repository.
-
+For repositories created with Pinto version 0.098 or later, the first upstream
+source is C<http://cpan.stratopan.com> (unless you configure it otherwise).
+For repositories created with older versions, you can manually add
+C<http://cpan.stratopan.com> to the C<sources> parameter in the configuration
+file located at F<.pinto/config/pinto.ini> within the repository.
 
 =cut
