@@ -61,8 +61,8 @@ use the L<unregister|App::Pinto::Command::unregister> command.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the archives that you want to delete.  Archives are
-specified as C<AUTHOR/ARCHIVE-NAME>.  For example:
+Arguments are the targets that you want to delete.  Targets are
+specified as C<AUTHOR/FILENAME>.  For example:
 
   SHAKESPEARE/King-Lear-1.2.tar.gz
 
