@@ -168,6 +168,21 @@ subtest 'Mirror has distribution' => sub {
 
 #-----------------------------------------------------------------------------
 
+subtest 'Locate distribution without extension' => sub {
+    
+    my $mirror_location = { 
+        uri => "$mirror/authors/id/A/AU/AUTHOR/Dist-2.tar.gz"
+    };
+
+    my $target = Pinto::Target->new('AUTHOR/Dist-2');
+    my $ua = build_ua($target, 200, []);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $mirror_location, 'Located on mirror';
+};
+
+#-----------------------------------------------------------------------------
+
 sub build_mux {
     my (@sources) = @_;
 
