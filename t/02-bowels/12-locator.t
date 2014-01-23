@@ -9,170 +9,174 @@ use Test::LWP::UserAgent;
 use JSON;
 use HTTP::Response;
 
-use lib 't/lib';
-use Pinto::Tester;
 use Pinto::Target;
+use Pinto::Locator::Multiplex;
 use Pinto::Constants qw(:stratopan);
 
+use lib 't/lib';
+use Pinto::Tester;
+
 #-----------------------------------------------------------------------------
-# We are going to make 2 upstream repositories.  The first will pretend to be 
-# cpan.stratopan.com.  We will also intercept requests to the stratopan locator
-# service and give responses that point to our fake cpan.stratopan.com The 
-# second upstream will pretend to be a CPAN mirror.  If the locator service
-# fails or cannot give a response, we should fall back to the mirror.
+# We create a multiplex locator that uses stratopan and a local repository as
+# the upstream sources.  But we will intercept requests to the stratopan
+# locator service and supply our own response.  Then we test if the locator
+# returns the right location for the target (either stratopan or the mirror). 
 #-----------------------------------------------------------------------------
 
-my $stratopan = Pinto::Tester->new;
-my $stratopan_rx = qr{^$stratopan};
-$stratopan->populate('AUTHOR/Dist-1 = PkgA~1');
-note "Stratopan source is $stratopan";
+my $stratopan = $PINTO_STRATOPAN_CPAN_URI;
+my $mirror    = Pinto::Tester->new->populate('AUTHOR/Dist-2 = PkgA~2');
+my @sources   = map { URI->new($_) } ($stratopan, $mirror);
 
-my $mirror = Pinto::Tester->new;
-my $mirror_rx = qr{^$mirror};
-$mirror->populate('AUTHOR/Dist-2 = PkgA~2');
-note "Mirror source is $mirror";
+#-----------------------------------------------------------------------------
 
-my $sources = "http://cpan.stratopan.com $mirror";
+my $last_warning;
+local $SIG{__WARN__} = sub { $last_warning = shift };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Stratopan has package' => sub {
     
-    my $location = {
+    my $stratopan_location = {
         package => 'PkgA', 
         version => '1', 
         uri     => "$stratopan/authors/id/A/AU/AUTHOR/Dist-1.tar.gz",
     };
 
     my $target = Pinto::Target->new('PkgA');
-    set_up_test_ua($target, 200, [$location] );
-    
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target});
-    $t->registration_ok('AUTHOR/Dist-1/PkgA~1');
-
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $stratopan_rx, 'Target was pulled from stratopan';
+    my $ua  = build_ua($target, 200, [$stratopan_location]);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $stratopan_location, 'Located on Stratopan';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Mirror has package' => sub {
+
+    my $mirror_location = {
+        package => 'PkgA', 
+        version => '2', 
+        uri     => "$mirror/authors/id/A/AU/AUTHOR/Dist-2.tar.gz",
+    };
     
     my $target = Pinto::Target->new('PkgA');
-
-    set_up_test_ua($target, 200, []);
-    
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target});
-    $t->registration_ok('AUTHOR/Dist-2/PkgA~2');
-
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $mirror_rx, 'Target was pulled from mirror';
+    my $ua  = build_ua($target, 200, []);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $mirror_location, 'Located on mirror';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Nobody has package' => sub {
-    
+
     my $target = Pinto::Target->new('PkgA==3');
-    set_up_test_ua($target, 200, []);
-    
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_throws_ok(Pull => {targets => $target}, qr/Cannot find PkgA==3 anywhere/);
+    my $ua  = build_ua($target, 200, []);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is $got, undef, 'Not located anywhere';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Want latest package (cascade)' => sub {
 
-    my $location = {
+    my $stratopan_location = {
         package => 'PkgA', 
         version => '1', 
         uri     => "$stratopan/authors/id/A/AU/AUTHOR/Dist-1.tar.gz",
     };
-    
+
+    my $mirror_location = {
+        package => 'PkgA', 
+        version => '2', 
+        uri     => "$mirror/authors/id/A/AU/AUTHOR/Dist-2.tar.gz",
+    };
+
     my $target = Pinto::Target->new('PkgA');
-    set_up_test_ua($target, 200, [$location]);
-
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target, cascade => 1});
-    $t->registration_ok('AUTHOR/Dist-2/PkgA~2');
-
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $mirror_rx, 'Target was pulled from mirror';
+    my $ua  = build_ua($target, 200, [$stratopan_location]);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target, cascade => 1);
+    is_deeply $got, $mirror_location, 'Located on mirror';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Stratopan not responding' => sub {
+
+    my $mirror_location = {
+        package => 'PkgA', 
+        version => '2', 
+        uri     => "$mirror/authors/id/A/AU/AUTHOR/Dist-2.tar.gz",
+    };
     
     my $target = Pinto::Target->new('PkgA~2');
-    set_up_test_ua($target, 500);
-
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target});
-    $t->stderr_like(qr/Stratopan is not responding/);
-    $t->registration_ok('AUTHOR/Dist-2/PkgA~2');
-
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $mirror_rx, 'Target was pulled from mirror';
+    my $ua  = build_ua($target, 500);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $mirror_location, 'Located on mirror';
+    like $last_warning, qr/Stratopan is not responding/, 'Got warning';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Invalid response from Stratopan' => sub {
     
+    my $mirror_location = {
+        package => 'PkgA', 
+        version => '2', 
+        uri     => "$mirror/authors/id/A/AU/AUTHOR/Dist-2.tar.gz",
+    };
+
     my $target = Pinto::Target->new('PkgA~2');
-
-    set_up_test_ua($target, 200, '[this is not json}');
-
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target});
-    $t->registration_ok('AUTHOR/Dist-2/PkgA~2');
-    
-    $t->stderr_like(qr/Invalid response from Stratopan/);
-
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $mirror_rx, 'Target was pulled from mirror';
+    my $ua  = build_ua($target, 200, '[this is not json}');
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $mirror_location, 'Located on mirror';
+    like $last_warning, qr/Invalid response from Stratopan/, 'Got warning';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Stratopan has distribution' => sub {
 
+    my $stratopan_location = { 
+        uri => "$stratopan/authors/id/A/AU/AUTHOR/Dist-1.tar.gz"
+    };
+
     my $target = Pinto::Target->new('AUTHOR/Dist-1.tar.gz');    
-    my $location = { uri => "$stratopan/authors/id/A/AU/AUTHOR/Dist-1.tar.gz" };
-
-    set_up_test_ua($target, 200, [$location]);
-
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target});
-    $t->registration_ok('AUTHOR/Dist-1/PkgA~1');
-    
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $stratopan_rx, 'Target was pulled from stratopan';
+    my $ua = build_ua($target, 200, [$stratopan_location]);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $stratopan_location, 'Located on Stratopan';
 };
 
 #-----------------------------------------------------------------------------
 
 subtest 'Mirror has distribution' => sub {
     
+    my $mirror_location = { 
+        uri => "$mirror/authors/id/A/AU/AUTHOR/Dist-2.tar.gz"
+    };
+
     my $target = Pinto::Target->new('AUTHOR/Dist-2.tar.gz');
-
-    set_up_test_ua($target, 200, []);
-
-    my $t = Pinto::Tester->new(init_args => {sources => $sources});
-    $t->run_ok(Pull => {targets => $target});
-    $t->registration_ok('AUTHOR/Dist-2/PkgA~2');
-    
-    my $dist = $t->get_distribution(target => $target);
-    like $dist->source, $mirror_rx, 'Target was pulled from mirror';
+    my $ua = build_ua($target, 200, []);
+    my $mux = build_mux(@sources);
+    my $got = $mux->locate(target => $target);
+    is_deeply $got, $mirror_location, 'Located on mirror';
 };
 
 #-----------------------------------------------------------------------------
 
-sub set_up_test_ua {
+sub build_mux {
+    my (@sources) = @_;
+
+    return Pinto::Locator::Multiplex->new->assemble(@sources);
+}
+
+#-----------------------------------------------------------------------------
+
+sub build_ua {
     my ($target, $status, $content) = @_;
 
     $content = encode_json($content) if ref $content;
@@ -188,6 +192,7 @@ sub set_up_test_ua {
 
     return $ua;
 }
+
 #-----------------------------------------------------------------------------
 
 done_testing;

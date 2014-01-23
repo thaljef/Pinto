@@ -57,8 +57,13 @@ sub _locate_any {
 
 	return unless my $latest = $structs->[0];
 
-	$latest->{version} = version->parse($latest->{version});
-	$latest->{uri} = URI->new($latest->{uri});
+	# Avoid autovivification here...
+	$latest->{version} = version->parse($latest->{version})
+		if exists $latest->{version};
+
+	# Avoid autovivification here...
+	$latest->{uri} = URI->new($latest->{uri})
+		if exists $latest->{uri};
 
 	return $latest;
 }

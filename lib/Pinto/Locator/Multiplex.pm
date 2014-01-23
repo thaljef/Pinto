@@ -36,7 +36,7 @@ sub assemble {
     my @locators;
     for my $uri (@uris) {
         my $class = $self->locator_class_for_uri($uri);
-        # Ick: This assumes all Locators have same attributes
+        # Ick: This assumes all Locators have same attribute interface
         my %args = ( uri => $uri, cache_dir => $self->cache_dir );
         push @locators, $class->new( %args );
     }
