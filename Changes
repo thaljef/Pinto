@@ -9,20 +9,27 @@
       commands as well as "pinto" itself for further explanation of the
       enhancements mentioned below.
 
+      - Many of the new features in this release were financed by the Perl
+      community through a crowdfunding campaign.  Thank you for your support.
+      Go to http://tinyurl.com/gopinto to see how it all happened.
+
       [ENHANCEMENTS]
 
-      - Pinto now uses a web service provided by stratopan.com to locate
+      - Pinto can now use a web service provided by stratopan.com to locate
       upstream packages and distributions.  This can reduce memory consumption
       during the "pull" and "add" commands by about 50%.  And for distributions 
       with few dependencies, it can increase the speed of those commands by as 
       much as 300%.  This feature is enabled by default for new repositories.
-      For existing repositories it must be enabled manually.
+      For existing repositories it must be enabled manually by adding
+      "http://cpan.stratopan.com" as the (usually first) upstream source in
+      your repository configuration file.
 
       - The "pull" command can now fetch a precise version of a package using
       a version specification string such as "Moose==1.34" or "Plack>=2,!=4".  
       This means you can quickly build a repository with your current depedencies
-      and you only need to know the package name and version.  This feature only
-      works if http://cpan.stratopan.com is your upstream source.
+      and you only need to know the package name and version.  This feature is enabled by default for new repositories.  For existing repositories it
+      must be enabled manually by adding "http://cpan.stratopan.com" as the 
+      (usually first) upstream source in your repository configuration file. 
 
       - The "pull" and "add" commands now have a --skip-prerequisite flag that 
       causes it to skip (but warn about) any prerequisite packages that it 
@@ -49,16 +56,7 @@
       - Pinto can now handle META files that contain prerequisites with
       version ranges such as ">4, !=5, <=7".  These are currently used by a 
       handful of distributions on CPAN, and they are gradually becoming more
-      common. Some of this work was funded by a Crowdtilt campaign 
-      (https://www.crowdtilt.com/campaigns/specify-module-version-ranges-in-pint)
-
-      [MISCELLANEOUS]
-
-      - The default upstream repository has been changed from cpan.perl.org
-      to www.cpan.org.  The latter uses DNS magic to balance load and
-      redirect to the mirror closest to your location.  This only affects
-      new repositories.  You can change an existing repository by editing 
-      the .pinto/config/pinto.ini file inside the repository directory.
+      common.  Fixes GH #127.
 
 0.097     2014-01-07 20:53:29 America/Los_Angeles
 
@@ -318,7 +316,7 @@
       Pinto through the crowdfunding campaing on Crowdtilt are now
       listed in Pinto::Manual::Thanks.  There is also a related Easter
       egg among the pinto(1) commands -- see if you can find it!
-      (https://www.crowdtilt.com/campaigns/specify-module-version-ranges-in-pint)
+      See http://tinyurl.com/gopinto to learn more about the campaign.
 
      - Pinto::Server (a.k.a. pintod) will abort the action if it
       looses the connection with the client.  So, for example, you can
