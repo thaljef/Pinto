@@ -226,13 +226,11 @@ and the distribution name and version number.   This corresponds to the actual
 path where the distribution archive lives in the repository or CPAN mirror.
 Here are some examples.
 
-  SHAKESPEARE/King-Lear-1.2                # A specific distribution
-  SHAKESPEARE/King-Lear-1.2.tar.gz         # Same, but with file extension
+  SHAKESPEARE/King-Lear-1.2.tar.gz         # A specific distribution
   SHAKESPEARE/tragedies/Hamlet-4.2.tar.gz  # Same, but with a subdirectory
 
 The author ID will always be forced to uppercase, but the reset of the path is
-case-sensitive.  If you omit the file extension, pinto will try using each of
-the customary ones.
+case-sensitive.
 
 =head2 Caveats
 
