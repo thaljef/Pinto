@@ -49,8 +49,12 @@ around BUILDARGS => sub {
     my @args = @_;
 
     if ( @args == 1 and not ref $args[0] ) {
-        my ( $name, $version ) = $_[0] =~ m{^ ([A-Z0-9_:]+) (?:~)? (.*)}ix;
-        $version =~ s/^\@/==/; # Allow "@" to be used as a synonym for "=="
+
+        throw "Invalid package specification: $_[0]"
+            unless $_[0] =~ m{^ ([A-Z0-9_:]+) (?:~)? (.*)}ix;
+
+        my ($name, $version) = ($1, $2);
+        $version =~ s/^\@/==/; # Allow "@" as a synonym for "=="
         @args = ( name => $name, version => trim_text($version) || 0 );
     }
 
