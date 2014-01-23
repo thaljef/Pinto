@@ -59,6 +59,11 @@
       handful of distributions on CPAN, and they are gradually becoming more
       common.  Fixes GH #127.
 
+      [BUG FIXES]
+
+      The "roots" command was returning way too many distributions because
+      it wasn't examining all the indirect dependencies.
+
 0.097_01  2014-01-17 12:46:28 America/Los_Angeles
 
       - Changes consolidated above
