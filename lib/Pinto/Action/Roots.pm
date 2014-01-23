@@ -40,6 +40,7 @@ sub execute {
 
     my $stack = $self->repo->get_stack($self->stack);
     my @dists = $stack->head->distributions->all;
+    my $tpv   = $stack->target_perl_version;
     my %is_prereq_dist;
     my %cache;
 
@@ -48,20 +49,21 @@ sub execute {
     # Any distribution that is a prerequisite cannot be a root.
 
     for my $dist ( @dists ) {
-        next if $is_prereq_dist{$dist};
         for my $prereq ($dist->prerequisites) {
+            # TODO: Decide what to do about development prereqs
+            next if $prereq->is_core(in => $tpv) or $prereq->is_perl;
             my %args = (target => $prereq->as_target, cache => \%cache);
             next unless my $prereq_dist = $stack->get_distribution(%args);
-            $is_prereq_dist{$prereq_dist}++;
+            $is_prereq_dist{$prereq_dist} = 1;
         }
     }
 
-    my @roots  = grep { ! $is_prereq_dist{$_} } @dists;
+    my @roots  = grep { not $is_prereq_dist{$_} } @dists;
     my @output = sort map { $_->to_string($self->format) } @roots;
     $self->show($_) for @output;
 
     return $self->result;
-} 
+}
 
 #------------------------------------------------------------------------------
 
