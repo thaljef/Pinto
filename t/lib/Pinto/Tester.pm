@@ -574,7 +574,7 @@ sub stack_url {
 sub to_string {
     my ($self) = @_;
 
-    return $self->root->stringify; 
+    return $self->stack_url->as_string;
 }
 
 #------------------------------------------------------------------------------
