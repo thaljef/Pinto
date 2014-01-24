@@ -6,14 +6,33 @@ use strict;
 use warnings;
 use version;
 
-use MooseX::Types -declare => [
-    qw( AuthorID Username Uri Dir File FileList Io Version
-        StackName StackAll StackDefault PropertyName PkgSpec
-        PkgSpecList StackObject DistSpec DistSpecList
-        Spec SpecList RevisionID RevisionHead
-        ANSIColor ANSIColorSet PerlVersion
-        DiffStyle )
-];
+use MooseX::Types -declare => [ qw( 
+    ANSIColor 
+    ANSIColorSet 
+    AuthorID 
+    DiffStyle
+    Dir 
+    DistributionTarget
+    DistributionTargetList
+    File 
+    FileList 
+    Io 
+    PackageTarget
+    PackageTargetList
+    PerlVersion
+    PropertyName 
+    RevisionHead
+    RevisionID 
+    StackAll 
+    StackDefault 
+    StackName 
+    StackObject 
+    Target 
+    TargetList 
+    Uri 
+    Username 
+    Version
+)];
 
 use MooseX::Types::Moose qw( Str Num ScalarRef ArrayRef Undef
     HashRef FileHandle Object Int );
@@ -147,45 +166,45 @@ coerce FileList,
 
 #-----------------------------------------------------------------------------
 
-class_type PkgSpec, { class => 'Pinto::Target::Package' };
+class_type PackageTarget, { class => 'Pinto::Target::Package' };
 
-coerce PkgSpec,
+coerce PackageTarget,
     from Str,     via { Pinto::Target->new($_) },
     from HashRef, via { Pinto::Target->new($_) };
 
 #-----------------------------------------------------------------------------
 
-class_type DistSpec, { class => 'Pinto::Target::Distribution' };
+class_type DistributionTarget, { class => 'Pinto::Target::Distribution' };
 
-coerce DistSpec,
+coerce DistributionTarget,
     from Str,     via { Pinto::Target->new($_) },
     from HashRef, via { Pinto::Target->new($_) };
 
 #-----------------------------------------------------------------------------
 
-subtype SpecList, as ArrayRef [ PkgSpec | DistSpec ];    ## no critic qw(ProhibitBitwiseOperators);
+subtype TargetList, as ArrayRef [ PackageTarget | DistributionTarget ];    ## no critic qw(ProhibitBitwiseOperators);
 
-coerce SpecList,
-    from PkgSpec,       via { [ $_ ] },
-    from DistSpec,      via { [ $_ ] }, 
+coerce TargetList,
+    from PackageTarget,       via { [ $_ ] },
+    from DistributionTarget,      via { [ $_ ] }, 
     from Str,           via { [ Pinto::Target->new($_) ] },
     from ArrayRef[Str], via { [ map { Pinto::Target->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
-subtype DistSpecList, as ArrayRef [DistSpec];            ## no critic qw(ProhibitBitwiseOperators);
+subtype DistributionTargetList, as ArrayRef [DistributionTarget];            ## no critic qw(ProhibitBitwiseOperators);
 
-coerce DistSpecList,
-    from DistSpec,      via { [$_] }, 
+coerce DistributionTargetList,
+    from DistributionTarget,      via { [$_] }, 
     from Str,           via { [ Pinto::Target::Distribution->new($_) ] }, 
     from ArrayRef[Str], via { [ map { Pinto::Target::Distribution->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
-subtype PkgSpecList, as ArrayRef [PkgSpec];              ## no critic qw(ProhibitBitwiseOperators);
+subtype PackageTargetList, as ArrayRef [PackageTarget];              ## no critic qw(ProhibitBitwiseOperators);
 
-coerce PkgSpecList,
-    from DistSpec,      via { [ $_ ] }, 
+coerce PackageTargetList,
+    from DistributionTarget,      via { [ $_ ] }, 
     from Str,           via { [ Pinto::Target::Package->new($_) ] },
     from ArrayRef[Str], via { [ map { Pinto::Target::Package->new($_) } @$_ ] };
 

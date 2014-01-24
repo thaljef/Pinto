@@ -10,7 +10,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(SpecList);
+use Pinto::Types qw(TargetList);
 
 #------------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => SpecList,
+    isa      => TargetList,
     traits   => [qw(Array)],
     handles  => { targets => 'elements' },
     required => 1,

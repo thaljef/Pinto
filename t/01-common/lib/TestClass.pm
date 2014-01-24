@@ -3,25 +3,25 @@ package TestClass;
 use Moose;
 
 use Pinto::Types qw(
-    File
-    Dir
-    Uri
-    Io
-    AuthorID
-    Version
-    PropertyName
-    StackName
-    StackAll
-    StackDefault
-    PkgSpec
-    PkgSpecList
-    DistSpec
-    DistSpecList
-    SpecList
-    RevisionID
     ANSIColor
     ANSIColorSet
+    AuthorID
     DiffStyle
+    Dir
+    DistributionTarget
+    DistributionTargetList
+    File
+    Io
+    PackageTarget
+    PackageTargetList
+    PropertyName
+    RevisionID
+    StackAll
+    StackDefault
+    StackName
+    TargetList
+    Uri
+    Version
 );
 
 #-----------------------------------------------------------------------------
@@ -84,31 +84,31 @@ has version => (
 
 has pkg => (
     is     => 'rw',
-    isa    => PkgSpec,
+    isa    => PackageTarget,
     coerce => 1,
 );
 
 has pkgs => (
     is     => 'rw',
-    isa    => PkgSpecList,
+    isa    => PackageTargetList,
     coerce => 1,
 );
 
 has dist => (
     is     => 'rw',
-    isa    => DistSpec,
+    isa    => DistributionTarget,
     coerce => 1,
 );
 
 has dists => (
     is     => 'rw',
-    isa    => DistSpecList,
+    isa    => DistributionTargetList,
     coerce => 1,
 );
 
 has targets => (
     is     => 'rw',
-    isa    => SpecList,
+    isa    => TargetList,
     coerce => 1,
 );
 

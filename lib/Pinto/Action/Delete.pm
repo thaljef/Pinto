@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(DistSpecList);
+use Pinto::Types qw(DistributionTargetList);
 
 #------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ with qw( Pinto::Role::Transactional );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => DistSpecList,
+    isa      => DistributionTargetList,
     traits   => [qw(Array)],
     handles  => { targets => 'elements' },
     required => 1,
