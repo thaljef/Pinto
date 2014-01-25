@@ -1,7 +1,5 @@
 {{$NEXT}}
 
-0.097_03  2014-01-23 13:07:22 America/Los_Angeles
-
       [IMPORTANT]
 
       - This release contains a lot of new features.  I strongly recommend
@@ -62,9 +60,13 @@
 
       [BUG FIXES]
 
-      The "roots" command was returning way too many distributions because
-      it wasn't examining all the indirect dependencies.
+      - The "roots" command was returning way too many distributions
+      because it wasn't examining all the indirect dependencies.
 
+      - Fixed when pulling a precise package target (e.g. Foo::Bar==1.0)
+      that existed in a distribution that you already had.
+
+0.097_03  2014-01-23 13:07:22 America/Los_Angeles
 0.097_02  2014-01-23 00:37:04 America/Los_Angeles
 0.097_01  2014-01-17 12:46:28 America/Los_Angeles
 
