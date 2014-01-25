@@ -9,6 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Readonly;
 use File::Find;
 use Path::Class;
+use List::Util qw(first);
 
 use Pinto::Store;
 use Pinto::Config;
@@ -270,43 +271,29 @@ sub get_package {
     my $target    = $args{target};
     my $pkg_name  = $args{name};
     my $dist_path = $args{path};
+    my $schema    = $self->db->schema;
 
-    # Retrieve latest version of package that meets the target
+    # Retrieve latest version of package that satisfies the target
     if ($target) {
-        my $pkg_name = $target->name;
-        my $version  = $target->version;
-
-        my @pkgs = $self->db->schema->search_package( { name => $pkg_name } )->with_distribution;
-        return if not @pkgs;
-
-        my $latest = ( sort { $a <=> $b } @pkgs )[-1];
-        return $target->is_satisfied_by($latest->version) ? $latest : ();
+        my $where = {name => $target->name};
+        return unless my @pkgs = $schema->search_package( $where )->with_distribution;
+        return unless my $latest = first { $target->is_satisfied_by($_->version) } reverse sort { $a <=> $b } @pkgs;
+        return $latest; 
     }
 
     # Retrieve package from a specific distribution
     elsif ( $pkg_name && $dist_path ) {
-
         my ( $author, $archive ) = Pinto::Util::parse_dist_path($dist_path);
-
-        my $where = {
-            'me.name'              => $pkg_name,
-            'distribution.author'  => $author,
-            'distribution.archive' => $archive
-        };
-
-        my @pkgs = $self->db->schema->search_package($where)->with_distribution;
-
-        return @pkgs ? $pkgs[0] : ();
+        my $where = {'me.name' => $pkg_name, 'distribution.author' => $author, 'distribution.archive' => $archive};
+        return unless my @pkgs = $schema->search_package($where)->with_distribution;
+        return $pkgs[0];
     }
 
     # Retrieve latest version of package in the entire repository
     elsif ($pkg_name) {
-
         my $where = { name => $pkg_name };
-        my @pkgs = $self->db->schema->search_package($where)->with_distribution;
-
-        my $latest = ( sort { $a <=> $b } @pkgs )[-1];
-        return defined $latest ? $latest : ();
+        return unless my @pkgs = $schema->search_package($where)->with_distribution;
+        return (reverse sort { $a <=> $b } @pkgs)[0]; 
     }
 
     throw 'Invalid arguments';
@@ -345,6 +332,7 @@ sub get_distribution {
 
     my $rs = $self->db->schema->distribution_rs->with_packages;
 
+    $DB::single = 1;
     # Retrieve a distribution by target 
     if ( my $target = $args{target} ) {
         if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
