@@ -102,15 +102,19 @@ use Pinto::Target::Package;
 {
 
     # Module::Build first introduced into core in perl 5.9.4
-    # Module::Build was first upgraded to 0.038 in perl 5.13.11
+    # Module::Build was upgraded to 0.038 in perl 5.13.11
+    # Module::Build became deprecated in perl 5.19.0
 
     my $target = Pinto::Target::Package->new( name => 'Module::Build', version => 0.38 );
-    is $target->is_core( in => 'v5.6.1' ),  0, "$target is not in perl 5.6.1";
-    is $target->is_core( in => 'v5.10.1' ), 0, "$target is not in perl 5.10.1";
-    is $target->is_core( in => 'v5.14.2' ), 1, "$target is in perl 5.14.2";
+    is $target->is_core( in => 'v5.6.1' ),  0, "$target is not core in perl 5.6.1";
+    is $target->is_core( in => 'v5.10.1' ), 0, "$target is not core in perl 5.10.1";
+    is $target->is_core( in => 'v5.14.2' ), 1, "$target is core in perl 5.14.2";
 
     local $] = 5.013011;
-    is $target->is_core, 1, "$target is in *this* perl, pretending we are $]"
+    is $target->is_core, 1, "$target is core in *this* perl, pretending we are $]";
+
+    local $] = 5.019000;
+    is $target->is_core, 0, "$target is deprecated in *this* perl, pretending we are $]";
 
 }
 

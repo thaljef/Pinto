@@ -99,13 +99,16 @@ sub is_core {
 
     # Note: $PERL_VERSION is broken on old perls, so we must make
     # our own version object from the old $] variable
-
     my $pv = version->parse( $args{in} ) || version->parse($]);
+
+    # If it ain't in here, it ain't in the core
     my $core_modules = $Module::CoreList::version{ $pv->numify + 0 };
-
     throw "Invalid perl version $pv" if not $core_modules;
-
     return 0 if not exists $core_modules->{ $self->name };
+
+    # We treat deprecated modules as if they have already been removed
+    my $deprecated_modules = $Module::CoreList::deprecated{ $pv->numify + 0 };
+    return 0 if $deprecated_modules && exists $deprecated_modules->{ $self->name };
 
     # on some perls, we'll get an 'uninitialized' warning when
     # the $core_version is undef.  So force to zero in that case
