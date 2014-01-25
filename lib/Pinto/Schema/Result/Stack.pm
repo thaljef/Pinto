@@ -227,6 +227,11 @@ before is_default => sub {
 };
 
 #------------------------------------------------------------------------------
+# TODO: All methods below that operate on the head should be moved into the
+# Revision class, since that is where the data actually is.  For convenience,
+# the Stack class can have the same methods, but they should just delegate to
+# the Revision class.
+#------------------------------------------------------------------------------
 
 =method get_distribution( target => $target )
 
