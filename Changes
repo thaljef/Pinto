@@ -60,9 +60,9 @@
       "http://cpan.stratopan.com" as the (usually first) upstream source
       in your repository configuration file.
 
-      - The "pull" and "add" commands now have a --skip-prerequisite flag that
-      causes it to skip (but warn about) any prerequisite packages that it
-      cannot satisfy.  You can use it to specify precisely which packages to
+      - The "pull" and "add" commands now have a --skip-missing-prerequisites
+      flag that causes it to skip (but warn about) any prerequisite packages that
+      it cannot satisfy.  You can use it to specify precisely which packages to
       skip, or to skip all unsatisfiable packages. This option only has effect
       when recursively pulling prerequisites.
 
