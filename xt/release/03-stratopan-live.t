@@ -13,6 +13,10 @@ use Pinto::Constants qw(:stratopan);
 
 #------------------------------------------------------------------------------
 
+note("This test requires a live internet connection to contact stratopan");
+
+#------------------------------------------------------------------------------
+
 my $stratopan_host = $PINTO_STRATOPAN_CPAN_URI->host;
 
 #------------------------------------------------------------------------------
