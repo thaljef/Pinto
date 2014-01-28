@@ -1,6 +1,5 @@
 {{$NEXT}}
 
-0.098_01  2014-01-28 01:43:19 America/Los_Angeles
 
       [INCOMPATIBLE CHANGES]
 
@@ -28,6 +27,17 @@
       can assume that all packages in the distribution are in the index.  In some
       cases, this can make the "pull" and "add" commands much faster, especially
       for distributions that contain a large number of packages.
+
+      [BUG FIXES]
+
+      - When deciding if a prequisite is satisfied by the perl core, Pinto now
+      regards a package that is marked as deprecated in the target perl version
+      as if it has already been removed, thus causing Pinto to pull the prereq.
+      This makes Pinto consistent with the behavior of cpanm.
+
+0.098_01  2014-01-28 01:43:19 America/Los_Angeles
+
+      - Changes consolidated above under version 0.099
 
 0.098     2014-01-27 16:49:14 America/Los_Angeles
 
