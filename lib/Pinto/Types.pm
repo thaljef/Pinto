@@ -185,28 +185,28 @@ coerce DistributionTarget,
 subtype TargetList, as ArrayRef [ PackageTarget | DistributionTarget ];    ## no critic qw(ProhibitBitwiseOperators);
 
 coerce TargetList,
-    from PackageTarget,       via { [ $_ ] },
-    from DistributionTarget,      via { [ $_ ] }, 
-    from Str,           via { [ Pinto::Target->new($_) ] },
-    from ArrayRef[Str], via { [ map { Pinto::Target->new($_) } @$_ ] };
+    from PackageTarget,      via { [ $_ ] },
+    from DistributionTarget, via { [ $_ ] },
+    from Str,                via { [ Pinto::Target->new($_) ] },
+    from ArrayRef[Str],      via { [ map { Pinto::Target->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
 subtype DistributionTargetList, as ArrayRef [DistributionTarget];            ## no critic qw(ProhibitBitwiseOperators);
 
 coerce DistributionTargetList,
-    from DistributionTarget,      via { [$_] }, 
-    from Str,           via { [ Pinto::Target::Distribution->new($_) ] }, 
-    from ArrayRef[Str], via { [ map { Pinto::Target::Distribution->new($_) } @$_ ] };
+    from DistributionTarget,  via { [$_] },
+    from Str,                 via { [ Pinto::Target::Distribution->new($_) ] },
+    from ArrayRef[Str],       via { [ map { Pinto::Target::Distribution->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
 subtype PackageTargetList, as ArrayRef [PackageTarget];              ## no critic qw(ProhibitBitwiseOperators);
 
 coerce PackageTargetList,
-    from DistributionTarget,      via { [ $_ ] }, 
-    from Str,           via { [ Pinto::Target::Package->new($_) ] },
-    from ArrayRef[Str], via { [ map { Pinto::Target::Package->new($_) } @$_ ] };
+    from DistributionTarget,  via { [ $_ ] },
+    from Str,                 via { [ Pinto::Target::Package->new($_) ] },
+    from ArrayRef[Str],       via { [ map { Pinto::Target::Package->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 
