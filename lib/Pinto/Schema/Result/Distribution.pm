@@ -233,11 +233,17 @@ sub register {
 
     for my $pkg ($self->packages) {
 
+        if (not $pkg->is_simile) {
+            my $file = $pkg->file || '';
+            debug( sub {"Package $pkg in file $file is not a simile.  Skipping registration"} );
+            next;
+        }
+
         my $where = {package_name => $pkg->name};
         my $incumbent = $stack->head->find_related(registrations => $where);
 
         if (not defined $incumbent) {
-            debug( sub {"Registering $pkg on stack $stack"} );
+            debug( sub {"Registering package $pkg on stack $stack"} );
             $pkg->register(stack => $stack, pin => $pin);
             $did_register++;
             next;
