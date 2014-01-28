@@ -220,9 +220,11 @@ sub FOREIGNBUILDARGS {
 sub register {
     my ( $self, %args ) = @_;
 
-    my $stack        = $args{stack};
-    my $pin          = $args{pin} || 0;
-    my $did_register = 0;
+    my $stack = $args{stack};
+    my $pin   = $args{pin} || 0;
+
+    my $can_intermingle = $stack->repo->config->intermingle;
+    my $did_register    = 0;
 
     $stack->assert_is_open;
     $stack->assert_not_locked;
@@ -248,11 +250,13 @@ sub register {
             $did_register++;
             next;
         }
-        elsif (not $self->result_source->schema->repo->config->intermingle) {
+        elsif (not $can_intermingle) {
+            # If the repository prohibits intermingled distributions, we can
+            # assume all the apckages in the incumbent are already registered.
             my $dist = $incumbent->distribution;
             if ($dist->id == $self->id and $incumbent->is_pinned == $pin) {
                 debug( sub {"Distribution $dist is already fully registered"} );
-                last; # We can assume all its packages are alredy registered
+                last;
             }
         }
 
@@ -274,7 +278,7 @@ sub register {
         whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
             if $incumbent_pkg > $pkg;
 
-        if ( $stack->repo->config->intermingle ) {
+        if ( $can_intermingle ) {
             # If the repository allows intermingled distributions, then
             # remove only the incumbent package from the index.
             $incumbent->delete;
