@@ -221,7 +221,7 @@ sub register {
     my ( $self, %args ) = @_;
 
     my $stack        = $args{stack};
-    my $pin          = $args{pin};
+    my $pin          = $args{pin} || 0;
     my $did_register = 0;
 
     $stack->assert_is_open;
@@ -248,6 +248,14 @@ sub register {
             $did_register++;
             next;
         }
+        elsif (not $self->result_source->schema->repo->config->intermingle) {
+            my $dist = $incumbent->distribution;
+            if ($dist->id == $self->id and $incumbent->is_pinned == $pin) {
+                debug( sub {"Distribution $dist is already fully registered"} );
+                last; # We can assume all its packages are alredy registered
+            }
+        }
+
 
         my $incumbent_pkg = $incumbent->package;
 

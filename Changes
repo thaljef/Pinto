@@ -16,8 +16,16 @@
       Existing indexes will not spontaneously change just by upgrading Pinto.  If
       you wish to apply the new index logic to a distribution that already lives
       in a certain stack, first use the "unregister" command to remove it from
-      the index and then use the "register" command to bring it back using the
-      new index logic.
+      the stack and then use the "register" command to bring it back with the
+      new logic.
+
+      [ENHANCEMENTS]
+
+      - For repositories that prohibit intermingled distributions in the index
+      (which is the default) the registration process has been optimized because we
+      can assume that all packages in the distribution are in the index.  In some
+      cases, this can make the "pull" and "add" commands much faster, especially
+      for distributions that contain a large number of packages.
 
 0.098     2014-01-27 16:49:14 America/Los_Angeles
 
