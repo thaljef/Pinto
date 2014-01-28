@@ -1,7 +1,5 @@
 {{$NEXT}}
 
-0.097_04  2014-01-25 15:12:31 America/Los_Angeles
-
       [IMPORTANT]
 
       - This release contains a lot of new features.  I strongly recommend
@@ -17,34 +15,34 @@
 
       - Pinto can now use a web service provided by stratopan.com to locate
       upstream packages and distributions.  This can reduce memory consumption
-      during the "pull" and "add" commands by about 50%.  And for distributions 
-      with few dependencies, it can increase the speed of those commands by as 
+      during the "pull" and "add" commands by about 50%.  And for distributions
+      with few dependencies, it can increase the speed of those commands by as
       much as 300%.  This feature will be enabled by default for new
-      repositories. For existing repositories it must be enabled manually by 
-      adding "http://cpan.stratopan.com" as the (usually first) upstream 
+      repositories. For existing repositories it must be enabled manually by
+      adding "http://cpan.stratopan.com" as the (usually first) upstream
       source in your repository configuration file.
 
       - The "pull" command can now fetch a precise version of a package using
-      a version specification string such as "Moose==1.34" or "Plack>=2,!=4".  
+      a version specification string such as "Moose==1.34" or "Plack>=2,!=4".
       This means you can quickly build a repository with your current
       depedencies and you only need to know the package name and version.
       This feature will be enabled by default for new repositories.  For
-      existing repositories it must be enabled manually by adding 
+      existing repositories it must be enabled manually by adding
       "http://cpan.stratopan.com" as the (usually first) upstream source
-      in your repository configuration file. 
+      in your repository configuration file.
 
-      - The "pull" and "add" commands now have a --skip-prerequisite flag that 
-      causes it to skip (but warn about) any prerequisite packages that it 
-      cannot satisfy.  You can use it to specify precisely which packages to 
-      skip, or to skip all unsatisfiable packages. This option only has effect 
+      - The "pull" and "add" commands now have a --skip-prerequisite flag that
+      causes it to skip (but warn about) any prerequisite packages that it
+      cannot satisfy.  You can use it to specify precisely which packages to
+      skip, or to skip all unsatisfiable packages. This option only has effect
       when recursively pulling prerequisites.
 
-      - When using the --dry-run option, a diff report will be displayed, 
+      - When using the --dry-run option, a diff report will be displayed,
       showing all the changes that would have been made.  If there were no
       changes, nothing is shown.
 
-      - The diff reports now default to a concise format which only lists 
-      the distributions that have changed in the index rather than each 
+      - The diff reports now default to a concise format which only lists
+      the distributions that have changed in the index rather than each
       package.
 
       - All commands that show diff reports now have a --diff-style option
@@ -56,7 +54,7 @@
       it to also display the diff from the previous revision.
 
       - Pinto can now handle META files that contain prerequisites with
-      version ranges such as ">4, !=5, <=7".  These are currently used by a 
+      version ranges such as ">4, !=5, <=7".  These are currently used by a
       handful of distributions on CPAN, and they are gradually becoming more
       common.  Fixes GH #127.
 
@@ -68,9 +66,11 @@
       - Fixed when pulling a precise package target (e.g. Foo::Bar==1.0)
       that existed in a distribution that you already had.
 
+0.097_04  2014-01-25 15:12:31 America/Los_Angeles
 0.097_03  2014-01-23 13:07:22 America/Los_Angeles
 0.097_02  2014-01-23 00:37:04 America/Los_Angeles
 0.097_01  2014-01-17 12:46:28 America/Los_Angeles
+
 
       - Changes consolidated above under version 0.098
 
@@ -104,11 +104,11 @@
       [ENHANCEMENTS]
 
       - A warning is emitted if you try to pull or add a Bundle
-      distribution.  Pinto does not know how to automatically determine 
+      distribution.  Pinto does not know how to automatically determine
       prerequisites for a Bundle.
 
       - A better error message is given when repository is not writable.
-      Previously, you were (incorrectly) told that the repository was 
+      Previously, you were (incorrectly) told that the repository was
       locked.
 
 0.094     2013-12-22 00:36:27 America/Los_Angeles
@@ -142,9 +142,9 @@
       [INCOMPATIBLE CHANGES]
 
       - The "add" and "pull" commands now have both --no-recurse and --recurse
-      options.  This allows you to turn recursion off OR on, depending on 
-      the default setting for the repository (see more about that under 
-      ENHANCEMENTS).  However, the -n shortcut for --no-recurse is no 
+      options.  This allows you to turn recursion off OR on, depending on
+      the default setting for the repository (see more about that under
+      ENHANCEMENTS).  However, the -n shortcut for --no-recurse is no
       longer available.
 
       [ENHANCEMENTS]
@@ -212,7 +212,7 @@
 
      - Reformatted this change log to conform to the
        CPAN::Changes::Spec (Thanks omega).
-      
+
 0.088     2013-08-15 10:49:36 America/Los_Angeles
 
      [INCOMPATIBLE CHANGES]
@@ -295,7 +295,7 @@
 
 
 0.087     2013-06-19 14:47:01 America/Los_Angeles
-       
+
      [INCOMPATIBLE CHANGES]
 
      - When pulling, Pinto now takes the first satisfactory package
@@ -310,7 +310,7 @@
       So there is no need for a special version command.  If you want
       to know what version of pinto you have, just use the --version
       option.
-      
+
      - Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other
       words, two ASCII letters followed by zero or more ASCII letters,
       digits, or hyphens.  If you use lowercase letters, they will be
@@ -463,7 +463,7 @@
 
      - Explicitly requires Term::ANSIColor 2.02 or later.  Thanks CPAN Testers!
 
-     - Requires Pinto::Common 0.068, so you'll have better documentation. 
+     - Requires Pinto::Common 0.068, so you'll have better documentation.
 
 0.066     2013-03-26 16:18:06 America/Los_Angeles
 
@@ -508,7 +508,7 @@
      Pinto now stores full snaphots of the stack at each revision and
      organizes them in a directed graph, much like Git does.  Each
      revision is now identified by a unique non-sequential identifier.
-     
+
      - The interface with the terminal has been completely redesigned.
      You'll see fewer (but hopefully better) diagnostic messages when
      running in verbose mode.  And if not verbose, then you'll see a
@@ -569,8 +569,8 @@
 
       [Important]
 
-     - This version of Pinto is not compatible with repositories that were created 
-     with prior versions.  Please contact thaljef@cpan.org if you need to migrate an 
+     - This version of Pinto is not compatible with repositories that were created
+     with prior versions.  Please contact thaljef@cpan.org if you need to migrate an
      old repository.
 
       [New Features]
@@ -867,11 +867,11 @@
      5.14 introduced several changes to exception handling.  So I've
      moved the exception handling into the catch{...} block.  I don't
      know why, but this seems to work better.
- 
+
 0.041     2012-05-15 11:13:27 America/Los_Angeles
 
       [Important]
-   
+
      - There have been major changes to the interface and behavior of
      Pinto (read more below).  Beware this version of Pinto is NOT
      compatible with repositories created with any previous version of
@@ -1052,7 +1052,7 @@
 
 0.030     2012-01-26 22:00:32 America/Los_Angeles
 
-     - The --repos option for pinto-admin has been officially 
+     - The --repos option for pinto-admin has been officially
      renamed to --root.  This was done to create a symmetrical
      API between Pinto and Pinto::Admin.  The old --repos option
      will *not* be supported for backward compatibility.
@@ -1072,7 +1072,7 @@
 
      - Some improvements to Pinto::Store::VCS::Git, which allow you
      to place your Pinto repository anywhere inside a Git repository.
- 
+
 0.028     2011-12-12 01:22:02 America/Los_Angeles
 
      - I discovered that Subversion 1.7 changed the working copy layout
@@ -1329,7 +1329,7 @@
      The "mirror" command is now called "update".  I feel this more
      accurately reflects what is going on, since a Pinto repository
      isn't really a "mirror" of anything.
-   
+
      * Bug Fixes:
 
      Fixed some bugs in the VCS tagging logic.
@@ -1355,7 +1355,7 @@
      semantics of the tag will depend on which type of VCS you are
      using.  Likewise, you can now specify --notag to disable tagging
      completely.
-    
+
 
 0.019     2011-08-24 04:09:41 America/Los_Angeles
 
@@ -1494,7 +1494,7 @@
     With pinto-admin, the "mirror" parameter is now called "source".
     This reflects the fact that your dists don't necessarily have to
     come from a CPAN mirror.  They just have to come from some place
-    that conforms to the CPAN structure.  Do not confuse this with 
+    that conforms to the CPAN structure.  Do not confuse this with
     the "mirror" command, which still does actually mirror the
     aforementioned "source".
 
@@ -1549,16 +1549,16 @@
     remedied.
 
     * Other Changes:
-    
+
     Edited documenation for pinto[1]
-     
+
 0.006     2011-08-04 00:52:22 America/Los_Angeles
 
     More documentation edits.  No code changes.
 
 0.005     2011-08-04 00:43:34 America/Los_Angeles
 
-    Brought the documentation for pinto[1] up to date with the 
+    Brought the documentation for pinto[1] up to date with the
     actual API.
 
 0.004     2011-08-04 00:23:23 America/Los_Angeles
