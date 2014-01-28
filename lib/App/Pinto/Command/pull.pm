@@ -106,16 +106,16 @@ other commands too.
 =item --dry-run
 
 Go through all the motions, but do not actually commit any changes to the
-repository.  At the conclusion, a diff showing the changes that would have 
-been made will be displayed.  Use this option to see how upgrades would 
+repository.  At the conclusion, a diff showing the changes that would have
+been made will be displayed.  Use this option to see how upgrades would
 potentially impact the stack.
 
 =item --no-fail
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
-Normally, failure to pull a target (or its prerequisites) causes the 
-command to immediately abort and rollback the changes to the repository.  
+Normally, failure to pull a target (or its prerequisites) causes the
+command to immediately abort and rollback the changes to the repository.
 But if C<--no-fail> is set, then only the changes caused by the failed
 target (and its prerequisites) will be rolled back and the command
 will continue processing the remaining targets.
@@ -246,7 +246,7 @@ that version in each release.
 Since most CPAN mirrors only report the latest version of a package they have,
 they often cannot satisfy package targets that have a precise version
 specification.  However, the mirror at L<http://cpan.stratopan.com> is special
-and can locate a precise version of any package. 
+and can locate a precise version of any package.
 
 Package targets always resolve to production releases, unless you specify a
 precise developer release version (e.g. C<Foo::Bar==1.03_01>).  But since most
