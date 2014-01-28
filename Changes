@@ -1,5 +1,24 @@
 {{$NEXT}}
 
+      [INCOMPATIBLE CHANGES]
+
+      - The logic that Pinto uses to construct the index has changed.   The
+      index will now include packages only if they are contained in a file with a
+      matching name.  For example, Foo::Bar must be in a file called Bar.pm.  So
+      in effect, Pinto will only index packages that can be use'd or require'd and
+      thus form a dependency.  This makes it more of a "module" index rather than
+      a pure "package" index like PAUSE.  But Pinto has never promised to index
+      exactly like PAUSE anyway.  The benefit is that it also fixes the problem of
+      Pinto indexing packages that it shouldn't.
+
+      - The aforementioned changes to the index logic will only apply when a
+      distribution is pulled to a stack where it isn't already registered.
+      Existing indexes will not spontaneously change just by upgrading Pinto.  If
+      you wish to apply the new index logic to a distribution that already lives
+      in a certain stack, first use the "unregister" command to remove it from
+      the index and then use the "register" command to bring it back using the
+      new index logic.
+
 0.098     2014-01-27 16:49:14 America/Los_Angeles
 
       [IMPORTANT]
@@ -72,7 +91,6 @@
 0.097_03  2014-01-23 13:07:22 America/Los_Angeles
 0.097_02  2014-01-23 00:37:04 America/Los_Angeles
 0.097_01  2014-01-17 12:46:28 America/Los_Angeles
-
 
       - Changes consolidated above under version 0.098
 
