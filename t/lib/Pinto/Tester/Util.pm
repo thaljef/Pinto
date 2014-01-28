@@ -126,13 +126,16 @@ sub parse_pkg_spec {
     my ($spec) = @_;
 
     # Looks like: "Foo" or "Foo-1" or "Foo-Bar-2.3.4_1"
-    $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x 
+    $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x
         or throw "Could not parse spec: $spec";
 
-    # Permit '@' as alternative to '==''
-    $2 =~ s/^ @ / == /x if $2;
+    # In older perls, capture vers are read-only
+    my ($name, $version) = ($1, $2);
 
-    return { name => $1, version => $2 || 0 };
+    # Permit '@' as alternative to '==''
+    $version =~ s/^ @ / == /x if $version;
+
+    return { name => $name, version => $version || 0 };
 }
 
 #------------------------------------------------------------------------------
