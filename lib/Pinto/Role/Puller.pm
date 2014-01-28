@@ -37,10 +37,10 @@ has pin => (
     default => 0,
 );
 
-has skip_prerequisite => (
+has skip_missing_prerequisites => (
     is        => 'ro',
     isa       => ArrayRef[Str],
-    predicate => 'has_skip_prerequisite',
+    predicate => 'has_skip_missing_prerequisites',
 );
 
 has with_development_prerequisites => (
@@ -112,7 +112,7 @@ sub find {
     elsif ( $dist = $stack->repo->ups_distribution( target => $target, cascade => $self->cascade ) ) {
         $msg = "Found $target in " . $dist->source;
     }
-    elsif ( $self->should_skip_prerequisite($target) ) {
+    elsif ( $self->should_skip_missing_prerequisites($target) ) {
         whine "Cannot find $target anywhere.  Skipping it";
         return;
     }
@@ -176,11 +176,11 @@ sub do_recursion {
 
 #-----------------------------------------------------------------------------
 
-sub should_skip_prerequisite {
+sub should_skip_missing_prerequisites {
     my ($self, $target) = @_;
 
-    return 0 unless $self->has_skip_prerequisite;
-    return 1 unless my @packages_to_skip = @{ $self->skip_prerequisite };
+    return 0 unless $self->has_skip_missing_prerequisites;
+    return 1 unless my @packages_to_skip = @{ $self->skip_missing_prerequisites };
     return scalar grep { $target->name eq $_ } @packages_to_skip;
 }
 
