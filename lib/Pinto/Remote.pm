@@ -7,6 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Maybe Str);
 
+use URI;
 use LWP::UserAgent;
 
 use Pinto::Chrome::Term;
@@ -52,11 +53,16 @@ around BUILDARGS => sub {
     my $args = $class->$orig(@_);
 
     # Normalize the root
-    $args->{root} = 'http://' . $args->{root}
-        if defined $args->{root} && $args->{root} !~ m{^ https?:// }mx;
+    # Default the port iff the scheme was not supplied
+    my $root_uri_port;
+    if ($args->{root} !~ m{ ^https?:// }x) {
+        $args->{root} = 'http://' . $args->{root};
+        $root_uri_port = $PINTO_SERVER_DEFAULT_PORT;
+    }
 
-    $args->{root} = $args->{root} . ':' . $PINTO_SERVER_DEFAULT_PORT
-        if defined $args->{root} && $args->{root} !~ m{ :\d+ $}mx;
+    my $root_uri = URI->new($args->{root});
+    $root_uri->port($root_uri_port) if $root_uri_port;
+    $args->{root} = $root_uri->as_string;
 
     # Grrr.  Gotta avoid passing undefs to Moose
     my @chrome_attrs = qw(verbose quiet no_color);

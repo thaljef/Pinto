@@ -82,7 +82,10 @@ sub _make_request {
     my $request_body = $args{body} || $self->_make_request_body;
 
     my $uri = URI->new( $self->root );
-    $uri->path_segments( '', 'action', lc $action_name );
+
+    # Preserve the path component of the URI, appending the action part
+    my @segments = ( '', grep { /\S/ } $uri->path_segments );
+    $uri->path_segments( @segments, 'action', lc $action_name );
 
     my $request = POST(
         $uri,
