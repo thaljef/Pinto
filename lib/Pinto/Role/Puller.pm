@@ -188,7 +188,7 @@ sub should_skip_missing_prerequisite {
     my ($self, $target) = @_;
 
     return 1 if $self->skip_all_missing_prerequisites;
-    return 1 unless my @skips = @{ $self->skip_missing_prerequisite };
+    return 0 unless my @skips = @{ $self->skip_missing_prerequisite };
     return 1 if any { $target->name eq $_ } @skips;
     return 0;
 }
