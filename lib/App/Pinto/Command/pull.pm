@@ -26,7 +26,8 @@ sub opt_spec {
         [ 'no-fail'                           => 'Do not fail when there is an error' ],
         [ 'recurse!'                          => 'Recursively pull prereqs (negatable)' ],
         [ 'pin'                               => 'Pin the packages to the stack' ],
-        [ 'skip-missing-prerequisites|k:s@'   => 'Skip missing prereqs (repeatable)' ],
+        [ 'skip-missing-prerequisite|k=s@'    => 'Skip missing prereq (repeatable)' ],
+        [ 'skip-all-missing-prerequisites|K'  => 'Skip all missing prereqs' ],
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
@@ -153,17 +154,28 @@ for the targets.  The default value for this option can be configured
 in the F<pinto.ini> configuration file for the repository (it is usually
 set to 1).  To disable recursion, use C<--no-recurse>.
 
-=item --skip-missing-prerequisites[=PACKAGE]
+=item --skip-missing-prerequisite=PACKAGE
 
-=item -k[=PACKAGE]
+=item -k PACKAGE
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
 Skip any prerequisite with name PACKAGE if a satisfactory version cannot be
-found.  However, a warning will be given whenever this occurrs.  If PACKAGE is
-not specified, then all such prerequisites wil be skipeed. This option only
+found.  However, a warning will be given whenever this occurrs.  This option only
 has effect when recursively fetching prerequisites for the targets (See also
 the C<--recurse> option). This option can be repeated.
+
+=item --skip-all-missing-prerequisites
+
+=item -K
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Skips all missing prerequisites if a satisfactory version cannot be found.
+However, a warning will be given whenever this occurrs.  This option will
+silently override the C<--skip-missing-prerequisite> option and only has
+effect when recursively fetching prerequisites for the targets (See also the
+C<--recurse> option).
 
 =item --stack=NAME
 

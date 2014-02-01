@@ -18,51 +18,51 @@ my $expected_registration = 'AUTHOR/DistA-1/PkgA~1';
 
 #------------------------------------------------------------------------------
 
-subtest 'Implicitly skip all missing prereqs when adding' => sub {
+subtest 'Skip all missing prereqs when adding' => sub {
 
-    $t2->run_ok( Add => { archives => $archive, skip_missing_prerequisites => [] } );
+    $t2->run_ok( Add => { archives => $archive, skip_all_missing_prerequisites => 1 } );
     $t2->stderr_like(qr/Cannot find PkgB~1 anywhere.  Skipping it/);
     $t2->registration_ok($expected_registration);
 };
 
 #------------------------------------------------------------------------------
 
-subtest 'Implicitly skip all missing prereqs when pulling' => sub {
+subtest 'Skip all missing prereqs when pulling' => sub {
 
 	my $stack = 'foo';
 
 	$t2->run_ok( New => {stack => $stack});
 	$t2->stack_is_empty_ok($stack);
 
-    $t2->run_ok( Pull => {targets => 'PkgA', stack => $stack, skip_missing_prerequisites => []});
+    $t2->run_ok( Pull => {targets => 'PkgA', stack => $stack, skip_all_missing_prerequisites => 1 });
   	$t2->stderr_like(qr/Cannot find PkgB~1 anywhere.  Skipping it/);
     $t2->registration_ok("$expected_registration/$stack");
 };
 
 #------------------------------------------------------------------------------
 
-subtest 'Explicitly skip all named missing prereqs when pulling' => sub {
+subtest 'Skip all named missing prereqs when pulling' => sub {
 
     my $stack = 'bar';
 
     $t2->run_ok( New => {stack => $stack});
 	$t2->stack_is_empty_ok($stack);
 
-    $t2->run_ok( Pull => {targets => 'PkgA', stack => $stack, skip_missing_prerequisites => [qw(PkgB PkgC)]});
+    $t2->run_ok( Pull => {targets => 'PkgA', stack => $stack, skip_missing_prerequisite => [qw(PkgB PkgC)] });
   	$t2->stderr_like(qr/Cannot find PkgB~1 anywhere.  Skipping it/);
     $t2->registration_ok("AUTHOR/DistA-1/PkgA~1/bar/$stack");
 };
 
 #------------------------------------------------------------------------------
 
-subtest 'Explicitly skip just some named missing prereqs when pulling' => sub {
+subtest 'Skip just some named missing prereqs when pulling' => sub {
 
     my $stack = 'baz';
 
     $t2->run_ok( New => {stack => $stack});
 	$t2->stack_is_empty_ok($stack);
 
-    $t2->run_throws_ok( Pull => {targets => 'PkgA', stack => $stack, skip_missing_prerequisites => [qw(PkgC)]},
+    $t2->run_throws_ok( Pull => {targets => 'PkgA', stack => $stack, skip_missing_prerequisite => [qw(PkgC)] },
     	qr/Cannot find PkgB~1 anywhere/ );
 };
 

@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+      [INCOMPATIBLE CHANGES]
+
+      - The --skip-missing-prerequisites option has been replaced with two
+      separate options: 1)  --skip-missing-prerequisite (without the final "s")
+      requires you to specify the name of the packages you want to skip.  This
+      option can be repeated.  2) --skip-all-missing-prerequisites does not
+      require an argument and causes Pinto to skip all missing prereqs.  These
+      options can be abbreviated as -k and -K respectively.
+
 0.099     2014-01-28 12:30:49 America/Los_Angeles
 
 

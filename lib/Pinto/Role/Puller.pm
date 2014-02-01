@@ -6,6 +6,8 @@ use Moose::Role;
 use MooseX::Types::Moose qw(ArrayRef Bool Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
+use List::MoreUtils qw(any);
+
 use Pinto::Util qw(throw whine);
 
 #-----------------------------------------------------------------------------
@@ -37,10 +39,16 @@ has pin => (
     default => 0,
 );
 
-has skip_missing_prerequisites => (
+has skip_missing_prerequisite => (
     is        => 'ro',
     isa       => ArrayRef[Str],
-    predicate => 'has_skip_missing_prerequisites',
+    default   => sub { [] },
+);
+
+has skip_all_missing_prerequisites => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
 );
 
 has with_development_prerequisites => (
@@ -112,7 +120,7 @@ sub find {
     elsif ( $dist = $stack->repo->ups_distribution( target => $target, cascade => $self->cascade ) ) {
         $msg = "Found $target in " . $dist->source;
     }
-    elsif ( $self->should_skip_missing_prerequisites($target) ) {
+    elsif ( $self->should_skip_missing_prerequisite($target) ) {
         whine "Cannot find $target anywhere.  Skipping it";
         return;
     }
@@ -176,12 +184,13 @@ sub do_recursion {
 
 #-----------------------------------------------------------------------------
 
-sub should_skip_missing_prerequisites {
+sub should_skip_missing_prerequisite {
     my ($self, $target) = @_;
 
-    return 0 unless $self->has_skip_missing_prerequisites;
-    return 1 unless my @packages_to_skip = @{ $self->skip_missing_prerequisites };
-    return scalar grep { $target->name eq $_ } @packages_to_skip;
+    return 1 if $self->skip_all_missing_prerequisites;
+    return 1 unless my @skips = @{ $self->skip_missing_prerequisite };
+    return 1 if any { $target->name eq $_ } @skips;
+    return 0;
 }
 
 #-----------------------------------------------------------------------------
