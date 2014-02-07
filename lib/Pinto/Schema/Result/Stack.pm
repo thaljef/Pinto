@@ -260,10 +260,10 @@ sub get_distribution {
     my $dist;
     if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
 
-        my $attrs = { prefetch => 'distribution', distinct => 1 };
+        my $attrs = { prefetch => 'distribution'};
         my $where = {'distribution.author'  => $target->author, 'distribution.archive' => $target->archive};
 
-        return unless my $reg = $self->head->find_related( registrations => $where, $attrs );
+        return unless my $reg = $self->head->search_related( registrations => $where, $attrs )->first;
         $dist = $reg->distribution;
     }
     elsif ( itis( $target, 'Pinto::Target::Package' ) ) {
@@ -276,7 +276,7 @@ sub get_distribution {
         $dist = $reg->distribution;
     }
 
-    $cache->{$target} = $dist if $cache; 
+    $cache->{$target} = $dist if $cache;
     return $dist;
 }
 
