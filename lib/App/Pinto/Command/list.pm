@@ -25,6 +25,7 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
+        [ 'all|a'             => 'List everything in the repository'],
         [ 'author|A=s'        => 'Limit to distributions by author' ],
         [ 'distributions|D=s' => 'Limit to matching distribution names' ],
         [ 'packages|P=s'      => 'Limit to matching package names' ],
@@ -48,6 +49,9 @@ sub validate_args {
     $opts->{stack} = $args->[0]
         if $args->[0];
 
+    $self->usage_error('Cannot specify a stack when using --all')
+        if $opts->{stack} && $opts->{all};
+
     return 1;
 }
 
@@ -63,13 +67,13 @@ __END__
 
 =head1 DESCRIPTION
 
-This command lists the distributions and packages that are registered
-on a stack.  You can format the output to see the specific bits of 
-information that you want.
+This command lists the packages that are currently registered on a particular
+stack, or all the packages in the entire repository.  You can format the
+output to see the specific bits of information that you want.
 
-For a large repository, it can take a long time to list everything.
-So consider using the C<--packages> or C<--distributions> options
-to narrow the scope.  
+For a large repository, it can take a long time to list everything. So
+consider using the C<--packages> or C<--distributions> options to narrow the
+scope.
 
 =head1 COMMAND ARGUMENTS
 
@@ -87,6 +91,15 @@ stack that is currently marked as the default stack.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+==item --all
+
+=item -a
+
+List every package in every distribution that exists in the entire repository,
+including distributions that are not currently registered on any stack.  When
+the C<--all> option is used, then the stack argument and C<--stack> option are
+not allowed.
 
 =item --author AUTHOR
 
@@ -115,7 +128,9 @@ placeholders are:
   %p             Package name
   %P             Package name-version
   %v             Package version
-  %y             Pin status:                     (!) = is pinned
+  %x             Package can be indexed:         (x) = true,      (-) = false
+  %M             Package is the main module:     (m) = true,      (-) = false
+  %y             Package is pinned:              (!) = true,      (-) = false
   %a             Distribution author
   %f             Distribution archive filename
   %m             Distribution maturity:          (d) = developer, (r) = release
@@ -140,7 +155,7 @@ You can also specify the minimum field widths and left or right
 justification, using the usual notation.  For example, the default
 format looks something like this:
 
-  %m%s %-38n %12v %a/%f\n
+  [%m%s%x%M%y] %-40p %12v %a/%f
 
 =item --packages PATTERN
 

@@ -1,5 +1,23 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      - The "list" command now has a --all option that causes it to list
+      every package in every distribution in the repository, including
+      past releases and distributions that are not currently registered on
+      any stack.
+
+      - The output of the list command includes two additional flags: "m"
+      means that the package is considered to be the main module in the
+      distribution. "x" means that the package can be included in the index.
+      For both of these, the flags will appear as "-" when they are false.
+
+      [BUG FIXES]
+
+      - Fixed regression in the "pin", "unpin", and "unregister" commands
+      which resulted in a warning from DBIx::Class about returning multiple
+      rows for a find() query.
+
 0.0991    2014-01-31 17:19:17 America/Los_Angeles
 
       [INCOMPATIBLE CHANGES]

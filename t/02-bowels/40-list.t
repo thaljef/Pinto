@@ -78,6 +78,7 @@ $t->run_ok( 'Add' => { archives => $archive3, stack => 'qa',  author => 'BOB' } 
     is $result->was_successful, 0, 'No matches means unsuccessful';
 }
 
+# TODO: Add tests for --all option
 
 #-----------------------------------------------------------------------------
 
