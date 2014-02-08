@@ -111,7 +111,7 @@ be prompted for a password.
 Report only fatal errors.  This option silently overrides the
 C<--verbose> options.  Also suppresses the progress meter.
 
-Note: The progress meter is always suppressed when using a remote 
+Note: The progress meter is always suppressed when using a remote
 repository.  This will hopefully be fixed a future release.
 
 
@@ -146,10 +146,10 @@ The following configuration parameters are supported:
 
 =item sources = URL1 [URL2 URL3 ...]
 
-This is a space-delimited list of the URLs for the upstream repositories that 
+This is a space-delimited list of the URLs for the upstream repositories that
 this repository will pull archives from.  These can point to CPAN mirrors,
-minicpan mirrors, or stacks within other Pinto repositories.  Pinto will search 
-the source repositories in the order they are listed here.  The default value 
+minicpan mirrors, or stacks within other Pinto repositories.  Pinto will search
+the source repositories in the order they are listed here.  The default value
 is C<http://cpan.perl.org http://backpan.perl.org>.
 
 =item target_perl_version = X.X.X
@@ -173,10 +173,10 @@ subsequent release.  The default is false.
 
 B<BEWARE:> The above configuration properties are global -- they affect every
 stack in the repository.  They also have a major affect on how the repository
-behaves.  For these reasons, it is generally unwise to change these parameters 
+behaves.  For these reasons, it is generally unwise to change these parameters
 once you have established the repository and filled it with content.  If you
-do change them, be sure and notify your team about it.  Each stack also has 
-some stack-specific configuration properties.  Those can be shown or set using 
+do change them, be sure and notify your team about it.  Each stack also has
+some stack-specific configuration properties.  Those can be shown or set using
 the L<props|App::Pinto::Command::props> command.
 
 
@@ -200,7 +200,7 @@ can save you quite a bit of typing.
 
 Sets the path to editor application that will be used to compose log
 messages.  If not set, defaults to C<VISUAL> or C<EDITOR>.  If none
-of those are set, either C<nano>, C<pico>, or C<vi> will be used (in 
+of those are set, either C<nano>, C<pico>, or C<vi> will be used (in
 that order).
 
 =item C<PINTO_NO_COLOR>
@@ -213,32 +213,32 @@ If set to a true value, suppresses color in all command output.
 
 =item C<PINTO_COLOURS>
 
-A comma-separated list of exactly three color names.  Any name supported 
-by L<Term::ANSIColor> is allowed.  These will be the colors that pinto 
+A comma-separated list of exactly three color names.  Any name supported
+by L<Term::ANSIColor> is allowed.  These will be the colors that pinto
 uses to colorize various output.  For example:
 
   PINTO_COLORS='red, light blue, green on_white'
 
-Listing too many or too few colors will cause an exception, as will using 
+Listing too many or too few colors will cause an exception, as will using
 an invalid color name.
 
 =item C<PINTO_USERNAME>
 
-Sets the default username when C<--username> is not specified.  This is only 
+Sets the default username when C<--username> is not specified.  This is only
 used for authentication with a L<pintod> server.  Defaults to your current
 shell username.
 
 =item C<PINTO_AUTHOR_ID>
 
 Sets the default author identity when the C<--author> option is not specified
-(currently, only used by the L<add|App::Pinto::Commmand::add> command).  Defaults 
-to your current shell username.  By PAUSE convention, all author id's are forced 
+(currently, only used by the L<add|App::Pinto::Commmand::add> command).  Defaults
+to your current shell username.  By PAUSE convention, all author id's are forced
 to uppercase.
 
 =item C<PINTO_PAGER>
 
 Sets the path to the pager application that will be used to paginate output from
-each command.  Defaults to C<PAGER>.  If none of these are set, then no pager 
+each command.  Defaults to C<PAGER>.  If none of these are set, then no pager
 is used.
 
 =item C<PINTO_DIFF_STYLE>
@@ -249,7 +249,7 @@ this can be overriden with the C<--diff-style> option.
 
 =item C<PINTO_DEBUG>
 
-If set to 1, pinto will emit more diagnostic messages to STDERR.  If set to 2, 
+If set to 1, pinto will emit more diagnostic messages to STDERR.  If set to 2,
 pinto will emit even more diagnostic messages.
 
 =item C<PINTO_LOCKFILE_TIMEOUT>
