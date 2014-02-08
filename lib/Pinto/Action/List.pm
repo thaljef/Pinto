@@ -139,13 +139,15 @@ sub execute {
         # on whether we are listing a stack or the whole repository
 
         my $string = $it->to_string( $self->format );
+        my $color  = undef;
 
-        # my $color =
-        #       $reg->is_pinned              ? $PINTO_COLOR_1
-        #     : $reg->distribution->is_local ? $PINTO_COLOR_0
-        #     :                                undef;
+        $color = $PINTO_COLOR_0
+            if $it->distribution->is_local;
 
-        $self->show( $string, { color => undef } );
+        $color = $PINTO_COLOR_1
+            if $it->isa('Pinto::Schema::Result::Registration') && $it->is_pinned;
+
+        $self->show( $string, { color => $color } );
         $did_match++;
     }
 
