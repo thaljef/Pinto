@@ -252,6 +252,11 @@ this can be overriden with the C<--diff-style> option.
 If set to 1, pinto will emit more diagnostic messages to STDERR.  If set to 2, 
 pinto will emit even more diagnostic messages.
 
+=item C<PINTO_LOCKFILE_TIMEOUT>
+
+Sets the timeout (in seconds) for obtaining a lock on the repository.  The default
+is 50.  This variable only has effect when using a local repository.
+
 =back
 
 
