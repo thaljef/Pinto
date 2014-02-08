@@ -245,12 +245,14 @@ is used.
 
 Sets the default style for diff reports.  Valid styles are C<detailed> and
 C<concise>.  The default is C<concise>.  For commands that produce diff reports,
-this can be overriden with the C<--diff-style> option.
+this can be overriden with the C<--diff-style> option.  This variable only has
+effect when using a local repository.
 
 =item C<PINTO_DEBUG>
 
 If set to 1, pinto will emit more diagnostic messages to STDERR.  If set to 2,
-pinto will emit even more diagnostic messages.
+pinto will emit even more diagnostic messages.  This variable only has effect
+when using a local repository.
 
 =item C<PINTO_LOCKFILE_TIMEOUT>
 
