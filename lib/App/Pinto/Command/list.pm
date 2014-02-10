@@ -92,7 +92,7 @@ the default stack.
 
 =over 4
 
-==item --all
+=item --all
 
 =item -a
 
