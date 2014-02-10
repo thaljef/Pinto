@@ -3,12 +3,10 @@
       [ENHANCEMENTS]
 
       - The "list" command now has a --all option that causes it to list
-      every package in every distribution in the repository, including
-      past releases and distributions that are not currently registered on
-      any stack.
-
-      - The output of the list command includes two additional flags: "m"
-      means that the package is considered to be the main module in the
+      every package in every distribution in the repository, including past
+      releases and distributions that are not currently registered on any
+      stack.  When using the --all option, the output includes two extra flags:
+      "m" means that the package is considered to be the main module in the
       distribution. "x" means that the package can be included in the index.
       For both of these, the flags will appear as "-" when they are false.
 
