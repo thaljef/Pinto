@@ -27,8 +27,8 @@ $t->run_ok( Pin  => { targets => 'PkgC', stack => 'foo' } );
 {
 
     my @expected = (
-        qr{^ \Q-[rlx--] AUTHOR/Dist-1.tar.gz\E $}mx,
-        qr{^ \Q+[rlx-!] AUTHOR/Dist-2.tar.gz\E $}mx,
+        qr{^ \Q-[rl-] AUTHOR/Dist-1.tar.gz\E $}mx,
+        qr{^ \Q+[rl!] AUTHOR/Dist-2.tar.gz\E $}mx,
     );
 
     # Compare by revision id

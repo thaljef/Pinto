@@ -36,31 +36,32 @@ $t->run_ok( 'Add' => { archives => $archive3, stack => 'qa',  author => 'BOB' } 
 #-----------------------------------------------------------------------------
 
 {
-    $t->run_ok( 'List' => { stack => 'qa', packages => 'Bar' } );
+    $t->run_ok( 'List' => { stack => 'qa', packages => 'B' } );
     my @lines = split /\n/, ${ $t->outstr };
 
-    is scalar @lines, 1, 'Got correct number of records in listing';
-    like $lines[0], qr/Bar \s+ 0.02/x, 'Listing for packages matching %Bar% on qa stack';
+    is scalar @lines, 2, 'Got correct number of records in listing';
+    like $lines[0], qr/Bar \s+ 0.02/x, 'Listing for packages matching /B/ on qa stack';
+    like $lines[1], qr/Baz \s+ 0.03/x, 'Listing for packages matching /B/ on qa stack';
 }
 
 #-----------------------------------------------------------------------------
 
 {
-    $t->run_ok( 'List' => { stack => 'qa', distributions => 'Baz' } );
+    $t->run_ok( 'List' => { stack => 'qa', authors => '^B.B' } );
     my @lines = split /\n/, ${ $t->outstr };
 
     is scalar @lines, 1, 'Got correct number of records in listing';
-    like $lines[0], qr/Baz \s+ 0.03/x, 'Listing for dists matching %Baz% on qa stack';
+    like $lines[0], qr/Baz \s+ 0.03/x, 'Listing for author matching /^B.B/ on qa stack';
 }
 
 #-----------------------------------------------------------------------------
 
 {
-    $t->run_ok( 'List' => { stack => 'qa', author => 'BOB' } );
+    $t->run_ok( 'List' => { stack => 'dev', distributions => 'oo-' } );
     my @lines = split /\n/, ${ $t->outstr };
 
     is scalar @lines, 1, 'Got correct number of records in listing';
-    like $lines[0], qr/Baz \s+ 0.03/x, 'Listing where author == BOB on qa stack';
+    like $lines[0], qr/Foo \s+ 0.01/x, 'Listing for distribution matching /oo/ on qa stack';
 }
 
 #-----------------------------------------------------------------------------
@@ -74,7 +75,7 @@ $t->run_ok( 'Add' => { archives => $archive3, stack => 'qa',  author => 'BOB' } 
     $result = $t->pinto->run( List => { stack => 'foo' });
     is $result->was_successful, 0, 'Listing an empty stack is successfull';
 
-    $result = $t->pinto->run( List => { stack => 'foo', author => 'nomatch' });
+    $result = $t->pinto->run( List => { stack => 'foo', authors => 'nomatch' });
     is $result->was_successful, 0, 'No matches means unsuccessful';
 }
 
