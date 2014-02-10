@@ -332,6 +332,7 @@ sub get_distribution {
 
     my $rs = $self->db->schema->distribution_rs->with_packages;
 
+    $DB::single = 1;
     # Retrieve a distribution by target 
     if ( my $target = $args{target} ) {
         if ( itis( $target, 'Pinto::Target::Distribution' ) ) {

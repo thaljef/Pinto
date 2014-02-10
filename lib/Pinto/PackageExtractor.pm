@@ -8,7 +8,6 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Dist::Metadata;
-use Dist::Requires;
 
 use Pinto::Types qw(File Dir);
 use Pinto::Util qw(debug throw whine);
@@ -105,12 +104,8 @@ sub requires {
     my $archive = $self->archive;
     debug "Extracting packages required by archive $archive";
 
-    # my $prereqs_meta = try { $self->dm->meta->prereqs } 
-    #                  catch { throw "Unable to extract prereqs from $archive: $_" };
-
-    my $dr = Dist::Requires->new;
-    my $prereqs_meta = {$dr->prerequisites(dist => $self->work_dir)};
-    $DB::single = 1;
+    my $prereqs_meta = try { $self->dm->meta->prereqs } 
+                     catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
     for my $phase ( keys %{$prereqs_meta} ) {
