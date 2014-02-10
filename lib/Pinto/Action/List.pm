@@ -5,10 +5,10 @@ package Pinto::Action::List;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
-use MooseX::Types::Moose qw(HashRef Str Bool);
+use MooseX::Types::Moose qw(Str Bool);
 
 use Pinto::Constants qw(:color);
-use Pinto::Types qw(AuthorID StackName StackDefault StackObject);
+use Pinto::Types qw(StackName StackDefault StackObject);
 
 #------------------------------------------------------------------------------
 
@@ -31,10 +31,9 @@ has pinned => (
     isa => Bool,
 );
 
-has author => (
-    is     => 'ro',
-    isa    => AuthorID,
-    coerce => 1,
+has authors => (
+    is      => 'ro',
+    isa     => Str,
 );
 
 has packages => (
@@ -76,8 +75,8 @@ sub _where {
             $where->{'distribution.archive'} = {regexp => qr/$dist_name/};
         }
 
-        if ( my $author = $self->author ) {
-            $where->{'distribution.author'} = {regexp => qr/$author/i};
+        if ( my $authors = $self->authors ) {
+            $where->{'distribution.author'} = {regexp => qr/$authors/i};
         }
     }
     else {
@@ -93,8 +92,8 @@ sub _where {
             $where->{'distribution.archive'} = {regexp => qr/$dist_name/};
         }
 
-        if ( my $author = $self->author ) {
-            $where->{'distribution.author'} = {regexp => qr/$author/i};
+        if ( my $authors = $self->authors ) {
+            $where->{'distribution.author'} = {regexp => qr/$authors/i};
         }
 
         if ( my $pinned = $self->pinned ) {

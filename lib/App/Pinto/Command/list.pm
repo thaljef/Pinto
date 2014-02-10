@@ -26,7 +26,7 @@ sub opt_spec {
 
     return (
         [ 'all|a'             => 'List everything in the repository'],
-        [ 'author|A=s'        => 'Limit to distributions by author' ],
+        [ 'authors|A=s'       => 'Limit to matching author identities' ],
         [ 'distributions|D=s' => 'Limit to matching distribution names' ],
         [ 'packages|P=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
@@ -77,16 +77,16 @@ scope.
 
 =head1 COMMAND ARGUMENTS
 
-As an alternative to the C<--stack> option, you can also specify the
-stack as an argument. So the following examples are equivalent:
+As an alternative to the C<--stack> option, you can also specify the stack as
+an argument. So the following examples are equivalent:
 
   pinto --root REPOSITORY_ROOT list --stack dev
   pinto --root REPOSITORY_ROOT list dev
 
-A stack specified as an argument in this fashion will override any
-stack specified with the C<--stack> option.  If a stack is not
-specified by neither argument nor option, then it defaults to the
-stack that is currently marked as the default stack.
+A stack specified as an argument in this fashion will override any stack
+specified with the C<--stack> option.  If a stack is not specified by neither
+argument nor option, then it defaults to the stack that is currently marked as
+the default stack.
 
 =head1 COMMAND OPTIONS
 
@@ -101,7 +101,7 @@ including distributions that are not currently registered on any stack.  When
 the C<--all> option is used, then the stack argument and C<--stack> option are
 not allowed.
 
-=item --author PATTERN
+=item --authors=PATTERN
 
 =item -A PATTERN
 
@@ -111,7 +111,7 @@ expression.  Take care to use quotes if your C<PATTERN> contains any special
 shell metacharacters.
 
 
-=item --distributions PATTERN
+=item --distributions=PATTERN
 
 =item -D PATTERN
 
@@ -153,13 +153,17 @@ are:
   [2]: The physical path is always in the native style for this OS,
        and is relative to the root directory of the repository.
 
-You can also specify the minimum field widths and left or right
-justification, using the usual notation.  For example, the default
-format looks something like this:
+You can also specify the minimum field widths and left or right justification,
+using the usual notation.  For example, the default format looks something
+like this:
 
-  [%m%s%x%M%y] %-40p %12v %a/%f
+  [%m%s%y] %-40p %12v %a/%f
 
-=item --packages PATTERN
+When using the C<--all> option, the default format looks something like this:
+
+  [%m%s%y%x%M] %-40p %12v %a/%f
+
+=item --packages=PATTERN
 
 =item -P PATTERN
 
@@ -171,16 +175,17 @@ metacharacters.
 
 =item --pinned
 
-Limit the listing to records for packages that are pinned.
+Limit the listing to records for packages that are pinned.  This option has
+no effect when using the C<--all> option.
 
-=item --stack NAME
+=item --stack=NAME
 
 =item -s NAME
 
-List the contents of the stack with the given NAME.  Defaults to the
-name of whichever stack is currently marked as the default stack.  Use
-the L<stacks|App::Pinto::Command::stacks> command to see the
-stacks in the repository.
+List the contents of the stack with the given NAME.  Defaults to the name of
+whichever stack is currently marked as the default stack.  Use the
+L<stacks|App::Pinto::Command::stacks> command to see the stacks in the
+repository.  This option cannot be used with the C<--all> option.
 
 =back
 
