@@ -10,6 +10,10 @@
       distribution. "x" means that the package can be included in the index.
       For both of these, the flags will appear as "-" when they are false.
 
+      - The --packages, --distributions, and --author filtering options on
+      the "list" command are now matched as regular expressions.  Take care
+      to quote them if you use any special shell metacharacters.
+
       [BUG FIXES]
 
       - Fixed regression in the "pin", "unpin", and "unregister" commands

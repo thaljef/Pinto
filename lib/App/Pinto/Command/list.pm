@@ -101,27 +101,29 @@ including distributions that are not currently registered on any stack.  When
 the C<--all> option is used, then the stack argument and C<--stack> option are
 not allowed.
 
-=item --author AUTHOR
+=item --author PATTERN
 
-=item -A AUTHOR
+=item -A PATTERN
 
-Limit the listing to records where the distribution author is AUTHOR.
-Note this is an exact match, not a pattern match.  However, it is
-not case sensitive.
+Limit the listing to records where the distribution's author identity matches
+C<PATTERN>.  The C<PATTERN> will be interpreted as a case-insensitive regular
+expression.  Take care to use quotes if your C<PATTERN> contains any special
+shell metacharacters.
+
 
 =item --distributions PATTERN
 
 =item -D PATTERN
 
-Limit the listing to records where the distribution archive name
-matches C<PATTERN>.  Note that C<PATTERN> is just a plain string, not
-a regular expression.  The C<PATTERN> will match if it appears
-anywhere in the distribution archive name.
+Limit the listing to records where the distribution archive name matches
+C<PATTERN>.  The C<PATTERN> will be interpreted as a case-sensitive regular
+expression.  Take care to use quotes if your C<PATTERN> contains any special
+shell metacharacters.
 
 =item --format FORMAT_SPECIFICATION
 
-Format of the output using C<printf>-style placeholders.  Valid
-placeholders are:
+Format of the output using C<printf>-style placeholders.  Valid placeholders
+are:
 
   Placeholder    Meaning
   -----------------------------------------------------------------------------
@@ -161,10 +163,11 @@ format looks something like this:
 
 =item -P PATTERN
 
-Limit the listing to records where the package name matches
-C<PATTERN>.  Note that C<PATTERN> is just a plain string, not a
-regular expression.  The C<PATTERN> will match if it appears anywhere
-in the package name.
+Limit the listing to records where the package name matches C<PATTERN>.  The
+C<PATTERN> will be interpreted as a case-sensitive regular expression.  Take
+care to use quotes if your C<PATTERN> contains any special shell
+metacharacters.
+
 
 =item --pinned
 

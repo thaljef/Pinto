@@ -69,32 +69,32 @@ sub _where {
     if ($self->all) {
 
         if ( my $pkg_name = $self->packages ) {
-            $where->{'me.name'} = { like => "%$pkg_name%" };
+            $where->{'me.name'} = {regexp => qr/$pkg_name/ };
         }
 
         if ( my $dist_name = $self->distributions ) {
-            $where->{'distribution.archive'} = { like => "%$dist_name%" };
+            $where->{'distribution.archive'} = {regexp => qr/$dist_name/};
         }
 
         if ( my $author = $self->author ) {
-            $where->{'distribution.author'} = uc $author;
+            $where->{'distribution.author'} = {regexp => qr/$author/i};
         }
     }
     else {
 
         my $stack = $self->repo->get_stack( $self->stack );
-        $where = { revision => $stack->head->id };
+        $where = {revision => $stack->head->id};
 
         if ( my $pkg_name = $self->packages ) {
-            $where->{'package.name'} = { like => "%$pkg_name%" };
+            $where->{'package.name'} = {regexp => qr/$pkg_name/};
         }
 
         if ( my $dist_name = $self->distributions ) {
-            $where->{'distribution.archive'} = { like => "%$dist_name%" };
+            $where->{'distribution.archive'} = {regexp => qr/$dist_name/};
         }
 
         if ( my $author = $self->author ) {
-            $where->{'distribution.author'} = uc $author;
+            $where->{'distribution.author'} = {regexp => qr/$author/i};
         }
 
         if ( my $pinned = $self->pinned ) {
