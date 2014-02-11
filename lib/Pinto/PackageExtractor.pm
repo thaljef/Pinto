@@ -7,6 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
+use Dist::Requires;
 use Dist::Metadata;
 
 use Pinto::Types qw(File Dir);
@@ -104,31 +105,43 @@ sub requires {
     my $archive = $self->archive;
     debug "Extracting packages required by archive $archive";
 
-    my $prereqs_meta = try { $self->dm->meta->prereqs } 
-                     catch { throw "Unable to extract prereqs from $archive: $_" };
+    # my $prereqs_meta = try { $self->dm->meta->prereqs } 
+    #                  catch { throw "Unable to extract prereqs from $archive: $_" };
+
+    my $dr = Dist::Requires->new;
+    my %prereqs = $dr->prerequisites(dist => $self->work_dir);
 
     my @prereqs;
-    for my $phase ( keys %{$prereqs_meta} ) {
-
-        # TODO: Also capture the relation (suggested, requires, recomends, etc.)
-        # But that will require a schema change to add another column to the table.
-
-        my $prereqs_for_phase = $prereqs_meta->{$phase}        || {};
-        my $required_prereqs  = $prereqs_for_phase->{requires} || {};
-
-        for my $package ( sort keys %{$required_prereqs} ) {
-
-            my $version = $required_prereqs->{$package};
-            debug "Archive $archive requires ($phase): $package~$version";
-
-            push @prereqs, { 
-                name    => $package, 
-                version => $version,
-                phase   => $phase, 
-            };
-
-        }
+    for my $name (sort keys %prereqs) {
+        push @prereqs, {
+            name    => $name,
+            version => $prereqs{$name},
+            phase   => 'runtime',
+        };
     }
+
+    # my @prereqs;
+    # for my $phase ( keys %{$prereqs_meta} ) {
+
+    #     # TODO: Also capture the relation (suggested, requires, recomends, etc.)
+    #     # But that will require a schema change to add another column to the table.
+
+    #     my $prereqs_for_phase = $prereqs_meta->{$phase}        || {};
+    #     my $required_prereqs  = $prereqs_for_phase->{requires} || {};
+
+    #     for my $package ( sort keys %{$required_prereqs} ) {
+
+    #         my $version = $required_prereqs->{$package};
+    #         debug "Archive $archive requires ($phase): $package~$version";
+
+    #         push @prereqs, { 
+    #             name    => $package, 
+    #             version => $version,
+    #             phase   => $phase, 
+    #         };
+
+    #     }
+    # }
 
     my $base = $archive->basename;
 

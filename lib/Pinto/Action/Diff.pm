@@ -59,8 +59,8 @@ sub execute {
         || $self->repo->get_revision( $self->right )
         || throw sprintf $error_message, $self->right;
 
-    my $diff = Pinto::Difference->new( left  => $left, 
-                                       right => $right, 
+    my $diff = Pinto::Difference->new( left  => $left,
+                                       right => $right,
                                        style => $self->style );
 
     # TODO: Extract the colorizing & formatting code into a separate
@@ -71,8 +71,8 @@ sub execute {
         $self->show( "+++ $right", { color => $PINTO_COLOR_1 } );
     }
 
-    my $format = $self->style eq $PINTO_DIFF_STYLE_DETAILED 
-        ? '%o[%F] %-40p %12v %a/%f' 
+    my $format = $self->style eq $PINTO_DIFF_STYLE_DETAILED
+        ? '%o[%F] %-40p %12v %a/%f'
         : '%o[%F] %a/%f';
 
     for my $entry ( $diff->entries ) {
