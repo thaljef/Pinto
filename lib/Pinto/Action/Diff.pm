@@ -81,6 +81,8 @@ sub execute {
         $self->show( $string, { color => $color } );
     }
 
+    $self->notice('No difference') if not $diff->is_different;
+
     return $self->result;
 }
 
