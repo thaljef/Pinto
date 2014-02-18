@@ -137,7 +137,7 @@ Install all modules in the stack in one shot:
 
 Generate a basic F<cpanfile> that would install all modules in the stack:
 
-  pinto -r /myrepo roots -f 'requires q{%M};' > cpanfile
+  pinto -r /myrepo roots --format 'requires q{%M};' > cpanfile
 
 =head1 CAVEATS
 
