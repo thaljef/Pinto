@@ -18,6 +18,14 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 #------------------------------------------------------------------------------
 {
 
+    # Should fail with no targets
+    my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
+    $local->run_throws_ok( 'Pull' => {}, qr/.*Attribute \(targets\) is required/ );
+}
+
+#------------------------------------------------------------------------------
+{
+
     # Non-recursive pull
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
     $local->run_ok( 'Pull', { targets => 'Baz~1.2', recurse => 0 } );
