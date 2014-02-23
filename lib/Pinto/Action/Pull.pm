@@ -10,7 +10,10 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(TargetList);
+use Pinto::Types qw(File TargetList);
+
+use Module::CPANfile;
+use Pinto::Target::Package;
 
 #------------------------------------------------------------------------------
 
@@ -23,11 +26,20 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => TargetList,
-    traits   => [qw(Array)],
-    handles  => { targets => 'elements' },
-    required => 1,
-    coerce   => 1,
+    isa     => TargetList,
+    traits  => [qw(Array)],
+    handles => {
+        add_targets => 'push',
+        targets     => 'elements'
+    },
+    coerce  => 1,
+    default => sub { [] },
+);
+
+has cpanfile => (
+    is     => 'ro',
+    isa    => File,
+    coerce => 1,
 );
 
 has no_fail => (
@@ -44,6 +56,12 @@ with qw( Pinto::Role::Committable Pinto::Role::Puller );
 
 sub BUILD {
     my ($self) = @_;
+
+    if ( $self->cpanfile ) {
+        $self->_add_cpanfile_targets();
+    }
+
+    $self->targets || die "Attribute \(targets\) is required";
 
     $self->stack->assert_not_locked;
 
@@ -83,6 +101,38 @@ sub execute {
     $self->chrome->progress_done;
 
     return @successful;
+}
+
+#------------------------------------------------------------------------------
+
+sub _add_cpanfile_targets {
+    my ($self) = @_;
+
+    my $cpanfile = $self->cpanfile()->absolute;
+
+    # https://metacpan.org/pod/CPAN::Meta::Spec#PREREQUISITES
+    my @phases = qw(configure build test runtime develop);
+    my @types  = qw(requires recommends suggests);           # exclude "conflicts"
+
+    my $args;
+    try {
+        my $file = Module::CPANfile->load($cpanfile);
+        my $prereqs = $file->prereqs->merged_requirements( \@phases, \@types );
+        $args = $prereqs->as_string_hash;
+    }
+    catch {
+        die "Unable to load requirements from $cpanfile: $_";
+    };
+
+    for my $name ( keys %{$args} ) {
+        my $ptp = Pinto::Target::Package->new(
+            {   name    => $name,
+                version => $args->{$name}
+            }
+        );
+        $self->add_targets($ptp);
+    }
+
 }
 
 #------------------------------------------------------------------------------
