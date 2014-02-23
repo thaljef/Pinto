@@ -32,13 +32,11 @@ use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
     my %action_args = ( archives => [ $temp->filename ], author => 'ME', stack => 'mystack' );
 
     my $chrome = Pinto::Chrome::Term->new(%chrome_args);
-    my $pinto = Pinto::Remote->new( root => 'myhost', chrome => $chrome, %pinto_args );
+    my $pinto = Pinto::Remote->new( root => 'http://myhost:3111', chrome => $chrome, %pinto_args );
     $pinto->run( $action, %action_args );
 
     my $req = $ua->last_http_request_sent;
-
     is $req->method, 'POST', "Correct HTTP method in request for action $action";
-
     is $req->uri, 'http://myhost:3111/action/add', "Correct uri in request for action $action";
 
     my $req_params      = parse_req_params($req);
@@ -47,9 +45,7 @@ use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
     my $got_action_args = decode_json( $req_params->{action} );
 
     is_deeply $got_chrome_args, \%chrome_args, "Correct chrome args in request for action $action";
-
-    is_deeply $got_pinto_args, \%pinto_args, "Correct pinto args in request for action $action";
-
+    is_deeply $got_pinto_args,  \%pinto_args,  "Correct pinto args in request for action $action";
     is_deeply $got_action_args, \%action_args, "Correct action args in request for action $action";
 }
 

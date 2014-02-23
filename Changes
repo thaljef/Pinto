@@ -1,11 +1,19 @@
 {{$NEXT}}
 
+      [INCOMPATIBLE CHANGES]
+
+      - Pinto no longer sets the default port when connecting to a remote
+      repository.  So in most cases, you'll have to explicitly add the port
+      number to the URI given as the --root.  The default port that "pintod"
+      listens on is 3111.  But if you're running "pintod" behind another server
+      (like Apache or Nginx) then you can probably omit the port number and
+      Pinto will use the default port that is appropriate for the scheme.
+      Closes GH #136.  Thanks @spacebat.
+
       [ENHANCEMENTS]
 
-      - When the repository root is a local directory, it can also be
-      expressed using a file:/// URI.  This applies to both the --root
-      command line option and the PINTO_REPOSITORY_ROOT environment
-      variable.  Fixes GH #128.
+      - When the repository is a local directory, it can also be expressed
+      using a file:// URI.  This applies to both the --root option and the PINTO_REPOSITORY_ROOT environment variable. Fixes GH #128.
 
 0.0992    2014-02-10 02:01:18 America/Los_Angeles
 
