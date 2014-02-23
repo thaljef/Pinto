@@ -80,15 +80,14 @@ The following options are available for all commands.
 
 =over 4
 
-=item  --root DIRECTORY | URL
+=item  --root DIRECTORY | URI
 
-=item  -r DIRECTORY | URL
+=item  -r DIRECTORY | URI
 
-Specifies the root of your repository.  This is mandatory for (almost)
-all commands unless you've set the C<PINTO_REPOSITORY_ROOT>
-environment variable to point to your repository.  The root can be a
-path to a local directory, or the URL where a L<pintod> server is
-listening.
+Specifies the root of your repository.  This is mandatory for (almost) all
+commands unless you've set the C<PINTO_REPOSITORY_ROOT> environment variable
+to point to your repository.  The root can be the path or C<file://> URI of a
+local directory, or the URI where a L<pintod> server is listening.
 
 =item --no-color
 

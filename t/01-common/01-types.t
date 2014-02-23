@@ -19,8 +19,14 @@ my $t = TestClass->new();
 $t->file('foo/bar/baz');
 is( ref $t->file(), 'Path::Class::File', 'Coerced file from string' );
 
+$t->file('file:///foo/bar/baz');
+is( $t->file, '/foo/bar/baz', 'Converted file:// URI to file path' );
+
 $t->dir('foo/bar/baz');
 is( ref $t->dir(), 'Path::Class::Dir', 'Coerced dir from string' );
+
+$t->dir('file:///foo/bar/baz');
+is( $t->dir, '/foo/bar/baz', 'Converted file:// URI to dir path' );
 
 $t->uri('http://nuts');
 is( ref $t->uri(), 'URI::http', 'Coerced URI from string' );

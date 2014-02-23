@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      - When the repository root is a local directory, it can also be
+      expressed using a file:/// URI.  This applies to both the --root
+      command line option and the PINTO_REPOSITORY_ROOT environment
+      variable.  Fixes GH #128.
+
 0.0992    2014-02-10 02:01:18 America/Los_Angeles
 
       [ENHANCEMENTS]
