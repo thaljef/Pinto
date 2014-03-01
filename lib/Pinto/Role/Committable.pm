@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 use List::MoreUtils qw(uniq);
 
-use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
+use Pinto::Constants qw(:lock);
 use Pinto::Types qw(StackName StackDefault StackObject DiffStyle);
 use Pinto::Util qw(is_interactive throw is_blank is_not_blank);
 
@@ -107,6 +107,10 @@ around execute => sub {
         $self->result->changed;
         $self->repo->txn_commit;
     }
+
+    # Release the exclusive lock and just use a shared lock, since
+    # we won't be writing to the repository at this point.
+    $self->repo->unlock; $self->repo->lock($PINTO_LOCK_TYPE_SHARED);
 
     return $self->result;
 };
