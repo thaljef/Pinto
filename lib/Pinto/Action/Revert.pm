@@ -41,8 +41,6 @@ has force => (
 sub execute {
     my ($self) = @_;
 
-    $DB::single = 1;
-
     # Remember that the Committable role has already moved the head
     # forward to a new revision which is a duplicate of the last head.
 
@@ -75,6 +73,7 @@ sub execute {
 sub generate_message_title {
     my ($self) = @_;
 
+    # TODO: fix duplication...
     my $stack     = $self->stack;
     my $new_head  = $stack->head;
     my $old_head  = ($new_head->parents)[0];
