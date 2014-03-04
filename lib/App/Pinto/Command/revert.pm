@@ -23,6 +23,7 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
+        [ 'dry-run'    => 'Do not commit any changes' ],
         [ 'force'      => 'Revert even if revision is not ancestor' ],
         [ 'stack|s=s'  => 'Revert this stack' ],
     );
@@ -80,6 +81,13 @@ also be specified using the C<--stack> option.
 =head1 COMMAND OPTIONS
 
 =over 4
+
+=item --dry-run
+
+Go through all the motions, but do not actually commit any changes to the
+repository.  At the conclusion, a diff showing the changes that would have
+been made will be displayed.  Use this option to see how upgrades would
+potentially impact the stack.
 
 =item --force
 
