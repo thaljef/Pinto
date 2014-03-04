@@ -28,6 +28,7 @@ has revision => (
     is       => 'ro',
     isa      => RevisionID | RevisionHead,
     default  => undef,
+    coerce   => 1,
 );
 
 has force => (
