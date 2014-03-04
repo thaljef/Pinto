@@ -51,12 +51,12 @@ sub execute {
 
     my $left =
            $self->repo->get_stack_maybe( $self->left )
-        || $self->repo->get_revision( $self->left )
+        || $self->repo->get_revision_maybe( $self->left )
         || throw sprintf $error_message, $self->left;
 
     my $right =
            $self->repo->get_stack_maybe( $self->right )
-        || $self->repo->get_revision( $self->right )
+        || $self->repo->get_revision_maybe( $self->right )
         || throw sprintf $error_message, $self->right;
 
     my $diff = Pinto::Difference->new( left  => $left,
