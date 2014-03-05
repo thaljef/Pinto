@@ -53,8 +53,11 @@ sub execute {
         ? $self->repo->get_revision($self->revision)
         : ($old_head->parents)[0];
 
+    throw "Cannot revert past the root commit"
+        if not $rev;
+
     throw "Revision $rev is the head of stack $stack"
-        if $rev == $old_head;
+        if $rev eq $old_head;
 
     throw "Revision $rev is not an ancestor of stack $stack"
         if !$rev->is_ancestor_of($old_head) && !$self->force;
