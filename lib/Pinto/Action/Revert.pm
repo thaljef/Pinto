@@ -65,9 +65,13 @@ sub execute {
     $new_head->registrations_rs->delete;
     $stack->duplicate_registrations(to => $new_head, from => $rev);
 
-    # We must set the change flag, snce we injected the registrations directly.
+    # We must explicitly mark the stack as changed, snce we injected the
+    # registrations directly.  But it is possible that the new state is
+    # exactly the same as the old state.  So we use the diff to be sure.
 
-    $new_head->update({has_changes => 1});
+    $stack->diff->is_different
+        ? $stack->mark_as_changed
+        : throw "Revision $rev is identical to the head of stack $stack";
 
     return 1;
 }

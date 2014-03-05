@@ -105,6 +105,15 @@ subtest "Exceptions" => sub {
 
     $t->run_throws_ok(Revert => {},
         qr/Cannot revert past the root/, "Cannot revert beyond root");
+
+    #------------
+
+    $t->populate('AUTHOR/Foo-1=Foo~1');
+    $t->run_ok(Unregister => {targets => 'Foo'});
+    $t->stack_is_empty_ok('master');  # Same state as $rev0
+
+    $t->run_throws_ok(Revert => {revision => "$rev0"},
+        qr/$rev0 is identical/);
 };
 
 #------------------------------------------------------------------------------
