@@ -67,7 +67,30 @@ subtest "Revert to root commit" => sub {
     $t->registration_ok($reg2);
 
     $t->run_ok(Revert => {revision => "0000"});
-    $t->stack_is_empty_ok;
+    $t->stack_is_empty_ok('master');
+};
+
+#------------------------------------------------------------------------------
+
+subtest "Revert to unrelated revision" => sub {
+
+    my $t = Pinto::Tester->new;
+    $t->populate('AUTHOR/Foo-1=Foo~1');
+    $t->registration_ok('AUTHOR/Foo-1/Foo~1');
+    my $rev1 = $t->get_stack->head;
+
+    $t->run_ok(Copy => {from_stack => 'master', to_stack => 'other'});
+    $t->run_ok(Pin  => {stack => 'other', targets => 'Foo'});
+
+    my $other_head = $t->get_stack('other')->head;
+    isnt $other_head->id, $rev1->id, 'Other stack is on different rev';
+
+    $t->run_throws_ok(Revert => {stack => 'master', revision => "$other_head"},
+        qr/is not an ancestor/, "Reversion to unrelated revision is prohibited");
+
+    # Forcng...
+    $t->run_ok(Revert => {stack => 'master', revision => "$other_head", force => 1});
+    $t->registration_ok('AUTHOR/Foo-1/Foo~1/other/*');
 };
 
 #------------------------------------------------------------------------------
