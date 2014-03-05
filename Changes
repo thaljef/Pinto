@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [NEW COMMANDS]
+
+      - The "revert" command allows you to restore a stack to a previous
+      revision.  This command is still experimental.  See the POD for more
+      details.
+
       [BUG FIXES]
 
       - The "install" command threw an exception with a misleading error
