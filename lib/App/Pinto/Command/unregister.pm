@@ -107,7 +107,7 @@ is important to someone.
 Use TEXT as the revision history log message.  If you do not use the
 C<--message> option or the C<--use-default-message> option, then you
 will be prompted to enter the message via your text editor.  Use the
-C<EDITOR> or C<VISUAL> environment variables to control which editor
+C<PINTO_EDITOR> or C<EDITOR> or C<VISUAL> environment variables to control which editor
 is used.  A log message is not required whenever the C<--dry-run>
 option is set, or if the action did not yield any changes to the
 repository.

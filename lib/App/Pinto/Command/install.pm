@@ -171,7 +171,7 @@ L=DIRECTORY>.
 Use TEXT as the revision history log message.  This is only relevant
 if you also set the C<--do-pull> option.  If you do not use C<--message>
 option, then you will be prompted to enter the message via your text
-editor.  Use the C<EDITOR> or C<VISUAL> environment variables to
+editor.  Use the C<PINTO_EDITOR> or C<EDITOR> or C<VISUAL> environment variables to
 control which editor is used.  A log message is not required whenever
 the C<--dry-run> option is set, or if the action did not yield any
 changes to the repository.
