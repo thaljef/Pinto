@@ -37,9 +37,11 @@ sub validate_args {
 
     my $arg_count = @{$args};
 
-    $opts->{revision} = $arg_count == 1 ? $args->[0] : $args->[1];
+    # If there is one arg, then it is revision and stack is default
+    # If there are 2 args, then the 1st is stack and 2nd is revision
 
-    $opts->{stack} = $args->[0] if $arg_count == 2;
+    $opts->{revision} = $arg_count == 1 ? $args->[0] : $args->[1];
+    $opts->{stack}    = $arg_count == 2 ? $args->[0] : undef;
 
     return 1;
 }
@@ -53,7 +55,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT revert [OPTIONS] [REVISION]
+  pinto --root=REPOSITORY_ROOT revert [OPTIONS] [STACK] [REVISION]
 
 =head1 DESCRIPTION
 
@@ -68,14 +70,9 @@ parent of head revision of the stack.  If the stack is not specified, then it
 defaults to whichever stack is currently marked as the default.  The stack can
 also be specified using the C<--stack> option.
 
-  # Revert default stack to previous revision
-  pinto --root REPOSITORY_ROOT revert
-
-  # Revert default stack to a particular revision
-  pinto --root REPOSITORY_ROOT revert af01256e
-
-  # Revert a particular stack to a particular revision
-  pinto --root REPOSITORY_ROOT revert mystack af01256e
+  pinto ... revert                   # Revert default stack to previous revision
+  pinto ... revert af01256e          # Revert default stack to revision af01256e
+  pinto ... revert mystack af01256e  # Revert mystack to revision af0125e
 
 =head1 COMMAND OPTIONS
 
