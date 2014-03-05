@@ -59,6 +59,8 @@ __END__
 
 =head1 DESCRIPTION
 
+!! THIS COMMAND IS EXPERIMENTAL !!
+
 This command creates a new revision that reverts the stack to a prior
 revision.
 
