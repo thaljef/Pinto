@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.0994
+version 0.0994\_01
 
 # SYNOPSIS
 
