@@ -326,7 +326,7 @@ sub is_ancestor_of {
 
     my @ancestors = $rev->parents;
     while (my $ancestor = pop @ancestors) {
-        return 1 if $ancestor == $self;
+        return 1 if $ancestor->id == $self->id;
         push @ancestors, $ancestor->parents;
     }
 
@@ -340,7 +340,7 @@ sub is_descendant_of {
 
     my @descendants = $rev->children;
     while (my $descendant = pop @descendants) {
-        return 1 if $descendant == $self;
+        return 1 if $descendant->id == $self->id;
         push @descendants, $descendant->children;
     }
 
