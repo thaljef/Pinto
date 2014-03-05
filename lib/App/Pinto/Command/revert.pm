@@ -90,7 +90,8 @@ potentially impact the stack.
 =item --force
 
 Force reversion even if the revision is not actually an ancestor.  Normally,
-you can only revert to a revision that the stack has actually been at.
+you can only revert to a revision that the stack has actually been at.  This
+option only has effect if you specify a target revision argument.
 
 =item --stack=NAME
 
@@ -101,7 +102,6 @@ whichever stack is currently marked as the default stack.  Use the
 L<stacks|App::Pinto::Command::stacks> command to see the stacks in the
 repository.  This option is silently ignored if the stack is specified as a
 command argument instead.
-
 
 =back
 
