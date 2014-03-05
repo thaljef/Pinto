@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - The "install" command threw an exception with a misleading error
+      message when using the -m option without --do-pull.  Now, both the
+      -m and -M options are silently ignored when --do-pull is not used.
+      Fixes GH #145 (thanks, @hartzell)
+
 0.0994    2014-03-01 16:04:28 America/Los_Angeles
 
       [ENHANCEMENTS]
