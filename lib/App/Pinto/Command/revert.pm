@@ -68,7 +68,7 @@ The arguments are the name of the stack and/or the id of the revision to
 revert to.  If the revision id is not specified, it defaults to the immediate
 parent of head revision of the stack.  If the stack is not specified, then it
 defaults to whichever stack is currently marked as the default.  The stack can
-also be specified using the C<--stack> option.
+also be specified using the C<--stack> option.  Some examples:
 
   pinto ... revert                   # Revert default stack to previous revision
   pinto ... revert af01256e          # Revert default stack to revision af01256e
@@ -94,10 +94,10 @@ you can only revert to a revision that the stack has actually been at.
 
 =item -s NAME
 
-Peform revision on the stack with the given NAME.  Defaults to the name of
+Peform reversion on the stack with the given NAME.  Defaults to the name of
 whichever stack is currently marked as the default stack.  Use the
 L<stacks|App::Pinto::Command::stacks> command to see the stacks in the
-repository.  This option is silently ignored if stack is specified as a
+repository.  This option is silently ignored if the stack is specified as a
 command argument instead.
 
 
