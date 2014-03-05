@@ -35,7 +35,6 @@ sub opt_spec {
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
-    $DB::single = 1;
     my $arg_count = @{$args};
 
     $opts->{revision} = $arg_count == 1 ? $args->[0] : $args->[1];
