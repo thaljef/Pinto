@@ -31,16 +31,25 @@ sub opt_spec {
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
+        [ 'cpanfile=s'                        => 'Name of cpanfile for pull-ees' ],
     );
 }
 
 #------------------------------------------------------------------------------
 
-sub args_attribute { return 'targets' }
+sub args_attribute {
+    my ($self, $opts, $args) = @_;
+    return if $opts->{cpanfile}; # expect no args if a cpanfile is supplied
+    return 'targets';
+}
 
 #------------------------------------------------------------------------------
 
-sub args_from_stdin { return 1 }
+sub args_from_stdin {
+    my ($self, $opts, $args) = @_;
+    return 0 if $opts->{cpanfile}; # nothing from stdin if cpanfile supplied
+    return 1;
+}
 
 #------------------------------------------------------------------------------
 

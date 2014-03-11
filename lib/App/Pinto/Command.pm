@@ -45,7 +45,7 @@ sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
     $self->usage_error("Arguments are not allowed")
-        if @{$args} and not $self->args_attribute;
+        if @{$args} and not $self->args_attribute($opts, $args);
 
     return 1;
 }
@@ -55,8 +55,8 @@ sub validate_args {
 sub execute {
     my ( $self, $opts, $args ) = @_;
 
-    my %args = $self->process_args($args);
-    my $result = $self->pinto->run( $self->action_name, %{$opts}, %args );
+    my %processed_args = $self->process_args($opts, $args);
+    my $result = $self->pinto->run( $self->action_name, %{$opts}, %processed_args );
 
     return $result->exit_status;
 }
@@ -64,11 +64,11 @@ sub execute {
 #-----------------------------------------------------------------------------
 
 sub process_args {
-    my ( $self, $args ) = @_;
+    my ( $self, $opts, $args ) = @_;
 
-    my $attr_name = $self->args_attribute or return;
+    my $attr_name = $self->args_attribute($opts, $args) or return;
 
-    if ( !@{$args} && $self->args_from_stdin ) {
+    if ( !@{$args} && $self->args_from_stdin($opts, $args) ) {
         return ( $attr_name => [ _args_from_fh( \*STDIN ) ] );
     }
 

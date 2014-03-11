@@ -578,6 +578,16 @@ sub to_string {
 }
 
 #------------------------------------------------------------------------------
-1;
 
+sub build_cpanfile {
+    my ( $self, $contents ) = @_;
+
+    my $dir  = tempdir();
+    my $file = $dir->file('cpanfile');
+    $file->spew($contents);
+    return ($file);
+}
+
+#------------------------------------------------------------------------------1;
+1;
 __END__
