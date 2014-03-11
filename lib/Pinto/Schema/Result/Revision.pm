@@ -321,6 +321,34 @@ sub children {
 
 #------------------------------------------------------------------------------
 
+sub is_ancestor_of {
+    my ($self, $rev) = @_;
+
+    my @ancestors = $rev->parents;
+    while (my $ancestor = pop @ancestors) {
+        return 1 if $ancestor->id == $self->id;
+        push @ancestors, $ancestor->parents;
+    }
+
+    return 0;
+}
+
+#------------------------------------------------------------------------------
+
+sub is_descendant_of {
+    my ($self, $rev) = @_;
+
+    my @descendants = $rev->children;
+    while (my $descendant = pop @descendants) {
+        return 1 if $descendant->id == $self->id;
+        push @descendants, $descendant->children;
+    }
+
+    return 0;
+}
+
+#------------------------------------------------------------------------------
+
 sub distributions {
     my ($self) = @_;
 

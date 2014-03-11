@@ -31,7 +31,7 @@ use Pinto::Constants qw(:server);
     my $err_fh     = IO::String->new( \$err_buffer );
 
     my $chrome = Pinto::Chrome::Term->new( stdout => $out_fh, stderr => $err_fh );
-    my $pinto = Pinto::Remote->new( chrome => $chrome, root => 'localhost' );
+    my $pinto = Pinto::Remote->new( chrome => $chrome, root => $PINTO_SERVER_DEFAULT_ROOT );
     my $result = $pinto->run('List');
 
     is $result->was_successful, 1, 'Got successful result' or diag $err_buffer;

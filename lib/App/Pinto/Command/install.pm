@@ -28,6 +28,7 @@ sub opt_spec {
         [ 'message|m=s'             => 'Message to describe the change' ],
         [ 'do-pull'                 => 'pull missing prereqs onto the stack first' ],
         [ 'stack|s=s'               => 'Install modules from this stack' ],
+        [ 'use-default-message|M'   => 'Use the generated message' ],
 
     );
 }
@@ -44,9 +45,6 @@ sub validate_args {
     my $local_lib_contained = delete $opts->{local_lib_contained};
     $opts->{cpanm_options}->{'local-lib-contained'} = $local_lib_contained
         if $local_lib_contained;
-
-    $self->usage_error('--message is only useful with --pull')
-        if $opts->{message} and not $opts->{pull};
 
     return 1;
 }
@@ -170,13 +168,12 @@ L=DIRECTORY>.
 
 =item -m TEXT
 
-Use TEXT as the revision history log message.  This is only relevant
-if you also set the C<--pull> option.  If you do not use C<--message>
-option, then you will be prompted to enter the message via your text
-editor.  Use the C<EDITOR> or C<VISUAL> environment variables to
-control which editor is used.  A log message is not required whenever
-the C<--dry-run> option is set, or if the action did not yield any
-changes to the repository.
+Use TEXT as the revision history log message.  This is only relevant if you
+also set the C<--do-pull> option.  If you do not use C<--message> option, then
+you will be prompted to enter the message via your text editor.  Use the
+C<PINTO_EDITOR> or C<EDITOR> or C<VISUAL> environment variables to control
+which editor is used.  A log message is not required whenever the C<--dry-run>
+option is set, or if the action did not yield any changes to the repository.
 
 =item --stack=NAME
 
@@ -188,6 +185,16 @@ prerequisites will be pulled onto. Defaults to the name of whichever
 stack is currently marked as the default stack.  Use the
 L<stacks|App::Pinto::Command::stacks> command to see the stacks in
 the repository.
+
+=item --use-default-message
+
+=item -M
+
+Use the default value for the revision history log message.  This is only
+relevant if you also set the C<--do-pull> option. Pinto will generate a semi-
+informative log message just based on the command and its arguments.  If you
+set an explicit message with C<--message>, the C<--use- default-message>
+option will be silently ignored.
 
 =back
 

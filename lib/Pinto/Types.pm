@@ -142,18 +142,20 @@ coerce Uri,
 class_type Dir, 
     { class => 'Path::Class::Dir' };
 
+# file:/// URIs will be converted to plain paths
+
 coerce Dir, 
-    from Str,      via { Path::Class::Dir->new($_) }, 
-    from ArrayRef, via { Path::Class::Dir->new( @{$_} ) };
+    from Str, via { $_ =~ s{^file://}{}; Path::Class::Dir->new($_) };
 
 #-----------------------------------------------------------------------------
 
 class_type File, 
     { class => 'Path::Class::File' };
 
+# file:/// URIs will be converted to plain paths
+
 coerce File, 
-    from Str,      via { Path::Class::File->new($_) }, 
-    from ArrayRef, via { Path::Class::File->new( @{$_} ) };
+    from Str, via { $_ =~ s{^file://}{}; Path::Class::File->new($_) };
 
 #-----------------------------------------------------------------------------
 

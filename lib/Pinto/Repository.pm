@@ -223,6 +223,21 @@ sub get_all_stacks {
 =cut
 
 sub get_revision {
+    my ($self, $revision) = @_;
+
+    my $rev = $self->get_revision_maybe($revision)
+        or throw "No such revision $revision exists";
+
+    return $rev;
+}
+
+#-------------------------------------------------------------------------------
+
+=method get_revision_maybe($commit)
+
+=cut
+
+sub get_revision_maybe {
     my ( $self, $revision ) = @_;
 
     return $revision if itis( $revision, 'Pinto::Schema::Result::Revision' );

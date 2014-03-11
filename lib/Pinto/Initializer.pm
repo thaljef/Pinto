@@ -25,6 +25,9 @@ sub init {
     die "Must specify a root\n"
         if not $args{root};
 
+    # Normalize root
+    $args{root} =~ s{^file://}{};
+
     $self->_check_sanity(%args);
     $self->_make_dirs(%args);
     $self->_write_config(%args);

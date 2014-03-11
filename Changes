@@ -1,5 +1,45 @@
 {{$NEXT}}
 
+0.0994_01 2014-03-05 01:04:46 America/Los_Angeles
+
+      [NEW COMMANDS]
+
+      - The "revert" command allows you to restore a stack to a previous
+      revision.  This command is still experimental.  See the POD for more
+      details.
+
+      [BUG FIXES]
+
+      - The "install" command threw an exception with a misleading error
+      message when using the -m option without --do-pull.  Now, both the
+      -m and -M options are silently ignored when --do-pull is not used.
+      Fixes GH #145 (thanks, @hartzell)
+
+0.0994    2014-03-01 16:04:28 America/Los_Angeles
+
+      [ENHANCEMENTS]
+
+      - Improved the locking mechanism so concurrent read operations are
+        sometimes possible, especially during the "install" command.  This
+        fixes GH #142.
+
+0.0993    2014-02-23 14:03:28 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - Pinto no longer sets the default port when connecting to a remote
+      repository.  So in most cases, you'll have to explicitly add the port
+      number to the URI given as the --root.  The default port that "pintod"
+      listens on is 3111.  But if you're running "pintod" behind another server
+      (like Apache or Nginx) then you can probably omit the port number and
+      Pinto will use the default port that is appropriate for the scheme.
+      Closes GH #136.  Thanks @spacebat.
+
+      [ENHANCEMENTS]
+
+      - When the repository is a local directory, it can also be expressed
+      using a file:// URI.  This applies to both the --root option and the PINTO_REPOSITORY_ROOT environment variable. Fixes GH #128.
+
 0.0992    2014-02-10 02:01:18 America/Los_Angeles
 
       [ENHANCEMENTS]

@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 use List::MoreUtils qw(uniq);
 
-use Pinto::Constants qw($PINTO_LOCK_TYPE_EXCLUSIVE);
+use Pinto::Constants qw(:lock);
 use Pinto::Types qw(StackName StackDefault StackObject DiffStyle);
 use Pinto::Util qw(is_interactive throw is_blank is_not_blank);
 
@@ -91,15 +91,21 @@ around execute => sub {
     my @ok = try { $self->$orig(@args) } catch { $self->repo->txn_rollback; throw $_ };
 
     if ( $self->dry_run ) {
-        $stack->refresh->has_changed ? $self->show($stack->diff) : $self->notice('No changes were made');
+
+        $stack->refresh->has_changed
+            ? $self->show($stack->diff, {no_newline => 1})
+            : $self->notice('No changes were made');
+
         $self->repo->txn_rollback;
         $self->repo->clean_files;
     }
     elsif ( $stack->refresh->has_not_changed ) {
+
         $self->warning('No changes were made');
         $self->repo->txn_rollback;
     }
     else {
+
         my $msg_title = $self->generate_message_title(@ok);
         my $msg = $self->compose_message( title => $msg_title, stack => $stack );
         $stack->commit_revision( message => $msg );
@@ -107,6 +113,10 @@ around execute => sub {
         $self->result->changed;
         $self->repo->txn_commit;
     }
+
+    # Release the exclusive lock and just use a shared lock, since
+    # we won't be writing to the repository at this point.
+    $self->repo->unlock; $self->repo->lock($PINTO_LOCK_TYPE_SHARED);
 
     return $self->result;
 };
