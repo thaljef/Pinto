@@ -40,10 +40,8 @@ test_psgi
 
     is $res->header('Content-Type'), 'application/x-gzip', 'Correct Type header';
 
-    cmp_ok $res->header('Content-Length'), '>=', 200, 'Reasonable Length header';    # Actual length may vary
-
-    cmp_ok $res->header('Content-Length'), '<', 400, 'Reasonable Length header';     # Actual length may vary
-
+    cmp_ok $res->header('Content-Length'), '>', 4000, 'Reasonable Length header';    # Actual length may vary
+    cmp_ok $res->header('Content-Length'), '<', 7000, 'Reasonable Length header';     # Actual length may vary
     is $res->header('Content-Length'), length $res->content, 'Length header matches actual length';
 
     is $res->header('Cache-Control'), 'no-cache', 'Got a "Cache-Control: no-cache" header';
