@@ -111,14 +111,13 @@ sub _get_index_records {
     # itself (just like the real CPAN) and installers can handle requests
     # to install a core module.
 
-    my $tpv = $stack->target_perl_version->numify + 0;
-    my @fake = ("CORE", "MODULE_IN_PERL_$tpv");
+    my $tpv = $stack->target_perl_version;
+    my $tpv_normal = $tpv->normal; $tpv_normal =~ s/^v//;
+    my @fake = ("FAKE", "perl-$tpv_normal.tar.gz");
 
-    my $core_modules = $Module::CoreList::version{$tpv};
+    my $core_modules = $Module::CoreList::version{$tpv->numify + 0};
     my %core_records = map { ($_ => [$_, $core_modules->{$_} || 0, @fake]) }
         keys %$core_modules;
-
-    $DB::single = 1;
 
     # The index is rewritten after almost every action, so we want
     # this to be as fast as possible (especially during an Add or
