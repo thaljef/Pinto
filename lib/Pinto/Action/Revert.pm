@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(StackDefault StackName StackObject RevisionID RevisionHead);
+use Pinto::Types qw(RevisionID RevisionHead);
 
 #------------------------------------------------------------------------------
 
