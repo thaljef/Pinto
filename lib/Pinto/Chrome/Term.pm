@@ -53,6 +53,12 @@ has stderr => (
     lazy    => 1,
 );
 
+has has_made_progress => (
+    is      => 'rw',
+    isa     => Bool,
+    default => 0,
+);
+
 #-----------------------------------------------------------------------------
 
 sub _build_stdout {
@@ -120,6 +126,8 @@ sub show_progress {
     $self->stderr->autoflush;    # Make sure pipes are hot
 
     print { $self->stderr } '.' or croak $!;
+
+    $self->has_made_progress(1);
 }
 
 #-----------------------------------------------------------------------------
@@ -127,6 +135,7 @@ sub show_progress {
 sub progress_done {
     my ($self) = @_;
 
+    return unless $self->has_made_progress;
     return unless $self->should_render_progress;
 
     print { $self->stderr } "\n" or croak $!;
