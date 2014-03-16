@@ -154,6 +154,12 @@ option.  Repositories that appear earlier in the list have priority
 over those that appear later.  See L<Pinto::Manual> for more
 information about using multiple upstream repositories.
 
+=item --stack=NAME
+
+Sets the name of the initial stack.  Stack names must be alphanumeric plus
+hyphens, underscores, and periods, and are not case-sensitive.  Defaults to
+C<master>.
+
 =back
 
 =cut
