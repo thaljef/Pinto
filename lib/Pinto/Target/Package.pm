@@ -10,6 +10,7 @@ use Try::Tiny;
 use Module::CoreList;
 use CPAN::Meta::Requirements;
 
+use Pinto::Types qw(Version);
 use Pinto::Util qw(throw trim_text);
 
 use version;
@@ -29,8 +30,9 @@ has name => (
 
 has version => (
     is      => 'ro',
-    isa     => Str,
+    isa     => Str | Version,
     default => '0',
+    coerce  => 1,
 );
 
 has _vreq => (
@@ -144,6 +146,14 @@ sub is_satisfied_by {
     my ($self, $version) = @_;
 
     return $self->_vreq->accepts_module($self->name => $version);
+}
+
+#-------------------------------------------------------------------------------
+
+sub unversioned {
+    my ($self) = @_;
+
+    return (ref $self)->new(name => $self->name);
 }
 
 #-------------------------------------------------------------------------------
