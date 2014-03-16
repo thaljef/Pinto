@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [NEW COMMANDS]
+
+      - The "reset" ommand moves the head of the stack to a prior revision,
+      thereby discarding all subsequent revisions.  This command is still
+      experimental.  See the POD for more details.
 
       [ENHANCEMENTS]
 
@@ -9,7 +14,6 @@
       which normally aren't present in a Pinto repository.  If you pull
       a dual-life module, it will mask the artifical records.  The
       artifical records never appear in a stack diff or listing.
-
 
       [INCOMPATIBLE CHANGES]
 
@@ -23,9 +27,9 @@
 
       [NEW COMMANDS]
 
-      - The "revert" command allows you to restore a stack to a previous
-      revision.  This command is still experimental.  See the POD for more
-      details.
+      - The "revert" command creates a new revision that matches the state
+      at a prior revision.  This command is still experimental.  See the
+      POD for more details.
 
       [BUG FIXES]
 
