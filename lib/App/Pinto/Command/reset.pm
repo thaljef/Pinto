@@ -37,7 +37,13 @@ sub validate_args {
     $self->usage_error("Must specify a revision")
       if not @{$args};
 
-    $opts->{revision} = $args->[0];
+    my $arg_count = @{$args};
+
+    # If there is one arg, then it is revision and stack is default
+    # If there are 2 args, then the 1st is stack and 2nd is revision
+
+    $opts->{revision} = $arg_count == 1 ? $args->[0] : $args->[1];
+    $opts->{stack}    = $arg_count == 2 ? $args->[0] : undef;
 
     return 1;
 }
@@ -66,8 +72,13 @@ revision by creating a new revision.
 
 =head1 COMMAND ARGUMENTS
 
-The required argument the id of the revision to reset to.  The revision id is
-not case sensitive and can be abbreviated to uniqueness.
+The arguments are the name of the stack and the id of the revision to reset
+to.  If the stack is not specified, then it defaults to whichever stack is
+currently marked as the default.  The stack can also be specified using the
+C<--stack> option.  Some examples:
+
+  pinto ... reset af01256e          # Reset default stack to revision af01256e
+  pinto ... reset mystack af01256e  # Reset mystack to revision af0125e
 
 
 =head1 COMMAND OPTIONS
