@@ -95,10 +95,10 @@ __END__
 
 =head1 DESCRIPTION
 
-This command creates a new repository.  If the target directory
-does not exist, it will be created for you.  If it does already exist,
-then it must be empty.  You can set the configuration properties of
-the new repository using the command line options listed below.
+This command creates a new repository.  If the target directory does not
+exist, it will be created for you.  If it does already exist, then it must be
+empty.  You can set the configuration properties of the new repository using
+the command line options listed below.
 
 
 =head1 COMMAND ARGUMENTS
@@ -110,49 +110,48 @@ equivalent:
   pinto --root=/some/directory init
   pinto init /some/directory
 
+
 =head1 COMMAND OPTIONS
 
 =over 4
 
 =item --description=TEXT
 
-A brief description of the initial stack.  Defaults to "the initial
-stack".  This option is only allowed if the C<STACK> argument is
-given.
+A brief description of the initial stack.  Defaults to "the initial stack".
+This option is only allowed if the C<STACK> argument is given.
 
 
 =item --no-default
 
-Do not mark the initial stack as the default stack.
-
-If you choose not to mark the default stack, then you'll be required
-to specify the C<--stack> option for most commands.  You can always
-mark (or unmark) the default stack at any time by using the
-L<default|App::Pinto::Command::default> command.
+Do not mark the initial stack as the default stack. If you choose not to mark
+the default stack, then you'll be required to specify the C<--stack> option
+for most commands.  You can always mark (or unmark) the default stack at any
+time by using the L<default|App::Pinto::Command::default> command.
 
 
 =item --recurse
 
 =item --no-recurse
 
-Sets the default recursion behavior for the L<pull|App::Pinto::Command::pull> 
-add L<add|App::Pinto::Command::add> commands.  C<--recurse> means that commands 
-will be recursive by default.  C<--no-recurse> means commands will not be 
-recursive.  If you do not specify either of these, it defaults to being 
-recursive.  However, each command can always override this default.
+Sets the default recursion behavior for the L<pull|App::Pinto::Command::pull>
+add L<add|App::Pinto::Command::add> commands.  C<--recurse> means that
+commands  will be recursive by default.  C<--no-recurse> means commands will
+not be  recursive.  If you do not specify either of these, it defaults to
+being  recursive.  However, each command can always override this default.
 
 
 =item --source=URI
 
-The URI of the upstream repository where distributions will be pulled
-from.  This is usually the URI of a CPAN mirror, and it defaults to
-L<http://cpan.perl.org> and L<http://backpan.perl.org>.  But it could 
-also be a L<CPAN::Mini> mirror, or another L<Pinto> repository.
+The URI of the upstream repository where distributions will be pulled from.
+This is usually the URI of a CPAN mirror, and it defaults to
+L<http://cpan.perl.org> and L<http://backpan.perl.org>.  But it could  also be
+a L<CPAN::Mini> mirror, or another L<Pinto> repository.
 
-You can specify multiple repository URIs by repeating the C<--source>
-option.  Repositories that appear earlier in the list have priority
-over those that appear later.  See L<Pinto::Manual> for more
-information about using multiple upstream repositories.
+You can specify multiple repository URIs by repeating the C<--source> option.
+Repositories that appear earlier in the list have priority over those that
+appear later.  See L<Pinto::Manual> for more information about using multiple
+upstream repositories.
+
 
 =item --stack=NAME
 
