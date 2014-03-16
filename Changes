@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [NEW COMMANDS]
+
+      - The "merge" command joins the history of two stacks together.  At
+      the moment, it is only capable of fast-forward merges.  This command
+      is still experimental.  See the POD for more details.
+
 0.0994_02 2014-03-15 23:07:23 America/Los_Angeles
 
       [NEW COMMANDS]
