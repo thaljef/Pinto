@@ -101,7 +101,7 @@ around execute => sub {
     }
     elsif ( $stack->refresh->has_not_changed ) {
 
-        $self->warning('No changes were made');
+        $self->diag('No changes were made');
         $self->repo->txn_rollback;
     }
     else {
