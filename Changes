@@ -15,6 +15,9 @@
       a dual-life module, it will mask the artifical records.  The
       artifical records never appear in a stack diff or listing.
 
+      NOTE: This change will take effect the next time you perform
+      any command that modifies the state of the stack.
+
       [INCOMPATIBLE CHANGES]
 
       - The argument for the "init" command is now the repository root
