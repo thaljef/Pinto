@@ -93,6 +93,8 @@ sub diag {
 
     $opts ||= {};
 
+    return if $self->quiet;
+
     $msg = $msg->() if ref $msg eq 'CODE';
 
     if ( itis( $msg, 'Pinto::Exception' ) ) {
