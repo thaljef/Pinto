@@ -381,7 +381,7 @@ sub commit {
     throw "Must specify a message to commit" if not $args{message};
 
     $args{is_committed} = 1;
-    $args{has_changes}  = 0;
+    $args{has_changes}  = 0; # XXX: Why reset this?
     $args{username}    ||= $self->repo->config->username;
     $args{time_offset} ||= $self->repo->config->time_offset;
     $args{utc_time}    ||= current_utc_time;
