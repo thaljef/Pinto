@@ -55,7 +55,7 @@ sub validate_args {
 sub execute {
     my ( $self, $opts, $args ) = @_;
 
-    my %args = $self->process_args($args);
+    my %args = $self->process_args($opts, $args);
     my $result = $self->pinto->run( $self->action_name, %{$opts}, %args );
 
     return $result->exit_status;
@@ -64,11 +64,11 @@ sub execute {
 #-----------------------------------------------------------------------------
 
 sub process_args {
-    my ( $self, $args ) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     my $attr_name = $self->args_attribute or return;
 
-    if ( !@{$args} && $self->args_from_stdin ) {
+    if ( !@{$args} && $self->args_from_stdin($opts) ) {
         return ( $attr_name => [ _args_from_fh( \*STDIN ) ] );
     }
 
