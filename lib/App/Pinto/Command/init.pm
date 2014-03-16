@@ -26,6 +26,7 @@ sub opt_spec {
         [ 'no-default'                => 'Do not mark the initial stack as the default' ],
         [ 'recurse!'                  => 'Default recursive behavior (negatable)' ],
         [ 'source=s@'                 => 'URI of upstream repository (repeatable)' ],
+        [ 'stack=s'                   => 'Name of the initial stack' ],
         [ 'target-perl-version|tpv=s' => 'Default perl version for new stacks' ],
     );
 }
@@ -35,11 +36,8 @@ sub opt_spec {
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
-    $self->usage_error('Only one stack argument is allowed')
+    $self->usage_error('Only one argument is allowed')
         if @{$args} > 1;
-
-    $self->usage_error('Cannot use --description without specifying a stack')
-        if $opts->{description} and not @{$args};
 
     return 1;
 }
@@ -52,7 +50,8 @@ sub execute {
     my $global_opts = $self->app->global_options;
 
     die "Must specify a repository root directory\n"
-        unless $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT};
+        unless $global_opts->{root} ||=
+            ($args->[0] || $ENV{PINTO_REPOSITORY_ROOT});
 
     die "Cannot create remote repositories\n"
         if is_remote_repo( $global_opts->{root} );
@@ -60,9 +59,6 @@ sub execute {
     # Combine repeatable "source" options into one space-delimited "sources" option.
     # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
     $opts->{sources} = join ' ', @{ delete $opts->{source} } if defined $opts->{source};
-
-    # Stuff the stack argument into the options hash (if it exists)
-    $opts->{stack} = $args->[0] if $args->[0];
 
     my $initializer = $self->load_initializer->new;
     $initializer->init( %{$global_opts}, %{$opts} );
@@ -94,7 +90,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT init [OPTIONS] [STACK]
+  pinto --root=REPOSITORY_ROOT init [OPTIONS]
 
 
 =head1 DESCRIPTION
@@ -107,10 +103,12 @@ the new repository using the command line options listed below.
 
 =head1 COMMAND ARGUMENTS
 
-The argument is the name of the initial stack.  Stack names must be 
-alphanumeric plus hyphens, underscores and periods, and are not 
-case-sensitive.  Defaults to C<master>.
+The path to the repository root directory can also be be given as an argument,
+which will silently override the C<--root> option.  So the following are
+equivalent:
 
+  pinto --root=/some/directory init
+  pinto init /some/directory
 
 =head1 COMMAND OPTIONS
 
