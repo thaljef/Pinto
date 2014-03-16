@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.0994\_01
+version 0.0994\_02
 
 # SYNOPSIS
 
@@ -166,13 +166,13 @@ in addition to those websites please use your favorite search engine to discover
 ## Internet Relay Chat
 
 You can get live help by using IRC ( Internet Relay Chat ). If you don't know what IRC is,
-please read this excellent guide: [http://en.wikipedia.org/wiki/Internet_Relay_Chat](http://en.wikipedia.org/wiki/Internet_Relay_Chat). Please
+please read this excellent guide: [http://en.wikipedia.org/wiki/Internet\_Relay\_Chat](http://en.wikipedia.org/wiki/Internet_Relay_Chat). Please
 be courteous and patient when talking to us, as we might be busy or sleeping! You can join
 those networks/channels and get help:
 
 - irc.perl.org
 
-    You can connect to the server at 'irc.perl.org' and join this channel: \#pinto then talk to this person for help: thaljef.
+    You can connect to the server at 'irc.perl.org' and join this channel: #pinto then talk to this person for help: thaljef.
 
 ## Bugs / Feature Requests
 
