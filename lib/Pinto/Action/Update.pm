@@ -119,7 +119,7 @@ sub compute_targets {
 
     my $stack = $self->stack;
 
-    return map {$_->package->as_target->unversioned} $stack->head->registrations
+    return map {$_->main_module->as_target->unversioned} $stack->distributions
         if $self->all;
 
     return map {$_->main_module->as_target->unversioned} $stack->roots
@@ -160,9 +160,8 @@ sub update {
     my $current = $reg->package;
     my $latest  = $self->repo->locate(target => $target);
 
-    if (!$latest) {
-        my $level = $reg->distribution->is_local ? 'notice' : 'warning';
-        $self->$level("No upstream version of $pkg_name was found");
+    if (!$latest and !$reg->distribution->is_local) {
+        $self->warning("No upstream version of $pkg_name was found");
         return;
     }
 
