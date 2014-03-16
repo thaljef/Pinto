@@ -58,7 +58,7 @@ sub execute {
     throw "Revision $rev is not an ancestor of stack $stack"
         if !$rev->is_ancestor_of($head) && !$self->force;
 
-    $stack->update({head => $rev->id});
+    $stack->set_head($rev);
     $stack->write_index;
 
     my $format = '%i: %{40}T';
