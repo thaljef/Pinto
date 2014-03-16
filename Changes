@@ -1,5 +1,24 @@
 {{$NEXT}}
 
+
+      [ENHANCEMENTS]
+
+      - The index file for each stack now contains artificial records for
+      each module that is included in the target version of perl.  This
+      allows installers to cope with requests to install core modules,
+      which normally aren't present in a Pinto repository.  If you pull
+      a dual-life module, it will mask the artifical records.  The
+      artifical records never appear in a stack diff or listing.
+
+
+      [INCOMPATIBLE CHANGES]
+
+      - The argument for the "init" command is now the repository root
+      instead of the stack name.  This makes the interface more convenient
+      and more familiar to git users.  You can still specify the root
+      using the global --root option if you like.  And the initial stack
+      name can be set with the --stack option.
+
 0.0994_01 2014-03-05 01:04:46 America/Los_Angeles
 
       [NEW COMMANDS]
