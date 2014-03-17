@@ -31,7 +31,7 @@ sub opt_spec {
         [ 'roots'                             => 'Update all root packages in the stack' ],
         [ 'skip-missing-prerequisite|k=s@'    => 'Skip missing prereq (repeatable)' ],
         [ 'skip-all-missing-prerequisites|K'  => 'Skip all missing prereqs' ],
-        [ 'stack|s=s'                         => 'Put packages into this stack' ],
+        [ 'stack|s=s'                         => 'Update packages in this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
     );
@@ -55,7 +55,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT pull [OPTIONS] TARGET ...
+  pinto --root=REPOSITORY_ROOT update [OPTIONS] TARGET ...
 
 =head1 DESCRIPTION
 
