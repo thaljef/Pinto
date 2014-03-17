@@ -76,6 +76,7 @@ sub locate_package {
     return unless $target->is_satisfied_by( $found->{version} );
 
     # Morph data structure to meet spec
+    $found = { %$found }; # Cloning
     $found->{package} = delete $found->{name};
     $found->{uri} = URI->new($self->uri . "/authors/id/$found->{path}");
     $found->{version} = version->parse($found->{version});
