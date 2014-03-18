@@ -106,19 +106,6 @@ sub _write_records {
 sub _get_index_records {
     my ( $self, $stack ) = @_;
 
-    # First, we generate artificial records for all the core modules that
-    # are in the target perl.  That way, the index appears to have perl
-    # itself (just like the real CPAN) and installers can handle requests
-    # to install a core module.
-
-    my $tpv = $stack->target_perl_version;
-    my $tpv_normal = $tpv->normal; $tpv_normal =~ s/^v//;
-    my @fake = ("FAKE", "perl-$tpv_normal.tar.gz");
-
-    my $core_modules = $Module::CoreList::version{$tpv->numify + 0};
-    my %core_records = map { ($_ => [$_, $core_modules->{$_} || 0, @fake]) }
-        keys %$core_modules;
-
     # The index is rewritten after almost every action, so we want
     # this to be as fast as possible (especially during an Add or
     # Remove action).  Therefore, we use a cursor to get raw data and
@@ -142,9 +129,36 @@ sub _get_index_records {
     # it should be the one that appears in the index.  Then finally
     # we sort them.
 
-    my %merged_records = (%core_records, %stack_records);
+    my %fake_records = $self->_get_fake_records;
+    my %merged_records = (%fake_records, %stack_records);
     return map { $merged_records{$_} } sort keys %merged_records;
 
+}
+
+#------------------------------------------------------------------------------
+
+sub _get_fake_records {
+    my ($self) = @_;
+
+    # We generate artificial records for all the (non-deprecated) core modules
+    # that are in the target perl.  That way, the index appears to have perl
+    # itself (just like the real CPAN) and installers can handle requests to
+    # install a core module.
+
+    my $tpv = $self->stack->target_perl_version;
+    my $tpv_normal = $tpv->normal; $tpv_normal =~ s/^v//;
+    my @fake = ("FAKE", "perl-$tpv_normal.tar.gz");
+
+    my $core_versions = $Module::CoreList::version{$tpv->numify + 0};
+    my $deprecated_modules = $Module::CoreList::deprecated{$tpv->numify + 0};
+
+    my $fake_records = {};
+    for my $module (keys %{ $core_versions }) {
+        next if $deprecated_modules && exists $deprecated_modules->{ $module };
+        $fake_records->{$module} = [$module, $core_versions->{$module} || 0, @fake];
+    }
+
+    return %{ $fake_records };
 }
 
 #------------------------------------------------------------------------------

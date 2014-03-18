@@ -11,7 +11,7 @@ use URI;
 use URI::Escape;
 
 use Pinto::Types qw(Uri File);
-use Pinto::Util qw(throw);
+use Pinto::Util qw(throw debug);
 use Pinto::IndexReader;
 
 use version;
@@ -75,8 +75,18 @@ sub locate_package {
     return unless my $found = $self->reader->packages->{$target->name};
     return unless $target->is_satisfied_by( $found->{version} );
 
-    # Morph data structure to meet spec
-    $found = { %$found }; # Cloning
+    # Indexes from a Pinto repository have fake records for core modules, so
+    # installers can decide if they need to update a dual-life module. If we
+    # get one of those fake records, then we pretend we didn't see it. So if
+    # we really do need a perl, some other upstream source will provide it.
+
+    if ( $found->{path} =~ m{^F/FA/FAKE/perl} ) {
+        my ($uri, $path) = ($self->uri, $found->{path});
+        debug "Skipping fake perl found on $uri at $path";
+        return;
+    }
+
+    $found = { %$found }; # Shallow clone
     $found->{package} = delete $found->{name};
     $found->{uri} = URI->new($self->uri . "/authors/id/$found->{path}");
     $found->{version} = version->parse($found->{version});
