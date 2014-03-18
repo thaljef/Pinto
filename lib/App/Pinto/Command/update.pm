@@ -59,41 +59,44 @@ __END__
 
 =head1 DESCRIPTION
 
-This command locates packages in your upstream repositories and then pulls the
-distributions providing those packages into your repository and registers them
-on a stack.  Then it recursively locates and pulls  all the distributions that
-are necessary to satisfy their prerequisites.   You can also request to
-directly pull particular distributions.
+!! THIS COMMAND IS EXPERIMENTAL !!!
 
-When locating packages, Pinto first looks at the packages that already  exist
-in the local repository, then Pinto looks at the packages that are available
-on the upstream repositories.
+This command updates packages in your repository to the newer versions in an
+updstream repository.  By default, Pinto takes the first newer version that it
+finds.  If the C<--cascade> option is used, then Pinto will take the newest
+version it finds among all the upstream repositories.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the targets that you want to pull.  Targets can be specified as
-packages (with or without a version specification) or as distributions.
-Targets can be expressed in a number of ways, so please see L</TARGETS> below
-for more information.
+Arguments are the names of the pakcages you want to install.  If using the
+C<--all> or C<--roots> options then arguments are not allowed.
 
 You can also pipe arguments to this command over STDIN.  In that case, blank
 lines and lines that look like comments (i.e. starting with "#" or ';') will
-be ignored.
+be ignored.  If using the C<--all> or C<--roots> options, then input will not
+be read from STDIN.
 
 =head1 COMMAND OPTIONS
 
 =over 4
 
+=item --all
+
+Update all distributions in the stack.  We do not attempt to update locally
+added distributions unless C<--force> is used.  If this option is used, then
+package names cannot be given as command arguments.  See also the C<--roots>
+option.
+
 =item --cascade
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
-When searching for a package (or one of its prerequisites), always take
-the latest satisfactory version of the package found amongst B<all> the
-upstream repositories, rather than just taking the B<first> satisfactory
-version that is found.  Remember that Pinto only searches the upstream
-repositories when the local repository does not already contain a
-satisfactory version of the package.
+When searching for a package (or one of its prerequisites), always take the
+latest satisfactory version of the package found amongst B<all> the upstream
+repositories, rather than just taking the B<first> newer version that
+is found.  Remember that Pinto only searches the upstream repositories when
+the local repository does not already contain a satisfactory version of the
+package.
 
 =item --diff-style=STYLE
 
@@ -114,20 +117,24 @@ repository.  At the conclusion, a diff showing the changes that would have
 been made will be displayed.  Use this option to see how upgrades would
 potentially impact the stack.
 
+=item --force
+
+Forcibly unpin any packages that require updating.  The pins will not be
+restored after a succesful update.
+
 =item --no-fail
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
-Normally, failure to pull a target (or its prerequisites) causes the
-command to immediately abort and rollback the changes to the repository.
-But if C<--no-fail> is set, then only the changes caused by the failed
-target (and its prerequisites) will be rolled back and the command
-will continue processing the remaining targets.
+Normally, failure to pull a target (or its prerequisites) causes the command
+to immediately abort and rollback the changes to the repository. But if C
+<--no-fail> is set, then only the changes caused by the failed target (and its
+prerequisites) will be rolled back and the command will continue processing
+the remaining targets.
 
-This option is useful if you want to throw a list of targets into
-a repository and see which ones are problematic.  Once you've fixed
-the broken ones, you can throw the whole list at the repository
-again.
+This option is useful if you want to throw a list of targets into a repository
+and see which ones are problematic.  Once you've fixed the broken ones, you
+can throw the whole list at the repository again.
 
 =item --message=TEXT
 
@@ -151,10 +158,17 @@ with the L<pin|App::Pinto::Command::pin> command if you so desire.
 
 =item --no-recurse
 
-Recursively pull any distributions required to satisfy prerequisites
-for the targets.  The default value for this option can be configured
-in the F<pinto.ini> configuration file for the repository (it is usually
-set to 1).  To disable recursion, use C<--no-recurse>.
+Recursively pull any distributions required to satisfy prerequisites for the
+targets.  The default value for this option can be configured in the
+F<pinto.ini> configuration file for the repository (it is usually set to 1).
+To disable recursion, use C<--no-recurse>.
+
+=item --roots
+
+Updates the root distributions of the stack.  We do not attempt to update
+locally added distributions unless C<--force> is used.  If this option is
+used, then package names cannot be given as command arguments.  See also the
+C<--all> option.
 
 =item --skip-missing-prerequisite=PACKAGE
 
@@ -163,9 +177,9 @@ set to 1).  To disable recursion, use C<--no-recurse>.
 !! THIS OPTION IS EXPERIMENTAL !!
 
 Skip any prerequisite with name PACKAGE if a satisfactory version cannot be
-found.  However, a warning will be given whenever this occurrs.  This option only
-has effect when recursively fetching prerequisites for the targets (See also
-the C<--recurse> option). This option can be repeated.
+found.  However, a warning will be given whenever this occurrs.  This option
+only has effect when recursively fetching prerequisites for the targets (See
+also the C<--recurse> option). This option can be repeated.
 
 =item --skip-all-missing-prerequisites
 
@@ -207,72 +221,5 @@ in the future.  Be aware that most distributions do not actually declare
 their development prerequisites.
 
 =back
-
-=head1 TARGETS
-
-Targets are a compact notation that identifies the things you want to pull
-into your repository.  Targets come in two flavors: package targets and
-distribution targets.
-
-=head2 Package Targets
-
-A package target consists of a package name and (optionally) a version
-specification.  Here are some examples:
-
-  Foo::Bar                                 # Any version of Foo::Bar
-  Foo::Bar~1.2                             # Foo::Bar version 1.2 or higher
-  Foo::Bar==1.2                            # Only version 1.2 of Foo::Bar
-  Foo::Bar<1,2!=1.3,<=1.9                  # Complex version range
-
-Package names are case-sensitive, and the version specification must follow
-the format used by L<CPAN::Meta::Requirements>.  All whitespace within the
-target will be discarded.  If your version specification contains any special
-shell characters, take care to quote or escape them in your command.
-
-In all cases, pinto queries the local repository and then each upstream
-repository in order, and pulls the first distribution it can find that
-provides a package which satisfies the version specification.
-
-=head2 Distribution Targets
-
-A distribution target consists of an author ID, zero or more subdirectories,
-and the distribution name and version number.   This corresponds to the actual
-path where the distribution archive lives in the repository or CPAN mirror.
-Here are some examples.
-
-  SHAKESPEARE/King-Lear-1.2.tar.gz         # A specific distribution
-  SHAKESPEARE/tragedies/Hamlet-4.2.tar.gz  # Same, but with a subdirectory
-
-The author ID will always be forced to uppercase, but the reset of the path is
-case-sensitive.
-
-=head2 Caveats
-
-L<PAUSE|http://pause.perl.org> has no strict rules on how packages are
-versioned.  It is quite common to see a package with the same verison number
-(or no version at all) in many releases of a distribution.  So when you
-specify a package target with a precise version or version range, what you
-actually get is the latest distribution (chronologically) that has a package
-which satisfies the target.  Most of the time this works out fine because you
-usally pull the "main module" of the distribution and authors always increment
-that version in each release.
-
-Since most CPAN mirrors only report the latest version of a package they have,
-they often cannot satisfy package targets that have a precise version
-specification.  However, the mirror at L<http://cpan.stratopan.com> is special
-and can locate a precise version of any package.
-
-Package targets always resolve to production releases, unless you specify a
-precise developer release version (e.g. C<Foo::Bar==1.03_01>).  But since most
-CPAN mirrors do not index developer releases, this only works when using the
-mirror at L<http://cpan.stratopan.com>.  However, you can usually pull a
-developer release from any mirror by using a distribution target.  Remember
-that developer releases are those with an underscore in the version number.
-
-For repositories created with Pinto version 0.098 or later, the first upstream
-source is C<http://cpan.stratopan.com> (unless you configure it otherwise).
-For repositories created with older versions, you can manually add
-C<http://cpan.stratopan.com> to the C<sources> parameter in the configuration
-file located at F<.pinto/config/pinto.ini> within the repository.
 
 =cut
