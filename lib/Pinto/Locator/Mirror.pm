@@ -71,7 +71,7 @@ sub locate_package {
     my ($self, %args) = @_;
 
     my $target = $args{target};
- 
+
     return unless my $found = $self->reader->packages->{$target->name};
     return unless $target->is_satisfied_by( $found->{version} );
 
@@ -92,7 +92,7 @@ sub locate_distribution {
 
     my $target = $args{target};
     my $path  = $target->path;
-    
+
     my @extensions = qw(tar.gz tar.bz2 tar gz tgz bz2 zip z);
     my $has_extension = $path =~ m/[.](?:tar|gz|tgz|zip|z|bz2)$/i;
     my @paths_to_try = $has_extension ? ($path) : map { "$path.$_" } @extensions;
