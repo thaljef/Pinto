@@ -1,28 +1,29 @@
 {{$NEXT}}
 
-0.0994_04 2014-03-17 21:33:08 America/Los_Angeles
+      [INCOMPATIBLE CHANGES]
+
+      - The argument for the "init" command is now the repository root
+      instead of the stack name.  This makes the interface more convenient
+      and more familiar to git users.  You can still specify the root
+      using the global --root option if you like.  And the initial stack
+      name can be set with the --stack option.
 
       [NEW COMMANDS]
 
-      - The "update" command pull the latest version of packages.  You can
-      ask to update all packages or just specific ones.  This command is
-      still experimental. See the POD for more details.
+      - All the new command listed below are experimental.  The interface and
+      behavior is subject to change.  See the POD in each command for details.
 
-0.0994_03 2014-03-16 00:38:40 America/Los_Angeles
+      - The "update" command pulls the latest version of packages.  You can
+      ask to update all packages or just specific ones.
 
-      [NEW COMMANDS]
-
-      - The "merge" command joins the history of two stacks together.  At
-      the moment, it is only capable of fast-forward merges.  This command
-      is still experimental.  See the POD for more details.
-
-0.0994_02 2014-03-15 23:07:23 America/Los_Angeles
-
-      [NEW COMMANDS]
+      - The "merge" command joins the history of two stacks together.  At the
+      moment, it is only capable of fast-forward merges.
 
       - The "reset" ommand moves the head of the stack to a prior revision,
-      thereby discarding all subsequent revisions.  This command is still
-      experimental.  See the POD for more details.
+      thereby discarding all subsequent revisions.
+
+      - The "revert" command creates a new revision that matches the state at
+      a prior revision.
 
       [ENHANCEMENTS]
 
@@ -36,28 +37,19 @@
       NOTE: This change will take effect the next time you perform
       any command that modifies the state of the stack.
 
-      [INCOMPATIBLE CHANGES]
-
-      - The argument for the "init" command is now the repository root
-      instead of the stack name.  This makes the interface more convenient
-      and more familiar to git users.  You can still specify the root
-      using the global --root option if you like.  And the initial stack
-      name can be set with the --stack option.
-
-0.0994_01 2014-03-05 01:04:46 America/Los_Angeles
-
-      [NEW COMMANDS]
-
-      - The "revert" command creates a new revision that matches the state
-      at a prior revision.  This command is still experimental.  See the
-      POD for more details.
-
       [BUG FIXES]
 
       - The "install" command threw an exception with a misleading error
       message when using the -m option without --do-pull.  Now, both the
       -m and -M options are silently ignored when --do-pull is not used.
       Fixes GH #145 (thanks, @hartzell)
+
+0.0994_04 2014-03-17 21:33:08 America/Los_Angeles
+0.0994_03 2014-03-16 00:38:40 America/Los_Angeles
+0.0994_02 2014-03-15 23:07:23 America/Los_Angeles
+0.0994_01 2014-03-05 01:04:46 America/Los_Angeles
+
+      - Changes consolidated above under version 0.0995
 
 0.0994    2014-03-01 16:04:28 America/Los_Angeles
 
