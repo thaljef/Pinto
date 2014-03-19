@@ -19,7 +19,7 @@
       - The "merge" command joins the history of two stacks together.  At the
       moment, it is only capable of fast-forward merges.
 
-      - The "reset" ommand moves the head of the stack to a prior revision,
+      - The "reset" command moves the head of the stack to a prior revision,
       thereby discarding all subsequent revisions.
 
       - The "revert" command creates a new revision that matches the state at
