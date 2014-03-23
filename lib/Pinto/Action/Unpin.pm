@@ -38,27 +38,21 @@ sub execute {
 
     my $stack = $self->stack;
 
-    my @dists = map { $self->_unpin( $_, $stack ) } $self->targets;
+    for my $target ( $self->targets ) {
 
-    return @dists;
-}
+        throw "$target is not registered on stack $stack"
+            unless my $dist = $stack->get_distribution( target => $target );
 
-#------------------------------------------------------------------------------
+        $self->notice("Unpinning distribution $dist from stack $stack");
 
-sub _unpin {
-    my ( $self, $target, $stack ) = @_;
+        my $did_unpin = $dist->unpin( stack => $stack );
+        push @{$self->affected}, $dist if $did_unpin;
 
-    my $dist = $stack->get_distribution( target => $target );
+        $self->warning("Distribution $dist is not pinned to stack $stack")
+            unless $did_unpin;
+    }
 
-    throw "$target is not registered on stack $stack" if not defined $dist;
-
-    $self->notice("Unpinning distribution $dist from stack $stack");
-
-    my $did_unpin = $dist->unpin( stack => $stack );
-
-    $self->warning("Distribution $dist is not pinned to stack $stack") unless $did_unpin;
-
-    return $did_unpin ? $dist : ();
+    return $self;
 }
 
 #------------------------------------------------------------------------------

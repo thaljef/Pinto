@@ -77,13 +77,12 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my ( @successful, @failed );
     for my $archive ( $self->archives ) {
 
         try {
             $self->repo->svp_begin;
             my $dist = $self->_add($archive);
-            push @successful, $dist ? $dist : ();
+            push @{$self->affected}, $dist if $dist;
         }
         catch {
             throw $_ unless $self->no_fail;
@@ -93,7 +92,6 @@ sub execute {
 
             $self->error("$_");
             $self->error("Archive $archive failed...continuing anyway");
-            push @failed, $archive;
         }
         finally {
             my ($error) = @_;
@@ -103,7 +101,7 @@ sub execute {
 
     $self->chrome->progress_done;
 
-    return @successful;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -123,9 +121,9 @@ sub _add {
     }
 
     $self->notice( "Registering $dist on stack " . $self->stack );
-    $self->pull( target => $dist );    # Registers dist and pulls prereqs
+    my $did_pull = $self->pull( target => $dist );    # Registers dist and pulls prereqs
 
-    return $dist;
+    return $did_pull ? $dist : ();
 }
 
 #------------------------------------------------------------------------------

@@ -30,21 +30,12 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
     $local->registration_not_ok('AUTHOR/DistC-1/PkgC~1/master');
     $local->registration_not_ok('AUTHOR/DistD-1/PkgD~1/master');
 
-    # The filesystem is not transactional, so the archive for A will still be there...
-    $local->path_exists_ok( [qw(stacks master authors id A AU AUTHOR DistA-1.tar.gz)] );
-
-    # And so will the archives for B and D...
-    $local->path_exists_ok( [qw(stacks master authors id A AU AUTHOR DistB-1.tar.gz)] );
-    $local->path_exists_ok( [qw(stacks master authors id A AU AUTHOR DistD-1.tar.gz)] );
-
-    # But C should not be there because we never got to pull it...
+    # And none of their archives should be on the filesystem...
+    $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistA-1.tar.gz)] );
+    $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistB-1.tar.gz)] );
+    $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistD-1.tar.gz)] );
     $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistC-1.tar.gz)] );
 
-    # If we clean up those files...
-    $local->pinto->repo->clean_files;
-
-    # The the whole repo should be pure again...
-    $local->repository_clean_ok;
 }
 
 #------------------------------------------------------------------------------

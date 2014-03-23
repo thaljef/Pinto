@@ -14,8 +14,9 @@ sub execute {
 
     # To bypass assert_has_changed() when committed
     $self->stack->head->update( { has_changes => 1 } );
+    push @{$self->affected}, qw(Foo Bar Baz);
 
-    return qw(Foo Bar Baz);
+    return $self;
 }
 
 no Moose;
