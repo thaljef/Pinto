@@ -235,9 +235,9 @@ sub register {
 
     for my $pkg ($self->packages) {
 
-        if (not $pkg->is_simile) {
+        if (not $pkg->can_index) {
             my $file = $pkg->file || '';
-            debug( sub {"Package $pkg in file $file is not a simile.  Skipping registration"} );
+            debug( sub {"Package $pkg in file $file is not indexable.  Skipping registration"} );
             next;
         }
 
@@ -500,7 +500,7 @@ sub main_module {
 
     # Then, look for any indexable package
     for my $pkg (@pkgs) {
-        return $pkg if $pkg->is_simile;
+        return $pkg if $pkg->can_index;
     }
 
     # Then, just use the first package
