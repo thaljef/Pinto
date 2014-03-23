@@ -78,6 +78,9 @@ sub run {
     # Divert all warnings through our chrome
     local $SIG{__WARN__} = sub { $self->warning($_) for @_ };
 
+    # Convert hash refs to plain hash
+    @action_args = %{$action_args[0]} if @action_args == 1 and ref $action_args[0];
+
     my $result = try {
 
         my $action = $self->create_action( $action_name => @action_args );

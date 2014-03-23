@@ -121,9 +121,9 @@ sub _add {
     }
 
     $self->notice( "Registering $dist on stack " . $self->stack );
-    my $did_pull = $self->pull( target => $dist );    # Registers dist and pulls prereqs
+    my ($dist, undef, undef) = $self->pull( target => $dist );    # Registers dist and pulls prereqs
 
-    return $did_pull ? $dist : ();
+    return $dist;
 }
 
 #------------------------------------------------------------------------------
