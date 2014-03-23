@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.0996    2014-03-22 21:12:29 America/Los_Angeles
+
       [BUG FIXES]
 
       - Added a workaround for Net::LibIDN, which was not being properly
