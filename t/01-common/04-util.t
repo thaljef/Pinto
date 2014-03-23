@@ -139,6 +139,7 @@ use Pinto::Constants qw(:all);
 
 {
 
+    local $ENV{PINTO_DIFF_STYLE} = '';
     is default_diff_style, $PINTO_DIFF_STYLE_CONCISE, 
         'Got default diff style';
 
