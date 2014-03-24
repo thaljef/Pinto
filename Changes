@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed behavior of the --force flag on the new "update" command.
+      It now applies to all packages that might be updated, not just the
+      targets list on the command line.
+
       [ENHANCEMENTS]
 
       - When generating the title for the log message, only the targets

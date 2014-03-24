@@ -43,12 +43,6 @@ has roots => (
     default => 0,
 );
 
-has force => (
-    is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
-
 has no_fail => (
     is      => 'ro',
     isa     => Bool,
@@ -74,9 +68,7 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my ( @successful, @failed );
-
-    my $stack = $self->stack;
+    my $stack   = $self->stack;
     my @targets = $self->compute_targets;
 
     for my $target ( @targets ) {
@@ -88,8 +80,8 @@ sub execute {
 
         try {
             $self->repo->svp_begin;
-            my $dist = $self->update($target);
-            push @successful, $dist if $dist;
+            my ($dist, $did_update, $did_update_prereqs) = $self->update($target);
+            push @{$self->affected}, $dist if $did_update;
         }
         catch {
             throw $_ unless $self->no_fail;
@@ -99,7 +91,6 @@ sub execute {
 
             $self->error($_);
             $self->error("Target $target failed...continuing anyway");
-            push @failed, $target;
         }
         finally {
             my ($error) = @_;
@@ -109,7 +100,7 @@ sub execute {
 
     $self->chrome->progress_done;
 
-    return @successful;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
@@ -147,40 +138,38 @@ sub update {
     throw ("Package $pkg_name is not on stack $stack")
         unless my $reg = $stack->head->registrations->find({package_name => $pkg_name});
 
-    if ($reg->is_pinned && !$self->force) {
-        $self->notice("Skipping pinned package $pkg_name");
-        return;
+    my $current_dist = $reg->distribution;
+    my $current_pkg  = $reg->package;
+
+    if ($reg->is_pinned && not $self->force) {
+        $self->notice("Skipping package $pkg_name because it is pinned to $current_dist");
+        return ($current_dist, 0, 0);
     }
 
-    if ($reg->distribution->is_local && !$self->all) {
+    if ($current_dist->is_local && !$self->all) {
         $self->notice("Skipping local package $pkg_name");
-        return;
+        return ($current_dist, 0, 0);
     }
 
-    my $current = $reg->package;
-    my $latest  = $self->repo->locate(target => $target);
+    # Now go look for a newer version...
+    my $latest_pkg = $self->repo->locate(target => $target);
 
-    if (!$latest and !$reg->distribution->is_local) {
+    if (!$latest_pkg and !$current_dist->is_local) {
         $self->warning("No upstream version of $pkg_name was found");
-        return;
+        return ($current_dist, 0, 0);
     }
 
-    my $latest_version = $latest->{version};
-    my $current_version = $current->version;
+    my $latest_pkg_version = $latest_pkg->{version};
+    my $current_pkg_version = $current_pkg->version;
 
-    if ($latest_version <= $current_version) {
-        $self->notice( "Package $pkg_name~$current_version is up to date");
-        return;
-    }
-
-    if ($reg->is_pinned && $self->force) {
-        $self->notice("Unpinning $pkg_name to force update");
-        $reg->distribution->unpin(stack => $stack);
+    if ($latest_pkg_version <= $current_pkg_version) {
+        $self->notice( "Package $pkg_name~$current_pkg_version is up to date");
+        return ($current_dist, 0, 0);
     }
 
     # Finally, we update...
-    $self->notice("Updating $pkg_name to $latest_version on stack $stack");
-    my %target_args = (name => $pkg_name, version => $latest_version);
+    $self->notice("Updating $pkg_name to $latest_pkg_version on stack $stack");
+    my %target_args = (name => $pkg_name, version => $latest_pkg_version);
     my $new_target = Pinto::Target::Package->new(%target_args);
     return $self->pull(target => $new_target);
 

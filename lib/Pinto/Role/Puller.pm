@@ -39,6 +39,12 @@ has pin => (
     default => 0,
 );
 
+has force => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
 has skip_missing_prerequisite => (
     is        => 'ro',
     isa       => ArrayRef[Str],
@@ -97,7 +103,7 @@ sub pull {
         throw "Illeagal arguments";
     }
 
-    $did_register = $dist->register( stack => $stack, pin => $self->pin );
+    $did_register = $dist->register( stack => $stack, pin => $self->pin, force => $self->force );
     $did_register_prereqs = $self->do_recursion( start => $dist ) if $self->recurse;
 
     return ($dist, $did_register, $did_register_prereqs);
