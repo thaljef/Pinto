@@ -167,7 +167,7 @@ sub do_recursion {
 
         return if not my $dist = $self->find( target => $target );
 
-        $did_register += $dist->register( stack => $stack );
+        $did_register += $dist->register( stack => $stack, force => $self->force);
 
         # Record the most recent version of the packages that has
         # been registered, so we don't need to find it again.
