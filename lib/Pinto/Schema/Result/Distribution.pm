@@ -221,7 +221,8 @@ sub register {
     my ( $self, %args ) = @_;
 
     my $stack = $args{stack};
-    my $pin   = $args{pin} || 0;
+    my $force = $args{force} || 0;
+    my $pin   = $args{pin}   || 0;
 
     my $can_intermingle = $stack->repo->config->intermingle;
     my $did_register    = 0;
@@ -271,8 +272,10 @@ sub register {
 
 
         if ( $incumbent->is_pinned ) {
-            my $pkg_name = $pkg->name;
-            throw "Unable to register distribution $self: package $pkg_name is pinned to $incumbent_pkg";
+            my $pkg_name = $incumbent_pkg->name;
+            my $dist = $incumbent->distribution;
+            $force ? whine "Forcibly changing $dist to $self"
+                   : throw "Unable to register distribution $self: $pkg_name is pinned to $incumbent_pkg";
         }
 
         whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
@@ -286,7 +289,7 @@ sub register {
         else {
             # Otherwise, remove all packages in the incumbent
             # distribution from the index.  This is the default.
-            $incumbent->distribution->unregister(stack => $stack);
+            $incumbent->distribution->unregister(stack => $stack, force => $force);
         }
 
       $pkg->register(stack => $stack, pin => $pin);

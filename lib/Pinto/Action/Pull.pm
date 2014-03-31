@@ -55,14 +55,16 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my ( @successful, @failed );
+    my $stack = $self->stack;
+
     for my $target ( $self->targets ) {
 
         try {
             $self->repo->svp_begin;
-            $self->notice( "Pulling target $target to stack " . $self->stack );
-            my $dist = $self->pull( target => $target );
-            push @successful, $dist ? $dist : ();
+            $self->notice( "Pulling target $target to stack $stack");
+            my ($dist, $did_pull, $did_pull_prereqs) = $self->pull( target => $target );
+            $self->warning("Target $target is already on stack $stack") unless $did_pull;
+            push @{$self->affected}, $dist if $did_pull || $did_pull_prereqs;
         }
         catch {
             throw $_ unless $self->no_fail;
@@ -72,7 +74,6 @@ sub execute {
 
             $self->error($_);
             $self->error("Target $target failed...continuing anyway");
-            push @failed, $target;
         }
         finally {
             my ($error) = @_;
@@ -82,7 +83,7 @@ sub execute {
 
     $self->chrome->progress_done;
 
-    return @successful;
+    return $self;
 }
 
 #------------------------------------------------------------------------------

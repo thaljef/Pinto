@@ -1,121 +1,174 @@
 #!perl
 
-#------------------------------------------------------------------------------
-
-package Pinto::Action::Fake;
-
-use Moose;
-
-extends 'Pinto::Action';
-with 'Pinto::Role::Committable';
-
-sub execute {
-    my $self = shift;
-
-    # To bypass assert_has_changed() when committed
-    $self->stack->head->update( { has_changes => 1 } );
-
-    return qw(Foo Bar Baz);
-}
-
-no Moose;
-
-#------------------------------------------------------------------------------
-
-package main;
-
 use strict;
 use warnings;
 
 use Test::More;
-
-use Pinto::Globals;
 
 use lib 't/lib';
 use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 
+use Pinto::Globals;
 local $Pinto::Globals::current_username = 'ME';
 
-my $t           = Pinto::Tester->new;
-my $faked_title = 'Fake Bar, Baz, Foo';
+#------------------------------------------------------------------------------
+
+my $source = Pinto::Tester->new;
+my $source_url = $source->stack_url;
+$source->populate('AUTHOR/A-1 = PkgA~1 & PkgB');
+$source->populate('AUTHOR/B-1 = PkgB~1');
 
 #------------------------------------------------------------------------------
 
-{
-    note "Specified nothing";
+subtest 'No message specified' => sub {
 
-    $t->run_ok( Fake => {} );
-    my $stack    = $t->pinto->repo->get_stack;
-    my $revision = $stack->head;
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
 
-    is( $revision->username,      'ME',         'Revision was committed by ME' );
-    is( $revision->message_title, $faked_title, 'Message has correct title' );
-    is( $revision->message_body,  '',           'Message body is empty' );
-    is( $revision->message,       $faked_title, 'Message is title only' );
-}
+    $t->run_ok( Pull => {targets => 'PkgA'} );
+    my $revision = $t->get_stack->head;
 
-#------------------------------------------------------------------------------
+    is $revision->username, 'ME',
+        'Revision was committed by ME';
 
-{
-    note "Specified use_default_message";
+    is $revision->message_title, 'Pull AUTHOR/A-1.tar.gz',
+        'Message has correct title';
 
-    $t->run_ok( Fake => { use_default_message => 1 } );
-    my $stack    = $t->pinto->repo->get_stack;
-    my $revision = $stack->head;
+    is $revision->message_body,  '',
+        'Message body is empty';
 
-    is( $revision->username,      'ME',         'Revision was committed by ME' );
-    is( $revision->message_title, $faked_title, 'Message has correct title' );
-    is( $revision->message_body,  '',           'Message body is empty' );
-    is( $revision->message,       $faked_title, 'Message is title only' );
-}
+    is $revision->message, 'Pull AUTHOR/A-1.tar.gz',
+        'Full message is title only';
+};
 
 #------------------------------------------------------------------------------
 
-{
-    note "Specified message is empty (or whitespace) string";
+subtest 'Use default message' => sub {
 
-    $t->run_ok( Fake => { message => '  ' } );
-    my $stack    = $t->pinto->repo->get_stack;
-    my $revision = $stack->head;
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
 
-    is( $revision->username,      'ME',         'Revision was committed by ME' );
-    is( $revision->message_title, $faked_title, 'Message has correct title' );
-    is( $revision->message_body,  '',           'Message body is empty' );
-    is( $revision->message,       $faked_title, 'Message is title only' );
-}
+    $t->run_ok( Pull => {targets => 'PkgA', use_default_message => 1} );
+    my $revision = $t->get_stack->head;
 
-#------------------------------------------------------------------------------
+    is $revision->username, 'ME',
+        'Revision was committed by ME';
 
-{
+    is $revision->message_title, 'Pull AUTHOR/A-1.tar.gz',
+        'Message has correct title';
 
-    note "Specified custom (non-empty) message";
+    is $revision->message_body, q{},
+        'Message body is empty';
 
-    $t->run_ok( Fake => { message => 'my message' } );
-    my $stack    = $t->pinto->repo->get_stack;
-    my $revision = $stack->head;
-
-    is( $revision->message,       'my message', 'Got custom commit message when specified' );
-    is( $revision->message_body,  '',           'Message body is empty when specified message has title only' );
-    is( $revision->message_title, 'my message', 'Got message title' );
-}
+    is $revision->message, 'Pull AUTHOR/A-1.tar.gz',
+        'Full message is title only';
+};
 
 #------------------------------------------------------------------------------
 
-{
-    note "Specified custom message containing title and body regions";
+subtest 'Use custom message, title only' => sub {
 
-    $t->run_ok( Fake => { message => "  my title  \n\nmy body  " } );
-    my $stack    = $t->pinto->repo->get_stack;
-    my $revision = $stack->head;
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
 
-    is( $revision->message,       "  my title  \n\nmy body  ", 'Got custom commit message when specified' );
-    is( $revision->message_body,  'my body',                   'Got message body' );
-    is( $revision->message_title, 'my title',                  'Got message title' );
-}
+    $t->run_ok( Pull => {targets => 'PkgA', message => "TITLE\n\n"} );
+    my $revision = $t->get_stack->head;
+
+    is $revision->username, 'ME',
+        'Revision was committed by ME';
+
+    is $revision->message_title, 'TITLE',
+        'Message has correct title (trailing whitespace chomped)';
+
+    is $revision->message_body, q{},
+        'Message has correct body.';
+
+    is $revision->message, "TITLE\n\n",
+        'Full message is correct (trailing whitespace intact)';
+};
 
 #------------------------------------------------------------------------------
 
+subtest 'Use custom message, title and body' => sub {
+
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
+
+    $t->run_ok( Pull => {targets => 'PkgA', message => "TITLE\n\nBODY\n"} );
+    my $revision = $t->get_stack->head;
+
+    is $revision->username, 'ME',
+        'Revision was committed by ME';
+
+    is $revision->message_title, 'TITLE',
+        'Message has correct title (trailing whitespace chomped)';
+
+    is $revision->message_body, 'BODY',
+        'Message has correct body (trailng whitespace chomped)';
+
+    is $revision->message, "TITLE\n\nBODY\n",
+        'Full message is correct (trailing whitespace intact)';
+};
+
+#------------------------------------------------------------------------------
+
+subtest 'Custom message is just whitespace' => sub {
+
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
+
+    $t->run_ok( Pull => {targets => 'PkgA', message => " \n  \n "} );
+    my $revision = $t->get_stack->head;
+
+    is $revision->username, 'ME',
+        'Revision was committed by ME';
+
+    is $revision->message_title, 'Pull AUTHOR/A-1.tar.gz',
+        'Message has correct title';
+
+    is $revision->message_body, q{},
+        'Message body is empty';
+
+    is $revision->message, 'Pull AUTHOR/A-1.tar.gz',
+        'Full message is correct';
+};
+
+#------------------------------------------------------------------------------
+
+subtest 'Targets are sorted and de-duped' => sub {
+
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
+
+    $t->run_ok( Pull => {targets => [qw(PkgB PkgA PkgB PkgA)]} );
+    my $revision = $t->get_stack->head;
+
+    is $revision->message_title, 'Pull AUTHOR/A-1.tar.gz, AUTHOR/B-1.tar.gz',
+        'Message has correct title';
+};
+
+#------------------------------------------------------------------------------
+
+subtest 'Re-pulling target AND missing prereqs' => sub {
+
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
+
+    $t->run_ok( Pull => {targets => 'PkgA', recurse => 0} ); # Without prereqs
+    $t->run_ok( Pull => {targets => [qw(PkgA PkgB)], recurse => 1} ); # With prereqs
+    my $revision = $t->get_stack->head;
+
+    is $revision->message_title, 'Pull AUTHOR/A-1.tar.gz',
+        'Message has correct title';
+};
+
+#------------------------------------------------------------------------------
+
+subtest 'Some targets fail' => sub {
+
+    my $t = Pinto::Tester->new( init_args => { sources => $source_url } );
+
+    $t->pinto->run( Pull => {targets => [qw(PkgA PkgC)], no_fail => 1} );
+    my $revision = $t->get_stack->head;
+
+    is $revision->message_title, 'Pull AUTHOR/A-1.tar.gz',
+        'Message has correct title';
+};
+
+#------------------------------------------------------------------------------
 done_testing;
-

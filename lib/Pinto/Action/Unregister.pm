@@ -45,25 +45,18 @@ sub execute {
 
     my $stack = $self->stack;
 
-    my @dists = map { $self->_unregister( $_, $stack ) } $self->targets;
+    for my $target ( $self->targets ) {
 
-    return @dists;
-}
+        throw "Target $target is not registered on stack $stack"
+            unless my $dist = $stack->get_distribution( target => $target );
 
-#------------------------------------------------------------------------------
+        $self->notice("Unregistering distribution $dist from stack $stack");
 
-sub _unregister {
-    my ( $self, $target, $stack ) = @_;
+        $dist->unregister( stack => $stack, force => $self->force );
+        push @{$self->affected}, $dist;
+    }
 
-    my $dist = $stack->get_distribution( target => $target );
-
-    throw "Target $target is not in the repository" if not defined $dist;
-
-    $self->notice("Unregistering distribution $dist from stack $stack");
-
-    my $did_unregister = $dist->unregister( stack => $stack, force => $self->force );
-
-    return $did_unregister ? $dist : ();
+    return $self;
 }
 
 #------------------------------------------------------------------------------

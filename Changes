@@ -1,5 +1,21 @@
 {{$NEXT}}
 
+0.0997    2014-03-23 20:36:48 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed behavior of the --force flag on the new "update" command.
+      It now applies to all packages that might be updated, not just the
+      targets list on the command line.
+
+      [ENHANCEMENTS]
+
+      - When generating the title for the log message, only the targets
+      at the top of the dependency graph are listed, and only if they
+      (or one of their prerequisites) were actually affected by the
+      operation.  In effect, redundant and prereq targets are therefore
+      excluded from the message. This attempts to fix GH #86. Thanks @akarelas.
+
 0.0996    2014-03-22 21:12:29 America/Los_Angeles
 
       [BUG FIXES]
