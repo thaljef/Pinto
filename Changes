@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed behavior and error message when the repository is not
+      writable by the user.  Fixes GH #150.  Thanks @bkysela.
+
 0.0997    2014-03-23 20:36:48 America/Los_Angeles
 
       [BUG FIXES]
