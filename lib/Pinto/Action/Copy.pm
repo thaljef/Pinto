@@ -23,7 +23,7 @@ with qw( Pinto::Role::Transactional );
 
 #------------------------------------------------------------------------------
 
-has from_stack => (
+has stack => (
     is       => 'ro',
     isa      => StackName | StackObject,
     required => 1,
@@ -59,7 +59,7 @@ sub execute {
     my ($self) = @_;
 
     my %changes = ( name => $self->to_stack );
-    my $orig    = $self->repo->get_stack( $self->from_stack );
+    my $orig    = $self->repo->get_stack( $self->stack );
     my $copy    = $self->repo->copy_stack( stack => $orig, %changes );
 
     my $description =

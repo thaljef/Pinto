@@ -47,7 +47,7 @@ my $t = Pinto::Tester->new;
     # Copy dev -> qa...
     my $dev_stk_name = 'dev';
     my $qa_stk_name  = 'qa';
-    $t->run_ok( Copy => { from_stack => $dev_stk_name, to_stack => $qa_stk_name } );
+    $t->run_ok( Copy => { stack => $dev_stk_name, to_stack => $qa_stk_name } );
 
     my $dev_stack = $t->pinto->repo->get_stack($dev_stk_name);
     my $qa_stack  = $t->pinto->repo->get_stack($qa_stk_name);
@@ -67,7 +67,7 @@ my $t = Pinto::Tester->new;
     my $xtra_stk_name = 'xtra';
     $t->run_ok(
         Copy => {
-            from_stack  => $dev_stk_name,
+            stack  => $dev_stk_name,
             to_stack    => $xtra_stk_name,
             description => 'custom',
             lock        => 1
@@ -126,7 +126,7 @@ my $t = Pinto::Tester->new;
     # Copy from a stack that doesn't exist
     $t->run_throws_ok(
         Copy => {
-            from_stack => 'nowhere',
+            stack => 'nowhere',
             to_stack   => 'somewhere'
         },
         qr/Stack nowhere does not exist/
@@ -135,7 +135,7 @@ my $t = Pinto::Tester->new;
     # Copy to a stack that already exists
     $t->run_throws_ok(
         Copy => {
-            from_stack => 'master',
+            stack => 'master',
             to_stack   => 'dev'
         },
         qr/Stack dev already exists/
@@ -144,7 +144,7 @@ my $t = Pinto::Tester->new;
     # Copy to a stack that already exists, but with different case
     $t->run_throws_ok(
         Copy => {
-            from_stack => 'master',
+            stack => 'master',
             to_stack   => 'DeV'
         },
         qr/Stack dev already exists/
@@ -159,7 +159,7 @@ my $t = Pinto::Tester->new;
     # Copy to stack with invalid name
     $t->run_throws_ok(
         Copy => {
-            from_stack => 'master',
+            stack => 'master',
             to_stack   => '$bogus@'
         },
         qr/must be alphanumeric/
@@ -168,7 +168,7 @@ my $t = Pinto::Tester->new;
     # Copy to stack with no name
     $t->run_throws_ok(
         Copy => {
-            from_stack => 'master',
+            stack => 'master',
             to_stack   => ''
         },
         qr/must be alphanumeric/
@@ -177,7 +177,7 @@ my $t = Pinto::Tester->new;
     # Copy to stack with undef name
     $t->run_throws_ok(
         Copy => {
-            from_stack => 'master',
+            stack => 'master',
             to_stack   => undef
         },
         qr/must be alphanumeric/

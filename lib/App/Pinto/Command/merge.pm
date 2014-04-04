@@ -38,7 +38,7 @@ sub validate_args {
     $self->usage_error("Too many arguments")
       if $arg_count > 2;
 
-    $opts->{from_stack} = $args->[0];
+    $opts->{stack} = $args->[0];
     $opts->{into_stack} = $args->[1];
 
     return 1;
@@ -53,14 +53,14 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT merge [OPTIONS] FROM_STACK [INTO_STACK]
+  pinto --root=REPOSITORY_ROOT merge [OPTIONS] STACK [INTO_STACK]
 
 =head1 DESCRIPTION
 
 !! THIS COMMAND IS EXPERIMENTAL !!
 
 This command joins the history of one stack with another.  At present, it is
-only capable of doing a "fast-forward" merge when the head of FROM_STACK is a
+only capable of doing a "fast-forward" merge when the head of STACK is a
 direct descendant of the head of INTO_STACK.
 
 =head1 COMMAND ARGUMENTS

@@ -24,7 +24,7 @@ with qw( Pinto::Role::Transactional );
 
 #------------------------------------------------------------------------------
 
-has from_stack => (
+has stack => (
     is       => 'ro',
     isa      => StackName | StackObject,
     required => 1,
@@ -42,8 +42,8 @@ has into_stack => (
 sub execute {
     my ($self) = @_;
 
-    my $from_stack = $self->repo->get_stack($self->from_stack);
-    my $from_head  = $from_stack->head;
+    my $stack = $self->repo->get_stack($self->stack);
+    my $from_head  = $stack->head;
 
     my $into_stack = $self->repo->get_stack($self->into_stack);
     my $into_head  = $into_stack->head;

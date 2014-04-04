@@ -26,7 +26,7 @@ $t->run_ok(
 
 $t->run_ok(
     Copy => {
-        from_stack => 'master',
+        stack => 'master',
         to_stack   => 'branch'
     }
 );

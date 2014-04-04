@@ -35,7 +35,7 @@ $cpan->populate( 'JOHN/DistA-2 = PkgA~2 & PkgB~2', 'FRED/DistB-2 = PkgB~2', );
 $local->clear_cache;    # Make sure we get new index from CPAN
 
 # We would like to try and upgrade to PkgA-2.  So create a new stack
-$local->run_ok( 'Copy', { from_stack => 'master', to_stack => 'xxx' } );
+$local->run_ok( 'Copy', { stack => 'master', to_stack => 'xxx' } );
 
 # Now upgrade to PkgA-2 on the xxx stack
 $local->run_ok( 'Pull', { targets => 'PkgA~2', stack => 'xxx' } );

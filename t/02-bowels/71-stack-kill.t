@@ -24,7 +24,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
     $t->registration_ok('JOHN/Dist-1/PkgA~1/master');
 
     # Copy the "master" stack to "dev" and make it the default
-    $t->run_ok( Copy => { from_stack => 'master', to_stack => 'dev', default => 1 } );
+    $t->run_ok( Copy => { stack => 'master', to_stack => 'dev', default => 1 } );
     $t->registration_ok('JOHN/Dist-1/PkgA~1/dev');
     $t->stack_is_default_ok('dev');
 

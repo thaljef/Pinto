@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+      [INCOMPATIBLE CHANGES]
+
+      - Internal API changes only. Now all the attributes that were named
+      "from_stack" are named "stack". This makes the API more consistent, since
+      the "stack" is almost always the thing that is in play.
+
+      [OTHER CHANGES]
+
+      - No new features, enhancements, or bug fixes.
+
 0.0998    2014-03-31 15:27:14 America/Los_Angeles
 
       [BUG FIXES]

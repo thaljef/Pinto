@@ -19,7 +19,7 @@ my $dist2 = make_dist_archive('AUTHOR/Dist-2 = PkgB~2; PkgC~2');
 my $t = Pinto::Tester->new;
 
 $t->run_ok( Add  => { archives => $dist1, author => 'AUTHOR', stack => 'master' } );
-$t->run_ok( Copy => { from_stack => 'master', to_stack => 'foo' } );
+$t->run_ok( Copy => { stack => 'master', to_stack => 'foo' } );
 $t->run_ok( Add  => { archives => $dist2, author => 'AUTHOR', stack => 'foo' } );
 $t->run_ok( Pin  => { targets => 'PkgC', stack => 'foo' } );
 

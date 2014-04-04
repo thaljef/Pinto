@@ -79,7 +79,7 @@ subtest "Revert to unrelated revision" => sub {
     $t->registration_ok('AUTHOR/Foo-1/Foo~1');
     my $rev1 = $t->get_stack->head;
 
-    $t->run_ok(Copy => {from_stack => 'master', to_stack => 'other'});
+    $t->run_ok(Copy => {stack => 'master', to_stack => 'other'});
     $t->run_ok(Pin  => {stack => 'other', targets => 'Foo'});
 
     my $other_head = $t->get_stack('other')->head;
