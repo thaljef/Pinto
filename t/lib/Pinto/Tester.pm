@@ -7,8 +7,6 @@ use MooseX::NonMoose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(ScalarRef HashRef);
 
-use Path::Class;
-use File::Temp qw(tempdir);
 use Test::Exception;
 
 use Pinto;
@@ -63,7 +61,7 @@ has init_args => (
 has root => (
     is      => 'ro',
     isa     => Dir,
-    default => sub { dir( tempdir( CLEANUP => 1 ) ) },
+    default => sub { tempdir },
     lazy    => 1,
 );
 
@@ -135,7 +133,7 @@ sub _build_pinto {
 sub path_exists_ok {
     my ( $self, $path, $name ) = @_;
 
-    $path = ref $path eq 'ARRAY' ? file( $self->root, @{$path} ) : $path;
+    $path = ref $path eq 'ARRAY' ? $self->root->file( @{$path} ) : $path;
     $name ||= "Path $path should exist";
 
     $self->ok( -e $path, $name );
@@ -148,7 +146,7 @@ sub path_exists_ok {
 sub path_not_exists_ok {
     my ( $self, $path, $name ) = @_;
 
-    $path = ref $path eq 'ARRAY' ? file( $self->root, @{$path} ) : $path;
+    $path = ref $path eq 'ARRAY' ? $self->root->file( @{$path} ) : $path;
     $name ||= "Path $path should not exist";
 
     $self->ok( !-e $path, $name );
