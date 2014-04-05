@@ -44,6 +44,9 @@ use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
     my $got_pinto_args  = decode_json( $req_params->{pinto} );
     my $got_action_args = decode_json( $req_params->{action} );
 
+    my $got_time_offset = delete $got_pinto_args->{time_offset};
+    is $got_time_offset, DateTime->now(time_zone => 'local')->offset, 'Correct time_offset';
+
     is_deeply $got_chrome_args, \%chrome_args, "Correct chrome args in request for action $action";
     is_deeply $got_pinto_args,  \%pinto_args,  "Correct pinto args in request for action $action";
     is_deeply $got_action_args, \%action_args, "Correct action args in request for action $action";
