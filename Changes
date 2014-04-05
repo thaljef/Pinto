@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed timezone handling for remote users.  But it only applies
+      to new revisions.  Old ones will probably still be reported in
+      the wrong timezone (unless you happen to be in the right one).
+
 0.0999    2014-04-03 22:53:31 America/Los_Angeles
 
       [INCOMPATIBLE CHANGES]
