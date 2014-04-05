@@ -13,6 +13,7 @@ use HTTP::Request::Common;
 
 use Pinto::Result;
 use Pinto::Constants qw(:server);
+use Pinto::Util qw(current_time_offset);
 use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
@@ -126,7 +127,10 @@ sub _chrome_args {
 sub _pinto_args {
     my ($self) = @_;
 
-    my $pinto_args = { username => $self->username };
+    my $pinto_args = {
+        username    => $self->username,
+        time_offset => current_time_offset,
+    };
 
     return ( pinto => encode_json($pinto_args) );
 }

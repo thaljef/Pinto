@@ -6,6 +6,7 @@ use warnings;
 use Test::More;
 use Test::File;
 use Test::Exception;
+use File::Temp;
 use Path::Class qw(dir);
 use Capture::Tiny qw(capture_stderr);
 
@@ -14,7 +15,7 @@ use Pinto::Remote;
 use lib 't/lib';
 use Pinto::Server::Tester;
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
-use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
+use Pinto::Tester::Util qw(has_cpanm);
 
 #------------------------------------------------------------------------------
 

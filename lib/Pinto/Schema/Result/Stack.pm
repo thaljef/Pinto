@@ -844,7 +844,7 @@ sub to_string {
         T => sub { truncate_text( $self->head->message_title,      $_[0] ) },
         b => sub { $self->head->message_body },
         j => sub { $self->head->username },
-        u => sub { $self->head->datetime->strftime( $_[0] || '%c' ) },
+        u => sub { $self->head->datetime_local->strftime( $_[0] || '%c' ) },
     );
 
     $format ||= $self->default_format();

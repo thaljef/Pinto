@@ -242,16 +242,35 @@ has is_root => (
 has datetime => (
     is       => 'ro',
     isa      => 'DateTime',
-    default  => sub { DateTime->from_epoch( epoch => $_[0]->utc_time, time_zone => $_[0]->timezone ) },
+    default  => sub { DateTime->from_epoch( epoch => $_[0]->utc_time ) },
     init_arg => undef,
     lazy     => 1,
 );
 
-has timezone => (
+has datetime_local => (
+    is       => 'ro',
+    isa      => 'DateTime',
+    default  =>  sub {
+        my $tz = DateTime::TimeZone->offset_as_string( $_[0]->repo->config->time_offset );
+        return DateTime->from_epoch( epoch => $_[0]->utc_time, time_zone => $tz );
+    },
+    init_arg => undef,
+    lazy     => 1,
+);
+
+has datetime_user => (
+    is       => 'ro',
+    isa      => 'DateTime',
+    default  => sub { DateTime->from_epoch( epoch => $_[0]->utc_time, time_zone => $_[0]->time_zone ) },
+    init_arg => undef,
+    lazy     => 1,
+);
+
+has time_zone => (
     is      => 'ro',
     isa     => 'DateTime::TimeZone',
     default => sub {
-        my $offset = DateTime::TimeZone->offset_as_string( $_[0]->repo->config->time_offset );
+        my $offset = DateTime::TimeZone->offset_as_string( $_[0]->time_offset );
         return DateTime::TimeZone::OffsetOnly->new( offset => $offset );
     },
     init_arg => undef,
@@ -476,7 +495,7 @@ sub to_string {
         i => sub { $self->uuid_prefix },
         I => sub { $self->uuid },
         j => sub { $self->username },
-        u => sub { $self->datetime->strftime( $_[0] || '%c' ) },
+        u => sub { $self->datetime_local->strftime( $_[0] || '%c' ) },
         g => sub { $self->message_body },
         G => sub { indent_text( trim_text( $self->message ), $_[0] ) },
         t => sub { $self->message_title },
