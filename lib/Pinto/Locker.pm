@@ -60,8 +60,14 @@ sub lock {    ## no critic qw(Homonym)
 
     my $root_dir  = $self->repo->config->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock      = File::NFSLock->new( $lock_file, $lock_type, $LOCKFILE_TIMEOUT )
-        or throw 'The repository is currently in use -- please try again later';
+    my $lock;
+    if ( -w $root_dir ) {
+        $lock     = File::NFSLock->new( $lock_file, $lock_type, $LOCKFILE_TIMEOUT )
+            or throw 'The repository is currently in use -- please try again later';
+    }
+    else {
+        throw "You do not have write access to the repository: $root_dir";
+    }
 
     debug("Process $$ got $lock_type lock on $root_dir");
 
