@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.09991
+version 0.09992
 
 # SYNOPSIS
 
@@ -199,6 +199,7 @@ from your repository :)
 - Jeffrey Ryan Thalhammer <jeff@imaginative-software.com>
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
+- Nikolay Martynov <mar.kolya@gmail.com>
 - Oleg Gashev <oleg@gashev.net>
 - Steffen Schwigon <ss5@renormalist.net>
 - Tommy Stanton <tommystanton@gmail.com>
