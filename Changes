@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.09992   2014-04-23 15:14:50 America/Los_Angeles
+
       [BUG FIXES]
 
       - Fixed extra newlines that were inserted into large responses
