@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed extra newlines that were inserted into large responses
+      from Pinto::Server.  Closes GH #154.  Thanks @mar-kolya.
+
 0.09991   2014-04-05 06:28:18 America/Denver
 
       [BUG FIXES]
