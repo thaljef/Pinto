@@ -2,8 +2,10 @@
 
       [ENHANCEMENTS]
 
-      When using the "add" command, the paths to the local archives can now be
+      - When using the "add" command, the paths to the local archives can now be
       expressed using file:// URLs.
+
+      - Revised the Tutorial and QuickStart documentation.
 
 0.09992   2014-04-23 15:14:50 America/Los_Angeles
 
