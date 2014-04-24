@@ -54,8 +54,9 @@ sub respond {
     my $pipe = IO::Pipe->new;
 
     run_fork {
-        child { $self->child_proc( $pipe, $chrome_args, $pinto_args, $action_name, $action_args ) }
-        parent { $response = $self->parent_proc( $pipe, shift ) } error { croak "Failed to fork: $!" };
+        child  { $self->child_proc( $pipe, $chrome_args, $pinto_args, $action_name, $action_args ) }
+        parent { my $child_pid = shift; $response = $self->parent_proc( $pipe, $child_pid ) }
+        error  { croak "Failed to fork: $!" };
     };
 
     return $response;
@@ -86,8 +87,8 @@ sub child_proc {
     my $pinto = Pinto->new( chrome => $chrome, root => $self->root );
 
     my $result =
-        try { $pinto->run( ucfirst $action_name => %{$action_args} ) }
-    catch { print {$writer} $_; Pinto::Result->new->failed };
+        try   { $pinto->run( ucfirst $action_name => %{$action_args} ) }
+        catch { print {$writer} $_; Pinto::Result->new->failed };
 
     print {$writer} $PINTO_SERVER_STATUS_OK . "\n" if $result->was_successful;
 
