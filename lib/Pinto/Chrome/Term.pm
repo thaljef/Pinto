@@ -27,7 +27,7 @@ extends qw( Pinto::Chrome );
 has no_color => (
     is      => 'ro',
     isa     => Bool,
-    default => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
+    default => sub { 0 },
 );
 
 has colors => (

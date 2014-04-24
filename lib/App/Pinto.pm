@@ -20,6 +20,7 @@ sub global_opt_spec {
     return (
         [ 'root|r=s'           => 'Path to your repository root directory' ],
         [ 'no-color|no-colour' => 'Do not colorize any output' ],
+        [ 'color|colour'       => 'Colorize output' ],
         [ 'password|p=s'       => 'Password for server authentication' ],
         [ 'quiet|q'            => 'Only report fatal errors' ],
         [ 'username|u=s'       => 'Username for server authentication' ],
@@ -38,7 +39,20 @@ sub pinto {
         $global_options->{root} ||= $ENV{PINTO_REPOSITORY_ROOT}
             || $self->usage_error('Must specify a repository root');
 
-        # Discard password and username arguments if this is not a 
+	if(delete($global_options->{color})) {
+	    $global_options->{no_color} = 0;
+	}
+	elsif($global_options->{no_color}) {
+	    #nothing to do
+	}
+	elsif(defined($ENV{PINTO_NO_COLOR})) {
+	    $global_options->{no_color} = !!$ENV{PINTO_NO_COLOR};
+	}
+	else {
+	    $global_options->{no_color} = (!-t STDOUT);
+	}
+
+        # Discard password and username arguments if this is not a
         # remote repository.  StrictConstrutor will not allow them.
         delete @{$global_options}{qw(username password)}
             if not is_remote_repo($global_options->{root});
