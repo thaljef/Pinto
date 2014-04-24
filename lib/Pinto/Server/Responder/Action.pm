@@ -39,7 +39,7 @@ sub respond {
 
     my %params      = %{ $self->request->parameters };                         # Copying
     my $chrome_args = $params{chrome} ? decode_json( $params{chrome} ) : {};
-    my $pinto_args  = $params{pinto} ? decode_json( $params{pinto} ) : {};
+    my $pinto_args  = $params{pinto}  ? decode_json( $params{pinto} )  : {};
     my $action_args = $params{action} ? decode_json( $params{action} ) : {};
 
     for my $upload_name ( $self->request->uploads->keys ) {
