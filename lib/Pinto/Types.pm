@@ -163,8 +163,8 @@ subtype FileList, as ArrayRef [File];
 
 coerce FileList,
     from File,          via { [ $_ ] },
-    from Str,           via { [ Path::Class::File->new($_) ] },
-    from ArrayRef[Str], via { [ map { Path::Class::File->new($_) } @$_ ] };
+    from Str,           via { s{^file://}{}; [ Path::Class::File->new($_) ] },
+    from ArrayRef[Str], via { [ map { s{^file://}{}; Path::Class::File->new($_) } @$_ ] };
 
 #-----------------------------------------------------------------------------
 

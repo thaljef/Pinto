@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      When using the "add" command, the paths to the local archives can now be
+      expressed using file:// URLs.
+
 0.09992   2014-04-23 15:14:50 America/Los_Angeles
 
       [BUG FIXES]
@@ -134,7 +139,8 @@
       [ENHANCEMENTS]
 
       - When the repository is a local directory, it can also be expressed
-      using a file:// URI.  This applies to both the --root option and the PINTO_REPOSITORY_ROOT environment variable. Fixes GH #128.
+      using a file:// URI.  This applies to both the --root option and the
+      PINTO_REPOSITORY_ROOT environment variable. Fixes GH #128.
 
 0.0992    2014-02-10 02:01:18 America/Los_Angeles
 
