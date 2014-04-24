@@ -4,7 +4,7 @@ use Moose;
 
 use Pinto::Types qw(
     ANSIColor
-    ANSIColorSet
+    ANSIColorPalette
     AuthorID
     DiffStyle
     Dir
@@ -123,9 +123,9 @@ has color => (
     isa => ANSIColor,
 );
 
-has colorset => (
+has palette => (
     is  => 'rw',
-    isa => ANSIColorSet,
+    isa => ANSIColorPalette,
 );
 
 has diffstyle => (

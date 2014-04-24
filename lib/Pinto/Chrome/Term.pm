@@ -11,8 +11,8 @@ use Term::ANSIColor;
 use Term::EditorEdit;
 use File::Which qw(which);
 
-use Pinto::Types qw(Io ANSIColorSet);
-use Pinto::Util qw(user_colors itis throw is_interactive);
+use Pinto::Types qw(Io ANSIColorPalette);
+use Pinto::Util qw(user_palette itis throw is_interactive);
 
 #-----------------------------------------------------------------------------
 
@@ -27,13 +27,13 @@ extends qw( Pinto::Chrome );
 has color => (
     is      => 'ro',
     isa     => Bool,
-    default => !$ENV{PINTO_NO_COLOR} || 1,
+    default => sub { !$ENV{PINTO_NO_COLOR} },
 );
 
-has colors => (
+has palette => (
     is      => 'ro',
-    isa     => ANSIColorSet,
-    default => sub { user_colors() },
+    isa     => ANSIColorPalette,
+    default => sub { user_palette() },
     lazy    => 1,
 );
 
@@ -194,7 +194,7 @@ sub get_color {
 
     return '' if not defined $color_number;
 
-    my $color = $self->colors->[$color_number];
+    my $color = $self->palette->[$color_number];
 
     throw "Invalid color number: $color_number" if not defined $color;
 

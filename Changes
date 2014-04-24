@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+      [INCOMPATILBE CHANGES]
+
+      - The PINTO_COLORS and PINTO_COLOURS environment variables are deprecated in
+      favor of PINTO_PALETTE.  You can still use the old names for now, but they will
+      be removed in a future release.
+
       [BUG FIXES]
 
       - Colorization is now disabled by default when the output is being piped or

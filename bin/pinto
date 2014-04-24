@@ -218,18 +218,17 @@ that order).
 
 If set to a true value, suppresses color in all command output.
 
-=item C<PINTO_COLORS>
-
-=item C<PINTO_COLOURS>
+=item C<PINTO_PALETTE>
 
 A comma-separated list of exactly three color names.  Any name supported
 by L<Term::ANSIColor> is allowed.  These will be the colors that pinto
 uses to colorize various output.  For example:
 
-  PINTO_COLORS='red, light blue, green on_white'
+  PINTO_PALETTE='red, light blue, green on_white'
 
-Listing too many or too few colors will cause an exception, as will using
-an invalid color name.
+Listing too many or too few colors will cause an exception, as will using an
+invalid color name.  For backward compatibility the variables C<PINTO_COLORS>
+and C<PINTO_COLOURS> can also be used (but they are deprecated).
 
 =item C<PINTO_USERNAME>
 

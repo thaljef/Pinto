@@ -49,10 +49,10 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    local $ENV{PINTO_COLORS} = 'dark blue,  white on_red,green';
+    local $ENV{PINTO_PALETTE} = 'dark blue,  white on_red,green';
 
     my $chrome = Pinto::Chrome::Term->new;
-    is_deeply $chrome->colors, [ 'dark blue', 'white on_red', 'green' ], 'Parsed color list';
+    is_deeply $chrome->palette, [ 'dark blue', 'white on_red', 'green' ], 'Parsed color list';
 }
 
 #-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ use Pinto::Chrome::Term;
 
 {
     my $chrome = Pinto::Chrome::Term->new;
-    
+
     local $ENV{VISUAL} = '';
     local $ENV{EDITOR} = '';
     local $ENV{PINTO_EDITOR} = 'emacs';
