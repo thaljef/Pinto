@@ -113,7 +113,7 @@ sub _chrome_args {
 
     my $chrome_args = {
         verbose  => $self->chrome->verbose,
-        no_color => $self->chrome->no_color,
+        color    => $self->chrome->color,
         colors   => $self->chrome->colors,
         quiet    => $self->chrome->quiet
     };

@@ -51,7 +51,7 @@ around BUILDARGS => sub {
     my $args = $class->$orig(@_);
 
     # Grrr.  Gotta avoid passing undefs to Moose
-    my @chrome_attrs = qw(verbose quiet no_color);
+    my @chrome_attrs = qw(verbose quiet color);
     my %chrome_args = map { $_ => delete $args->{$_} }
         grep { exists $args->{$_} } @chrome_attrs;
 

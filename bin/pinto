@@ -93,11 +93,17 @@ The root can also be the URI where a L<pintod> server is listening.  Depending
 on your server configuration, you may need to specify the port number in the
 URI, which is usually 3111.
 
+=item --color
+
+=item --colour
+
 =item --no-color
 
 =item --no-colour
 
-Do not colorize command output.
+Enable or disable colorized command output.  By default, color is enabled
+unless the output is being sent to a pipe or file.  Set the C<PINTO_NO_COLOR>
+environment variable to disable color by default.
 
 =item --password PASS
 

@@ -24,10 +24,10 @@ extends qw( Pinto::Chrome );
 
 #-----------------------------------------------------------------------------
 
-has no_color => (
+has color => (
     is      => 'ro',
     isa     => Bool,
-    default => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
+    default => !$ENV{PINTO_NO_COLOR} || 1,
 );
 
 has colors => (
@@ -180,7 +180,7 @@ sub colorize {
 
     return ''      if not $string;
     return $string if not defined $color_number;
-    return $string if $self->no_color;
+    return $string if not $self->color;
 
     my $color = $self->get_color($color_number);
 
