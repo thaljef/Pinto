@@ -159,9 +159,10 @@ like this:
 
   [%m%s%y] %-40p %12v %a/%f
 
-When using the C<--all> option, the default format looks something like this:
+When using the C<--all> option, the pin status is indeterminable so the main
+module status is shown instead.  That format looks something like this:
 
-  [%m%s%y%x%M] %-40p %12v %a/%f
+  [%m%s%M] %-40p %12v %a/%f
 
 =item --packages=PATTERN
 
