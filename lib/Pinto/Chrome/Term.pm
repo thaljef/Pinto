@@ -70,7 +70,10 @@ sub _build_stdout {
     return $stdout if not -t STDOUT;
     return $stdout if not $pager;
 
-    open my $pager_fh, q<|->, $pager
+    my @pager_options = $ENV{PINTO_PAGER_OPTIONS} ?
+        ( $ENV{PINTO_PAGER_OPTIONS} ) : ();
+
+    open my $pager_fh, q<|->, $pager, @pager_options
         or throw "Failed to open pipe to pager $pager: $!";
 
     return bless $pager_fh, 'IO::Handle';    # HACK!

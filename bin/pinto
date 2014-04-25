@@ -249,6 +249,18 @@ Sets the path to the pager application that will be used to paginate output from
 each command.  Defaults to C<PAGER>.  If none of these are set, then no pager
 is used.
 
+=item C<PINTO_PAGER_OPTIONS>
+
+Sets the options that will be passed to the pager (if there is one).  For
+example, you could use the C<-R> option to instruct C<less> to pass through
+the colors that pinto usually displays:
+
+  export PINTO_PAGER_OPTIONS=-R
+
+Most pagers have their own environment variables to control their default
+behavior.  C<PINTO_PAGER_OPTIONS> gives you a way to set defaults that are
+specific to when you are using it with pinto.
+
 =item C<PINTO_DIFF_STYLE>
 
 Sets the default style for diff reports.  Valid styles are C<detailed> and

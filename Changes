@@ -18,6 +18,9 @@
       - When using the "add" command, the paths to the local archives can now be
       expressed using file:// URLs.
 
+      - The PINTO_PAGER_OPTIONS environment variable can now be used to pass specific
+      options to you pager when using it with pinto.
+
       [DOCUMENTATION]
 
       - Revised the Tutorial and QuickStart documentation.
