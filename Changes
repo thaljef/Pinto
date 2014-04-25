@@ -18,16 +18,17 @@
 
       - Colorization is now disabled by default when the output is being piped or
       redirected to a file.  This improves interoperability with tools like grep,
-      sort, etc.  To for colorization, use the --color option.  Fixes GH #155.
-      Thanks @mar-kolya.
+      sort, etc.  To force colorization, use the --color or --colour option.
+      Fixes GH #155. Thanks @mar-kolya.
 
       [ENHANCEMENTS]
 
       - When using the "add" command, the paths to the local archives can now be
-      expressed using file:// URLs.
+      expressed using file:/// URLs.
 
       - The PINTO_PAGER_OPTIONS environment variable can now be used to pass specific
-      options to you pager when using it with pinto.
+      options to your pager when using it with pinto.  For example, to tell `less`
+      to display colors.
 
       [DOCUMENTATION]
 
