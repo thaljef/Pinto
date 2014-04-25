@@ -12,7 +12,7 @@ use JSON;
 use HTTP::Request::Common;
 
 use Pinto::Result;
-use Pinto::Constants qw(:server);
+use Pinto::Constants qw(:protocol);
 use Pinto::Util qw(current_time_offset);
 use Pinto::Types qw(Uri);
 
@@ -87,8 +87,10 @@ sub _make_request {
 
     my $request = POST(
         $uri,
-        Content_Type => 'form-data',
-        Content      => $request_body
+        Accept        => $PINTO_PROTOCOL_ACCEPT,
+        Content       => $request_body,
+        Content_Type  => 'form-data',
+
     );
 
     if ( defined $self->password ) {
@@ -174,16 +176,16 @@ sub _response_callback {
     $data = ${$buffer}.$data;
     while($data =~ /\G([^\n]*)\n/gc) {
         my $line = $1;
-        if ( $line eq $PINTO_SERVER_STATUS_OK ) {
+        if ( $line eq $PINTO_PROTOCOL_STATUS_OK ) {
             ${$status} = 1;
         }
-        elsif ( $line eq $PINTO_SERVER_PROGRESS_MESSAGE ) {
+        elsif ( $line eq $PINTO_PROTOCOL_PROGRESS_MESSAGE ) {
             $self->chrome->show_progress;
         }
-        elsif ( $line eq $PINTO_SERVER_NULL_MESSAGE ) {
+        elsif ( $line eq $PINTO_PROTOCOL_NULL_MESSAGE ) {
             # Do nothing, discard message
         }
-        elsif ( $line =~ m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x ) {
+        elsif ( $line =~ m{^ \Q$PINTO_PROTOCOL_DIAG_PREFIX\E (.*)}x ) {
             $self->chrome->diag($1);
         }
         else {

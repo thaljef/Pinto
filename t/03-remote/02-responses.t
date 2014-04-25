@@ -12,7 +12,7 @@ use HTTP::Response;
 use Pinto::Remote;
 use Pinto::Globals;
 use Pinto::Chrome::Term;
-use Pinto::Constants qw(:server);
+use Pinto::Constants qw(:server :protocol);
 
 #-----------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ use Pinto::Constants qw(:server);
     my $ua = local $Pinto::Globals::UA = Test::LWP::UserAgent->new;
 
     my $res = HTTP::Response->new(200);
-    $res->content("DATA-GOES-HERE\n## DIAG-MSG-HERE\n$PINTO_SERVER_STATUS_OK\n");
+    $res->content("DATA-GOES-HERE\n## DIAG-MSG-HERE\n$PINTO_PROTOCOL_STATUS_OK\n");
     $ua->map_response( qr{.*}, $res );
 
     my $out_buffer = '';

@@ -13,7 +13,7 @@ use File::Temp;
 
 use Pinto::Remote;
 use Pinto::Globals;
-use Pinto::Constants qw($PINTO_DEFAULT_PALETTE);
+use Pinto::Constants qw($PINTO_DEFAULT_PALETTE $PINTO_PROTOCOL_ACCEPT);
 
 #-----------------------------------------------------------------------------
 
@@ -38,6 +38,7 @@ use Pinto::Constants qw($PINTO_DEFAULT_PALETTE);
     my $req = $ua->last_http_request_sent;
     is $req->method, 'POST', "Correct HTTP method in request for action $action";
     is $req->uri, 'http://myhost:3111/action/add', "Correct uri in request for action $action";
+    is $req->header('Accept'), $PINTO_PROTOCOL_ACCEPT, 'Accept header';
 
     my $req_params      = parse_req_params($req);
     my $got_chrome_args = decode_json( $req_params->{chrome} );
@@ -56,8 +57,8 @@ use Pinto::Constants qw($PINTO_DEFAULT_PALETTE);
 
 sub parse_req_params {
     my ($req)  = @_;
-    my $type   = $req->headers->header('Content-Type');
-    my $length = $req->headers->header('Content-Length');
+    my $type   = $req->header('Content-Type');
+    my $length = $req->header('Content-Length');
     my $hb = HTTP::Body->new( $type, $length );
     $hb->add( $req->content );
     return $hb->param;

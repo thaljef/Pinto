@@ -2,9 +2,17 @@
 
       [INCOMPATILBE CHANGES]
 
-      - The PINTO_COLORS and PINTO_COLOURS environment variables are deprecated in
-      favor of PINTO_PALETTE.  You can still use the old names for now, but they will
-      be removed in a future release.
+      - The protocol used to communicate with a remote Pinto repository is now
+      versioned with media types via the "Accept" header.  So if you upgrade
+      to this version of pinto, you'll also need to upgrade pintod to this same
+      version.  Going forward, the protocol will be versioned so that we
+      can potentially support different versions of the client and server at
+      the same time.  But for the time being, you'll get an exception telling
+      you whether to upgrade your client (pinto) or the server (pintod).
+
+      - The PINTO_COLORS and PINTO_COLOURS environment variables are deprecated
+      in favor of PINTO_PALETTE.  You can still use the old names for now, but
+      they will be removed in a future release.
 
       [BUG FIXES]
 

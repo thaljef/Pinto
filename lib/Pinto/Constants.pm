@@ -21,10 +21,12 @@ Readonly our @EXPORT_OK => qw(
     $PINTO_SERVER_DEFAULT_HOST
     $PINTO_SERVER_DEFAULT_ROOT
 
-    $PINTO_SERVER_STATUS_OK
-    $PINTO_SERVER_DIAG_PREFIX
-    $PINTO_SERVER_NULL_MESSAGE
-    $PINTO_SERVER_PROGRESS_MESSAGE
+    $PINTO_PROTOCOL_VERSION
+    $PINTO_PROTOCOL_STATUS_OK
+    $PINTO_PROTOCOL_DIAG_PREFIX
+    $PINTO_PROTOCOL_NULL_MESSAGE
+    $PINTO_PROTOCOL_PROGRESS_MESSAGE
+    $PINTO_PROTOCOL_ACCEPT
 
     $PINTO_DEFAULT_PALETTE
     $PINTO_PALETTE_COLOR_0
@@ -56,11 +58,12 @@ Readonly our @EXPORT_OK => qw(
 
 Readonly our %EXPORT_TAGS => (
     all        => \@EXPORT_OK,
-    color      => [ grep {m/PALETTE/x} @EXPORT_OK ],
-    server     => [ grep {m/SERVER/x} @EXPORT_OK ],
-    regex      => [ grep {m/REGEX/x} @EXPORT_OK ],
-    lock       => [ grep {m/LOCK/x} @EXPORT_OK ],
-    diff       => [ grep {m/DIFF/x} @EXPORT_OK ],
+    color      => [ grep {m/PALETTE/x}   @EXPORT_OK ],
+    server     => [ grep {m/SERVER/x}    @EXPORT_OK ],
+    protocol   => [ grep {m/PROTOCOL/x}  @EXPORT_OK ],
+    regex      => [ grep {m/REGEX/x}     @EXPORT_OK ],
+    lock       => [ grep {m/LOCK/x}      @EXPORT_OK ],
+    diff       => [ grep {m/DIFF/x}      @EXPORT_OK ],
     stratopan  => [ grep {m/STRATOPAN/x} @EXPORT_OK ],
 );
 
@@ -74,13 +77,17 @@ Readonly our $PINTO_SERVER_DEFAULT_ROOT => "http://$PINTO_SERVER_DEFAULT_HOST:$P
 
 #------------------------------------------------------------------------------
 
-Readonly our $PINTO_SERVER_DIAG_PREFIX => '## ';
+Readonly our $PINTO_PROTOCOL_VERSION => 1;
 
-Readonly our $PINTO_SERVER_STATUS_OK => "${PINTO_SERVER_DIAG_PREFIX}Status: ok";
+Readonly our $PINTO_PROTOCOL_DIAG_PREFIX => '## ';
 
-Readonly our $PINTO_SERVER_NULL_MESSAGE => "${PINTO_SERVER_DIAG_PREFIX}-- ##";
+Readonly our $PINTO_PROTOCOL_STATUS_OK => "${PINTO_PROTOCOL_DIAG_PREFIX}Status: ok";
 
-Readonly our $PINTO_SERVER_PROGRESS_MESSAGE => "${PINTO_SERVER_DIAG_PREFIX}. ##";
+Readonly our $PINTO_PROTOCOL_NULL_MESSAGE => "${PINTO_PROTOCOL_DIAG_PREFIX}-- ##";
+
+Readonly our $PINTO_PROTOCOL_PROGRESS_MESSAGE => "${PINTO_PROTOCOL_DIAG_PREFIX}. ##";
+
+Readonly our $PINTO_PROTOCOL_ACCEPT => "application/vnd.pinto.v${PINTO_PROTOCOL_VERSION}+text";
 
 #------------------------------------------------------------------------------
 
