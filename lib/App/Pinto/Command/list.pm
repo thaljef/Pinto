@@ -99,7 +99,8 @@ the default stack.
 List every package in every distribution that exists in the entire repository,
 including distributions that are not currently registered on any stack.  When
 the C<--all> option is used, then the stack argument and C<--stack> option are
-not allowed.
+not allowed.  Also note the C<--all> option produces a slightly different
+output (see below under the C<--format> option).
 
 =item --authors=PATTERN
 
