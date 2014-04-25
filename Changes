@@ -14,6 +14,10 @@
       in favor of PINTO_PALETTE.  You can still use the old names for now, but
       they will be removed in a future release.
 
+      - When using the --all option with the "list" command, the default format
+      shows the pin status as "?" (i.e. indeterminable) instead of showing the
+      main module status.
+
       [BUG FIXES]
 
       - Colorization is now disabled by default when the output is being piped or

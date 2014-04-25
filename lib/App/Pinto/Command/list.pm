@@ -99,8 +99,10 @@ the default stack.
 List every package in every distribution that exists in the entire repository,
 including distributions that are not currently registered on any stack.  When
 the C<--all> option is used, then the stack argument and C<--stack> option are
-not allowed.  Also note the C<--all> option produces a slightly different
-output (see below under the C<--format> option).
+not allowed.  Also note the pin status is indeterminable when using the C<--all>
+option so it always appears as C<?> (see the C<--format> option below for more
+details about that).
+
 
 =item --authors=PATTERN
 
@@ -160,10 +162,11 @@ like this:
 
   [%m%s%y] %-40p %12v %a/%f
 
-When using the C<--all> option, the pin status is indeterminable so the main
-module status is shown instead.  That format looks something like this:
+When using the C<--all> option, the pin status is indeterminable so it always
+appears as C<?>.  Also, the indexable status is shown.  So the default format
+looks something like this instead:
 
-  [%m%s%M] %-40p %12v %a/%f
+  [%m%s?%x] %-40p %12v %a/%f
 
 =item --packages=PATTERN
 
