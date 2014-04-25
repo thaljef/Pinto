@@ -4,7 +4,7 @@ package Pinto::Server;
 
 use Moose;
 use MooseX::ClassAttribute;
-use MooseX::Types::Moose qw(Int HashRef);
+use MooseX::Types::Moose qw(Int HashRef ArrayRef);
 
 use Carp;
 use Path::Class;
@@ -12,6 +12,7 @@ use Class::Load;
 use Scalar::Util qw(blessed);
 use IO::Interactive qw(is_interactive);
 use Plack::Middleware::Auth::Basic;
+use Plack::App::URLMap;
 
 use Pinto::Types qw(Dir);
 use Pinto::Constants qw(:server);
@@ -54,6 +55,19 @@ has auth => (
     traits  => ['Hash'],
     handles => { auth_options => 'elements' },
 );
+
+=attr skip_auth
+
+The arrayref of actions that allow passwordless access.
+
+=cut
+
+has skip_auth => (
+    is      => 'ro',
+    isa     => ArrayRef,
+#    default => sub { ['list', 'roots'] },
+);
+
 
 =attr router
 
@@ -104,7 +118,13 @@ Returns the application as a subroutine reference.
 sub to_app {
     my ($self) = @_;
 
-    my $app = sub { $self->call(@_) };
+    my $app = sub {
+	my $env = $_[0];
+	# Plack::App::URLMap does some stuff to path info which we need to undo
+	$env->{PATH_INFO} = $env->{SCRIPT_NAME}.$env->{PATH_INFO};
+	$env->{SCRIPT_NAME} = '';
+	$self->call(@_);
+    };
 
     if ( my %auth_options = $self->auth_options ) {
 
@@ -114,8 +134,18 @@ sub to_app {
         my $class = 'Authen::Simple::' . $backend;
         print "Authenticating using $class\n" if is_interactive;
         Class::Load::load_class($class);
-
-        $app = Plack::Middleware::Auth::Basic->wrap( $app, authenticator => $class->new(%auth_options) );
+	my $authenticated_app = Plack::Middleware::Auth::Basic->wrap(
+	    $app, authenticator => $class->new(%auth_options));
+	if(@{$self->skip_auth}) {
+	    my $urlmap = Plack::App::URLMap->new;
+	    $urlmap->map("/" => $authenticated_app);
+	    foreach (@{$self->skip_auth}) {
+		$urlmap->map('/action/'.$_ => $app);
+	    }
+	    $app = $urlmap->to_app;
+	} else {
+	    $app = $authenticated_app;
+	}
     }
 
     return $app;
