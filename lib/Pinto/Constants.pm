@@ -52,6 +52,9 @@ Readonly our @EXPORT_OK => qw(
     $PINTO_STRATOPAN_LOCATOR_URI
     $PINTO_BACKPAN_CPAN_URI
     @PINTO_DEFAULT_SOURCE_URIS
+
+    @PINTO_PREREQ_PHASES
+    @PINTO_PREREQ_RELATIONS
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -61,6 +64,7 @@ Readonly our %EXPORT_TAGS => (
     regex      => [ grep {m/REGEX/x} @EXPORT_OK ],
     lock       => [ grep {m/LOCK/x} @EXPORT_OK ],
     diff       => [ grep {m/DIFF/x} @EXPORT_OK ],
+    prereq     => [ grep {m/PREREQ/x} @EXPORT_OK ],
     stratopan  => [ grep {m/STRATOPAN/x} @EXPORT_OK ],
 );
 
@@ -135,7 +139,10 @@ Readonly our @PINTO_DEFAULT_SOURCE_URIS => ( $PINTO_STRATOPAN_CPAN_URI,
 
 #------------------------------------------------------------------------------
 
+Readonly our @PINTO_PREREQ_PHASES => qw(configure build test runtime develop);
+Readonly our @PINTO_PREREQ_RELATIONS => qw(requires suggests recommends);
 
+#------------------------------------------------------------------------------
 1;
 
 __END__

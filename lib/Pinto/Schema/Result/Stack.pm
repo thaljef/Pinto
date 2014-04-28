@@ -608,7 +608,10 @@ sub roots {
 
     for my $dist ( @dists ) {
         for my $prereq ($dist->prerequisites) {
-            # TODO: Decide what to do about development prereqs
+            # TODO: When we support suggested/recommended prereqs
+            # those will have to be skipped too.  See here for more
+            # discussion: https://github.com/thaljef/Pinto/issues/158
+            next if $prereq->is_test or $prereq->is_develop;
             next if $prereq->is_core(in => $tpv) or $prereq->is_perl;
             my %args = (target => $prereq->as_target, cache => \%cache);
             next unless my $prereq_dist = $self->get_distribution(%args);
