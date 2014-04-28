@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.09992
+version 0.09992\_01
 
 # SYNOPSIS
 
@@ -18,12 +18,12 @@ See [Pinto::Manual](https://metacpan.org/pod/Pinto::Manual) for more information
 
 # DESCRIPTION
 
-Pinto is an application for creating and managing a custom CPAN-like 
-repository of Perl modules.  The purpose of such a repository is to 
-provide a stable, curated stack of dependencies from which you can 
-reliably build, test, and deploy your application using the standard 
-Perl tool chain. Pinto supports various operations for gathering and 
-managing distribution dependencies within the repository, so that you 
+Pinto is an application for creating and managing a custom CPAN-like
+repository of Perl modules.  The purpose of such a repository is to
+provide a stable, curated stack of dependencies from which you can
+reliably build, test, and deploy your application using the standard
+Perl tool chain. Pinto supports various operations for gathering and
+managing distribution dependencies within the repository, so that you
 can control precisely which dependencies go into your application.
 
 # FEATURES
