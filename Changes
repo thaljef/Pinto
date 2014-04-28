@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.09992_01 2014-04-28 10:31:21 America/Los_Angeles
+
       [INCOMPATILBE CHANGES]
 
       - The protocol used to communicate with a remote Pinto repository is now
