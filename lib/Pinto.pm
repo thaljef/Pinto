@@ -61,7 +61,7 @@ around BUILDARGS => sub {
     my $args  = $class->$orig(@_);
 
     # Grrr.  Gotta avoid passing undefs to Moose
-    my @chrome_attrs = qw(verbose quiet no_color);
+    my @chrome_attrs = qw(verbose quiet color);
     my %chrome_args = map { $_ => delete $args->{$_} }
         grep { exists $args->{$_} } @chrome_attrs;
 
@@ -154,12 +154,12 @@ L<Stratopan|http://stratopan.com> for hosting your Pinto repository in the cloud
 
 =head1 DESCRIPTION
 
-Pinto is an application for creating and managing a custom CPAN-like 
-repository of Perl modules.  The purpose of such a repository is to 
-provide a stable, curated stack of dependencies from which you can 
-reliably build, test, and deploy your application using the standard 
-Perl tool chain. Pinto supports various operations for gathering and 
-managing distribution dependencies within the repository, so that you 
+Pinto is an application for creating and managing a custom CPAN-like
+repository of Perl modules.  The purpose of such a repository is to
+provide a stable, curated stack of dependencies from which you can
+reliably build, test, and deploy your application using the standard
+Perl tool chain. Pinto supports various operations for gathering and
+managing distribution dependencies within the repository, so that you
 can control precisely which dependencies go into your application.
 
 =head1 FEATURES

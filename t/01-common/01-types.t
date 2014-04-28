@@ -102,11 +102,11 @@ lives_ok { $t->color('dark red') };
 dies_ok { $t->color('foo bar') } 'Invalid color thorws exception';
 dies_ok { $t->color(undef) } 'undef color thorws exception';
 
-lives_ok { $t->colorset( [qw(red blue green)] ) };
-dies_ok { $t->colorset( [qw(red blue)] ) } 'Colorset needs 3 colors';
-dies_ok { $t->colorset( [qw(a b c)] ) } 'Colorset must be valid colors';
-dies_ok { $t->colorset(undef) };
-dies_ok { $t->colorset( [] ) };
+lives_ok { $t->palette( [qw(red blue green)] ) };
+dies_ok { $t->palette( [qw(red blue)] ) } 'Palette needs 3 colors';
+dies_ok { $t->palette( [qw(a b c)] ) } 'Palette must be valid colors';
+dies_ok { $t->palette(undef) };
+dies_ok { $t->palette( [] ) };
 
 lives_ok { $t->diffstyle('concise') } 'Valid DiffStyle';
 lives_ok { $t->diffstyle('detailed') } 'Valid DiffStyle';

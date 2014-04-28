@@ -52,7 +52,7 @@ sub execute {
     while ( my $revision = $walker->next ) {
 
         my $revid = $revision->to_string("revision %I");
-        $self->show( $revid, { color => $PINTO_COLOR_1 } );
+        $self->show( $revid, { color => $PINTO_PALETTE_COLOR_1 } );
 
         my $rest = $revision->to_string("Date: %u\nUser: %j\n\n%{4}G\n");
         $self->show($rest);

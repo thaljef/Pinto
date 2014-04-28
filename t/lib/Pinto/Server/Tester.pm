@@ -95,7 +95,7 @@ has server_url => (
 =attr pintod_exe
 
 Sets the path to the C<pintod> executable.  If not specified, we will search
-in F<./blib/script>, F<./bin>, C<PINTO_HOME>, and finally your C<PATH>  An 
+in F<./blib/script>, F<./bin>, C<PINTO_HOME>, and finally your C<PATH>  An
 exception is thrown if C<pintod> cannot be found.
 
 =cut
@@ -160,7 +160,7 @@ sub start_server {
         parent {
             my $server_pid = shift;
             $self->server_pid($server_pid);
-            sleep 5;    # Let the server warm up
+            sleep 10; # Let the server warm up
 
         }
 

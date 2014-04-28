@@ -140,10 +140,10 @@ sub execute {
         my $string = $it->to_string( $self->format );
         my $color  = undef;
 
-        $color = $PINTO_COLOR_0
+        $color = $PINTO_PALETTE_COLOR_0
             if $it->distribution->is_local;
 
-        $color = $PINTO_COLOR_1
+        $color = $PINTO_PALETTE_COLOR_1
             if $it->isa('Pinto::Schema::Result::Registration') && $it->is_pinned;
 
         $self->show( $string, { color => $color } );

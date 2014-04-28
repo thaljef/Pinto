@@ -115,7 +115,7 @@ sub _build_pinto {
 
     my $chrome = Pinto::Chrome::Term->new(
         verbose  => 2,
-        no_color => 1,
+        color    => 0,
         stdout   => $self->outstr,
         stderr   => $self->errstr,
     );

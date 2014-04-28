@@ -60,7 +60,7 @@ Readonly our @EXPORT_OK => qw(
     throw
     trim_text
     truncate_text
-    user_colors
+    user_palette
     uuid
     whine
 );
@@ -497,8 +497,8 @@ sub body_text {
 
 =func truncate_text($string, $length, $elipses)
 
-Truncates the C<$string> and appends C<$elipses> if the C<$string> is 
-longer than C<$length> characters.  C<$elipses> defaults to '...' if 
+Truncates the C<$string> and appends C<$elipses> if the C<$string> is
+longer than C<$length> characters.  C<$elipses> defaults to '...' if
 not specified.
 
 =cut
@@ -607,20 +607,21 @@ sub uuid {
 
 #-------------------------------------------------------------------------------
 
-=func user_colors()
+=func user_palette()
 
-Returns a reference to an array containing the names of the colors pinto 
-can use.  This can be influenced by setting the C<PINTO_COLORS> or 
-C<PINTO_COLOURS> environment variables.
+Returns a reference to an array containing the names of the colors pinto
+can use.  This can be influenced by setting the C<PINTO_PALETTE> environment
+variable.
 
 =cut
 
-sub user_colors {
-    my $colors = $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS};
+sub user_palette {
+    my $palette = $ENV{PINTO_PALETTE}
+        || $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS}; # For backcompat
 
-    return $PINTO_DEFAULT_COLORS if not $colors;
+    return $PINTO_DEFAULT_PALETTE if not $palette;
 
-    return [ split m/\s* , \s*/x, $colors ];
+    return [ split m/\s* , \s*/x, $palette ];
 }
 
 #-------------------------------------------------------------------------------
@@ -658,7 +659,7 @@ sub is_not_blank {
 =func mask_uri_passwords($string)
 
 Masks the parts the string that look like a password embedded in an http or
-https URI. For example, C<http://joe:secret@foo.com> would return 
+https URI. For example, C<http://joe:secret@foo.com> would return
 C<http://joe:*password*@foo.com>
 
 =cut
@@ -689,7 +690,7 @@ sub is_remote_repo {
 #-------------------------------------------------------------------------------
 
 sub tempdir {
-    
+
     return Path::Class::dir(File::Temp::tempdir(CLEANUP => 1));
 }
 
@@ -698,12 +699,12 @@ sub tempdir {
 
 
 sub default_diff_style {
-    
+
     if (my $style = $ENV{PINTO_DIFF_STYLE}) {
 
         throw "PINTO_DIFF_STYLE ($style) is invalid.  Must be one of (@PINTO_DIFF_STYLES)"
             unless DiffStyle->check($style);
-        
+
         return $style;
     }
 

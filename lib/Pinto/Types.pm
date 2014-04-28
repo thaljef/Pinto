@@ -8,7 +8,7 @@ use version;
 
 use MooseX::Types -declare => [ qw(
     ANSIColor
-    ANSIColorSet
+    ANSIColorPalette
     AuthorID
     DiffStyle
     Dir
@@ -125,7 +125,7 @@ subtype ANSIColor, as Str,
 
 #-----------------------------------------------------------------------------
 
-subtype ANSIColorSet, as ArrayRef[ANSIColor],
+subtype ANSIColorPalette, as ArrayRef[ANSIColor],
     where { @{$_} == 3 },
     message {'Must be exactly three colors'};
 

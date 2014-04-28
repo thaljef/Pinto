@@ -11,8 +11,8 @@ use Term::ANSIColor;
 use Term::EditorEdit;
 use File::Which qw(which);
 
-use Pinto::Types qw(Io ANSIColorSet);
-use Pinto::Util qw(user_colors itis throw is_interactive);
+use Pinto::Types qw(Io ANSIColorPalette);
+use Pinto::Util qw(user_palette itis throw is_interactive);
 
 #-----------------------------------------------------------------------------
 
@@ -24,16 +24,16 @@ extends qw( Pinto::Chrome );
 
 #-----------------------------------------------------------------------------
 
-has no_color => (
+has color => (
     is      => 'ro',
     isa     => Bool,
-    default => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
+    default => sub { !$ENV{PINTO_NO_COLOR} },
 );
 
-has colors => (
+has palette => (
     is      => 'ro',
-    isa     => ANSIColorSet,
-    default => sub { user_colors() },
+    isa     => ANSIColorPalette,
+    default => sub { user_palette() },
     lazy    => 1,
 );
 
@@ -70,7 +70,10 @@ sub _build_stdout {
     return $stdout if not -t STDOUT;
     return $stdout if not $pager;
 
-    open my $pager_fh, q<|->, $pager
+    my @pager_options = $ENV{PINTO_PAGER_OPTIONS} ?
+        ( $ENV{PINTO_PAGER_OPTIONS} ) : ();
+
+    open my $pager_fh, q<|->, $pager, @pager_options
         or throw "Failed to open pipe to pager $pager: $!";
 
     return bless $pager_fh, 'IO::Handle';    # HACK!
@@ -180,7 +183,7 @@ sub colorize {
 
     return ''      if not $string;
     return $string if not defined $color_number;
-    return $string if $self->no_color;
+    return $string if not $self->color;
 
     my $color = $self->get_color($color_number);
 
@@ -194,7 +197,7 @@ sub get_color {
 
     return '' if not defined $color_number;
 
-    my $color = $self->colors->[$color_number];
+    my $color = $self->palette->[$color_number];
 
     throw "Invalid color number: $color_number" if not defined $color;
 

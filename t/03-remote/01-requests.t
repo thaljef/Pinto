@@ -13,13 +13,13 @@ use File::Temp;
 
 use Pinto::Remote;
 use Pinto::Globals;
-use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
+use Pinto::Constants qw($PINTO_DEFAULT_PALETTE $PINTO_PROTOCOL_ACCEPT);
 
 #-----------------------------------------------------------------------------
 
 {
 
-    local $ENV{PINTO_COLORS} = undef;
+    local $ENV{PINTO_PALETTE} = undef;
     my $ua = local $Pinto::Globals::UA = Test::LWP::UserAgent->new;
 
     my $res = HTTP::Response->new(200);
@@ -28,7 +28,7 @@ use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
     my $action      = 'Add';
     my $temp        = File::Temp->new;
     my %pinto_args  = ( username => 'myname' );
-    my %chrome_args = ( verbose => 2, no_color => 1, quiet => 0, colors => $PINTO_DEFAULT_COLORS );
+    my %chrome_args = ( verbose => 2, color => 0, quiet => 0, palette => $PINTO_DEFAULT_PALETTE );
     my %action_args = ( archives => [ $temp->filename ], author => 'ME', stack => 'mystack' );
 
     my $chrome = Pinto::Chrome::Term->new(%chrome_args);
@@ -38,6 +38,7 @@ use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
     my $req = $ua->last_http_request_sent;
     is $req->method, 'POST', "Correct HTTP method in request for action $action";
     is $req->uri, 'http://myhost:3111/action/add', "Correct uri in request for action $action";
+    is $req->header('Accept'), $PINTO_PROTOCOL_ACCEPT, 'Accept header';
 
     my $req_params      = parse_req_params($req);
     my $got_chrome_args = decode_json( $req_params->{chrome} );
@@ -56,8 +57,8 @@ use Pinto::Constants qw($PINTO_DEFAULT_COLORS);
 
 sub parse_req_params {
     my ($req)  = @_;
-    my $type   = $req->headers->header('Content-Type');
-    my $length = $req->headers->header('Content-Length');
+    my $type   = $req->header('Content-Type');
+    my $length = $req->header('Content-Length');
     my $hb = HTTP::Body->new( $type, $length );
     $hb->add( $req->content );
     return $hb->param;

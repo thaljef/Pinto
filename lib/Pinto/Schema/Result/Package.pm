@@ -305,7 +305,7 @@ sub can_index {
 sub flags {
     my ($self) = @_;
 
-    my $format = '%m%s%x%M';
+    my $format = '%m%s?%x';
     return $self->to_string($format);
 }
 
