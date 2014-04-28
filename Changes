@@ -25,6 +25,10 @@
       sort, etc.  To force colorization, use the --color or --colour option.
       Fixes GH #155. Thanks @mar-kolya.
 
+      - The "roots" will now include test and develop prereqs, since Pinto has no
+      way of knowing how those distributions relate to your application. This
+      fixes GH #158. Thanks @mar-kolya.
+
       [ENHANCEMENTS]
 
       - When using the "add" command, the paths to the local archives can now be
