@@ -122,8 +122,8 @@ sub _build_pinto {
 
     my %defaults = ( root => $self->root );
 
-    my $initializer = Pinto::Initializer->new;
-    $initializer->init( %defaults, $self->init_args );
+    Pinto::Initializer->new->init( %defaults, $self->init_args )
+        unless $self->root->children;  # Skip init if repo exists
 
     return Pinto->new( %defaults, chrome => $chrome, $self->pinto_args );
 }
