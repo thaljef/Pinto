@@ -20,6 +20,9 @@ my $t = Pinto::Server::Tester->new->start_server;
 
 subtest 'User vs Local vs UTC time' => sub {
 
+    plan skip_all => "Can't open connection to $t"
+        unless $t->can_connect;
+
     my $remote = Pinto::Remote->new( root => $t->server_url );
     my $archive = make_dist_archive('AUTHOR/DistA-1 = PkgA~1');
 
