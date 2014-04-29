@@ -25,6 +25,8 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Server::Tester->new->start_server;
+plan skip_all => "Can't open connection to $t" unless $t->can_connect;
+
 $t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1');
 $t->populate('PAUL/DistB-1 = PkgB~1 & PkgC~1');
 $t->populate('MARK/DistC-1 = PkgC~1');

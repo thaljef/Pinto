@@ -28,7 +28,10 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 
 my $htpasswd = make_htpasswd_file(qw(my_login my_password));
 my @auth     = ( qw(--auth backend=Passwd --auth), "path=$htpasswd" );
+
 my $t        = Pinto::Server::Tester->new( pintod_opts => \@auth )->start_server;
+plan skip_all => "Can't open connection to $t" unless $t->can_connect;
+
 $t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1; PkgC~1');
 $t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
 $t->populate('MARK/DistC-1 = PkgC~1');
