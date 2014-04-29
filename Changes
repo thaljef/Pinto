@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.09992_02 2014-04-29 14:22:29 America/Los_Angeles
+
      [BUG FIXES]
 
      - Fixed timezone.t test which would fail in some cases, ostensibly
