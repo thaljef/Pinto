@@ -30,7 +30,8 @@ subtest 'User vs Local vs UTC time' => sub {
 
     {
         local $Pinto::Globals::current_time_offset = $offset;
-        $remote->run( Add => ( archives => [$archive->stringify] ) );
+        my $result = $remote->run( Add => ( archives => [$archive->stringify] ) );
+        ok $result->was_successful, 'Add action was successful';
     }
 
     my $rev = $t->get_stack->head;
