@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+     [BUG FIXES]
+
+     - Fixed timezone.t test which seemed to fail in some cases, ostensibly
+     because the test environment would not allow us to open sockets (probably
+     due to security reasons).  Thanks CPAN Testers.
+
 0.09992_01 2014-04-28 10:31:21 America/Los_Angeles
 
       [INCOMPATILBE CHANGES]
