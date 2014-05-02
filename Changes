@@ -1,15 +1,5 @@
 {{$NEXT}}
 
-0.09992_02 2014-04-29 14:22:29 America/Los_Angeles
-
-     [BUG FIXES]
-
-     - Fixed timezone.t test which would fail in some cases, ostensibly
-     because the test environment would not allow us to open sockets
-     (probably due to security reasons).  Thanks CPAN Testers.
-
-0.09992_01 2014-04-28 10:31:21 America/Los_Angeles
-
       [INCOMPATILBE CHANGES]
 
       - The protocol used to communicate with a remote Pinto repository is now
@@ -39,6 +29,10 @@
       way of knowing how those distributions relate to your application. This
       fixes GH #158. Thanks @mar-kolya.
 
+     - Fixed timezone.t test which would fail in some cases, ostensibly
+     because the test environment would not allow us to open sockets
+     (probably due to security reasons).  Thanks CPAN Testers.
+
       [ENHANCEMENTS]
 
       - When using the "add" command, the paths to the local archives can now be
@@ -51,6 +45,11 @@
       [DOCUMENTATION]
 
       - Revised the Tutorial and QuickStart documentation.
+
+0.09992_02 2014-04-29 14:22:29 America/Los_Angeles
+0.09992_01 2014-04-28 10:31:21 America/Los_Angeles
+
+      - Changes consolidated above under version 0.09993$
 
 0.09992   2014-04-23 15:14:50 America/Los_Angeles
 
