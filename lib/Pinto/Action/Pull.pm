@@ -63,7 +63,7 @@ sub execute {
             $self->repo->svp_begin;
             $self->notice( "Pulling target $target to stack $stack");
             my ($dist, $did_pull, $did_pull_prereqs) = $self->pull( target => $target );
-            $self->warning("Target $target is already on stack $stack") unless $did_pull;
+            $self->notice("Target $target is already on stack $stack") unless $did_pull;
             push @{$self->affected}, $dist if $did_pull || $did_pull_prereqs;
         }
         catch {
