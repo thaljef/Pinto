@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [MISCELLANEOUS]
+
+      - Demoted some warnings to notifications, for less noisy output.
+      Use the --verbose option to see more diagnostic output.
+
 0.09993   2014-05-02 17:43:41 America/Los_Angeles
 
       [INCOMPATILBE CHANGES]
