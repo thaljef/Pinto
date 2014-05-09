@@ -602,21 +602,33 @@ sub roots {
     my %is_prereq_dist;
     my %cache;
 
-    # Algorithm: Visit each distribution and resolve each of its
-    # dependencies to the prerequisite distribution (if it exists).
-    # Any distribution that is a prerequisite cannot be a root.
-
     for my $dist ( @dists ) {
-        for my $prereq ($dist->prerequisites) {
+	next if $is_prereq_dist{$dist};
+	my @prereq = $dist->prerequisites;
+	my %seen;
+	while (my $prereq = shift @prereq) {
+	    next if($seen{$prereq});
+	    $seen{$prereq} = 1;
             # TODO: When we support suggested/recommended prereqs
             # those will have to be skipped too.  See here for more
             # discussion: https://github.com/thaljef/Pinto/issues/158
             next if $prereq->is_test or $prereq->is_develop;
             next if $prereq->is_core(in => $tpv) or $prereq->is_perl;
+
             my %args = (target => $prereq->as_target, cache => \%cache);
             next unless my $prereq_dist = $self->get_distribution(%args);
-            $is_prereq_dist{$prereq_dist} = 1;
-        }
+
+	    if($prereq_dist eq $dist) {
+		#We have a dependency loop if we get here
+		#So do nothing. This effectively breaks dependency chain
+		#and other parts of the loop will pick these modules up.
+	    } else {
+		push(@prereq, $prereq_dist->prerequisites);
+		foreach ($prereq_dist->prerequisites) {
+		}
+		$is_prereq_dist{$prereq_dist} = 1;
+	    }
+	}
     }
 
     return grep { not $is_prereq_dist{$_} } @dists;
