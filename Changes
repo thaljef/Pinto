@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      The "install" command now has an --all option that will install every
+      package that is currently registered on a stack.  This option is still
+      experimental, but is the easiest way to just say "give me everything!"
+      Inspired by @mar-kolya.
+
       [MISCELLANEOUS]
 
       - Demoted some warnings to notifications, for less noisy output.

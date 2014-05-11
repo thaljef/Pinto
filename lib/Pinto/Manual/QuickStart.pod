@@ -100,6 +100,9 @@ __END__
   # Install and populate the repository with missing prereqs
   pinto -r /repo/dir install --do-pull Foo::Bar
 
+  # Install everything in the stack
+  pinto -r /repo/dir install --all
+
 =head1 MANAGING STACKS
 
   # Create an empty stack named "qa"

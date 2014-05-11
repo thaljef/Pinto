@@ -196,7 +196,7 @@ from your repository :)
 - David Steinbrunner <dsteinbrunner@pobox.com>
 - Glenn Fowler <cebjyre@cpan.org>
 - Jakob Voss <jakob@nichtich.de>
-- Jeffrey Ryan Thalhammer <jeff@imaginative-software.com>
+- Jeffrey Ryan Thalhammer <jeff@thaljef.org>
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
 - Nikolay Martynov <mar.kolya@gmail.com>
