@@ -105,7 +105,7 @@ sub _pull_targets {
     my ($self) = @_;
 
     my $request = $self->_make_request( name => 'pull' );
-    my $result = $self->_send_request( req => $request );
+    my $result  = $self->_send_request( req => $request );
 
     throw 'Failed to pull packages' if not $result->was_successful;
 
@@ -124,12 +124,14 @@ sub _get_all_targets {
     delete $self->args->{targets};
     $self->args->{format} = '%p';
 
-    my $request = $self->_make_request( name => 'list' );
+    my $request  = $self->_make_request( name => 'list' );
     my $response = $self->request( $request );
+    my $content  = $response->content;
 
-    throw 'Failed to get target list' if not $response->is_success;
+    throw "Failed to get target list: $content"
+        if not $response->is_success;
 
-    my @lines = split "\n", Term::ANSIColor::colorstrip($response->content);
+    my @lines   = split "\n", Term::ANSIColor::colorstrip($content);
     my @targets = grep { $_ !~ $PINTO_PROTOCOL_DIAG_PREFIX } @lines;
     $self->_targets(\@targets);
 
