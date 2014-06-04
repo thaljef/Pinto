@@ -2,29 +2,16 @@
 
 =over 4
 
-=item Move Package::Locator into this dist
 
 =item Fallback if upstream repo does not respond
-
-=item Add cpan.stratopan.com as first upstream repo
 
 =item Add --with-recommended-dependencies
 
 =item Apply --no-index to prereqs too?
 
-=item Add option to skip prereqs?
-
 =item Fix line buffering in Pinto::Remote::Action.
 
-=item Command to update all packages on stack.
-
 =item Create command to list outdated packages.
-
-=item Finish FastForward merge (note this is not a committable action).
-
-=item Implement a reset command to move head (also not committable).
-
-=item Create command to undo one or more specific revisions.
 
 =item Move repository configuration into the DB
 
@@ -101,8 +88,6 @@
 =item Extract versioning stuff to a separate dist.
 
 =item Rewrite tests with Test::Class
-
-=item Attribute to indicate if package was explicitly requested for stack
 
 =item Mark stacks as merged after merge
 
