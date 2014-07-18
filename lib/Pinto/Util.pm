@@ -769,14 +769,14 @@ sub find_cpanm_exe {
         or throw 'Could not find cpanm in PATH';
 
     my $cpanm_version_cmd        = "$cpanm_exe --version";
-    my $cpanm_version_cmd_output = qx{$cpanm_version_cmd};    ## no critic      qw(Backtick)
+    my $cpanm_version_cmd_output = qx{$cpanm_version_cmd};    ## no critic (Backtick)
     throw "Could not learn version of cpanm: $!" if $?;
 
     my ($cpanm_version) = $cpanm_version_cmd_output =~ m{version ([\d.]+)}
-        or throw "Could not parse cpanm version number from                     $cpanm_version_cmd_output";
+        or throw "Could not parse cpanm version number from $cpanm_version_cmd_output";
 
     if ( $cpanm_version < $PINTO_MINIMUM_CPANM_VERSION ) {
-        throw "Your cpanm ($cpanm_version) is too old.  Must have               $PINTO_MINIMUM_CPANM_VERSION or newer";
+        throw "Your cpanm ($cpanm_version) is too old.  Must have $PINTO_MINIMUM_CPANM_VERSION or newer";
     }
 
     return $cpanm_exe;
