@@ -278,6 +278,7 @@ sub to_string {
         p => sub { $self->package->name },
         P => sub { $self->package->vname },
         v => sub { $self->package->version },
+        M => sub { $self->package->is_main_module ? 'm' : '-'},
         y => sub { $self->is_pinned ? '!' : '-' },
         m => sub { $self->distribution->is_devel ? 'd' : 'r' },
         h => sub { $self->distribution->path },
@@ -289,7 +290,7 @@ sub to_string {
         d => sub { $self->distribution->name },
         D => sub { $self->distribution->vname },
         V => sub { $self->distribution->version },
-        u => sub { $self->distribution->url },
+        u => sub { $self->distribution->uri },
         i => sub { $self->revision->uuid_prefix },
         F => sub { $self->flags },
     );

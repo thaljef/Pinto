@@ -1,5 +1,470 @@
 {{$NEXT}}
 
+      [ENHANCEMENTS]
+
+      - The "install" command now has an --all option that will install every
+      package that is currently registered on a stack.  This option is still
+      experimental, but is the easiest way to just say "give me everything!"
+      Inspired by @mar-kolya.
+
+      - Improved error handling in Pinto::Remote so you get pretty colored
+      errors instead of big ugly stack traces, just like you do when using
+      a local repository.
+
+      [MISCELLANEOUS]
+
+      - Demoted some warnings to notifications, for less noisy output.
+      Use the --verbose option to see more diagnostic output.
+
+0.09993   2014-05-02 17:43:41 America/Los_Angeles
+
+      [INCOMPATILBE CHANGES]
+
+      - The protocol used to communicate with a remote Pinto repository is now
+      versioned with media types via the "Accept" header.  So if you upgrade
+      to this version of pinto, you'll also need to upgrade pintod to this same
+      version.  Going forward, the protocol will be versioned so that we
+      can potentially support different versions of the client and server at
+      the same time.  But for the time being, you'll get an exception telling
+      you whether to upgrade your client (pinto) or the server (pintod).
+
+      - The PINTO_COLORS and PINTO_COLOURS environment variables are deprecated
+      in favor of PINTO_PALETTE.  You can still use the old names for now, but
+      they will be removed in a future release.
+
+      - When using the --all option with the "list" command, the default format
+      shows the pin status as "?" (i.e. indeterminable) instead of showing the
+      main module status.
+
+      [BUG FIXES]
+
+      - Colorization is now disabled by default when the output is being piped or
+      redirected to a file.  This improves interoperability with tools like grep,
+      sort, etc.  To force colorization, use the --color or --colour option.
+      Fixes GH #155. Thanks @mar-kolya.
+
+      - The "roots" will now include test and develop prereqs, since Pinto has no
+      way of knowing how those distributions relate to your application. This
+      fixes GH #158. Thanks @mar-kolya.
+
+     - Fixed timezone.t test which would fail in some cases, ostensibly
+     because the test environment would not allow us to open sockets
+     (probably due to security reasons).  Thanks CPAN Testers.
+
+      [ENHANCEMENTS]
+
+      - When using the "add" command, the paths to the local archives can now be
+      expressed using file:/// URLs.
+
+      - The PINTO_PAGER_OPTIONS environment variable can now be used to pass specific
+      options to your pager when using it with pinto.  For example, to tell `less`
+      to display colors.
+
+      [DOCUMENTATION]
+
+      - Revised the Tutorial and QuickStart documentation.
+
+0.09992_02 2014-04-29 14:22:29 America/Los_Angeles
+0.09992_01 2014-04-28 10:31:21 America/Los_Angeles
+
+      - Changes consolidated above under version 0.09993$
+
+0.09992   2014-04-23 15:14:50 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed extra newlines that were inserted into large responses
+      from Pinto::Server.  Closes GH #154.  Thanks @mar-kolya.
+
+0.09991   2014-04-05 06:28:18 America/Denver
+
+      [BUG FIXES]
+
+      - Fixed timezone handling for remote users.  But it only applies
+      to new revisions.  Old ones will probably still be reported in
+      the wrong timezone (unless you happen to be in the right one).
+
+0.0999    2014-04-03 22:53:31 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - Internal API changes only. Now all the attributes that were named
+      "from_stack" are named "stack". This makes the API more consistent, since
+      the "stack" is almost always the thing that is in play.
+
+      [OTHER CHANGES]
+
+      - No new features, enhancements, or bug fixes.
+
+0.0998    2014-03-31 15:27:14 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed behavior and error message when the repository is not
+      writable by the user.  Fixes GH #150.  Thanks @bkysela.
+
+0.0997    2014-03-23 20:36:48 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed behavior of the --force flag on the new "update" command.
+      It now applies to all packages that might be updated, not just the
+      targets list on the command line.
+
+      [ENHANCEMENTS]
+
+      - When generating the title for the log message, only the targets
+      at the top of the dependency graph are listed, and only if they
+      (or one of their prerequisites) were actually affected by the
+      operation.  In effect, redundant and prereq targets are therefore
+      excluded from the message. This attempts to fix GH #86. Thanks @akarelas.
+
+0.0996    2014-03-22 21:12:29 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Added a workaround for Net::LibIDN, which was not being properly
+      indexed.  If you experienced this problem, just `pull Net::LibIDN`
+      to correct it.  This fixed GH #149.  Thanks @perlpunk and @malbin.
+
+0.0995    2014-03-18 21:12:56 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - The argument for the "init" command is now the repository root
+      instead of the stack name.  This makes the interface more convenient
+      and more familiar to git users.  You can still specify the root
+      using the global --root option if you like.  And the initial stack
+      name can be set with the --stack option.
+
+      [NEW COMMANDS]
+
+      - All the new command listed below are experimental.  The interface and
+      behavior is subject to change.  See the POD in each command for details.
+
+      - The "update" command pulls the latest version of packages.  You can
+      ask to update all packages or just specific ones.
+
+      - The "merge" command joins the history of two stacks together.  At the
+      moment, it is only capable of fast-forward merges.
+
+      - The "reset" command moves the head of the stack to a prior revision,
+      thereby discarding all subsequent revisions.
+
+      - The "revert" command creates a new revision that matches the state at
+      a prior revision.
+
+      [ENHANCEMENTS]
+
+      - The index file for each stack now contains artificial records for
+      each module that is included in the target version of perl.  This
+      allows installers to cope with requests to install core modules,
+      which normally aren't present in a Pinto repository.  If you pull
+      a dual-life module, it will mask the artifical records.  The
+      artifical records never appear in a stack diff or listing.
+
+      NOTE: This change will take effect the next time you perform
+      any command that modifies the state of the stack.
+
+      [BUG FIXES]
+
+      - The "install" command threw an exception with a misleading error
+      message when using the -m option without --do-pull.  Now, both the
+      -m and -M options are silently ignored when --do-pull is not used.
+      Fixes GH #145 (thanks, @hartzell)
+
+0.0994_04 2014-03-17 21:33:08 America/Los_Angeles
+0.0994_03 2014-03-16 00:38:40 America/Los_Angeles
+0.0994_02 2014-03-15 23:07:23 America/Los_Angeles
+0.0994_01 2014-03-05 01:04:46 America/Los_Angeles
+
+      - Changes consolidated above under version 0.0995
+
+0.0994    2014-03-01 16:04:28 America/Los_Angeles
+
+      [ENHANCEMENTS]
+
+      - Improved the locking mechanism so concurrent read operations are
+        sometimes possible, especially during the "install" command.  This
+        fixes GH #142.
+
+0.0993    2014-02-23 14:03:28 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - Pinto no longer sets the default port when connecting to a remote
+      repository.  So in most cases, you'll have to explicitly add the port
+      number to the URI given as the --root.  The default port that "pintod"
+      listens on is 3111.  But if you're running "pintod" behind another server
+      (like Apache or Nginx) then you can probably omit the port number and
+      Pinto will use the default port that is appropriate for the scheme.
+      Closes GH #136.  Thanks @spacebat.
+
+      [ENHANCEMENTS]
+
+      - When the repository is a local directory, it can also be expressed
+      using a file:// URI.  This applies to both the --root option and the
+      PINTO_REPOSITORY_ROOT environment variable. Fixes GH #128.
+
+0.0992    2014-02-10 02:01:18 America/Los_Angeles
+
+      [ENHANCEMENTS]
+
+      - The "list" command now has a --all option that causes it to list
+      every package in every distribution in the repository, including past
+      releases and distributions that are not currently registered on any
+      stack.  When using the --all option, the output includes two extra flags:
+      "m" means that the package is considered to be the main module in the
+      distribution. "x" means that the package can be included in the index.
+      For both of these, the flags will appear as "-" when they are false.
+
+      - The --packages, --distributions, and --authors filtering options on
+      the "list" command are now treated as regular expressions.  Take care
+      to quote them if you use any special shell metacharacters.
+
+      [BUG FIXES]
+
+      - Fixed regression in the "pin", "unpin", and "unregister" commands
+      which resulted in a warning from DBIx::Class about returning multiple
+      rows for a find() query.
+
+0.0991    2014-01-31 17:19:17 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - The --skip-missing-prerequisites option has been replaced with two
+      separate options: 1)  --skip-missing-prerequisite (without the final "s")
+      requires you to specify the name of the packages you want to skip.  This
+      option can be repeated.  2) --skip-all-missing-prerequisites does not
+      require an argument and causes Pinto to skip all missing prereqs.  These
+      options can be abbreviated as -k and -K respectively.
+
+0.099     2014-01-28 12:30:49 America/Los_Angeles
+
+
+      [INCOMPATIBLE CHANGES]
+
+      - The logic that Pinto uses to construct the index has changed.   The
+      index will now include packages only if they are contained in a file with a
+      matching name.  For example, Foo::Bar must be in a file called Bar.pm.  So
+      in effect, Pinto will only index packages that can be use'd or require'd and
+      thus form a dependency.  This makes it more of a "module" index rather than
+      a pure "package" index like PAUSE.  But Pinto has never promised to index
+      exactly like PAUSE anyway.  The benefit is that it also fixes the problem of
+      Pinto indexing packages that it shouldn't.
+
+      - The aforementioned changes to the index logic will only apply when a
+      distribution is pulled to a stack where it isn't already registered.
+      Existing indexes will not spontaneously change just by upgrading Pinto.  If
+      you wish to apply the new index logic to a distribution that already lives
+      in a certain stack, first use the "unregister" command to remove it from
+      the stack and then use the "register" command to bring it back with the
+      new logic.
+
+      [ENHANCEMENTS]
+
+      - For repositories that prohibit intermingled distributions in the index
+      (which is the default) the registration process has been optimized because we
+      can assume that all packages in the distribution are in the index.  In some
+      cases, this can make the "pull" and "add" commands much faster, especially
+      for distributions that contain a large number of packages.
+
+      [BUG FIXES]
+
+      - When deciding if a prequisite is satisfied by the perl core, Pinto now
+      regards a package that is marked as deprecated in the target perl version
+      as if it has already been removed, thus causing Pinto to pull the prereq.
+      This makes Pinto consistent with the behavior of cpanm.
+
+0.098_01  2014-01-28 01:43:19 America/Los_Angeles
+
+      - Changes consolidated above under version 0.099
+
+0.098     2014-01-27 16:49:14 America/Los_Angeles
+
+      [IMPORTANT]
+
+      - This release contains a lot of new features.  I strongly recommend
+      reading the manual pages for the "pull", "add", "log",  and "diff"
+      commands as well as "pinto" itself for further explanation of the
+      enhancements mentioned below.
+
+      - Many of the new features in this release were financed by the Perl
+      community through a crowdfunding campaign.  Thank you for your support.
+      Go to http://tinyurl.com/gopinto to see how it all happened.
+
+      [ENHANCEMENTS]
+
+      - Pinto can now use a web service provided by stratopan.com to locate
+      upstream packages and distributions.  This can reduce memory consumption
+      during the "pull" and "add" commands by about 50%.  And for distributions
+      with few dependencies, it can increase the speed of those commands by as
+      much as 300%.  This feature will be enabled by default for new
+      repositories. For existing repositories it must be enabled manually by
+      adding "http://cpan.stratopan.com" as the (usually first) upstream
+      source in your repository configuration file.
+
+      - The "pull" command can now fetch a precise version of a package using
+      a version specification string such as "Moose==1.34" or "Plack>=2,!=4".
+      This means you can quickly build a repository with your current
+      depedencies and you only need to know the package name and version.
+      This feature will be enabled by default for new repositories.  For
+      existing repositories it must be enabled manually by adding
+      "http://cpan.stratopan.com" as the (usually first) upstream source
+      in your repository configuration file.
+
+      - The "pull" and "add" commands now have a --skip-missing-prerequisites
+      flag that causes it to skip (but warn about) any prerequisite packages that
+      it cannot satisfy.  You can use it to specify precisely which packages to
+      skip, or to skip all unsatisfiable packages. This option only has effect
+      when recursively pulling prerequisites.
+
+      - When using the --dry-run option, a diff report will be displayed,
+      showing all the changes that would have been made.  If there were no
+      changes, nothing is shown.
+
+      - The diff reports now default to a concise format which only lists
+      the distributions that have changed in the index rather than each
+      package.
+
+      - All commands that show diff reports now have a --diff-style option
+      that controls whether to display the concise or detailed report.  You
+      can also set the default style using the PINTO_DIFF_STYLE environment
+      variable.
+
+      - The "log" command now has a --with-diffs (or -d) option that causes
+      it to also display the diff from the previous revision.
+
+      - Pinto can now handle META files that contain prerequisites with
+      version ranges such as ">4, !=5, <=7".  These are currently used by a
+      handful of distributions on CPAN, and they are gradually becoming more
+      common.  Fixes GH #127.
+
+      [BUG FIXES]
+
+      - The "roots" command was returning way too many distributions
+      because it wasn't examining all the indirect dependencies.
+
+      - Fixed when pulling a precise package target (e.g. Foo::Bar==1.0)
+      that existed in a distribution that you already had.
+
+0.097_04  2014-01-25 15:12:31 America/Los_Angeles
+0.097_03  2014-01-23 13:07:22 America/Los_Angeles
+0.097_02  2014-01-23 00:37:04 America/Los_Angeles
+0.097_01  2014-01-17 12:46:28 America/Los_Angeles
+
+      - Changes consolidated above under version 0.098
+
+0.097     2014-01-07 20:53:29 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed compatibility with the exception objects thrown by the
+      latest version of Moose.  However, Pinto itself does not require
+      the latest version of Moose.
+
+0.096     2014-01-07 10:32:19 America/Los_Angeles
+
+      [ENHANCEMENTS]
+
+      - The exit status of the "list" command will now be non-zero if
+      you specify any search criteria and no matches are found.  This
+      follows the behavior of the Unix "ls" command.
+
+      [BUG FIXES]
+
+      - Now requires Module::CoreList 3.03 or newer.
+
+0.095     2013-12-22 23:38:28 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - Fixed bug in the new "roots" command that caused it to report
+      far fewer distributions than it should.
+
+      [ENHANCEMENTS]
+
+      - A warning is emitted if you try to pull or add a Bundle
+      distribution.  Pinto does not know how to automatically determine
+      prerequisites for a Bundle.
+
+      - A better error message is given when repository is not writable.
+      Previously, you were (incorrectly) told that the repository was
+      locked.
+
+0.094     2013-12-22 00:36:27 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - When pulling or adding a distribution which contains packages that
+      partially overlap with an existing distribution on the stack, then
+      all packages from the existing distribution are removed from the
+      stack, not just the overlapping ones.  This means it is impossible
+      for the stack to contain only *some* of the packages from any
+      distribution.
+
+      In nearly all cases, this is what you want because you never want
+      to end up with an installation that has some packages from one
+      distribution and some packages from another.  If you really want
+      your stack to contain the packages from both distributions like
+      the PAUSE index does, then Pinto probably isn't the right tool
+      for you.
+
+      [NEW COMMANDS]
+
+      - The "roots" command will list all the distributions that are
+      the root ancestors of the dependency graph which includes all
+      distributions in the stack.  This command can be used to install
+      every distribution in the stack in one shot.  There are some
+      caveats though.  See the documentation for details.
+
+0.093     2013-12-21 16:24:39 America/Los_Angeles
+
+      [INCOMPATIBLE CHANGES]
+
+      - The "add" and "pull" commands now have both --no-recurse and --recurse
+      options.  This allows you to turn recursion off OR on, depending on
+      the default setting for the repository (see more about that under
+      ENHANCEMENTS).  However, the -n shortcut for --no-recurse is no
+      longer available.
+
+      [ENHANCEMENTS]
+
+      - The pinto.ini configuration file may now contain a "recurse"
+      parameter that determines the default recursion behavior for
+      the "pull" and "add" commands.  Setting it to 1 means those
+      commands are recursive by default.  Setting it to 0 means
+      those commands are not recursive by default.  Either way,
+      commands can always override that parameter using either the
+      --recurse or --no-recurse switches.
+
+      - pinto now falls back to using nano, pico, or vi if none of the
+      usual environment variables for controlling the editor are set.
+      This fixes #119.  Thanks @borisdaeppen for the suggestion.
+
+      - The distributions listed in the generated title of the commit
+      message will now be sorted and deduplicated.
+
+0.092     2013-11-20 11:07:50 America/Los_Angeles
+
+      [ENHANCEMENTS]
+
+      - Periods are now allowed in stack names, user names, and
+      property names.  Note that author ids are still limited to
+      uppercase letters and numbers, to be consistent with PAUSE.
+
+0.091     2013-10-25 12:09:52 America/Los_Angeles
+
+      [BUG FIXES]
+
+      - pinto now accepts remote repository addresses that use SSL
+      (i.e. those starting with "https://").  This fixes #123.
+
+      [DOCUMENTATION]
+
+      - Numerous spelling corrections and documentation improvements.
+      Big thanks to David Steinbrunner and Boris Däppen.
+
 0.090     2013-08-23 14:41:34 America/Los_Angeles
 
       [CODE CHANGES]
@@ -28,7 +493,7 @@
 
      - Reformatted this change log to conform to the
        CPAN::Changes::Spec (Thanks omega).
-      
+
 0.088     2013-08-15 10:49:36 America/Los_Angeles
 
      [INCOMPATIBLE CHANGES]
@@ -111,7 +576,7 @@
 
 
 0.087     2013-06-19 14:47:01 America/Los_Angeles
-       
+
      [INCOMPATIBLE CHANGES]
 
      - When pulling, Pinto now takes the first satisfactory package
@@ -126,7 +591,7 @@
       So there is no need for a special version command.  If you want
       to know what version of pinto you have, just use the --version
       option.
-      
+
      - Author IDs must now match /^[A-Z]{2}[-A-Z0-9]*$/.  In other
       words, two ASCII letters followed by zero or more ASCII letters,
       digits, or hyphens.  If you use lowercase letters, they will be
@@ -148,6 +613,7 @@
       Pinto through the crowdfunding campaing on Crowdtilt are now
       listed in Pinto::Manual::Thanks.  There is also a related Easter
       egg among the pinto(1) commands -- see if you can find it!
+      See http://tinyurl.com/gopinto to learn more about the campaign.
 
      - Pinto::Server (a.k.a. pintod) will abort the action if it
       looses the connection with the client.  So, for example, you can
@@ -278,7 +744,7 @@
 
      - Explicitly requires Term::ANSIColor 2.02 or later.  Thanks CPAN Testers!
 
-     - Requires Pinto::Common 0.068, so you'll have better documentation. 
+     - Requires Pinto::Common 0.068, so you'll have better documentation.
 
 0.066     2013-03-26 16:18:06 America/Los_Angeles
 
@@ -323,7 +789,7 @@
      Pinto now stores full snaphots of the stack at each revision and
      organizes them in a directed graph, much like Git does.  Each
      revision is now identified by a unique non-sequential identifier.
-     
+
      - The interface with the terminal has been completely redesigned.
      You'll see fewer (but hopefully better) diagnostic messages when
      running in verbose mode.  And if not verbose, then you'll see a
@@ -384,8 +850,8 @@
 
       [Important]
 
-     - This version of Pinto is not compatible with repositories that were created 
-     with prior versions.  Please contact thaljef@cpan.org if you need to migrate an 
+     - This version of Pinto is not compatible with repositories that were created
+     with prior versions.  Please contact thaljef@cpan.org if you need to migrate an
      old repository.
 
       [New Features]
@@ -682,11 +1148,11 @@
      5.14 introduced several changes to exception handling.  So I've
      moved the exception handling into the catch{...} block.  I don't
      know why, but this seems to work better.
- 
+
 0.041     2012-05-15 11:13:27 America/Los_Angeles
 
       [Important]
-   
+
      - There have been major changes to the interface and behavior of
      Pinto (read more below).  Beware this version of Pinto is NOT
      compatible with repositories created with any previous version of
@@ -867,7 +1333,7 @@
 
 0.030     2012-01-26 22:00:32 America/Los_Angeles
 
-     - The --repos option for pinto-admin has been officially 
+     - The --repos option for pinto-admin has been officially
      renamed to --root.  This was done to create a symmetrical
      API between Pinto and Pinto::Admin.  The old --repos option
      will *not* be supported for backward compatibility.
@@ -887,7 +1353,7 @@
 
      - Some improvements to Pinto::Store::VCS::Git, which allow you
      to place your Pinto repository anywhere inside a Git repository.
- 
+
 0.028     2011-12-12 01:22:02 America/Los_Angeles
 
      - I discovered that Subversion 1.7 changed the working copy layout
@@ -1144,7 +1610,7 @@
      The "mirror" command is now called "update".  I feel this more
      accurately reflects what is going on, since a Pinto repository
      isn't really a "mirror" of anything.
-   
+
      * Bug Fixes:
 
      Fixed some bugs in the VCS tagging logic.
@@ -1170,7 +1636,7 @@
      semantics of the tag will depend on which type of VCS you are
      using.  Likewise, you can now specify --notag to disable tagging
      completely.
-    
+
 
 0.019     2011-08-24 04:09:41 America/Los_Angeles
 
@@ -1309,7 +1775,7 @@
     With pinto-admin, the "mirror" parameter is now called "source".
     This reflects the fact that your dists don't necessarily have to
     come from a CPAN mirror.  They just have to come from some place
-    that conforms to the CPAN structure.  Do not confuse this with 
+    that conforms to the CPAN structure.  Do not confuse this with
     the "mirror" command, which still does actually mirror the
     aforementioned "source".
 
@@ -1364,16 +1830,16 @@
     remedied.
 
     * Other Changes:
-    
+
     Edited documenation for pinto[1]
-     
+
 0.006     2011-08-04 00:52:22 America/Los_Angeles
 
     More documentation edits.  No code changes.
 
 0.005     2011-08-04 00:43:34 America/Los_Angeles
 
-    Brought the documentation for pinto[1] up to date with the 
+    Brought the documentation for pinto[1] up to date with the
     actual API.
 
 0.004     2011-08-04 00:23:23 America/Los_Angeles

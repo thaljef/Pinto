@@ -8,7 +8,7 @@ use MooseX::Types::Moose qw(Bool);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(DistSpecList);
+use Pinto::Types qw(DistributionTargetList);
 
 #------------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => DistSpecList,
+    isa      => DistributionTargetList,
     traits   => [qw(Array)],
     handles  => { targets => 'elements' },
     required => 1,
@@ -45,25 +45,21 @@ sub execute {
 
     my $stack = $self->stack;
 
-    my @dists = map { $self->_register( $_, $stack ) } $self->targets;
+    for my $target ( $self->targets ) {
 
-    return @dists;
-}
+        throw "Distribution $target is not in the repository"
+            unless my $dist = $self->repo->get_distribution( target => $target );
 
-#------------------------------------------------------------------------------
+        $self->notice("Registering distribution $dist on stack $stack");
 
-sub _register {
-    my ( $self, $spec, $stack ) = @_;
+        my $did_register = $dist->register( stack => $stack, pin => $self->pin );
+        push @{$self->affected}, $dist if $did_register;
 
-    my $dist = $self->repo->get_distribution( spec => $spec );
+        $self->warning("Distribution $dist is already registered on stack $stack")
+            unless $did_register;
+    }
 
-    throw "Distribution $spec is not in the repository" if not defined $dist;
-
-    $self->notice("Registering distribution $dist on stack $stack");
-
-    my $did_register = $dist->register( stack => $stack, pin => $self->pin );
-
-    return $did_register ? $dist : ();
+    return $self;
 }
 
 #------------------------------------------------------------------------------

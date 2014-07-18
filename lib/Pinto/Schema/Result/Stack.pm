@@ -227,53 +227,57 @@ before is_default => sub {
 };
 
 #------------------------------------------------------------------------------
+# TODO: All methods below that operate on the head should be moved into the
+# Revision class, since that is where the data actually is.  For convenience,
+# the Stack class can have the same methods, but they should just delegate to
+# the Revision class.
+#------------------------------------------------------------------------------
 
-=method get_distribution( spec => $dist_spec )
+=method get_distribution( target => $target )
 
-Given a L<Pinto::PackageSpec>, returns the L<Pinto::Schema::Result::Distribution>
-which contains the package with the same name as the spec B<and the same or higher 
-version as the spec>.  Returns nothing if no such distribution is found in 
+Given a L<Pinto::Target::Package>, returns the L<Pinto::Schema::Result::Distribution>
+which contains the package with the same name as the target B<and the same or higher 
+version as the target>.  Returns nothing if no such distribution is found in 
 this stack.
 
-=method get_distribution( spec => $pkg_spec )
-
-Given a L<Pinto::DistributionSpec>, returns the L<Pinto::Schema::Result::Distribution>
-from this stack with the same author id and archive attributes as the spec.  
+Given a L<Pinto::Target::Distribution>, returns the L<Pinto::Schema::Result::Distribution>
+from this stack with the same author id and archive attributes as the target.  
 Returns nothing if no such distribution is found in this stack.
+
+You can also pass a C<cache> argument that must be a reference to a hash.  It will
+be used to cache results so that repeated calls to C<get_distribution> require
+fewer trips to the database.  It is up to you to decide when to expire the cache.
 
 =cut
 
 sub get_distribution {
     my ( $self, %args ) = @_;
 
-    if ( my $spec = $args{spec} ) {
-        if ( itis( $spec, 'Pinto::DistributionSpec' ) ) {
+    my $cache  = $args{cache};
+    my $target = $args{target} or throw 'Invalid arguments';
+    return $cache->{$target} if $cache && exists $cache->{$target};
 
-            my $attrs = { prefetch => [qw(distribution)], distinct => 1 };
-            my $where = {
-                'distribution.author'  => $spec->author,
-                'distribution.archive' => $spec->archive
-            };
+    my $dist;
+    if ( itis( $target, 'Pinto::Target::Distribution' ) ) {
 
-            my $reg = $self->head->search_related( registrations => $where, $attrs )->first;
-            return if not defined $reg;
+        my $attrs = { prefetch => 'distribution'};
+        my $where = {'distribution.author'  => $target->author, 'distribution.archive' => $target->archive};
 
-            return $reg->distribution;
-        }
-        elsif ( itis( $spec, 'Pinto::PackageSpec' ) ) {
+        return unless my $reg = $self->head->search_related( registrations => $where, $attrs )->first;
+        $dist = $reg->distribution;
+    }
+    elsif ( itis( $target, 'Pinto::Target::Package' ) ) {
 
-            my $attrs = { prefetch     => [qw(package distribution)] };
-            my $where = { package_name => $spec->name };
+        my $attrs = { prefetch     => 'distribution' };
+        my $where = { package_name => $target->name  };
 
-            my $reg = $self->head->find_related( registrations => $where, $attrs );
-            return if not defined $reg;
-
-            return if $reg->package->version < $spec->version;
-            return $reg->distribution;
-        }
+        return unless my $reg = $self->head->find_related( registrations => $where, $attrs );
+        return unless $target->is_satisfied_by($reg->package->version);
+        $dist = $reg->distribution;
     }
 
-    throw 'Invalid arguments';
+    $cache->{$target} = $dist if $cache;
+    return $dist;
 }
 
 #------------------------------------------------------------------------------
@@ -311,7 +315,6 @@ sub rename_filesystem {
     throw "Directory $orig_dir does not exist" 
         if not -e $orig_dir;
 
-    $DB::single = 1;
     my $new_dir = $self->repo->config->stacks_dir->subdir($new_name);
     throw "Directory $new_dir already exists" 
         if -e $new_dir && (lc $new_dir ne lc $orig_dir);
@@ -351,9 +354,10 @@ sub duplicate_registrations {
     my ( $self, %args ) = @_;
 
     my $new_rev = $args{to};
+    my $old_rev = $args{from} || $self->head;
 
     my $new_rev_id = $new_rev->id;
-    my $old_rev_id = $self->head->id;
+    my $old_rev_id = $old_rev->id;
 
     debug "Copying registrations for stack $self to $new_rev";
 
@@ -572,7 +576,53 @@ sub diff {
     return Pinto::Difference->new( left => $left, right => $right );
 }
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+
+sub distributions {
+    my ($self) = @_;
+
+    return $self->head->distributions;
+}
+
+#-----------------------------------------------------------------------------
+
+sub packages {
+    my ($self) = @_;
+
+    return $self->head->packages;
+}
+
+#-----------------------------------------------------------------------------
+
+sub roots {
+    my ($self) = @_;
+
+    my @dists = $self->distributions->all;
+    my $tpv   = $self->target_perl_version;
+    my %is_prereq_dist;
+    my %cache;
+
+    # Algorithm: Visit each distribution and resolve each of its
+    # dependencies to the prerequisite distribution (if it exists).
+    # Any distribution that is a prerequisite cannot be a root.
+
+    for my $dist ( @dists ) {
+        for my $prereq ($dist->prerequisites) {
+            # TODO: When we support suggested/recommended prereqs
+            # those will have to be skipped too.  See here for more
+            # discussion: https://github.com/thaljef/Pinto/issues/158
+            next if $prereq->is_test or $prereq->is_develop;
+            next if $prereq->is_core(in => $tpv) or $prereq->is_perl;
+            my %args = (target => $prereq->as_target, cache => \%cache);
+            next unless my $prereq_dist = $self->get_distribution(%args);
+            $is_prereq_dist{$prereq_dist} = 1;
+        }
+    }
+
+    return grep { not $is_prereq_dist{$_} } @dists;
+}
+
+#-----------------------------------------------------------------------------
 
 sub mark_as_default {
     my ($self) = @_;
@@ -748,16 +798,7 @@ sub default_properties {
     };
 }
 
-#-------------------------------------------------------------------------------
-
-sub prohibits_partial_distributions {
-    my ($self) = @_;
-
-    return 1 if $self->get_property('prohibit_partial_distributions');
-    return 0;
-}
-
-#-------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 sub numeric_compare {
     my ( $stack_a, $stack_b ) = @_;
@@ -773,7 +814,7 @@ sub numeric_compare {
     return $r;
 }
 
-#------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 
 sub string_compare {
     my ( $stack_a, $stack_b ) = @_;
@@ -806,7 +847,7 @@ sub to_string {
         T => sub { truncate_text( $self->head->message_title,      $_[0] ) },
         b => sub { $self->head->message_body },
         j => sub { $self->head->username },
-        u => sub { $self->head->datetime->strftime( $_[0] || '%c' ) },
+        u => sub { $self->head->datetime_local->strftime( $_[0] || '%c' ) },
     );
 
     $format ||= $self->default_format();

@@ -51,7 +51,7 @@
 # PINTO_REPO_URL
 #
 #   Sets the URL of the repository that provides pinto's dependencies
-#   Defaults to https://repo.stratopan.com/thaljef/OpenSource/pinto-release
+#   Defaults to https://stratopan.com/thaljef/OpenSource/pinto-release
 #
 # PINTO_INSTALLER_AGENT
 #
@@ -75,7 +75,7 @@ set -ue
 #-----------------------------------------------------------------------------
 # You can set these variables beforehand to override defaults
 
-PINTO_REPO_URL=${PINTO_REPO_URL:="https://repo.stratopan.com/thaljef/OpenSource/pinto-release"}
+PINTO_REPO_URL=${PINTO_REPO_URL:="https://stratopan.com/thaljef/OpenSource/pinto-release"}
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 
 #-----------------------------------------------------------------------------
@@ -158,15 +158,18 @@ END_CONFIG
 
 cat <<END_MSG
 pinto has been installed at $PINTO_HOME.  
-To activate, give this command:
+To activate it, give this command:
 
   source $PINTO_HOME/etc/bashrc
 
 To make pinto part of your everyday environment, add that 
-command to your ~/.profile or ~/.bashrc file as well.  
+last command to your ~/.profile or ~/.bashrc file as well.
 
-Thank you for installing pinto. I hope you find it useful.
-Send feedback to jeff@stratopan.com
+We want your feedback!  Help us make Pinto better by
+writing a review of Pinto at http://cpanratings.perl.org.
+
+Got questions about Pinto?  We have the answers!  Contact
+us at team@stratopan.com or on the #pinto channel on IRC.
 END_MSG
 
 #-----------------------------------------------------------------------------

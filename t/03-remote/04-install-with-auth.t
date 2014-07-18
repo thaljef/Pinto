@@ -28,11 +28,14 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 
 my $htpasswd = make_htpasswd_file(qw(my_login my_password));
 my @auth     = ( qw(--auth backend=Passwd --auth), "path=$htpasswd" );
+
 my $t        = Pinto::Server::Tester->new( pintod_opts => \@auth )->start_server;
-$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
+plan skip_all => "Can't open connection to $t" unless $t->can_connect;
+
+$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1; PkgC~1');
 $t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
 $t->populate('MARK/DistC-1 = PkgC~1');
-$t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
+$t->populate('MARK/DistC-2 = PkgC~2; PkgD~2');
 
 #------------------------------------------------------------------------------
 
@@ -44,11 +47,13 @@ subtest 'Remote install succeeds with valid credentials' => sub {
     my $sandbox    = File::Temp->newdir;
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
+    my $result;
 
-    my $stderr = capture_stderr {
-        lives_ok { $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) ) } 'install command was successfull';
+    capture_stderr {
+        $result = $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
     };
 
+    is $result->was_successful, 1;
     file_exists_ok( $p5_dir->file('PkgA.pm') );
     file_exists_ok( $p5_dir->file('PkgB.pm') );
     file_exists_ok( $p5_dir->file('PkgC.pm') );
@@ -65,10 +70,14 @@ subtest 'Remote install fails with invalid credentials' => sub {
     my $sandbox    = File::Temp->newdir;
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
+    my $result;
 
-    my $stderr = capture_stderr {
-        throws_ok { $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) ) } qr/Installation failed/;
-    }
+    capture_stderr {
+        $result = $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
+    };
+
+    is $result->was_successful, 0;
+    like $result, qr/Installation failed/;
 };
 
 #------------------------------------------------------------------------------
@@ -81,10 +90,14 @@ subtest 'Remote install fails with no credentials' => sub {
     my $sandbox    = File::Temp->newdir;
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
+    my $result;
 
-    my $stderr = capture_stderr {
-        throws_ok { $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) ) } qr/Installation failed/;
+    capture_stderr {
+        $result = $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
     };
+
+    is $result->was_successful, 0;
+    like $result, qr/Installation failed/;
 };
 
 #------------------------------------------------------------------------------

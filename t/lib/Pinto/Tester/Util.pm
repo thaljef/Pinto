@@ -95,7 +95,7 @@ sub make_dist_struct {
 sub parse_dist_spec {
     my ($spec) = @_;
 
-    # AUTHOR / Foo-1.2 .tar.gz = Foo~1.0,Bar~2 & Baz~1.1,Nuts~2.3
+    # AUTHOR / Foo-1.2 .tar.gz = Foo~1.0;Bar~2 & Baz~1.1;Nuts~2.3
     # -------- ------- -------   ------------- ------------------
     #    |        |       |           |               |
     #  auth     dist     ext       provides       requires
@@ -114,8 +114,8 @@ sub parse_dist_spec {
     $dist = parse_pkg_spec($dist);
     $dist->{cpan_author} = $author || 'LOCAL';
 
-    my @provides = map { parse_pkg_spec($_) } split /,/, $provides || '';
-    my @requires = map { parse_pkg_spec($_) } split /,/, $requires || '';
+    my @provides = map { parse_pkg_spec($_) } split /;/, $provides || '';
+    my @requires = map { parse_pkg_spec($_) } split /;/, $requires || '';
 
     return ( $dist, \@provides, \@requires );
 }
@@ -129,7 +129,13 @@ sub parse_pkg_spec {
     $spec =~ m/^ ( .+? ) (?: [~-] ( [\d\._]+ ) )? $/x
         or throw "Could not parse spec: $spec";
 
-    return { name => $1, version => $2 || 0 };
+    # In older perls, capture vers are read-only
+    my ($name, $version) = ($1, $2);
+
+    # Permit '@' as alternative to '==''
+    $version =~ s/^ @ / == /x if $version;
+
+    return { name => $name, version => $version || 0 };
 }
 
 #------------------------------------------------------------------------------
@@ -186,6 +192,8 @@ sub has_cpanm {
     my $cpanm_exe = File::Which::which('cpanm') or return 0;
 
     my ($cpanm_ver) = qx{$cpanm_exe --version} =~ m{version ([\d._]+)};
+
+    throw "Failed to determine the version of $cpanm_exe" if $? >> 8;
 
     return $cpanm_ver >= $min_version;
 }

@@ -20,7 +20,7 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
     # Non-recursive pull
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
-    $local->run_ok( 'Pull', { targets => 'Baz~1.2', no_recurse => 1 } );
+    $local->run_ok( 'Pull', { targets => 'Baz~1.2', recurse => 0 } );
     $local->registration_ok('JOHN/Baz-1.2/Baz~1.2');
     $local->registration_not_ok('PAUL/Nuts-2.3/Nuts~2.3');
 }
@@ -85,6 +85,31 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
     $local->run_ok( Pull => { targets => 'IPC::Open3' } );
     $local->stderr_like(qr/Skipping IPC::Open3~0: included in perl/);
     $local->repository_clean_ok;
+
+}
+
+#------------------------------------------------------------------------------
+
+{
+
+    # When pulling a new dist, any overlapping packages from an existing 
+    # distribution with the same packages should be removed.  In this case 
+    # it is PkgA and PkgC
+
+    my $t = Pinto::Tester->new;
+
+    $t->populate('AUTHOR/Dist-1 = PkgA~1; PkgB~1');
+    $t->populate('AUTHOR/Dist-2 = PkgC~1');
+    $t->registration_ok('AUTHOR/Dist-1/PkgA~1');
+    $t->registration_ok('AUTHOR/Dist-1/PkgB~1');
+    $t->registration_ok('AUTHOR/Dist-2/PkgC~1');
+
+    $t->populate('AUTHOR/Dist-3 = PkgB~3; PkgC~3');
+    $t->registration_not_ok('AUTHOR/Dist-1/PkgA~1');
+    $t->registration_not_ok('AUTHOR/Dist-1/PkgB~1');
+    $t->registration_not_ok('AUTHOR/Dist-2/PkgC~2');
+    $t->registration_ok('AUTHOR/Dist-3/PkgB~3');
+    $t->registration_ok('AUTHOR/Dist-3/PkgC~3');
 
 }
 

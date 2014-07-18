@@ -18,7 +18,7 @@ subtest 'Default config' => sub {
 
     my %cases = (
         root    => 'nowhere',
-        sources => 'http://cpan.perl.org http://backpan.perl.org',
+        sources => 'http://cpan.stratopan.com http://www.cpan.org http://backpan.perl.org',
     );
 
     my $cfg = Pinto::Config->new( root => 'nowhere' );

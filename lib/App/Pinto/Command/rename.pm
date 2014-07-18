@@ -22,10 +22,10 @@ sub command_names { return qw(rename mv) }
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
-    $self->usage_error('Must specify FROM_STACK and TO_STACK')
+    $self->usage_error('Must specify STACK and TO_STACK')
         if @{$args} != 2;
 
-    $opts->{from_stack} = $args->[0];
+    $opts->{stack} = $args->[0];
     $opts->{to_stack}   = $args->[1];
 
     return 1;
@@ -40,7 +40,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT rename [OPTIONS] FROM_STACK TO_STACK
+  pinto --root=REPOSITORY_ROOT rename [OPTIONS] STACK TO_STACK
 
 =head1 DESCRIPTION
 

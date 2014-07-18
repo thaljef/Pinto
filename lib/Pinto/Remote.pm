@@ -7,6 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Maybe Str);
 
+use Try::Tiny;
 use LWP::UserAgent;
 
 use Pinto::Chrome::Term;
@@ -21,7 +22,7 @@ use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Plated);
+with qw(Pinto::Role::Plated Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
@@ -43,37 +44,15 @@ has password => (
     isa => Maybe [Str],
 );
 
-has ua => (
-    is      => 'ro',
-    isa     => 'LWP::UserAgent',
-    default => sub { LWP::UserAgent->new( agent => $_[0]->ua_name, env_proxy => 1 ) },
-    lazy    => 1,
-);
-
-has ua_name => (
-    is      => 'ro',
-    isa     => Str,
-    default => sub { sprintf '%s/%s', ref $_[0], $_[0]->VERSION || '??' },
-    lazy    => 1,
-);
-
 #------------------------------------------------------------------------------
 
 around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
-
     my $args = $class->$orig(@_);
 
-    # Normalize the root
-    $args->{root} = 'http://' . $args->{root}
-        if defined $args->{root} && $args->{root} !~ m{^ https?:// }mx;
-
-    $args->{root} = $args->{root} . ':' . $PINTO_SERVER_DEFAULT_PORT
-        if defined $args->{root} && $args->{root} !~ m{ :\d+ $}mx;
-
     # Grrr.  Gotta avoid passing undefs to Moose
-    my @chrome_attrs = qw(verbose quiet no_color);
+    my @chrome_attrs = qw(verbose quiet color);
     my %chrome_args = map { $_ => delete $args->{$_} }
         grep { exists $args->{$_} } @chrome_attrs;
 
@@ -96,20 +75,32 @@ back to the L<Pinto::Remote::Action> base class.
 sub run {
     my ( $self, $action_name, @args ) = @_;
 
+    # Divert all warnings through our chrome
+    local $SIG{__WARN__} = sub { $self->warning($_) for @_ };
+
     my $action_args = ( @args == 1 and ref $args[0] eq 'HASH' ) ? $args[0] : {@args};
-    my $action_class = $self->load_class_for_action( name => $action_name );
 
-    my $action = $action_class->new(
-        name     => $action_name,
-        args     => $action_args,
-        root     => $self->root,
-        username => $self->username,
-        password => $self->password,
-        chrome   => $self->chrome,
-        ua       => $self->ua
-    );
+    my $result = try {
 
-    return $action->execute;
+        my $action_class = $self->load_class_for_action( name => $action_name );
+
+        my $action = $action_class->new(
+            name     => $action_name,
+            args     => $action_args,
+            root     => $self->root,
+            username => $self->username,
+            password => $self->password,
+            chrome   => $self->chrome,
+        );
+
+        $action->execute;
+    }
+    catch {
+        $self->error($_);
+        Pinto::Result->new->failed( because => $_ );
+    };
+
+    return $result;
 }
 
 #------------------------------------------------------------------------------
@@ -160,6 +151,6 @@ on the remote host.
 
 If you are using the L<pinto> application, it will automatically load
 either Pinto or Pinto::Remote depending on whether your repository
-root looks like a local directory path or a remote URL.
+root looks like a local directory path or a remote URI.
 
 =cut

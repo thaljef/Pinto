@@ -49,10 +49,10 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    local $ENV{PINTO_COLORS} = 'dark blue,  white on_red,green';
+    local $ENV{PINTO_PALETTE} = 'dark blue,  white on_red,green';
 
     my $chrome = Pinto::Chrome::Term->new;
-    is_deeply $chrome->colors, [ 'dark blue', 'white on_red', 'green' ], 'Parsed color list';
+    is_deeply $chrome->palette, [ 'dark blue', 'white on_red', 'green' ], 'Parsed color list';
 }
 
 #-----------------------------------------------------------------------------
@@ -67,6 +67,34 @@ use Pinto::Chrome::Term;
 
     is $out, "This is output\n",     'Got stuff on output handle';
     is $err, "This is diagnostic\n", 'Got stuff on error handle';
+}
+
+#-----------------------------------------------------------------------------
+
+{
+    my $chrome = Pinto::Chrome::Term->new;
+
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = 'emacs';
+    is $chrome->find_editor, $ENV{PINTO_EDITOR}, 'Editor from PINTO_EDITOR';
+
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = 'emacs';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, $ENV{EDITOR}, 'Editor from EDITOR';
+
+    local $ENV{VISUAL} = 'emacs';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, $ENV{VISUAL}, 'Editor from VISUAL';
+
+    local $ENV{PATH} = '';
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, undef, 'No editor is avaiable';
+
 }
 
 #-----------------------------------------------------------------------------

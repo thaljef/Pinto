@@ -43,7 +43,7 @@ generous support, I can continue doing the work I love most.
   Yanick Champoux         Andrey Khozov           Craig Scrivner          
   Gustavo Chaves          Wolfgang Kinkeldei      Li Sen                  
   Peter Chines            Yaroslav Korshak        Michael South           
-  Adam Clarke             Damien Krotkine         Tadeusz Sośnierz        
+  Adam Clarke             Damien Krotkine         Tadeusz Sosnierz        
   Olav Cleemann           Michael Kröll           Marc St Raymond         
   Jody Clements           Tom Legrady             Seth Surchin            
   Greg Cole               Felipe Leprevost        Gabor Szabo             
@@ -63,10 +63,10 @@ generous support, I can continue doing the work I love most.
   Hugh Esco               Marco Palma             Marek Zareba            
   Roman F                 Karen Pauley            Kev Zettler             
   David Farrell           Bryan Paxton            j0e axford              
-  Eric Folley             Emil Perhinschi         dagur                  
+  Eric Folley             Emil Perhinschi         dagur                   
   Mike Friedman           Matt Perry              brian d foy             
   Wolf Gang               Dimitar Petrov          del skorch              
-  Greg Gerke              Jamie Pitts             Allen van der Ross    
+  Greg Gerke              Jamie Pitts             Allen van der Ross      
 
 I also thank L<Crowdtilt|http://crowdtilt.com> for graciously allowing us to
 use their fundraising platform free of charge, and for providing such

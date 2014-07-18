@@ -17,7 +17,7 @@ note("This test requires a live internet connection to pull stuff from CPAN");
 # appears that they don't have any packages.  The PackageExctractor class
 # has workaround for these
 
-for my $pkg (qw(common::sense FCGI)) {
+for my $pkg (qw(common::sense FCGI Net::LibIDN)) {
     my $t = Pinto::Tester->new;
     $t->run_ok( Pull => { targets => $pkg } );
     $t->run_ok( List => {} );

@@ -10,7 +10,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(SpecList);
+use Pinto::Types qw(TargetList);
 
 #------------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => SpecList,
+    isa      => TargetList,
     traits   => [qw(Array)],
     handles  => { targets => 'elements' },
     required => 1,
@@ -55,14 +55,16 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my ( @successful, @failed );
+    my $stack = $self->stack;
+
     for my $target ( $self->targets ) {
 
         try {
             $self->repo->svp_begin;
-            $self->notice( "Pulling target $target to stack " . $self->stack );
-            my $dist = $self->pull( target => $target );
-            push @successful, $dist ? $dist : ();
+            $self->notice( "Pulling target $target to stack $stack");
+            my ($dist, $did_pull, $did_pull_prereqs) = $self->pull( target => $target );
+            $self->notice("Target $target is already on stack $stack") unless $did_pull;
+            push @{$self->affected}, $dist if $did_pull || $did_pull_prereqs;
         }
         catch {
             throw $_ unless $self->no_fail;
@@ -72,7 +74,6 @@ sub execute {
 
             $self->error($_);
             $self->error("Target $target failed...continuing anyway");
-            push @failed, $target;
         }
         finally {
             my ($error) = @_;
@@ -82,7 +83,7 @@ sub execute {
 
     $self->chrome->progress_done;
 
-    return @successful;
+    return $self;
 }
 
 #------------------------------------------------------------------------------

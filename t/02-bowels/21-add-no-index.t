@@ -18,7 +18,7 @@ use Pinto::Util qw(sha256);
 subtest 'Excluding with exact match' => sub {
 
     my $t       = Pinto::Tester->new;
-    my $archive = make_dist_archive('Foo-Bar-0.01=Foo~0.01,Bar~0.01');
+    my $archive = make_dist_archive('Foo-Bar-0.01 = Foo~0.01; Bar~0.01');
     $t->run_ok( Add => { archives => $archive, no_index => ['Foo'] } );
 
     $t->registration_not_ok("AUTHOR/Foo-Bar-0.01/Foo~0.01/master");
@@ -37,7 +37,7 @@ subtest 'Excluding with exact match' => sub {
 subtest 'Excluding with regexes' => sub {
 
     my $t       = Pinto::Tester->new;
-    my $archive = make_dist_archive('Foo-Bar-0.01=Foo~0.01,Bar~0.01,Baz~0.01');
+    my $archive = make_dist_archive('Foo-Bar-0.01 = Foo~0.01; Bar~0.01; Baz~0.01');
     $t->run_ok( Add => { archives => $archive, no_index => [ '/F', '/r' ] } );
 
     $t->registration_not_ok("AUTHOR/Foo-Bar-0.01/Foo~0.01/master");
@@ -56,7 +56,7 @@ subtest 'Excluding with regexes' => sub {
 subtest 'Excluding all packages in the dist' => sub {
 
     my $t       = Pinto::Tester->new;
-    my $archive = make_dist_archive('Foo-0.01=Foo~0.01');
+    my $archive = make_dist_archive('Foo-0.01 = Foo~0.01');
     $t->run_throws_ok(
         Add => { archives => $archive, no_index => ['/o'] },
         qr/has no packages left/, 'Cannot exclude all packages'

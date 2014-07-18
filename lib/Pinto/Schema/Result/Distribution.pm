@@ -184,7 +184,7 @@ use CPAN::DistnameInfo;
 use String::Format;
 
 use Pinto::Util qw(itis debug whine throw);
-use Pinto::DistributionSpec;
+use Pinto::Target::Distribution;
 
 use overload (
     '""'  => 'to_string',
@@ -220,9 +220,12 @@ sub FOREIGNBUILDARGS {
 sub register {
     my ( $self, %args ) = @_;
 
-    my $stack        = $args{stack};
-    my $pin          = $args{pin};
-    my $did_register = 0;
+    my $stack = $args{stack};
+    my $force = $args{force} || 0;
+    my $pin   = $args{pin}   || 0;
+
+    my $can_intermingle = $stack->repo->config->intermingle;
+    my $did_register    = 0;
 
     $stack->assert_is_open;
     $stack->assert_not_locked;
@@ -233,44 +236,61 @@ sub register {
 
     for my $pkg ($self->packages) {
 
-      my $where = {package_name => $pkg->name};
-      my $incumbent = $stack->head->find_related(registrations => $where);
+        if (not $pkg->can_index) {
+            my $file = $pkg->file || '';
+            debug( sub {"Package $pkg in file $file is not indexable.  Skipping registration"} );
+            next;
+        }
 
-      if (not defined $incumbent) {
-          debug( sub {"Registering $pkg on stack $stack"} );
-          $pkg->register(stack => $stack, pin => $pin);
-          $did_register++;
-          next;
-      }
+        my $where = {package_name => $pkg->name};
+        my $incumbent = $stack->head->find_related(registrations => $where);
 
-      my $incumbent_pkg = $incumbent->package;
-
-      if ( $incumbent_pkg == $pkg ) {
-        debug( sub {"Package $pkg is already on stack $stack"} );
-        $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
-        next;
-      }
-
-
-      if ( $incumbent->is_pinned ) {
-        my $pkg_name = $pkg->name;
-        throw "Unable to register distribution $self: package $pkg_name is pinned to $incumbent_pkg";
-      }
-
-      whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
-        if $incumbent_pkg > $pkg;
+        if (not defined $incumbent) {
+            debug( sub {"Registering package $pkg on stack $stack"} );
+            $pkg->register(stack => $stack, pin => $pin);
+            $did_register++;
+            next;
+        }
+        elsif (not $can_intermingle) {
+            # If the repository prohibits intermingled distributions, we can
+            # assume all the apckages in the incumbent are already registered.
+            my $dist = $incumbent->distribution;
+            if ($dist->id == $self->id and $incumbent->is_pinned == $pin) {
+                debug( sub {"Distribution $dist is already fully registered"} );
+                last;
+            }
+        }
 
 
-      if ( $stack->prohibits_partial_distributions ) {
-        # If the stack is pure, then completely unregister all the
-        # packages in the incumbent distribution, so there is no overlap
-        $incumbent->distribution->unregister(stack => $stack);
-      }
-      else {
-        # Otherwise, just delete this one registration.  The stack may
-        # end up with some packages from one dist and some from another
-        $incumbent->delete;
-      }
+        my $incumbent_pkg = $incumbent->package;
+
+        if ( $incumbent_pkg == $pkg ) {
+            debug( sub {"Package $pkg is already on stack $stack"} );
+            $incumbent->pin && $did_register++ if $pin and not $incumbent->is_pinned;
+            next;
+        }
+
+
+        if ( $incumbent->is_pinned ) {
+            my $pkg_name = $incumbent_pkg->name;
+            my $dist = $incumbent->distribution;
+            $force ? whine "Forcibly changing $dist to $self"
+                   : throw "Unable to register distribution $self: $pkg_name is pinned to $incumbent_pkg";
+        }
+
+        whine "Downgrading package $incumbent_pkg to $pkg on stack $stack"
+            if $incumbent_pkg > $pkg;
+
+        if ( $can_intermingle ) {
+            # If the repository allows intermingled distributions, then
+            # remove only the incumbent package from the index.
+            $incumbent->delete;
+        }
+        else {
+            # Otherwise, remove all packages in the incumbent
+            # distribution from the index.  This is the default.
+            $incumbent->distribution->unregister(stack => $stack, force => $force);
+        }
 
       $pkg->register(stack => $stack, pin => $pin);
       $did_register++;
@@ -410,10 +430,10 @@ sub native_path {
 
 #------------------------------------------------------------------------------
 
-sub url {
+sub uri {
     my ( $self, $base ) = @_;
 
-    # TODO: Is there a sensible URL for local dists?
+    # TODO: Is there a sensible URI for local dists?
     return 'UNKNOWN' if $self->is_local;
 
     $base ||= $self->source;
@@ -465,6 +485,36 @@ sub registered_stacks {
 
 #------------------------------------------------------------------------------
 
+sub main_module {
+    my ($self) = @_;
+
+    # We start by sorting packages by the length of their name.  Most of
+    # the time, the shorter one is more likely to be the main module name.
+    my @pkgs = sort { length $a->name <=> length $b->name } $self->packages;
+
+    # Transform the dist name into a package name
+    my $dist_name = $self->name;
+    $dist_name =~ s/-/::/g;
+
+    # First, look for an indexable package that matches the dist name
+    for my $pkg (@pkgs) {
+        return $pkg if $pkg->can_index && $pkg->name eq $dist_name;
+    }
+
+    # Then, look for any indexable package
+    for my $pkg (@pkgs) {
+        return $pkg if $pkg->can_index;
+    }
+
+    # Then, just use the first package
+    return $pkgs[0] if @pkgs;
+
+    # There are no packages
+    return undef;
+}
+
+#------------------------------------------------------------------------------
+
 sub package_count {
     my ($self) = @_;
 
@@ -476,15 +526,15 @@ sub package_count {
 sub prerequisite_specs {
     my ($self) = @_;
 
-    return map { $_->as_spec } $self->prerequisites;
+    return map { $_->as_target } $self->prerequisites;
 }
 
 #------------------------------------------------------------------------------
 
-sub as_spec {
+sub as_target {
     my ($self) = @_;
 
-    return Pinto::DistributionSpec->new( path => $self->path );
+    return Pinto::Target::Distribution->new( path => $self->path );
 }
 
 #------------------------------------------------------------------------------
@@ -513,13 +563,14 @@ sub to_string {
         'D' => sub { $self->vname },
         'V' => sub { $self->version },
         'm' => sub { $self->is_devel ? 'd' : 'r' },
+        'M' => sub { my $m = $self->main_module; $m ? $m->name : '' },
         'h' => sub { $self->path },
         'H' => sub { $self->native_path },
         'f' => sub { $self->archive },
         's' => sub { $self->is_local ? 'l' : 'f' },
         'S' => sub { $self->source },
         'a' => sub { $self->author },
-        'u' => sub { $self->url },
+        'u' => sub { $self->uri },
         'c' => sub { $self->package_count },
     );
 

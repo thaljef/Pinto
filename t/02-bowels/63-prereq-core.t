@@ -16,7 +16,7 @@ use Pinto::Tester;
 # Module::Build~0.2808_01 entered perl in 5.10.0
 
 my $t = Pinto::Tester->new;
-$t->populate('AUTHOR/Foo-1 = Foo-1 & Bar~1, perl~5.6.0, strict');
+$t->populate('AUTHOR/Foo-1 = Foo-1 & Bar~1; perl~5.6.0; strict');
 $t->populate('AUTHOR/Bar-1 = Bar-1 & Module::Build~0.2808_01');
 
 my $dist = $t->pinto->repo->get_distribution( path => 'A/AU/AUTHOR/Foo-1.tar.gz' );
@@ -45,7 +45,7 @@ while ( my ( $pv, $expect ) = each %test_cases ) {
     my $cb = sub {
         my ($prereq) = @_;
         $walked_prereqs->{ $prereq->package_name } = $prereq->package_version;
-        return $t->pinto->repo->get_distribution( spec => $prereq->as_spec );
+        return $t->pinto->repo->get_distribution( target => $prereq->as_target );
     };
 
     # If $pv is not a true value, then do not make a filter

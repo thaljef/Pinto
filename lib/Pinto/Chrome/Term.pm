@@ -9,9 +9,10 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Term::ANSIColor;
 use Term::EditorEdit;
+use File::Which qw(which);
 
-use Pinto::Types qw(Io ANSIColorSet);
-use Pinto::Util qw(user_colors itis throw is_interactive);
+use Pinto::Types qw(Io ANSIColorPalette);
+use Pinto::Util qw(user_palette itis throw is_interactive);
 
 #-----------------------------------------------------------------------------
 
@@ -23,16 +24,16 @@ extends qw( Pinto::Chrome );
 
 #-----------------------------------------------------------------------------
 
-has no_color => (
+has color => (
     is      => 'ro',
     isa     => Bool,
-    default => sub { !!$ENV{PINTO_NO_COLOR} || 0 },
+    default => sub { !$ENV{PINTO_NO_COLOR} },
 );
 
-has colors => (
+has palette => (
     is      => 'ro',
-    isa     => ANSIColorSet,
-    default => sub { user_colors() },
+    isa     => ANSIColorPalette,
+    default => sub { user_palette() },
     lazy    => 1,
 );
 
@@ -52,6 +53,12 @@ has stderr => (
     lazy    => 1,
 );
 
+has has_made_progress => (
+    is      => 'rw',
+    isa     => Bool,
+    default => 0,
+);
+
 #-----------------------------------------------------------------------------
 
 sub _build_stdout {
@@ -63,7 +70,10 @@ sub _build_stdout {
     return $stdout if not -t STDOUT;
     return $stdout if not $pager;
 
-    open my $pager_fh, q<|->, $pager
+    my @pager_options = $ENV{PINTO_PAGER_OPTIONS} ?
+        ( $ENV{PINTO_PAGER_OPTIONS} ) : ();
+
+    open my $pager_fh, q<|->, $pager, @pager_options
         or throw "Failed to open pipe to pager $pager: $!";
 
     return bless $pager_fh, 'IO::Handle';    # HACK!
@@ -92,6 +102,8 @@ sub diag {
 
     $opts ||= {};
 
+    return if $self->quiet;
+
     $msg = $msg->() if ref $msg eq 'CODE';
 
     if ( itis( $msg, 'Pinto::Exception' ) ) {
@@ -117,6 +129,8 @@ sub show_progress {
     $self->stderr->autoflush;    # Make sure pipes are hot
 
     print { $self->stderr } '.' or croak $!;
+
+    $self->has_made_progress(1);
 }
 
 #-----------------------------------------------------------------------------
@@ -124,6 +138,7 @@ sub show_progress {
 sub progress_done {
     my ($self) = @_;
 
+    return unless $self->has_made_progress;
     return unless $self->should_render_progress;
 
     print { $self->stderr } "\n" or croak $!;
@@ -145,7 +160,8 @@ sub should_render_progress {
 sub edit {
     my ( $self, $document ) = @_;
 
-    local $ENV{VISUAL} = $ENV{PINTO_EDITOR} if $ENV{PINTO_EDITOR};
+    local $ENV{VISUAL} = $self->find_editor
+        or throw 'Unable to find an editor.  Please set PINTO_EDITOR';
 
     # If this command is reading input from a pipe or file, then
     # STDIN will not be connected to a terminal.  This causes vim
@@ -167,7 +183,7 @@ sub colorize {
 
     return ''      if not $string;
     return $string if not defined $color_number;
-    return $string if $self->no_color;
+    return $string if not $self->color;
 
     my $color = $self->get_color($color_number);
 
@@ -181,11 +197,30 @@ sub get_color {
 
     return '' if not defined $color_number;
 
-    my $color = $self->colors->[$color_number];
+    my $color = $self->palette->[$color_number];
 
     throw "Invalid color number: $color_number" if not defined $color;
 
     return Term::ANSIColor::color($color);
+}
+
+#-----------------------------------------------------------------------------
+
+sub find_editor {
+    my ($self) = @_;
+
+    # Try unsing environment variables first
+    for my $env_var (qw(PINTO_EDITOR VISUAL EDITOR)) {
+        return $ENV{$env_var} if $ENV{$env_var};
+    }
+
+    # Then try typical editor commands
+    for my $cmd (qw(nano pico vi)) {
+        my $found_cmd = which($cmd);
+        return $found_cmd if $found_cmd;
+    }
+
+    return;
 }
 
 #-----------------------------------------------------------------------------

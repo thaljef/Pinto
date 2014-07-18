@@ -14,7 +14,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 has chrome => (
     is       => 'ro',
     isa      => 'Pinto::Chrome',
-    handles  => [qw(show info notice warning error)],
+    handles  => [qw(show diag info notice warning error)],
     required => 1,
 );
 

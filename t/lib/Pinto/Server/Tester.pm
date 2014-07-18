@@ -9,6 +9,7 @@ use Carp;
 use Test::TCP;
 use File::Which;
 use Proc::Fork;
+use LWP::UserAgent;
 use Path::Class qw(dir);
 
 use Pinto::Types qw(File Uri);
@@ -95,7 +96,7 @@ has server_url => (
 =attr pintod_exe
 
 Sets the path to the C<pintod> executable.  If not specified, we will search
-in F<./blib/script>, F<./bin>, C<PINTO_HOME>, and finally your C<PATH>  An 
+in F<./blib/script>, F<./bin>, C<PINTO_HOME>, and finally your C<PATH>  An
 exception is thrown if C<pintod> cannot be found.
 
 =cut
@@ -160,7 +161,7 @@ sub start_server {
         parent {
             my $server_pid = shift;
             $self->server_pid($server_pid);
-            sleep 5;    # Let the server warm up
+            sleep 10; # Let the server warm up
 
         }
 
@@ -229,6 +230,32 @@ sub server_not_running_ok {
     my $ok = not kill 0, $server_pid;    # Is this portable?
 
     return $self->tb->ok( $ok, "Server is not running with pid $server_pid" );
+}
+
+#-------------------------------------------------------------------------------
+
+=method can_connect
+
+Returns true if the server is able to receive and respond to a connection
+request.
+
+=cut
+
+sub can_connect {
+    my ($self) = @_;
+
+    # LWP uses a 500 error when the connection is refused.  I'm not
+    # sure if this will be portable to otehr user agents.  Might be
+    # better to open a raw socket.  See IO::Socket::INET for that.
+    return LWP::UserAgent->new->get($self->server_url)->code != 500;
+}
+
+#-------------------------------------------------------------------------------
+
+sub to_string {
+    my $self = shift;
+
+    return $self->server_url->as_string;
 }
 
 #-------------------------------------------------------------------------------

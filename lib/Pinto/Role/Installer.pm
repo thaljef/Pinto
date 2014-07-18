@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Path::Class qw(dir);
 
-use Pinto::Util qw(throw mask_url_passwords find_cpanm_exe);
+use Pinto::Util qw(throw mask_uri_passwords find_cpanm_exe);
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 
 #-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ has cpanm_exe => (
 
 #-----------------------------------------------------------------------------
 
-requires qw( execute targets mirror_url );
+requires qw( execute targets mirror_uri );
 
 #-----------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ after execute => sub {
 
     # Wire cpanm to our repo
     my $opts = $self->cpanm_options;
-    $opts->{mirror} = $self->mirror_url;
+    $opts->{mirror} = $self->mirror_uri;
     $opts->{'mirror-only'} = '';
 
     # Process other cpanm options
@@ -67,7 +67,7 @@ after execute => sub {
     }
 
     # Scrub passwords from the command so they don't appear in the logs
-    my @sanitized_cpanm_opts = map { mask_url_passwords($_) } @cpanm_opts;
+    my @sanitized_cpanm_opts = map { mask_uri_passwords($_) } @cpanm_opts;
     $self->info( join ' ', 'Running:', $self->cpanm_exe, @sanitized_cpanm_opts );
 
     # Run cpanm

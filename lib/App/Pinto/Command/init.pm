@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Class::Load;
+use Pinto::Util qw(is_remote_repo);
 
 #-----------------------------------------------------------------------------
 
@@ -23,7 +24,9 @@ sub opt_spec {
     return (
         [ 'description=s'             => 'Description of the initial stack' ],
         [ 'no-default'                => 'Do not mark the initial stack as the default' ],
-        [ 'source=s@'                 => 'URL of upstream repository (repeatable)' ],
+        [ 'recurse!'                  => 'Default recursive behavior (negatable)' ],
+        [ 'source=s@'                 => 'URI of upstream repository (repeatable)' ],
+        [ 'stack=s'                   => 'Name of the initial stack' ],
         [ 'target-perl-version|tpv=s' => 'Default perl version for new stacks' ],
     );
 }
@@ -33,11 +36,8 @@ sub opt_spec {
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
-    $self->usage_error('Only one stack argument is allowed')
+    $self->usage_error('Only one argument is allowed')
         if @{$args} > 1;
-
-    $self->usage_error('Cannot use --description without specifying a stack')
-        if $opts->{description} and not @{$args};
 
     return 1;
 }
@@ -49,18 +49,16 @@ sub execute {
 
     my $global_opts = $self->app->global_options;
 
-    $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT}
-        || die "Must specify a repository root directory\n";
+    die "Must specify a repository root directory\n"
+        unless $global_opts->{root} ||=
+            ($args->[0] || $ENV{PINTO_REPOSITORY_ROOT});
 
-    $global_opts->{root} =~ m{^https?://}x
-        && die "Cannot create remote repositories\n";
+    die "Cannot create remote repositories\n"
+        if is_remote_repo( $global_opts->{root} );
 
     # Combine repeatable "source" options into one space-delimited "sources" option.
     # TODO: Use a config file format that allows multiple values per key (MVP perhaps?).
     $opts->{sources} = join ' ', @{ delete $opts->{source} } if defined $opts->{source};
-
-    # Stuff the stack argument into the options hash (if it exists)
-    $opts->{stack} = $args->[0] if $args->[0];
 
     my $initializer = $self->load_initializer->new;
     $initializer->init( %{$global_opts}, %{$opts} );
@@ -92,22 +90,25 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT init [OPTIONS] [STACK]
+  pinto --root=REPOSITORY_ROOT init [OPTIONS]
 
 
 =head1 DESCRIPTION
 
-This command creates a new repository.  If the target directory
-does not exist, it will be created for you.  If it does already exist,
-then it must be empty.  You can set the configuration properties of
-the new repository using the command line options listed below.
+This command creates a new repository.  If the target directory does not
+exist, it will be created for you.  If it does already exist, then it must be
+empty.  You can set the configuration properties of the new repository using
+the command line options listed below.
 
 
 =head1 COMMAND ARGUMENTS
 
-The argument is the name of the initial stack.  Stack names must be 
-alphanumeric plus hyphens and underscores, and are not case-sensitive.  
-Defaults to C<master>.
+The path to the repository root directory can also be be given as an argument,
+which will silently override the C<--root> option.  So the following are
+equivalent:
+
+  pinto --root=/some/directory init
+  pinto init /some/directory
 
 
 =head1 COMMAND OPTIONS
@@ -116,32 +117,47 @@ Defaults to C<master>.
 
 =item --description=TEXT
 
-A brief description of the initial stack.  Defaults to "the initial
-stack".  This option is only allowed if the C<STACK> argument is
-given.
+A brief description of the initial stack.  Defaults to "the initial stack".
+This option is only allowed if the C<STACK> argument is given.
 
 
 =item --no-default
 
-Do not mark the initial stack as the default stack.
-
-If you choose not to mark the default stack, then you'll be required
-to specify the C<--stack> option for most commands.  You can always
-mark (or unmark) the default stack by at any time by using the
-L<default|App::Pinto::Command::default> command.
+Do not mark the initial stack as the default stack. If you choose not to mark
+the default stack, then you'll be required to specify the C<--stack> option
+for most commands.  You can always mark (or unmark) the default stack at any
+time by using the L<default|App::Pinto::Command::default> command.
 
 
-=item --source=URL
+=item --recurse
 
-The URL of the upstream repository where distributions will be pulled
-from.  This is usually the URL of a CPAN mirror, and it defaults to
-L<http://cpan.perl.org> and L<http://backpan.perl.org>.  But it could 
-also be a L<CPAN::Mini> mirror, or another L<Pinto> repository.
+=item --no-recurse
 
-You can specify multiple repository URLs by repeating the C<--source>
-option.  Repositories that appear earlier in the list have priority
-over those that appear later.  See L<Pinto::Manual> for more
-information about using multiple upstream repositories.
+Sets the default recursion behavior for the L<pull|App::Pinto::Command::pull>
+add L<add|App::Pinto::Command::add> commands.  C<--recurse> means that
+commands  will be recursive by default.  C<--no-recurse> means commands will
+not be  recursive.  If you do not specify either of these, it defaults to
+being  recursive.  However, each command can always override this default.
+
+
+=item --source=URI
+
+The URI of the upstream repository where distributions will be pulled from.
+This is usually the URI of a CPAN mirror, and it defaults to
+L<http://cpan.perl.org> and L<http://backpan.perl.org>.  But it could  also be
+a L<CPAN::Mini> mirror, or another L<Pinto> repository.
+
+You can specify multiple repository URIs by repeating the C<--source> option.
+Repositories that appear earlier in the list have priority over those that
+appear later.  See L<Pinto::Manual> for more information about using multiple
+upstream repositories.
+
+
+=item --stack=NAME
+
+Sets the name of the initial stack.  Stack names must be alphanumeric plus
+hyphens, underscores, and periods, and are not case-sensitive.  Defaults to
+C<master>.
 
 =back
 

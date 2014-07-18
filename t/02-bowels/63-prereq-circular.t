@@ -24,7 +24,7 @@ $t->populate('AUTHOR/Baz-1 = Baz-1 & Foo~1');
 {
     my $cb = sub {
         my ($prereq) = @_;
-        my $dist = $t->pinto->repo->get_distribution( spec => $prereq->as_spec );
+        my $dist = $t->pinto->repo->get_distribution( target => $prereq->as_target );
         ok defined $dist, "Got distribution for prereq $prereq";
         return $dist;
     };

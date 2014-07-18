@@ -6,6 +6,7 @@ use warnings;
 use Test::More;
 use Test::File;
 use Test::Exception;
+use File::Temp;
 use Path::Class qw(dir);
 use Capture::Tiny qw(capture_stderr);
 
@@ -14,7 +15,7 @@ use Pinto::Remote;
 use lib 't/lib';
 use Pinto::Server::Tester;
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
-use Pinto::Tester::Util qw(make_dist_archive has_cpanm);
+use Pinto::Tester::Util qw(has_cpanm);
 
 #------------------------------------------------------------------------------
 
@@ -24,10 +25,11 @@ plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
 #------------------------------------------------------------------------------
 
 my $t = Pinto::Server::Tester->new->start_server;
-$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1,PkgC~1');
-$t->populate('PAUL/DistB-1 = PkgB~1 & PkgD~2');
+plan skip_all => "Can't open connection to $t" unless $t->can_connect;
+
+$t->populate('JOHN/DistA-1 = PkgA~1 & PkgB~1');
+$t->populate('PAUL/DistB-1 = PkgB~1 & PkgC~1');
 $t->populate('MARK/DistC-1 = PkgC~1');
-$t->populate('MARK/DistC-2 = PkgC~2,PkgD~2');
 
 #------------------------------------------------------------------------------
 subtest 'Install from default stack' => sub {
@@ -36,15 +38,16 @@ subtest 'Install from default stack' => sub {
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
     my $remote     = Pinto::Remote->new( root => $t->server_url );
+    my $result;
 
-    my $stderr = capture_stderr {
-        $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
+    capture_stderr {
+        $result = $remote->run( Install => ( targets => ['PkgA'], %cpanm_opts ) );
     };
 
+    is $result->was_successful, 1;
     file_exists_ok( $p5_dir->file('PkgA.pm') );
     file_exists_ok( $p5_dir->file('PkgB.pm') );
     file_exists_ok( $p5_dir->file('PkgC.pm') );
-    file_exists_ok( $p5_dir->file('PkgD.pm') );
 };
 
 #------------------------------------------------------------------------------
@@ -58,15 +61,16 @@ subtest 'Install from named stack' => sub {
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
     my $remote     = Pinto::Remote->new( root => $t->server_url );
+    my $result;
 
-    my $stderr = capture_stderr {
-        $remote->run( Install => ( targets => ['PkgA'], stack => 'dev', %cpanm_opts ) );
+    capture_stderr {
+        $result = $remote->run( Install => ( targets => ['PkgA'], stack => 'dev', %cpanm_opts ) );
     };
 
+    is $result->was_successful, 1;
     file_exists_ok( $p5_dir->file('PkgA.pm') );
     file_exists_ok( $p5_dir->file('PkgB.pm') );
     file_exists_ok( $p5_dir->file('PkgC.pm') );
-    file_exists_ok( $p5_dir->file('PkgD.pm') );
 };
 
 #------------------------------------------------------------------------------
@@ -77,10 +81,14 @@ subtest 'Install a missing target' => sub {
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
     my $remote     = Pinto::Remote->new( root => $t->server_url );
+    my $result;
 
-    my $stderr = capture_stderr {
-        throws_ok { $remote->run( Install => { targets => ['PkgZ'], %cpanm_opts } ) } qr/Installation failed/;
+    capture_stderr {
+        $result = $remote->run( Install => { targets => ['PkgZ'], %cpanm_opts } );
     };
+
+    is $result->was_successful, 0;
+    like $result, qr/Installation failed/;
 };
 
 #------------------------------------------------------------------------------
@@ -100,7 +108,7 @@ subtest 'Install a dist with an unusual author id' => sub {
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
     my $remote     = Pinto::Remote->new( root => $t->server_url );
 
-    my $stderr = capture_stderr {
+    capture_stderr {
         $remote->run( Install => ( targets => ['FOO-22/DistA-1.tar.gz'], %cpanm_opts ) );
         $remote->run( Install => ( targets => ['FO/DistB-1.tar.gz'], %cpanm_opts ) );
     };

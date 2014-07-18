@@ -22,16 +22,17 @@ __END__
 
   # A new repository with default stack named "master"
   pinto -r /repo/dir init
+  pinto init /repo/dir
 
   # A new repository with default stack named "dev"
-  pinto -r /repo/dir init dev
+  pinto -r /repo/dir init --stack dev
 
 =head1 BROWSING A REPOSITORY
 
   # See all packages in the default stack
   pinto -r /repo/dir list
 
-  # See all packages in the default stack matching "Foo::Bar"
+  # See all packages in the default stack matching m/Foo::Bar/i
   pinto -r /repo/dir list -P Foo::Bar
 
   # See all packages in the default stack by author "JOE"
@@ -48,6 +49,9 @@ __END__
 
   # Pull version 2.4 or newer of Foo::Bar
   pinto -r /repo/dir pull Foo~2.4
+
+  # Pull exactly version 2.4 of Foo::Bar
+  pinto -r /repo/dir pull Foo==2.4
 
   # Pull a specific distribution
   pinto -r /repo/dir pull AUTHOR/Foo-Bar-1.9.tar.gz
@@ -95,6 +99,9 @@ __END__
 
   # Install and populate the repository with missing prereqs
   pinto -r /repo/dir install --do-pull Foo::Bar
+
+  # Install everything in the stack
+  pinto -r /repo/dir install --all
 
 =head1 MANAGING STACKS
 
@@ -156,6 +163,9 @@ __END__
   # Compare the heads of the "dev" and "qa" stacks
   pinto -r /repo/dir diff dev qa
 
+  # Merge "dev" stack into the "qa" stack (fast-forward only)
+  pinto -r /repo/dir merge dev qa
+
 =head1 MISCELLANY
 
   # Report missing distribution archives
@@ -166,6 +176,9 @@ __END__
 
   # Remove orphan files and tune the database
   pinto -r /repo/dir clean
+
+  # Report top-level distributions of the default stack
+  pinto -r /repo/dir roots
 
 =head1 GETTING MORE HELP
 

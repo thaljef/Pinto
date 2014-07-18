@@ -11,6 +11,7 @@ use MooseX::Aliases;
 
 use URI;
 
+use Pinto::Constants qw(@PINTO_DEFAULT_SOURCE_URIS);
 use Pinto::Types qw(Dir File Username PerlVersion);
 use Pinto::Util qw(current_username current_time_offset);
 
@@ -153,8 +154,8 @@ has sources => (
     is            => 'ro',
     isa           => Str,
     key           => 'sources',
-    default       => 'http://cpan.perl.org http://backpan.perl.org',
-    documentation => 'URLs of upstream repositories (space delimited)',
+    default       => "@PINTO_DEFAULT_SOURCE_URIS",
+    documentation => 'URIs of upstream repositories (space delimited)',
 );
 
 has target_perl_version => (
@@ -162,8 +163,24 @@ has target_perl_version => (
     isa           => PerlVersion,
     key           => 'target_perl_version',
     documentation => 'Default target perl version for new stacks',
-    default       => $],                                             # Note: $PERL_VERSION is broken on old perls
+    default       => $], # Note: $PERL_VERSION is broken on old perls
     coerce        => 1,
+);
+
+has recurse => (
+    is            => 'ro',
+    isa           => Bool,
+    key           => 'recurse',
+    documentation => 'Default recursive behavior',
+    default       => 1,          
+);
+
+has intermingle => (
+    is            => 'ro',
+    isa           => Bool,
+    key           => 'intermingle',
+    documentation => 'Allow stacks to intermingle distributions',
+    default       => 0,          
 );
 
 #------------------------------------------------------------------------------
@@ -194,7 +211,8 @@ sub sources_list {
 sub directories {
     my ($self) = @_;
 
-    return ( $self->root_dir, $self->config_dir, $self->cache_dir, $self->authors_dir, $self->log_dir, $self->db_dir );
+    return ( $self->root_dir, $self->config_dir, $self->cache_dir, 
+             $self->authors_dir, $self->log_dir, $self->db_dir );
 }
 
 #------------------------------------------------------------------------------

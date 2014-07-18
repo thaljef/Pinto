@@ -30,7 +30,7 @@ my @files_to_check = (
 #------------------------------------------------------------------------------
 
 # Add a dist...
-$t->populate( "$dist_auth/$dist_name=" . join ',', @pkgs );
+$t->populate( "$dist_auth/$dist_name=" . join ';', @pkgs );
 $t->registration_ok("$dist_auth/$dist_name/$_/master/-") for @pkgs;
 
 # Now pin it...

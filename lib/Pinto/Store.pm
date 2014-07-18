@@ -17,7 +17,7 @@ use Pinto::Util qw(debug throw);
 
 #------------------------------------------------------------------------------
 
-with qw( Pinto::Role::FileFetcher );
+with qw( Pinto::Role::UserAgent );
 
 #------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ sub add_archive {
     throw "$origin does not exist" if not -e $origin;
     throw "$origin is not a file"  if not -f $origin;
 
-    $self->fetch( from => $origin, to => $destination );
+    $self->mirror( $origin => $destination );
     $self->update_checksums( directory => $destination->parent );
 
     return $self;

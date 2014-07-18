@@ -7,8 +7,6 @@ use MooseX::NonMoose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(ScalarRef HashRef);
 
-use Path::Class;
-use File::Temp qw(tempdir);
 use Test::Exception;
 
 use Pinto;
@@ -18,6 +16,8 @@ use Pinto::Chrome::Term;
 use Pinto::Tester::Util qw(:all);
 use Pinto::Types qw(Uri Dir);
 use Pinto::Util qw(:all);
+
+use overload (q{""} => 'to_string');
 
 #------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ has init_args => (
 has root => (
     is      => 'ro',
     isa     => Dir,
-    default => sub { dir( tempdir( CLEANUP => 1 ) ) },
+    default => sub { tempdir },
     lazy    => 1,
 );
 
@@ -75,6 +75,7 @@ has pinto => (
 has repo => (
     is       => 'ro',
     isa      => 'Pinto::Repository',
+    handles  => [ qw(get_stack get_stack_maybe get_distribution) ],
     default  => sub { $_[0]->pinto->repo },
     init_arg => undef,
     lazy     => 1,
@@ -114,33 +115,17 @@ sub _build_pinto {
 
     my $chrome = Pinto::Chrome::Term->new(
         verbose  => 2,
-        no_color => 1,
+        color    => 0,
         stdout   => $self->outstr,
         stderr   => $self->errstr,
     );
 
     my %defaults = ( root => $self->root );
 
-    my $initializer = Pinto::Initializer->new;
-    $initializer->init( %defaults, $self->init_args );
+    Pinto::Initializer->new->init( %defaults, $self->init_args )
+        unless $self->root->children;  # Skip init if repo exists
 
     return Pinto->new( %defaults, chrome => $chrome, $self->pinto_args );
-}
-
-#------------------------------------------------------------------------------
-
-sub get_stack {
-    my ( $self, @args ) = @_;
-
-    return $self->repo->get_stack(@args);
-}
-
-#------------------------------------------------------------------------------
-
-sub get_distribution {
-    my ( $self, @args ) = @_;
-
-    return $self->repo->get_distribution(@args);
 }
 
 #------------------------------------------------------------------------------
@@ -148,7 +133,7 @@ sub get_distribution {
 sub path_exists_ok {
     my ( $self, $path, $name ) = @_;
 
-    $path = ref $path eq 'ARRAY' ? file( $self->root, @{$path} ) : $path;
+    $path = ref $path eq 'ARRAY' ? $self->root->file( @{$path} ) : $path;
     $name ||= "Path $path should exist";
 
     $self->ok( -e $path, $name );
@@ -161,7 +146,7 @@ sub path_exists_ok {
 sub path_not_exists_ok {
     my ( $self, $path, $name ) = @_;
 
-    $path = ref $path eq 'ARRAY' ? file( $self->root, @{$path} ) : $path;
+    $path = ref $path eq 'ARRAY' ? $self->root->file( @{$path} ) : $path;
     $name ||= "Path $path should not exist";
 
     $self->ok( !-e $path, $name );
@@ -457,7 +442,7 @@ sub no_default_stack_ok {
     my ($self) = @_;
 
     my $stack = eval { $self->get_stack };
-    $self->ok( !$stack, "No stack is marked as default" );
+    $self->ok( !$stack, "No stack should be marked as default" );
 
     my $modules_dir = $self->pinto->repo->config->modules_dir;
     $self->ok( !-l $modules_dir, "The modules dir is not linked anywhere" );
@@ -484,7 +469,7 @@ sub stack_exists_ok {
 sub stack_not_exists_ok {
     my ( $self, $stack_name ) = @_;
 
-    my $stack = eval { $self->get_stack($stack_name) };
+    my $stack = $self->get_stack_maybe($stack_name);
     $self->ok( !$stack, "Stack $stack_name should not exist in DB" );
 
     my $stack_dir = $self->pinto->repo->config->stacks_dir->subdir($stack_name);
@@ -498,7 +483,7 @@ sub stack_not_exists_ok {
 sub stack_is_locked_ok {
     my ( $self, $stack_name ) = @_;
 
-    my $stack = eval { $self->get_stack($stack_name) };
+    my $stack = $self->get_stack_maybe($stack_name);
     $self->ok( $stack, "Stack $stack_name should exist in DB" ) or return;
     $self->ok( $stack->is_locked, "Stack $stack_name should be locked" );
 
@@ -510,13 +495,24 @@ sub stack_is_locked_ok {
 sub stack_is_not_locked_ok {
     my ( $self, $stack_name ) = @_;
 
-    my $stack = eval { $self->get_stack($stack_name) };
+    my $stack = $self->get_stack_maybe($stack_name);
     $self->ok( $stack, "Stack $stack_name should exist in DB" ) or return;
     $self->ok( !$stack->is_locked, "Stack $stack_name should not be locked" );
 
     return;
 }
 
+#------------------------------------------------------------------------------
+
+sub stack_is_empty_ok {
+    my ($self, $stack_name ) = @_;
+
+    my $stack = $self->get_stack_maybe($stack_name);
+    $self->ok( $stack, "Stack $stack_name should exist in DB" ) or return;
+    $self->is_eq($stack->head->registrations->count, 0, "Stack $stack_name should be empty" );
+
+    return;
+}
 #------------------------------------------------------------------------------
 
 sub populate {
@@ -528,7 +524,7 @@ sub populate {
         my $message = "Populated repository with $spec";
 
         my $args = {
-            no_recurse => 1,
+            recurse    => 0,
             archives   => $archive,
             author     => $struct->{cpan_author},
             message    => $message
@@ -570,6 +566,13 @@ sub stack_url {
     $stack_name ||= 'master';
 
     return URI->new( 'file://' . $self->root->resolve->absolute . "/stacks/$stack_name" );
+}
+#-------------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+
+    return $self->stack_url->as_string;
 }
 
 #------------------------------------------------------------------------------

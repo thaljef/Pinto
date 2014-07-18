@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Class::Load;
+use Pinto::Util qw(is_remote_repo);
 
 #-----------------------------------------------------------------------------
 
@@ -33,11 +34,11 @@ sub execute {
 
     my $global_opts = $self->app->global_options;
 
-    $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT}
-        || die "Must specify a repository root directory\n";
+    die "Must specify a repository root directory\n"
+        unless $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT};
 
-    $global_opts->{root} =~ m{^https?://}x
-        && die "Cannot migrate remote repositories\n";
+    die "Cannot migrate remote repositories\n"
+        if is_remote_repo( $global_opts->{root} );
 
     my $class    = $self->load_migrator;
     my $migrator = $class->new( %{$global_opts} );

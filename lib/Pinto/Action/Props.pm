@@ -79,7 +79,7 @@ sub _show_properties {
     while ( my ( $prop, $value ) = each %{$props} ) {
 
         my $string = stringf( $self->format, { p => $prop, v => $value } );
-        my $color = is_system_prop($prop) ? $PINTO_COLOR_2 : undef;
+        my $color = is_system_prop($prop) ? $PINTO_PALETTE_COLOR_2 : undef;
 
         $self->show( $string, { color => $color } );
     }

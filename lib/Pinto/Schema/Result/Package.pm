@@ -153,7 +153,9 @@ with 'Pinto::Role::Schema::Result';
 
 use String::Format;
 
-use Pinto::PackageSpec;
+use MooseX::Types::Moose qw(Bool);
+
+use Pinto::Target::Package;
 use Pinto::Util qw(itis throw);
 
 use overload (
@@ -181,6 +183,16 @@ __PACKAGE__->inflate_column(
 # must create them by hand here...
 
 __PACKAGE__->many_to_many( revisions => 'registration', 'revision' );
+
+#------------------------------------------------------------------------------
+
+has is_main_module => (
+    is       => 'ro',
+    isa      => Bool,
+    init_arg => undef,
+    default  => sub { $_[0]->distribution->main_module->id eq $_[0]->id },
+    lazy     => 1,
+);
 
 #------------------------------------------------------------------------------
 
@@ -233,13 +245,68 @@ sub vname {
 
 #------------------------------------------------------------------------------
 
-sub as_spec {
+sub as_target {
     my ($self) = @_;
 
-    return Pinto::PackageSpec->new(
+    return Pinto::Target::Package->new(
         name    => $self->name,
         version => $self->version
     );
+}
+
+
+#------------------------------------------------------------------------------
+
+sub is_simile {
+    my($self) = @_;
+
+    my $package = $self->name;
+    my $file    = $self->file;
+
+    # Some older version of Pinto did not record the filename of each
+    # package.  In that case we must assume that it is a simile.
+    return 1 if not $file;
+
+    # The following code was taken from simile() in PAUSE/pmfile.pm
+
+    # MakeMaker gives them the chance to have the file Simple.pm in
+    # this directory but have the package HTML::Simple in it.
+    # Afaik, they wouldn't be able to do so with deeper nested packages
+    $file =~ s|.*/||;
+    $file =~ s|\.pm(?:\.PL)?||;
+    my $ret = $package =~ m/\b\Q$file\E$/;
+    $ret ||= 0;
+    unless ($ret) {
+        # Apache::mod_perl_guide stuffs it into Version.pm
+        $ret = 1 if lc $file eq 'version';
+    }
+
+    return $ret;
+}
+
+#------------------------------------------------------------------------------
+
+sub can_index {
+    my ($self) = @_;
+
+    # Workaround for Net::LibIDN (see GH #194)
+    return 1 if $self->name eq 'Net::LibIDN'
+        and $self->file eq '_LibIDN.pm';
+
+    # Workaround for FCGI
+    return 1 if $self->name eq 'FCGI'
+        and $self->file eq 'FCGI.PL';
+
+    return $self->is_simile;
+}
+
+#------------------------------------------------------------------------------
+
+sub flags {
+    my ($self) = @_;
+
+    my $format = '%m%s?%x';
+    return $self->to_string($format);
 }
 
 #------------------------------------------------------------------------------
@@ -253,6 +320,8 @@ sub to_string {
     my %fspec = (
         'p' => sub { $self->name() },
         'P' => sub { $self->vname() },
+        'x' => sub { $self->can_index ? 'x' : '-'},
+        'M' => sub { $self->is_main_module ? 'm' : '-'},
         'v' => sub { $self->version->stringify() },
         'm' => sub { $self->distribution->is_devel() ? 'd' : 'r' },
         'h' => sub { $self->distribution->path() },
@@ -264,7 +333,8 @@ sub to_string {
         'd' => sub { $self->distribution->name() },
         'D' => sub { $self->distribution->vname() },
         'V' => sub { $self->distribution->version() },
-        'u' => sub { $self->distribution->url() },
+        'u' => sub { $self->distribution->uri() },
+        'F' => sub { $self->flags },
     );
 
     # Some attributes are just undefined, usually because of

@@ -121,7 +121,7 @@ prerequisite, it only affects one stack.
 =head2 Pin
 
 Only one version of a package can exist within a stack.  So when you upgrade a
-package on stack, the newer version replaces the older one. But sometimes, you
+package in a stack, the newer version replaces the older one. But sometimes, you
 discover that a newer version of package is incompatible with your
 application, and you want to stay with the older version until you have an
 opportunity to fix the problem.  In those situations, Pinto allows you to

@@ -42,8 +42,8 @@ sub execute {
         my $string = $stack->to_string($format);
 
         my $color =
-              $stack->is_default ? $PINTO_COLOR_0
-            : $stack->is_locked  ? $PINTO_COLOR_2
+              $stack->is_default ? $PINTO_PALETTE_COLOR_0
+            : $stack->is_locked  ? $PINTO_PALETTE_COLOR_2
             :                      undef;
 
         $self->show( $string, { color => $color } );

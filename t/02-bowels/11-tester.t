@@ -9,7 +9,7 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 #-------------------------------------------------------------------------------
 
 {
-    my $spec   = 'AUTHOR/FooAndBar-1.2=Foo~1.2,Bar~0.0&Baz~3.1,Nuts~2.4';
+    my $spec   = 'AUTHOR/FooAndBar-1.2 = Foo~1.2; Bar~0.0 & Baz~3.1; Nuts~2.4';
     my $struct = make_dist_struct($spec);
     is $struct->{cpan_author}, 'AUTHOR',    'Got author';
     is $struct->{name},        'FooAndBar', 'Got name';
@@ -38,7 +38,7 @@ use Pinto::Tester::Util qw(make_dist_struct parse_reg_spec);
 {
     my $t = Pinto::Tester->new;
 
-    $t->populate('AUTHOR/FooAndBar-1.2=Foo~1.2,Bar~0.0');
+    $t->populate('AUTHOR/FooAndBar-1.2=Foo~1.2;Bar~0.0');
 
     # Without .tar.gz extension
     $t->registration_ok('AUTHOR/FooAndBar-1.2/Foo~1.2/master');

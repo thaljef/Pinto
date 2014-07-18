@@ -7,7 +7,7 @@ use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(SpecList);
+use Pinto::Types qw(TargetList);
 
 #------------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has targets => (
-    isa      => SpecList,
+    isa      => TargetList,
     traits   => [qw(Array)],
     handles  => { targets => 'elements' },
     required => 1,
@@ -38,27 +38,21 @@ sub execute {
 
     my $stack = $self->stack;
 
-    my @dists = map { $self->_pin( $_, $stack ) } $self->targets;
+    for my $target ( $self->targets ) {
 
-    return @dists;
-}
+        throw "$target is not registered on stack $stack"
+            unless my $dist = $stack->get_distribution( target => $target );
 
-#------------------------------------------------------------------------------
+        $self->notice("Pinning distribution $dist to stack $stack");
 
-sub _pin {
-    my ( $self, $target, $stack ) = @_;
+        my $did_pin = $dist->pin( stack => $stack );
+        push @{$self->affected}, $dist if $did_pin;
 
-    my $dist = $stack->get_distribution( spec => $target );
+        $self->warning("Distribution $dist is already pinned to stack $stack")
+            unless $did_pin;
+    }
 
-    throw "$target is not registered on stack $stack" if not defined $dist;
-
-    $self->notice("Pinning distribution $dist to stack $stack");
-
-    my $did_pin = $dist->pin( stack => $stack );
-
-    $self->warning("Distribution $dist is already pinned to stack $stack") unless $did_pin;
-
-    return $did_pin ? $dist : ();
+    return $self;
 }
 
 #------------------------------------------------------------------------------

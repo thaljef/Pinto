@@ -12,7 +12,8 @@ use JSON;
 use HTTP::Request::Common;
 
 use Pinto::Result;
-use Pinto::Constants qw(:server);
+use Pinto::Constants qw(:protocol);
+use Pinto::Util qw(current_time_offset);
 use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
@@ -21,7 +22,7 @@ use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Plated);
+with qw(Pinto::Role::Plated Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
@@ -55,12 +56,6 @@ has password => (
     required => 1,
 );
 
-has ua => (
-    is       => 'ro',
-    isa      => 'LWP::UserAgent',
-    required => 1,
-);
-
 #------------------------------------------------------------------------------
 
 =method execute
@@ -87,13 +82,15 @@ sub _make_request {
     my $action_name  = $args{name} || $self->name;
     my $request_body = $args{body} || $self->_make_request_body;
 
-    my $url = URI->new( $self->root );
-    $url->path_segments( '', 'action', lc $action_name );
+    my $uri = URI->new( $self->root );
+    $uri->path_segments( '', 'action', lc $action_name );
 
     my $request = POST(
-        $url,
-        Content_Type => 'form-data',
-        Content      => $request_body
+        $uri,
+        Accept        => $PINTO_PROTOCOL_ACCEPT,
+        Content       => $request_body,
+        Content_Type  => 'form-data',
+
     );
 
     if ( defined $self->password ) {
@@ -118,8 +115,8 @@ sub _chrome_args {
 
     my $chrome_args = {
         verbose  => $self->chrome->verbose,
-        no_color => $self->chrome->no_color,
-        colors   => $self->chrome->colors,
+        color    => $self->chrome->color,
+        palette  => $self->chrome->palette,
         quiet    => $self->chrome->quiet
     };
 
@@ -132,7 +129,10 @@ sub _chrome_args {
 sub _pinto_args {
     my ($self) = @_;
 
-    my $pinto_args = { username => $self->username };
+    my $pinto_args = {
+        username    => $self->username,
+        time_offset => current_time_offset,
+    };
 
     return ( pinto => encode_json($pinto_args) );
 }
@@ -154,10 +154,11 @@ sub _send_request {
 
     my $request = $args{req} || $self->_make_request;
     my $status = 0;
+    my $buffer = '';
 
     # Currying in some extra args to the callback...
-    my $callback = sub { $self->_response_callback( \$status, @_ ) };
-    my $response = $self->ua->request( $request, $callback );
+    my $callback = sub { $self->_response_callback( \$status, \$buffer, @_ ) };
+    my $response = $self->request( $request, $callback );
 
     if ( not $response->is_success ) {
         $self->error( $response->content );
@@ -170,38 +171,29 @@ sub _send_request {
 #------------------------------------------------------------------------------
 
 sub _response_callback {
-    my ( $self, $status, $data ) = @_;
+    my ( $self, $status, $buffer, $data ) = @_;
 
-    # Each data chunk will be one or more lines ending with \n
-
-    chomp $data;
-    if ( not $data ) {
-
-        # HACK: So that blank lines come out right
-        # Need to find a better way to do this!!
-        $self->chrome->show('');
-        return 1;
-    }
-
-    for my $line ( split m/\n/, $data, -1 ) {
-
-        if ( $line eq $PINTO_SERVER_STATUS_OK ) {
+    $data = ${$buffer}.$data;
+    while($data =~ /\G([^\n]*)\n/gc) {
+        my $line = $1;
+        if ( $line eq $PINTO_PROTOCOL_STATUS_OK ) {
             ${$status} = 1;
         }
-        elsif ( $line eq $PINTO_SERVER_PROGRESS_MESSAGE ) {
+        elsif ( $line eq $PINTO_PROTOCOL_PROGRESS_MESSAGE ) {
             $self->chrome->show_progress;
         }
-        elsif ( $line eq $PINTO_SERVER_NULL_MESSAGE ) {
-
+        elsif ( $line eq $PINTO_PROTOCOL_NULL_MESSAGE ) {
             # Do nothing, discard message
         }
-        elsif ( $line =~ m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x ) {
+        elsif ( $line =~ m{^ \Q$PINTO_PROTOCOL_DIAG_PREFIX\E (.*)}x ) {
             $self->chrome->diag($1);
         }
         else {
             $self->chrome->show($line);
         }
     }
+    #Save leftovers, use them in next packet
+    (${$buffer}) = ($data =~ /\G(.*)$/g);
 
     return 1;
 }

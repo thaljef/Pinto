@@ -7,8 +7,11 @@ use warnings;
 use version;
 use base qw(Exporter);
 
+use URI;
+use URI::file;
 use Carp;
 use DateTime;
+use File::Temp;
 use Path::Class;
 use Digest::MD5;
 use Digest::SHA;
@@ -19,6 +22,7 @@ use File::Which qw(which);
 
 use Pinto::Globals;
 use Pinto::Constants qw(:all);
+use Pinto::Types qw(DiffStyle);
 
 #-------------------------------------------------------------------------------
 
@@ -36,26 +40,30 @@ Readonly our @EXPORT_OK => qw(
     debug
     decamelize
     find_cpanm_exe
+    default_diff_style
     indent_text
     interpolate
     is_blank
     is_not_blank
     is_interactive
+    is_remote_repo
     is_system_prop
     isa_perl
     itis
+    make_uri
     md5
     mkhardlink
     mksymlink
     mtime
     parse_dist_path
-    mask_url_passwords
+    mask_uri_passwords
     sha256
+    tempdir
     title_text
     throw
     trim_text
     truncate_text
-    user_colors
+    user_palette
     uuid
     whine
 );
@@ -77,7 +85,7 @@ sub throw {
     my ($error) = @_;
 
     # Rethrowing...
-    die $error if itis( $error, 'Pinto::Exception' );    ## no critic (Carping)
+    $error->throw if itis( $error, 'Pinto::Exception' );
 
     require Pinto::Exception;
     Pinto::Exception->throw( message => "$error" );
@@ -172,8 +180,8 @@ sub itis {
 
 =func parse_dist_path( $path )
 
-Parses a path like the ones you would see in a full URL to a
-distribution in a CPAN repository, or the URL fragment you would see
+Parses a path like the ones you would see in a full URI to a
+distribution in a CPAN repository, or the URI fragment you would see
 in a CPAN index.  Returns the author and file name of the
 distribution.  Subdirectories between the author name and the file
 name are discarded.
@@ -200,18 +208,18 @@ sub parse_dist_path {
 
 #-------------------------------------------------------------------------------
 
-=func isa_perl( $path_or_url )
+=func isa_perl( $path_or_uri )
 
-Return true if C<$path_or_url> appears to point to a release of perl
+Return true if C<$path_or_uri> appears to point to a release of perl
 itself.  This is based on some file naming patterns that I've seen in
 the wild.  It may not be completely accurate.
 
 =cut
 
 sub isa_perl {
-    my ($path_or_url) = @_;
+    my ($path_or_uri) = @_;
 
-    return $path_or_url =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
+    return $path_or_uri =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
 }
 
 #-------------------------------------------------------------------------------
@@ -492,8 +500,8 @@ sub body_text {
 
 =func truncate_text($string, $length, $elipses)
 
-Truncates the C<$string> and appends C<$elipses> if the C<$string> is 
-longer than C<$length> characters.  C<$elipses> defaults to '...' if 
+Truncates the C<$string> and appends C<$elipses> if the C<$string> is
+longer than C<$length> characters.  C<$elipses> defaults to '...' if
 not specified.
 
 =cut
@@ -622,20 +630,21 @@ sub uuid {
 
 #-------------------------------------------------------------------------------
 
-=func user_colors()
+=func user_palette()
 
-Returns a reference to an array containing the names of the colors pinto 
-can use.  This can be influenced by setting the C<PINTO_COLORS> or 
-C<PINTO_COLOURS> environment variables.
+Returns a reference to an array containing the names of the colors pinto
+can use.  This can be influenced by setting the C<PINTO_PALETTE> environment
+variable.
 
 =cut
 
-sub user_colors {
-    my $colors = $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS};
+sub user_palette {
+    my $palette = $ENV{PINTO_PALETTE}
+        || $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS}; # For backcompat
 
-    return $PINTO_DEFAULT_COLORS if not $colors;
+    return $PINTO_DEFAULT_PALETTE if not $palette;
 
-    return [ split m/\s* , \s*/x, $colors ];
+    return [ split m/\s* , \s*/x, $palette ];
 }
 
 #-------------------------------------------------------------------------------
@@ -670,20 +679,76 @@ sub is_not_blank {
 
 #-------------------------------------------------------------------------------
 
-=func mask_url_passwords($string)
+=func mask_uri_passwords($string)
 
 Masks the parts the string that look like a password embedded in an http or
-https URL. For example, C<http://joe:secret@foo.com> would return 
+https URI. For example, C<http://joe:secret@foo.com> would return
 C<http://joe:*password*@foo.com>
 
 =cut
 
-sub mask_url_passwords {
-    my ($url) = @_;
+sub mask_uri_passwords {
+    my ($uri) = @_;
 
-    $url =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
+    $uri =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
 
-    return $url;
+    return $uri;
+}
+
+#-------------------------------------------------------------------------------
+
+=func is_remote_repo {
+
+Returns true if the argument looks like a URI to a remote repository
+
+=cut
+
+sub is_remote_repo {
+    my ($uri) = @_;
+
+    return if not $uri;
+    return $uri =~ m{^https?://}x;
+}
+
+#-------------------------------------------------------------------------------
+
+sub tempdir {
+
+    return Path::Class::dir(File::Temp::tempdir(CLEANUP => 1));
+}
+
+
+#-------------------------------------------------------------------------------
+
+
+sub default_diff_style {
+
+    if (my $style = $ENV{PINTO_DIFF_STYLE}) {
+
+        throw "PINTO_DIFF_STYLE ($style) is invalid.  Must be one of (@PINTO_DIFF_STYLES)"
+            unless DiffStyle->check($style);
+
+        return $style;
+    }
+
+    return $PINTO_DIFF_STYLE_CONCISE;
+}
+
+#-------------------------------------------------------------------------------
+
+sub make_uri {
+    my ($it) = @_;
+
+    return $it
+        if itis( $it, 'URI' );
+
+    return URI::file->new( $it->absolute )
+        if itis( $it, 'Path::Class::File' );
+
+    return URI::file->new( file($it)->absolute )
+        if -e $it;
+
+    return URI->new($it);
 }
 
 #-------------------------------------------------------------------------------
