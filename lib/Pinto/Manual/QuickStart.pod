@@ -81,10 +81,10 @@ __END__
 
 =head1 INSTALLING THINGS
 
-  # Install from the default stack using using cpanm
+  # Install from the default stack using cpanm
   cpanm --mirror file:///repo/dir --mirror-only Foo::Bar
 
-  # Install from the "dev" stack using using cpanm
+  # Install from the "dev" stack using cpanm
   cpanm --mirror file:///repo/dir/stacks/dev --mirror-only Foo::Bar
 
   # Install from the default stack using pinto

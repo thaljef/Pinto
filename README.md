@@ -39,7 +39,7 @@ Pinto is inspired by [Carton](http://search.cpan.org/perldoc?Carton), [CPAN::Min
     and so on.  You can also branch and merge stacks to experiment with
     new dependencies or upgrades.
 
-- Pinto helps manage incompatibilies between dependencies
+- Pinto helps manage incompatibles between dependencies
 
     Sometimes, you discover that a new version of a dependency is
     incompatible with your application.  Pinto allows you to "pin" a
@@ -103,7 +103,7 @@ there are some important differences:
 
     PAUSE requires authors to authenticate themselves before they can
     upload or remove modules.  Pinto does not require authentication, so
-    any user with sufficient file permission can potentialy change the
+    any user with sufficient file permission can potentially change the
     repository.  However [pintod](http://search.cpan.org/perldoc?pintod) does support HTTP authentication, which
     gives you some control over access to a remote repository.
 
@@ -191,8 +191,10 @@ from your repository :)
 # CONTRIBUTORS
 
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+- Boris Däppen <bdaeppen.perl@gmail.com>
 - Boris Däppen <boris\_daeppen@bluewin.ch>
 - Cory G Watson <gphat@onemogin.com>
+- David Steinbrunner <dsteinbrunner@pobox.com>
 - Flavio Poletti <flavio@polettix.it>
 - Glenn Fowler <cebjyre@cpan.org>
 - Jakob Voss <jakob@nichtich.de>
