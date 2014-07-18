@@ -191,7 +191,7 @@ from your repository :)
 # CONTRIBUTORS
 
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
-- Boris Däppen <bdaeppen.perl@gmail.com>
+- Boris DÃ¤ppen <bdaeppen.perl@gmail.com>
 - Cory G Watson <gphat@onemogin.com>
 - David Steinbrunner <dsteinbrunner@pobox.com>
 - Flavio Poletti <flavio@polettix.it>
