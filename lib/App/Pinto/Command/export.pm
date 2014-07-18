@@ -20,12 +20,11 @@ sub opt_spec {
 
     return ( 
       [ 'all_targets|all-targets|all|a!' => 'deploy all modules (deployable output-format only)' ],
-      [ 'notar|no-tar!' => 'do not check for system tar' ],
       [ 'output|o=s' => 'path to the exported directory/archive' ],
-      [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip)' ],
-      [ 'prefix|p=s' => 'prefix to add to filenames in archive' ],
+      [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip/deployable)' ],
       [ 'stack|s=s' => 'stack/release to export' ],
       [ 'tar=s' => 'path to system tar to use' ],
+      [ 'notar|no-tar!' => 'do not check for system tar' ],
     );
 }
 
@@ -91,7 +90,7 @@ is preferable).
 
 which should be easier for distributing a stack to a Windows target
 
-=item I<deployable> Perl program
+=item I<deployable> Perl program (I<EXPERIMENTAL>)
 
 which are true programs that will install the relevant modules when run
 
@@ -109,6 +108,8 @@ C<tar> supports them in the specific platform and/or the relevant perl
 modules are installed.
 
 =head2 Deployable Export
+
+I<THIS FEATURE IS EXPERIMENTAL AND SUBJECT TO CHANGES>
 
 One interesting feature of the export subcommand is the possibility to
 create a Perl program that will install the relevant modules when run.
@@ -181,17 +182,17 @@ Set the output format for the export. It can be one of the following:
 
 =item deployable
 
-generate a Perl program that can be deployed directly
+generate a Perl program that can be deployed directly (I<EXPERIMENTAL>)
 
 =item deployable.bz2
 
 same as deployable, but the data is compressed internally with bzip2
-so that the resulting program is smaller
+so that the resulting program is smaller (I<EXPERIMENTAL>)
 
 =item deployable.gz
 
 same as deployable, but the data is compressed internally with gzip
-so that the resulting program is smaller
+so that the resulting program is smaller (I<EXPERIMENTAL>)
 
 =item directory
 
@@ -222,15 +223,6 @@ generate a ZIP archive
 =back
 
 By default, the directory format is assumed.
-
-=item --prefix=PREFIX
-
-=item -p PREFIX
-
-Set a prefix to apply to all filenames when generating an archive. This
-option is ignored when the output format is C<directory>.
-
-Defaults to the empty string, i.e. no prefix is applied.
 
 =item --stack=STACK
 
