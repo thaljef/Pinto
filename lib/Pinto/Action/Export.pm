@@ -11,7 +11,7 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Constants qw( $PINTO_LOCK_TYPE_EXCLUSIVE );
-use Pinto::Types qw( StackName StackDefault StackObject SpecList );
+use Pinto::Types qw( StackName StackDefault StackObject TargetList );
 use Class::Load qw( load_class );
 
 #------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ has all_targets => (
 
 has external_targets => (
    is => 'ro',
-   isa => SpecList | Undef,
+   isa => TargetList | Undef,
    coerce => 1,
 );
 
