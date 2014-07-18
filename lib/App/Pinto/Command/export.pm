@@ -109,7 +109,9 @@ modules are installed.
 
 =head2 Deployable Export
 
-I<THIS FEATURE IS EXPERIMENTAL AND SUBJECT TO CHANGES>
+I<THIS FEATURE IS EXPERIMENTAL AND SUBJECT TO CHANGES>. In particular,
+the way you are going to call the generated program might change in
+the future, based on feedback and discussions.
 
 One interesting feature of the export subcommand is the possibility to
 create a Perl program that will install the relevant modules when run.
