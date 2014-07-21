@@ -11,7 +11,7 @@ use Try::Tiny;
 use Path::Class;
 
 use Pinto::Constants qw( $PINTO_LOCK_TYPE_EXCLUSIVE );
-use Pinto::Types qw( StackName StackDefault StackObject TargetList );
+use Pinto::Types qw( StackName StackDefault StackObject TargetList ExportAction );
 use Class::Load qw( load_class );
 
 #------------------------------------------------------------------------------
@@ -101,6 +101,12 @@ has targets => (
       }
       return \@retval;
    },
+);
+
+has action => (
+   is => 'ro',
+   isa => ExportAction,
+   default => 'help',
 );
 
 

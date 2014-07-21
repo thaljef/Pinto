@@ -91,6 +91,7 @@ sub close {
 
    my %configuration = (
       deploy => [ 'premote' ],
+      action => $self->exporter->action(),
    );
    my $compression = $self->exporter()->compression();
    $configuration{bzip2} = 1 if $compression eq 'bz2';

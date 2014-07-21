@@ -57,6 +57,8 @@ Readonly our @EXPORT_OK => qw(
 
     @PINTO_PREREQ_PHASES
     @PINTO_PREREQ_RELATIONS
+
+    $PINTO_EXPORT_ACTIONS_REGEX
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -148,6 +150,10 @@ Readonly our @PINTO_DEFAULT_SOURCE_URIS => ( $PINTO_STRATOPAN_CPAN_URI,
 
 Readonly our @PINTO_PREREQ_PHASES    => qw(configure build test runtime develop);
 Readonly our @PINTO_PREREQ_RELATIONS => qw(requires suggests recommends);
+
+#------------------------------------------------------------------------------
+
+Readonly our $PINTO_EXPORT_ACTIONS_REGEX => qr{(?mxs: \A ( help | install | inspect ) \z)};
 
 #------------------------------------------------------------------------------
 1;

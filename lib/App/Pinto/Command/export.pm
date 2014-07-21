@@ -19,6 +19,7 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return ( 
+      [ 'action|default-action|A=s' => 'default action to perform (deployable output-format only)'],
       [ 'all_targets|all-targets|all|a!' => 'deploy all modules (deployable output-format only)' ],
       [ 'output|o=s' => 'path to the exported directory/archive' ],
       [ 'output_format|output-format|F=s' => 'export format (dir/tar/zip/deployable)' ],
@@ -151,11 +152,41 @@ installed by the resulting program.
 
 =over 4
 
+=item --action=ACTION
+
+=item --default-action=ACTION
+
+=item -A ACTION
+
+(This option applies to the I<deployable> targets only)
+
+Set the default action to be performed when calling the generated
+deployable program without parameters. Allowed values are:
+
+=over
+
+=item help
+
+=item install
+
+=item inspect
+
+=back
+
+Defaults to C<help>, which means that a help message is printed.
+
+If you plan to generate a program that has to be run unattended (e.g.
+by some remote deployment system), you might want to set this action
+to C<install> and probably take advantage of option L</--all-targets>
+as well.
+
 =item --all-targets
 
 =item --all
 
 =item -a
+
+(This option applies to the I<deployable> targets only)
 
 Set all modules in the stack to be installed. This option is considered
 only when exporting to a deployable Perl program.

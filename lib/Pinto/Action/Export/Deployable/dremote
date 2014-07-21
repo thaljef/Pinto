@@ -11,7 +11,7 @@ use File::Path qw( mkpath );
 use File::Spec::Functions qw( file_name_is_absolute catfile );
 use File::Basename qw( basename dirname );
 use POSIX qw( strftime );
-use Getopt::Long qw( :config gnu_getopt );
+use Getopt::Long qw( :config gnu_compat bundling require_order no_getopt_compat );
 use Cwd qw( getcwd );
 use Fcntl qw( :seek );
 
@@ -3132,98 +3132,51 @@ my %default_config = (    # default values
    tempdir     => 1,
    passthrough => 0,
    verbose     => 0,
+   action      => 'help',
 );
 
 my $DATA_POSITION = tell DATA; # GLOBAL VARIABLE
 my %script_config = (%default_config, get_config());
 
+# Default action is performed only if NO PARAMETER is passed,
+# otherwise the action MUST be specified
+unshift @ARGV, $script_config{action} unless @ARGV;
+$ARGV[0] = '--help' if $ARGV[0] eq 'help';
+
 my %config = %script_config;
-if ($ENV{DEPLOYABLE_DISABLE_PASSTHROUGH} || (! $config{passthrough})) {
-   my %cmdline_config;
-   GetOptions(
-      \%cmdline_config,
-      qw(
-      usage|help|man!
-      version!
-
-      bundle|all-exec|X!
-      cleanup|c!
-      dryrun|dry-run|n!
-      filelist|list|l!
-      heretar|here-tar|H!
-      inspect|i=s
-      no-exec!
-      no-tar!
-      roottar|root-tar|R!
-      show|show-options|s!
-      tar|t=s
-      tempdir!
-      verbose!
-      workdir|work-directory|deploy-directory|w=s
-      ),
-   ) or short_usage();
-   %config = (%config, %cmdline_config);
-}
-
+my %cmdline_config;
+GetOptions(
+   \%cmdline_config,
+   qw(
+   usage|help|man!
+   version!
+   no-tar!
+   tar|t=s
+   workdir|work-directory|deploy-directory|w=s
+   verbose!
+   ),
+) or short_usage();
+%config = (%config, %cmdline_config);
 usage()   if $config{usage};
 version() if $config{version};
 
-if ($config{roottar}) {
-   binmode STDOUT;
-   my ($fh, $size) = locate_file('root');
-   copy($fh, \*STDOUT, $size);
-   exit 0;
-} ## end if ($config{roottar})
+# Now, and action MUST be present and be an allowed one
+my $action = shift(@ARGV) || '**unsupported**';
+install() if $action eq 'install';
+inspect() if $action eq 'inspect';
+usage();
 
-if ($config{heretar}) {
-   binmode STDOUT;
-   my ($fh, $size) = locate_file('here');
-   copy($fh, \*STDOUT, $size);
-   exit 0;
-} ## end if ($config{heretar})
+sub install {
+   # go into the working directory, creating any intermediate if needed
+   my $cwd = getcwd();
+   mkpath($config{workdir}); # check on chdir, following line
+   chdir($config{workdir})
+     or die "chdir('$config{workdir}'): $OS_ERROR\n";
+   print {*STDERR} "### Got into working directory '$config{workdir}'\n\n"
+      if $config{verbose};
 
-if ($config{show}) {
-   require Data::Dumper;
-   print {*STDOUT} Data::Dumper::Dumper(\%script_config);
-   exit 1;
-}
-
-if ($config{inspect}) {
-   $config{cleanup}   = 0;
-   $config{'deploy'}  = 0;
-   $config{'tempdir'} = 0;
-   $config{workdir}   = $config{inspect};
-} ## end if ($config{inspect})
-
-if ($config{dryrun}) {
-   require Data::Dumper;
-   print {*STDOUT} Data::Dumper::Dumper(\%config);
-   exit 1;
-}
-
-if ($config{filelist}) {
-   my $root_tar = get_sub_tar('root');
-   print "root:\n";
-   $root_tar->print_filelist();
-   my $here_tar = get_sub_tar('here');
-   print "here:\n";
-   $here_tar->print_filelist();
-   exit 0;
-} ## end if ($config{filelist})
-
-# go into the working directory, creating any intermediate if needed
-$ENV{OLDPWD} = getcwd();
-$ENV{DEPLOY_CALLER} = __FILE__;
-mkpath($config{workdir});
-chdir($config{workdir});
-print {*STDERR} "### Got into working directory '$config{workdir}'\n\n"
-   if $config{verbose};
-
-my $tempdir;
-if ($config{'tempdir'}) {    # Only if allowed
-   my $now = strftime('%Y-%m-%d_%H-%M-%S', localtime);
-   $tempdir =
-     tempdir($now . 'X' x 10, DIR => '.', CLEANUP => $config{cleanup});
+   # Now, create a temporary directory there
+   my $tempdir = now_tempdir($config{cleanup});
 
    chdir $tempdir
      or die "chdir('$tempdir'): $OS_ERROR\n";
@@ -3234,18 +3187,81 @@ if ($config{'tempdir'}) {    # Only if allowed
       print {*STDERR} "### (will clean it up later)\n" if $config{cleanup};
       print {*STDERR} "\n";
    }
-} ## end if ($config{'tempdir'})
 
-eval {                       # Not really needed, but you know...
-   $ENV{PATH} = '/bin:/usr/bin:/sbin:/usr/sbin';
+   eval { # Not really needed, but you know...
+      $ENV{PATH} = '/bin:/usr/bin:/sbin:/usr/sbin';
+      $ENV{DEPLOY_CALLER} = __FILE__;
+      $ENV{OLDPWD} = $cwd;
+      save_files();
+      execute_deploy_programs();
+   };
+   warn "$EVAL_ERROR\n" if $EVAL_ERROR;
+
+   # Get back so that cleanup can successfully happen
+   chdir $cwd;
+
+   exit 0;
+}
+
+sub now_tempdir {
+   my ($cleanup) = @_;
+   my $now = strftime('%Y-%m-%d_%H-%M-%S', localtime);
+   return scalar tempdir($now . 'X' x 10, DIR => '.', CLEANUP => $cleanup);
+}
+
+sub inspect {
+   $config{inspect} = 1;
+
+   my %inspect_config;
+   # Undocumented options...
+   GetOptions(
+      \%cmdline_config,
+      qw(
+         heretar|here-tar|H!
+      ),
+   ) or short_usage();
+
+   show();
+
+   if ($inspect_config{heretar}) {
+      print {*STDERR} "### Printing 'here' directory on STDOUT\n\n"
+         if $config{verbose};
+      here_tar();
+      exit 0;
+   }
+
+   my $workdir = @ARGV
+      ? do {
+         my $w = shift @ARGV;
+         die "File '$w' already exists\n" if -e $w;
+         mkpath($w);
+         $w;
+      }
+      : now_tempdir();
+   chdir $workdir
+      or die "chdir('$workdir'): $OS_ERROR\n";
+   print {*STDERR} "### Expanding into '$workdir'\n\n";
+
    save_files();
-   execute_deploy_programs() unless $config{'no-exec'};
-};
-warn "$EVAL_ERROR\n" if $EVAL_ERROR;
 
-# Get back so that cleanup can successfully happen, if requested
-chdir '..' if defined $tempdir;
+   exit 0;
+}
 
+sub here_tar {
+   binmode STDOUT;
+   my ($fh, $size) = locate_file('here');
+   copy($fh, \*STDOUT, $size);
+   return;
+} ## end if ($config{heretar})
+
+sub show {
+   require Data::Dumper;
+   print {*STDOUT} "Configuration (basic, inside file):\n";
+   print {*STDOUT} Data::Dumper::Dumper(\%script_config);
+   print {*STDOUT} "Configuration (including command line):\n";
+   print {*STDOUT} Data::Dumper::Dumper(\%config);
+   return;
+}
 
 sub locate_file {
    my ($filename) = @_;
@@ -3306,34 +3322,11 @@ sub get_config {
 sub save_files {
    my $here_tar = get_sub_tar('here');
    $here_tar->extract();
-
-   my $root_dir = $config{inspect} ? 'root' : '/';
-   mkpath $root_dir unless -d $root_dir;
-   my $cwd = getcwd();
-   chdir $root_dir;
-   my $root_tar = get_sub_tar('root');
-   $root_tar->extract();
-   chdir $cwd;
-
    return;
 } ## end sub save_files
 
 sub execute_deploy_programs {
    my @deploy_programs = @{$config{deploy} || []};
-
-   if ($config{bundle}) { # add all executable scripts in current directory
-      print {*STDERR} "### Auto-deploying all executables in main dir\n\n"
-         if $config{verbose};
-      my %flag_for = map { $_ => 1 } @deploy_programs;
-      opendir my $dh, '.';
-      for my $item (sort readdir $dh) {
-         next if $flag_for{$item};
-         next unless ((-f $item) || (-l $item)) && (-x $item);
-         $flag_for{$item} = 1;
-         push @deploy_programs, $item;
-      } ## end for my $item (sort readdir...
-      closedir $dh;
-   } ## end if ($config{bundle})
 
  DEPLOY:
    for my $deploy (@deploy_programs) {
@@ -3370,9 +3363,38 @@ sub usage {
    print {*STDOUT} <<"END_OF_USAGE" ;
 $progname version $VERSION
 
-More or less, this script is intended to be launched without parameters.
-Anyway, you can also set the following options, which will override any
-present configuration (except in "--show-options"):
+The generic invocation is:
+
+   $progname <generic-options> action <action-options>
+
+The 'generic-options' are options for '$progname' itself, while
+'action-options' are specific to the particular action
+invoked.
+
+Examples:
+
+   # perform default action, depends on program generation
+   shell$ $progname
+
+   # show help, also works with --help, --usage and --man
+   shell$ $progname help
+
+   # perform default install, depends on program generation
+   shell$ $progname install
+
+   # ensure that Log::Log4perl::Tiny is installed
+   shell$ $progname install Log::Log4perl::Tiny
+
+   # install is actually a wrapper around cpanm...
+   shell$ $progname install -L local-lib Log::Log4perl::Tiny
+
+   # see what's in the package, will create temporary directory
+   shell$ $progname inspect
+
+   # see what's inside, will use requested dir "here"
+   shell$ $progname inspect here
+
+Options for $progname:
 
 * --usage | --man | --help
     print these help lines and exit
@@ -3380,57 +3402,22 @@ present configuration (except in "--show-options"):
 * --version
     print script version and exit
 
-* --bundle | --all-exec | -X
-    treat all executables in the main deployment directory as scripts
-    to be executed
-
-* --cleanup | -c | --no-cleanup
-    perform / don't perform temporary directory cleanup after work done
-
-* --deploy | --no-deploy
-    deploy scripts are executed by default (same as specifying '--deploy')
-    but you can prevent it.
-
-* --dryrun | --dry-run
-    print final options and exit
-
-* --filelist | --list | -l
-    print a list of files that are shipped in the deploy script
-
-* --heretar | --here-tar | -H
-    print out the tar file that contains all the files that would be
-    extracted in the temporary directory, useful to redirect to file or
-    pipe to the tar program
-
-* --inspect | -i <dirname>
-    just extract all the stuff into <dirname> for inspection. Implies
-    --no-deploy, --no-tempdir, ignores --bundle (as a consequence of
-    --no-deploy), disables --cleanup and sets the working directory
-    to <dirname>
-
 * --no-tar
     don't use system "tar"
-
-* --roottar | --root-tar | -R
-    print out the tar file that contains all the files that would be
-    extracted in the root directory, useful to redirect to file or
-    pipe to the tar program
-
-* --show | --show-options | -s
-    print configured options and exit
 
 * --tar | -t <program-path>
     set the system "tar" program to use.
 
-* --tempdir | --no-tempdir
-    by default a temporary directory is created (same as specifying
-    '--tempdir'), but you can execute directly in the workdir (see below)
-    without creating it.
-
 * --workdir | --work-directory | --deploy-directory | -w
     working base directory (a temporary subdirectory will be created 
     there anyway)
-    
+
+* --verbose
+    be verbose in errors/events reporting
+
+
+Options for action 'install' are the same as cpanm.
+
 END_OF_USAGE
    exit 1;
 } ## end sub usage

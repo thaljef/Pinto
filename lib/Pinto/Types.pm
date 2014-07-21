@@ -14,6 +14,7 @@ use MooseX::Types -declare => [ qw(
     Dir
     DistributionTarget
     DistributionTargetList
+    ExportAction
     File
     FileList
     Io
@@ -237,6 +238,14 @@ subtype RevisionHead, as Undef;
 enum DiffStyle, [$PINTO_DIFF_STYLE_CONCISE, $PINTO_DIFF_STYLE_DETAILED];
 
 #-----------------------------------------------------------------------------
+
+subtype ExportAction, as Str,
+    where { $_ =~ $PINTO_EXPORT_ACTIONS_REGEX },
+    message { 'The export action (' . ( defined() ? $_ : 'undef' ) . 'must be one of "help", "install" or "inspect"' };
+
+#-----------------------------------------------------------------------------
+
+
 
 1;
 
