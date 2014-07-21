@@ -91,7 +91,6 @@ sub close {
 
    my %configuration = (
       deploy => [ 'premote' ],
-      passthrough => 1,
    );
    my $compression = $self->exporter()->compression();
    $configuration{bzip2} = 1 if $compression eq 'bz2';
@@ -99,7 +98,6 @@ sub close {
    print_configuration($out_fh, \%configuration);
 
    print_section($out_fh, 'here', { filename => $base });
-   print_section($out_fh, 'root', '');
 
    CORE::close $out_fh
       or die "close('$target'): $!\n";
