@@ -19,7 +19,6 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
-        [ 'all|a'                   => 'Install every package in the stack' ],
         [ 'cascade'                 => 'Always pick latest upstream package' ],
         [ 'cpanm-exe|cpanm=s'       => 'Path to the cpanm executable' ],
         [ 'cpanm-options|o:s%'      => 'name=value pairs of cpanm options' ],
@@ -27,7 +26,7 @@ sub opt_spec {
         [ 'local-lib|l=s'           => 'install into a local lib directory' ],
         [ 'local-lib-contained|L=s' => 'install into a contained local lib directory' ],
         [ 'message|m=s'             => 'Message to describe the change' ],
-        [ 'do-pull'                 => 'Pull missing prereqs onto the stack first' ],
+        [ 'do-pull'                 => 'pull missing prereqs onto the stack first' ],
         [ 'stack|s=s'               => 'Install modules from this stack' ],
         [ 'use-default-message|M'   => 'Use the generated message' ],
 
@@ -56,7 +55,7 @@ sub args_attribute { return 'targets' }
 
 #------------------------------------------------------------------------------
 
-sub args_from_stdin { my ($self, $opts) = @_; return !$opts->{all} }
+sub args_from_stdin { return 1 }
 
 #------------------------------------------------------------------------------
 1;
@@ -65,8 +64,8 @@ __END__
 
 =pod
 
-=for stopwords
-exe
+=for stopwords 
+exe 
 cpanm
 
 =head1 SYNOPSIS
@@ -82,8 +81,8 @@ is just a thin wrapper around L<cpanm> that is wired to fetch
 everything from the Pinto repository, rather than a public CPAN
 mirror.
 
-If the C<--do-pull> option is given, then all targets and their
-prerequisites will be pulled onto the stack before attempting to
+If the C<--do-pull> option is given, then all targets and their 
+prerequisites will be pulled onto the stack before attempting to 
 install them.  If any thing cannot be pulled because it cannot be
 found or is blocked by a pin, then the installation will not
 proceed.
@@ -102,17 +101,6 @@ or ';') will be ignored.
 =head1 COMMAND OPTIONS
 
 =over 4
-
-=item --all
-
-=item -a
-
-!! THIS OPTION IS EXPERIMENTAL !!
-
-Installs every package in the stack.  When this option is used, targets may
-not be passed as arguments and will not be read from STDIN.  Also, this option
-cannot be used with C<--do-pull>.  To force reinstallation, you can add
-C<--cpanm-options reinstall> or C-o reinstall>.
 
 =item --cascade
 

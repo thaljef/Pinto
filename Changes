@@ -7,11 +7,6 @@
 
       [ENHANCEMENTS]
 
-      - The "install" command now has an --all option that will install every
-      package that is currently registered on a stack.  This option is still
-      experimental, but is the easiest way to just say "give me everything!"
-      Inspired by @mar-kolya.
-
       - Improved error handling in Pinto::Remote so you get pretty colored
       errors instead of big ugly stack traces, just like you do when using
       a local repository.
