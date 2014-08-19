@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+      [SECURITY]
+
+      - Fixed critical security hole in Pinto::Server. If you are using pintod,
+      please upgrade now! Thanks to Aran Deltac for reporting this.
+
       [ENHANCEMENTS]
 
       - The "install" command now has an --all option that will install every

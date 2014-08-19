@@ -24,16 +24,12 @@ sub respond {
 
     # e.g. /stack_name/modules/02packages.details.txt.gz
     my ( undef, @path_parts ) = split '/', $self->request->path_info;
-
     my $file = $self->root->file(@path_parts);
 
-    my @stat = stat($file);
-    unless ( -f _ ) {
-        my $body = "File $file not found";
-        my $headers = [ 'Content-Type' => 'text/plain', 'Content-Length' => length($body) ];
-        return [ 404, $headers, [$body] ];
-    }
+    return not_found($file) if not -f $file;
+    return not_found($file) if index($file, '/../') > 0;
 
+    my @stat = stat($file);
     my $modified_since = HTTP::Date::str2time( $self->request->env->{HTTP_IF_MODIFIED_SINCE} );
     return [ 304, [], [] ] if $modified_since && $stat[9] <= $modified_since;
 
@@ -74,6 +70,15 @@ sub should_not_cache {
     return 1 if $basename eq '02packages.details.txt.gz';
     return 1 if $basename eq '03modlist.data.gz';
     return 0;
+}
+
+#-------------------------------------------------------------------------------
+
+sub not_found {
+    my $file = shift;
+    my $body = "File $file not found";
+    my $headers = [ 'Content-Type' => 'text/plain', 'Content-Length' => length($body) ];
+    return [ 404, $headers, [$body] ];
 }
 
 #-------------------------------------------------------------------------------
