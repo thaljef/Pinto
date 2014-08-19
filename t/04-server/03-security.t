@@ -9,7 +9,6 @@ use Plack::Test;
 use HTTP::Request::Common;
 
 use Pinto::Server;
-use Pinto::Constants qw(:server :protocol);
 
 use lib 't/lib';
 use Pinto::Tester;
@@ -17,9 +16,9 @@ use Pinto::Tester;
 #------------------------------------------------------------------------------
 # Setup...
 
-my $t       = Pinto::Tester->new;
-my %opts    = ( root => $t->pinto->root );
-my $app     = Pinto::Server->new(%opts)->to_app;
+my $t    = Pinto::Tester->new;
+my %opts = ( root => $t->pinto->root );
+my $app  = Pinto::Server->new(%opts)->to_app;
 
 #------------------------------------------------------------------------------
 # GET a path outside the repository
