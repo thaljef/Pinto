@@ -1,6 +1,6 @@
 #!perl
 
-# ABSTRACT: Web interface to a Pinto repository 
+# ABSTRACT: Web interface to a Pinto repository
 # PODNAME: pintod
 
 #-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ __END__
 
 C<pintod> provides a web API to a L<Pinto> repository.  Clients (like
 L<pinto>) can use this API to manage and inspect the repository.  In
-addition, C<pintod> serves up the distributions within the repository, 
+addition, C<pintod> serves up the distributions within the repository,
 so you can use it as the backend for L<cpan> or L<cpanm>.
 
 Before running C<pintod> you must first create a Pinto repository.  For
@@ -114,40 +114,38 @@ environment variable.
 =item --auth KEY=VALUE
 
 Sets an option for the authentication scheme (default is no authentication).
-Each time this is used, a key=value pair must follow; one of them must be 
-'backend', which should correspond to a class in the L<Authen::Simple> 
-namespace. The remaining options will be passed as-is to the authentication 
+Each time this is used, a key=value pair must follow; one of them must be
+'backend', which should correspond to a class in the L<Authen::Simple>
+namespace. The remaining options will be passed as-is to the authentication
 backend.
 
-For example, this would be a valid configuration for Kerberos:
+See L<"USING BASIC HTTP AUTHENTICATION"> for more guidance on enabling
+authenticaion with minimal fuss, or see L<"USING OTHER AUTHENTICATION SCHEMES">
+for more complex options.
 
-  --auth backend=Kerberos --auth realm=REALM.COMPANY.COM
+=item --port INTEGER
 
-and this is how the authentication backend will be constructed:
+=item -p INTEGER
 
-  my $auth = Authen::Simple::Kerberos->new(
-    realm => 'REALM.COMPANY.COM'
-  );
-
-C<pintod> ships with L<Authen::Simple::Password>.  If you wish to install
-a different authentication scheme, you'll need to install that separately.
-See also L<"BASIC AUTHENTICATION"> for additional instructions for setting
-up basic HTTP authemtication out-of-the-box.
+Specifies the port number that the server will listen on.  The default is
+B<3111>.  If you specify a different port, all clients will also have to specify
+that port.  So you probably don't want to change the port unless you have
+a very good reason.
 
 =item other options
 
 All other options supported by L<plackup> are supported too, such as
-C<--server>, C<--port>, C<--daemonize>, etc.  These will be passed to
-L<Plack::Runner>.  By default, C<pintod> uses on the L<Starman> for
-the server backend.  Be aware that different servers support different
-options.
+C<--server>, C<--daemonize>, C<--access-log>, C<--error-log> etc.  These will
+be passed to L<Plack::Runner>.  By default, C<pintod> uses on the L<Starman>
+for the server backend.  Be aware that not all servers support the same options.
 
 =back
 
-=head1 BASIC AUTHENTICATION
+=head1 USING BASIC HTTP AUTHENTICATION
 
-The easiest way to run C<pintod> with basic HTTP authentication is to
-create a password file using the C<htpasswd> utility:
+C<pintod> ships with L<Authen::Simple::Passwd>, so the easiest way to run
+the server with basic HTTP authentication is to create a password file using
+the C<htpasswd> utility:
 
   htpasswd -c /path/to/htpasswd USER
 
@@ -157,11 +155,26 @@ want to put the F<htpasswd> file inside the top of your repository.
 
 Then launch pintod like this:
 
-  pintod -r path/to/repository --auth backend=Password --autho path=/path/to/htpasswd
+  pintod --root path/to/repository --auth backend=Passwd --auth path=path/to/htpasswd
 
 If you already have an F<htpasswd> file somewhere, you may just point to it
 directly, or create a symlink.  In any case, the F<htpasswd> file needs to
-be readable by the user account will be running C<pintod>.
+be readable by the user that will be running C<pintod>.
+
+=head1 USING OTHER AUTHENTICATION SCHEMES
+
+If you wish to use a different authenticaion scheme, then you'll first need
+to install the appropriate L<Authen::Simple> backend module.  Then configure
+L<pintod> accordingly.  For example, this would be a valid configuration
+for Kerberos:
+
+  --auth backend=Kerberos --auth realm=REALM.YOUR_COMPANY.COM
+
+and this is how the authentication backend will be constructed:
+
+  my $auth = Authen::Simple::Kerberos->new(
+    realm => 'REALM.YOUR_COMPANY.COM'
+  );
 
 =head1 DEPLOYMENT
 
@@ -170,14 +183,14 @@ default.  It will use whatever backend you specify on the command line
 or have configured in your environment (defaults to L<Starman>).
 
 If you wish to add your own middleware and/or customize the backend in
-other ways, you can use L<Pinto::Server> in a custom .psgi script like
+other ways, you can use L<Pinto::Server> in a custom F<.psgi> script like
 this:
 
     # my-pintod.psgi
 
     my %opts   = (...);
     my $server = Pinto::Server->new(%opts);
-    my $app    = $server->to_app();
+    my $app    = $server->to_app;
 
     # wrap $app with middlewares here and/or
     # insert code customized for your backend

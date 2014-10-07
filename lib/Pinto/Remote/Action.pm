@@ -4,7 +4,7 @@ package Pinto::Remote::Action;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str Maybe);
 
 use URI;
@@ -12,7 +12,8 @@ use JSON;
 use HTTP::Request::Common;
 
 use Pinto::Result;
-use Pinto::Constants qw(:server);
+use Pinto::Constants qw(:protocol);
+use Pinto::Util qw(current_time_offset);
 use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
@@ -21,16 +22,15 @@ use Pinto::Types qw(Uri);
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Plated);
+with qw(Pinto::Role::Plated Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
-has name      => (
-    is        => 'ro',
-    isa       => Str,
-    required  => 1,
+has name => (
+    is       => 'ro',
+    isa      => Str,
+    required => 1,
 );
-
 
 has root => (
     is       => 'ro',
@@ -38,13 +38,11 @@ has root => (
     required => 1,
 );
 
-
-has args     => (
-    is       => 'ro',
-    isa      => 'HashRef',
-    default  => sub { {} },
+has args => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    default => sub { {} },
 );
-
 
 has username => (
     is       => 'ro',
@@ -52,18 +50,10 @@ has username => (
     required => 1
 );
 
-
 has password => (
     is       => 'ro',
-    isa      => Maybe[ Str ],
+    isa      => Maybe [Str],
     required => 1,
-);
-
-
-has ua        => (
-    is        => 'ro',
-    isa       => 'LWP::UserAgent',
-    required  => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -79,7 +69,7 @@ sub execute {
     my ($self) = @_;
 
     my $request = $self->_make_request;
-    my $result  = $self->_send_request(req => $request);
+    my $result = $self->_send_request( req => $request );
 
     return $result;
 }
@@ -87,16 +77,21 @@ sub execute {
 #------------------------------------------------------------------------------
 
 sub _make_request {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
     my $action_name  = $args{name} || $self->name;
     my $request_body = $args{body} || $self->_make_request_body;
 
-    my $url = URI->new( $self->root );
-    $url->path_segments('', 'action', lc $action_name);
+    my $uri = URI->new( $self->root );
+    $uri->path_segments( '', 'action', lc $action_name );
 
-    my $request = POST( $url, Content_Type => 'form-data',
-                              Content      => $request_body );
+    my $request = POST(
+        $uri,
+        Accept        => $PINTO_PROTOCOL_ACCEPT,
+        Content       => $request_body,
+        Content_Type  => 'form-data',
+
+    );
 
     if ( defined $self->password ) {
         $request->authorization_basic( $self->username, $self->password );
@@ -104,7 +99,6 @@ sub _make_request {
 
     return $request;
 }
-
 
 #------------------------------------------------------------------------------
 
@@ -114,15 +108,17 @@ sub _make_request_body {
     return [ $self->_chrome_args, $self->_pinto_args, $self->_action_args ];
 }
 
-
 #------------------------------------------------------------------------------
 
 sub _chrome_args {
     my ($self) = @_;
 
-    my $chrome_args = { verbose  => $self->chrome->verbose,
-                        no_color => $self->chrome->no_color,
-                        quiet    => $self->chrome->quiet };
+    my $chrome_args = {
+        verbose  => $self->chrome->verbose,
+        color    => $self->chrome->color,
+        palette  => $self->chrome->palette,
+        quiet    => $self->chrome->quiet
+    };
 
     return ( chrome => encode_json($chrome_args) );
 
@@ -133,7 +129,10 @@ sub _chrome_args {
 sub _pinto_args {
     my ($self) = @_;
 
-    my $pinto_args = { username  => $self->username };
+    my $pinto_args = {
+        username    => $self->username,
+        time_offset => current_time_offset,
+    };
 
     return ( pinto => encode_json($pinto_args) );
 }
@@ -151,45 +150,50 @@ sub _action_args {
 #------------------------------------------------------------------------------
 
 sub _send_request {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
     my $request = $args{req} || $self->_make_request;
-
-    my $status   = 0;
-    my $buffer   = '';
+    my $status = 0;
+    my $buffer = '';
 
     # Currying in some extra args to the callback...
-    my $callback = sub { $self->_response_callback(@_, \$status, \$buffer) };
-    my $response = $self->ua->request($request, $callback, 128);
+    my $callback = sub { $self->_response_callback( \$status, \$buffer, @_ ) };
+    my $response = $self->request( $request, $callback );
 
-    if (not $response->is_success) {
-        $self->error($response->content);
-        return Pinto::Result->new(was_successful => 0);
+    if ( not $response->is_success ) {
+        $self->error( $response->content );
+        return Pinto::Result->new( was_successful => 0 );
     }
 
-    return Pinto::Result->new(was_successful => $status);
+    return Pinto::Result->new( was_successful => $status );
 }
 
 #------------------------------------------------------------------------------
 
-sub _response_callback {                  ## no critic qw(ProhibitManyArgs)
-    my ($self, $data, $request, $proto, $status, $buffer) = @_;
+sub _response_callback {
+    my ( $self, $status, $buffer, $data ) = @_;
 
-    my $lines = '';
-    $lines = $1 if (${ $buffer } .= $data) =~ s{^ (.*)\n }{}sx;
-
-    for (split m{\n}x, $lines, -1) {
-
-        if ($_ eq $PINTO_SERVER_STATUS_OK) {
-            ${ $status } = 1;
+    $data = ${$buffer}.$data;
+    while($data =~ /\G([^\n]*)\n/gc) {
+        my $line = $1;
+        if ( $line eq $PINTO_PROTOCOL_STATUS_OK ) {
+            ${$status} = 1;
         }
-        elsif (m{^ \Q$PINTO_SERVER_DIAG_PREFIX\E (.*)}x) {
-            print {$self->chrome->stderr} "$1\n";
+        elsif ( $line eq $PINTO_PROTOCOL_PROGRESS_MESSAGE ) {
+            $self->chrome->show_progress;
+        }
+        elsif ( $line eq $PINTO_PROTOCOL_NULL_MESSAGE ) {
+            # Do nothing, discard message
+        }
+        elsif ( $line =~ m{^ \Q$PINTO_PROTOCOL_DIAG_PREFIX\E (.*)}x ) {
+            $self->chrome->diag($1);
         }
         else {
-            print {$self->chrome->stdout} "$_\n";
+            $self->chrome->show($line);
         }
     }
+    #Save leftovers, use them in next packet
+    (${$buffer}) = ($data =~ /\G(.*)$/g);
 
     return 1;
 }

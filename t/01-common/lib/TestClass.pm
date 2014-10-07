@@ -1,41 +1,59 @@
 package TestClass;
 
 use Moose;
-use Pinto::Types qw( File Dir Uri Io AuthorID Version PropertyName
-                     StackName StackAll StackDefault
-                     PkgSpec PkgSpecList
-                     DistSpec DistSpecList
-                     SpecList RevisionID );
+
+use Pinto::Types qw(
+    ANSIColor
+    ANSIColorPalette
+    AuthorID
+    DiffStyle
+    Dir
+    DistributionTarget
+    DistributionTargetList
+    File
+    Io
+    PackageTarget
+    PackageTargetList
+    PropertyName
+    RevisionID
+    StackAll
+    StackDefault
+    StackName
+    TargetList
+    Uri
+    Version
+);
 
 #-----------------------------------------------------------------------------
 
 has file => (
-    is   => 'rw',
-    isa  => File,
+    is     => 'rw',
+    isa    => File,
     coerce => 1,
 );
 
 has dir => (
-    is  => 'rw',
-    isa => Dir,
+    is     => 'rw',
+    isa    => Dir,
     coerce => 1,
 );
 
 has uri => (
-    is  => 'rw',
-    isa => Uri,
+    is     => 'rw',
+    isa    => Uri,
     coerce => 1,
 );
 
-has io  => (
-    is  => 'rw',
-    isa => Io,
+has io => (
+    is     => 'rw',
+    isa    => Io,
     coerce => 1,
 );
 
 has author => (
-    is  => 'rw',
-    isa => AuthorID,
+    is     => 'rw',
+    isa    => AuthorID,
+    coerce => 1,
 );
 
 has stack => (
@@ -59,38 +77,38 @@ has property => (
 );
 
 has version => (
-    is  => 'rw',
-    isa => Version,
+    is     => 'rw',
+    isa    => Version,
     coerce => 1,
 );
 
 has pkg => (
     is     => 'rw',
-    isa    => PkgSpec,
+    isa    => PackageTarget,
     coerce => 1,
 );
 
 has pkgs => (
     is     => 'rw',
-    isa    => PkgSpecList,
+    isa    => PackageTargetList,
     coerce => 1,
 );
 
 has dist => (
     is     => 'rw',
-    isa    => DistSpec,
+    isa    => DistributionTarget,
     coerce => 1,
 );
 
 has dists => (
     is     => 'rw',
-    isa    => DistSpecList,
+    isa    => DistributionTargetList,
     coerce => 1,
 );
 
 has targets => (
     is     => 'rw',
-    isa    => SpecList,
+    isa    => TargetList,
     coerce => 1,
 );
 
@@ -98,6 +116,21 @@ has revision => (
     is     => 'rw',
     isa    => RevisionID,
     coerce => 1,
+);
+
+has color => (
+    is  => 'rw',
+    isa => ANSIColor,
+);
+
+has palette => (
+    is  => 'rw',
+    isa => ANSIColorPalette,
+);
+
+has diffstyle => (
+    is  => 'rw',
+    isa => DiffStyle,
 );
 
 #-----------------------------------------------------------------------------

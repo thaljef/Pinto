@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Class::Load;
+use Pinto::Util qw(is_remote_repo);
 
 #-----------------------------------------------------------------------------
 
@@ -18,10 +19,10 @@ use base 'App::Pinto::Command';
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     $self->usage_error('Arguments are not allowed')
-      if @{ $args };
+        if @{$args};
 
     return 1;
 }
@@ -29,18 +30,18 @@ sub validate_args {
 #------------------------------------------------------------------------------
 
 sub execute {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
     my $global_opts = $self->app->global_options;
 
-    $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT}
-        || die "Must specify a repository root directory\n";
+    die "Must specify a repository root directory\n"
+        unless $global_opts->{root} ||= $ENV{PINTO_REPOSITORY_ROOT};
 
-    $global_opts->{root} =~ m{^https?://}x
-        && die "Cannot migrate remote repositories\n";
+    die "Cannot migrate remote repositories\n"
+        if is_remote_repo( $global_opts->{root} );
 
-    my $class = $self->load_migrator;
-    my $migrator = $class->new( %{ $global_opts } );
+    my $class    = $self->load_migrator;
+    my $migrator = $class->new( %{$global_opts} );
     $migrator->migrate;
 
     return 0;
@@ -52,12 +53,12 @@ sub load_migrator {
 
     my $class = 'Pinto::Migrator';
 
-    my ($ok, $error) = Class::Load::try_load_class($class);
+    my ( $ok, $error ) = Class::Load::try_load_class($class);
     return $class if $ok;
 
-    my $msg = $error =~ m/Can't locate .* in \@INC/  ## no critic (ExtendedFormat)
-                     ? "Must install Pinto to migrate repositories\n"
-                     : $error;
+    my $msg = $error =~ m/Can't locate .* in \@INC/    ## no critic (ExtendedFormat)
+        ? "Must install Pinto to migrate repositories\n"
+        : $error;
     die $msg;
 }
 

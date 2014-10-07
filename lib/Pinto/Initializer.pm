@@ -4,7 +4,7 @@ package Pinto::Initializer;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use IO::Zlib;
 use Path::Class;
@@ -20,10 +20,13 @@ use Pinto::Util qw(debug);
 #------------------------------------------------------------------------------
 
 sub init {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    die "Must specify a root\n" 
+    die "Must specify a root\n"
         if not $args{root};
+
+    # Normalize root
+    $args{root} =~ s{^file://}{};
 
     $self->_check_sanity(%args);
     $self->_make_dirs(%args);
@@ -39,9 +42,9 @@ sub init {
 #------------------------------------------------------------------------------
 
 sub _check_sanity {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $root_dir = dir($args{root});
+    my $root_dir = dir( $args{root} );
     die "Directory $root_dir must be empty to create a repository there\n"
         if -e $root_dir and $root_dir->children;
 
@@ -51,9 +54,9 @@ sub _check_sanity {
 #------------------------------------------------------------------------------
 
 sub _make_dirs {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $config = Pinto::Config->new(root => $args{root});
+    my $config = Pinto::Config->new( root => $args{root} );
 
     for my $dir ( $config->directories ) {
         debug "Making directory $dir";
@@ -66,25 +69,25 @@ sub _make_dirs {
 #------------------------------------------------------------------------------
 
 sub _write_config {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $config = Pinto::Config->new(root => $args{root});
+    my $config = Pinto::Config->new( root => $args{root} );
 
     my $config_file = $config->config_dir->file( $config->basename );
     $config->write_config_file( file => $config_file, values => \%args );
 
     return;
-};
+}
 
 #------------------------------------------------------------------------------
 
 sub _write_mailrc {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $config = Pinto::Config->new(root => $args{root});
+    my $config = Pinto::Config->new( root => $args{root} );
 
-    my $fh = IO::Zlib->new($config->mailrc_file->stringify, 'wb') or die $!;
-    print {$fh} ''; # File will be empty, but have gzip headers
+    my $fh = IO::Zlib->new( $config->mailrc_file->stringify, 'wb' ) or die $!;
+    print {$fh} '';    # File will be empty, but have gzip headers
     close $fh or throw $!;
 
     return;
@@ -92,11 +95,10 @@ sub _write_mailrc {
 
 #------------------------------------------------------------------------------
 
-
 sub _set_version {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $pinto = Pinto->new(root => $args{root});
+    my $pinto = Pinto->new( root => $args{root} );
 
     $pinto->repo->set_version;
 
@@ -106,9 +108,9 @@ sub _set_version {
 #------------------------------------------------------------------------------
 
 sub _create_db {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $pinto = Pinto->new(root => $args{root});
+    my $pinto = Pinto->new( root => $args{root} );
 
     $pinto->repo->db->deploy;
 
@@ -118,13 +120,13 @@ sub _create_db {
 #------------------------------------------------------------------------------
 
 sub _create_stack {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $stack      = $args{stack} || 'master';
+    my $stack = $args{stack} || 'master';
     my $is_default = $args{no_default} ? 0 : 1;
-    my $pinto      = Pinto->new(root => $args{root});
+    my $pinto = Pinto->new( root => $args{root} );
 
-    $pinto->run(New => (stack => $stack, default => $is_default));
+    $pinto->run( New => ( stack => $stack, default => $is_default ) );
 
     return;
 }

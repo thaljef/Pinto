@@ -27,14 +27,14 @@ And then possibly...
 =head1 APPLICATION VERSUS LIBRARY VERSUS SERVER
 
 For most situations, Pinto is more like an I<application> than a I<library>.
-It is a tool that you use to develop and deploy your code, but Pinto itself
+It is a tool that you use to develop and manage your code, but Pinto itself
 is not I<part of> your code.  Pinto also has a lot of dependencies, some of 
 which may conflict with or complicate your code.
 
 Pinto can also serve as the backend supporting a daemonized Starman server
 exposed to the wilds of the internet.  Doing so opens the door to many 
 additional security concerns.  We suggest below some practices we hope
-will serve to minize the risks of doing so.
+will serve to minimize the risks of doing so.
 
 =head1 INSTALLING AS AN APPLICATION
 
@@ -47,20 +47,20 @@ broke!
 
 =head2 Step 1: Run the pinto installer script
 
-The installer script at getpinto.stratopan.com is just a wrapper around 
-cpanm, which installs pinto in a self-contained directory:
+The installer script at L<http://getpinto.stratopan.com> is mostly just a 
+wrapper around L<cpanm>, which installs pinto in a self-contained directory:
 
-   # If you have curl...
+   # If you use curl...
    curl -L http://getpinto.stratopan.com | bash
 
    # If you use wget...
    wget -O - http://getpinto.stratopan.com | bash
 
 All the dependent modules will come from a curated repository on 
-L<stratopan.com|http://stratopan.com>.  These aren't always the latest 
+L<Stratopan|http://stratopan.com>.  These aren't always the latest 
 versions of things, but they are versions that I know will work.
 
-=head2 Step 2: Setup the pinto environment
+=head2 Step 2: Set up the pinto environment
 
 The pinto installer generates a setup script for you.  By default, it
 is located at F<~/opt/local/pinto/etc/bashrc>.  To load that setup into
@@ -109,7 +109,7 @@ to review your options see L<Authen::Simple>.
 
     update-rc.d pintod start 50 2 3 4 5 . stop 20 0 1 6 .
 
-=head2 AN IMPORTNAT NOTE ABOUT SECURITY
+=head2 AN IMPORTANT NOTE ABOUT SECURITY
 
 Currently daemonizing the pintod server will run the starman workers 
 as root.  We hope to soon have the pintod daemon drop its privileges 

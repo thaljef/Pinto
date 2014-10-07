@@ -5,11 +5,12 @@ use warnings;
 
 use Test::More;
 
-use Pinto::Tester;
 use Pinto::PrerequisiteWalker;
 
-#------------------------------------------------------------------------------
+use lib 't/lib';
+use Pinto::Tester;
 
+#------------------------------------------------------------------------------
 
 my $t = Pinto::Tester->new;
 
@@ -21,19 +22,19 @@ $t->populate('AUTHOR/Baz-1 = Baz-1 & Foo~1');
 #------------------------------------------------------------------------------
 
 {
-	my $cb  = sub { 
-		my ($prereq) = @_;
-		my $dist = $t->pinto->repo->get_distribution(spec => $prereq);
-		ok defined $dist, "Got distribution for prereq $prereq";
-		return $dist;
-	};
+    my $cb = sub {
+        my ($prereq) = @_;
+        my $dist = $t->pinto->repo->get_distribution( target => $prereq->as_target );
+        ok defined $dist, "Got distribution for prereq $prereq";
+        return $dist;
+    };
 
-	my $dist = $t->get_distribution(author => 'AUTHOR', archive => 'Foo-1.tar.gz');
-	my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb);
-	while ($walker->next) {};
+    my $dist = $t->get_distribution( author => 'AUTHOR', archive => 'Foo-1.tar.gz' );
+    my $walker = Pinto::PrerequisiteWalker->new( start => $dist, callback => $cb );
+    while ( $walker->next ) { }
 
-	# All we need to do is make sure we get out...
-	ok 1, 'Escaped circular dependencies';
+    # All we need to do is make sure we get out...
+    ok 1, 'Escaped circular dependencies';
 }
 
 #------------------------------------------------------------------------------

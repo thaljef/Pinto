@@ -4,9 +4,10 @@ package Pinto::IndexWriter;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use IO::Zlib;
+use Module::CoreList;
 use Path::Class qw(file);
 use HTTP::Date qw(time2str);
 
@@ -25,8 +26,7 @@ has stack => (
     required => 1,
 );
 
-
-has index_file  => (
+has index_file => (
     is      => 'ro',
     isa     => File,
     default => sub { $_[0]->stack->modules_dir->file('02packages.details.txt.gz') },
@@ -38,12 +38,12 @@ has index_file  => (
 sub write_index {
     my ($self) = @_;
 
-    my $index_file  = $self->index_file;
-    my $stack = $self->stack;
+    my $index_file = $self->index_file;
+    my $stack      = $self->stack;
 
     debug("Writing index for stack $stack at $index_file");
 
-    my $handle = IO::Zlib->new($index_file->stringify, 'wb') 
+    my $handle = IO::Zlib->new( $index_file->stringify, 'wb' )
         or throw "Cannot open $index_file: $!";
 
     my @records = $self->_get_index_records($stack);
@@ -51,8 +51,8 @@ sub write_index {
 
     debug("Index for stack $stack has $count records");
 
-    $self->_write_header($handle, $index_file, $count);
-    $self->_write_records($handle, @records);
+    $self->_write_header( $handle, $index_file, $count );
+    $self->_write_records( $handle, @records );
     close $handle;
 
     return $self;
@@ -61,10 +61,10 @@ sub write_index {
 #------------------------------------------------------------------------------
 
 sub _write_header {
-    my ($self, $fh, $filename, $line_count) = @_;
+    my ( $self, $fh, $filename, $line_count ) = @_;
 
-    my $base    = $filename->basename;
-    my $url     = 'file://' . $filename->absolute->as_foreign('Unix');
+    my $base = $filename->basename;
+    my $uri  = 'file://' . $filename->absolute->as_foreign('Unix');
 
     my $writer  = ref $self;
     my $version = $self->VERSION || 'UNKNOWN';
@@ -72,7 +72,7 @@ sub _write_header {
 
     print {$fh} <<"END_PACKAGE_HEADER";
 File:         $base
-URL:          $url
+URL:          $uri
 Description:  Package names found in directory \$CPAN/authors/id/
 Columns:      package name, version, path
 Intended-For: Automated fetch routines, namespace documentation.
@@ -88,11 +88,11 @@ END_PACKAGE_HEADER
 #------------------------------------------------------------------------------
 
 sub _write_records {
-    my ($self, $fh, @records) = @_;
+    my ( $self, $fh, @records ) = @_;
 
-    for my $record ( @records ) {
-        my ($name, $version, $author, $archive) = @{ $record };
-        my $path = join '/', substr($author, 0, 1), substr($author, 0, 2), $author, $archive;
+    for my $record (@records) {
+        my ( $name, $version, $author, $archive ) = @{$record};
+        my $path = join '/', substr( $author, 0, 1 ), substr( $author, 0, 2 ), $author, $archive;
         my $width = 38 - length $version;
         $width = length $name if $width < length $name;
         printf {$fh} "%-${width}s %s  %s\n", $name, $version, $path;
@@ -104,7 +104,7 @@ sub _write_records {
 #------------------------------------------------------------------------------
 
 sub _get_index_records {
-    my ($self, $stack) = @_;
+    my ( $self, $stack ) = @_;
 
     # The index is rewritten after almost every action, so we want
     # this to be as fast as possible (especially during an Add or
@@ -120,13 +120,45 @@ sub _get_index_records {
     my @joins   = qw(package distribution);
     my @selects = qw(package.name package.version distribution.author distribution.archive);
 
-    my $attrs   = {join => \@joins, select => \@selects};
-    my $rs      = $stack->head->search_related('registrations', {}, $attrs);
-    my @records = sort {$a->[0] cmp $b->[0]} $rs->cursor->all;
+    my $attrs = { join => \@joins, select => \@selects };
+    my $rs = $stack->head->search_related( 'registrations', {}, $attrs );
+    my %stack_records = map { ($_->[0] => $_)  } $rs->cursor->all;
 
-    return @records;
+    # Now, we merge the stuff from the stack with core modules.  If
+    # the stack has a newer version of a core module (dual-life) then
+    # it should be the one that appears in the index.  Then finally
+    # we sort them.
 
+    my %fake_records = $self->_get_fake_records;
+    my %merged_records = (%fake_records, %stack_records);
+    return map { $merged_records{$_} } sort keys %merged_records;
 
+}
+
+#------------------------------------------------------------------------------
+
+sub _get_fake_records {
+    my ($self) = @_;
+
+    # We generate artificial records for all the (non-deprecated) core modules
+    # that are in the target perl.  That way, the index appears to have perl
+    # itself (just like the real CPAN) and installers can handle requests to
+    # install a core module.
+
+    my $tpv = $self->stack->target_perl_version;
+    my $tpv_normal = $tpv->normal; $tpv_normal =~ s/^v//;
+    my @fake = ("FAKE", "perl-$tpv_normal.tar.gz");
+
+    my $core_versions = $Module::CoreList::version{$tpv->numify + 0};
+    my $deprecated_modules = $Module::CoreList::deprecated{$tpv->numify + 0};
+
+    my $fake_records = {};
+    for my $module (keys %{ $core_versions }) {
+        next if $deprecated_modules && exists $deprecated_modules->{ $module };
+        $fake_records->{$module} = [$module, $core_versions->{$module} || 0, @fake];
+    }
+
+    return %{ $fake_records };
 }
 
 #------------------------------------------------------------------------------

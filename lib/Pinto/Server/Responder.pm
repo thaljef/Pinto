@@ -20,7 +20,6 @@ has request => (
     required => 1,
 );
 
-
 has root => (
     is       => 'ro',
     isa      => Dir,

@@ -17,27 +17,27 @@ __END__
 
 =head1 TABLE OF CONTENTS
 
-The manual consists of the following documents
+The manual consists of the following documents:
 
-=over 4
-
-=item L<Pinto::Manual::Introduction>
+=head2 L<Pinto::Manual::Introduction>
 
 Explains the goals, terminology, and concepts in L<Pinto>.
 
-=item L<Pinto::Manual::Installing>
+=head2 L<Pinto::Manual::Installing>
 
 Some suggestions for installing L<Pinto>.
 
-=item L<Pinto::Manual::Tutorial>
+=head2 L<Pinto::Manual::Tutorial>
 
 Presents a narrative explanation of how to use L<Pinto>.
 
-=item L<Pinto::Manual::QuickStart>
+=head2 L<Pinto::Manual::QuickStart>
 
 Presents a condensed summary of L<pinto> commands.
 
-=back
+=head2 L<Pinto::Manual::Thanks>
+
+Names of those who helped to finance L<Pinto>.
 
 =head1 SEE ALSO
 
@@ -50,6 +50,6 @@ repository contents or revision history, and visualizing your
 dependency tree.
 
 At the time of this writing, L<Stratopan|http://stratopan.com> is
-still in the alpha stage.  But it definitely worth investigation.
+still in the alpha stage.  But it is definitely worth investigation.
 
 =cut

@@ -3,10 +3,12 @@
 package Pinto::Role::Puller;
 
 use Moose::Role;
-use MooseX::Types::Moose qw(Bool);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Types::Moose qw(ArrayRef Bool Str);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Pinto::Util qw(throw);
+use List::MoreUtils qw(any);
+
+use Pinto::Util qw(throw whine);
 
 #-----------------------------------------------------------------------------
 
@@ -18,127 +20,188 @@ with qw( Pinto::Role::Plated );
 
 #-----------------------------------------------------------------------------
 
-has no_recurse => (
-	is          => 'ro',
-	isa         => Bool,
-	default     => 0,
+has recurse => (
+    is      => 'ro',
+    isa     => Bool,
+    default => sub { shift->stack->repo->config->recurse },
+    lazy    => 1,
 );
 
+has cascade => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
 
 has pin => (
-  is          => 'ro',
-  isa         => Bool,
-  default     => 0,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+has force => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+has skip_missing_prerequisite => (
+    is        => 'ro',
+    isa       => ArrayRef[Str],
+    default   => sub { [] },
+);
+
+has skip_all_missing_prerequisites => (
+    is        => 'ro',
+    isa       => Bool,
+    default   => 0,
+);
+
+has with_development_prerequisites => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
 );
 
 #-----------------------------------------------------------------------------
 
-# We should require a stack() attribute, but I can't get it to work 
-# when composing with the Committable role which provides it.
+# We should require a stack() attribute here, but Moose can't properly
+# resolve attributes that are composed from other roles.  For more info
+# see https://rt.cpan.org/Public/Bug/Display.html?id=46347
+
 # requires qw(stack);
 
 #-----------------------------------------------------------------------------
 
 sub pull {
-	my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-	my $target = $args{target};
-	my $stack  = $self->stack;
-  my $dist;
+    my $target = $args{target};
+    my $stack  = $self->stack;
 
-  if ($target->isa('Pinto::Schema::Result::Distribution')) {
-    $dist = $target;
-  }
-  elsif ($target->isa('Pinto::DistributionSpec')) {
-    $dist = $self->find(target => $target);
-  }
-  elsif ($target->isa('Pinto::PackageSpec')) {
+    my $did_register         = 0;
+    my $did_register_prereqs = 0;
+    my $dist;
 
-    my $tpv = $stack->target_perl_version;
-    if ($target->is_core(in => $tpv)) {
-      $self->warning("Skipping $target: included in perl $tpv core");
-      return;
+    if ( $target->isa('Pinto::Schema::Result::Distribution') ) {
+        $dist = $target;
+    }
+    elsif ( $target->isa('Pinto::Target::Distribution') ) {
+        $dist = $self->find( target => $target );
+    }
+    elsif ( $target->isa('Pinto::Target::Package') ) {
+
+        my $tpv = $stack->target_perl_version;
+        if ( $target->is_core( in => $tpv ) ) {
+            $self->warning("Skipping $target: included in perl $tpv core");
+            return (undef, 0, 0); # Nothing was pulled
+        }
+
+        $dist = $self->find( target => $target );
+    }
+    else {
+        throw "Illeagal arguments";
     }
 
-    $dist = $self->find(target => $target);
-  }
-  else {
-    throw "Illeagal arguments";
-  }
+    $did_register = $dist->register( stack => $stack, pin => $self->pin, force => $self->force );
+    $did_register_prereqs = $self->do_recursion( start => $dist ) if $self->recurse;
 
-  $dist->register(stack => $stack, pin => $self->pin);
-  $self->recurse(start => $dist) unless $self->no_recurse;
-
-  return $dist;
+    return ($dist, $did_register, $did_register_prereqs);
 }
 
 #-----------------------------------------------------------------------------
 
 sub find {
-  my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-  my $target = $args{target};
-  my $stack  = $self->stack;
+    my $target = $args{target};
+    my $stack  = $self->stack;
 
-  my $dist;
-  my $msg;
+    my $dist;
+    my $msg;
 
-  if    ($dist = $stack->get_distribution(spec => $target) ) {
-    $msg = "Found $target on stack $stack in $dist";
-  }
-  elsif ($dist = $stack->repo->get_distribution(spec => $target) ) {
-    $msg = "Found $target in $dist";
-  }
-  elsif ($dist = $stack->repo->ups_distribution(spec => $target) ) {
-    $msg = "Found $target in " . $dist->source;
-  }
+    if ( $dist = $stack->get_distribution( target => $target ) ) {
+        $msg = "Found $target on stack $stack in $dist";
+    }
+    elsif ( $dist = $stack->repo->get_distribution( target => $target ) ) {
+        $msg = "Found $target in $dist";
+    }
+    elsif ( $dist = $stack->repo->ups_distribution( target => $target, cascade => $self->cascade ) ) {
+        $msg = "Found $target in " . $dist->source;
+    }
+    elsif ( $self->should_skip_missing_prerequisite($target) ) {
+        whine "Cannot find $target anywhere.  Skipping it";
+        return;
+    }
+    else {
+        throw "Cannot find $target anywhere";
+    }
 
-  $self->chrome->show_progress;
-  $self->info($msg) if defined $msg;
-  
-  return $dist;
+    $self->chrome->show_progress;
+    $self->info($msg) if defined $msg;
+
+    return $dist;
 }
 
 #-----------------------------------------------------------------------------
 
-sub recurse {
-  my ($self, %args) = @_;
+sub do_recursion {
+    my ( $self, %args ) = @_;
 
-  my $dist  = $args{start};
-  my $stack = $self->stack;
+    my $dist  = $args{start};
+    my $stack = $self->stack;
 
-  my %latest;
-  my $cb = sub {
-    my ($prereq) = @_;
+    my %last_seen;
+    my $did_register = 0;
 
-    my $pkg_name = $prereq->name;
-    my $pkg_vers = $prereq->version;
+    my $cb = sub {
+        my ($prereq) = @_;
 
-    # version sees undef and 0 as equal, so must also check definedness 
-    # when deciding if we've seen this version (or newer) of the packge
-    return if defined($latest{$pkg_name}) && $pkg_vers <= $latest{$pkg_name};
+        my $target   = $prereq->as_target;
+        my $pkg_name = $target->name;
+        my $pkg_vers = $target->version;
 
-    # I think the only time that we won't see a $dist here is when
-    # the prereq resolves to a perl (i.e. its a core-only module).
-    return if not my $dist = $self->find(target => $prereq);
+        # version sees undef and 0 as equal, so must also check definedness
+        # when deciding if we've seen this version (or newer) of the package
+        return if defined( $last_seen{$pkg_name} ) && $target->is_satisfied_by( $last_seen{$pkg_name} );
 
-    $dist->register(stack => $stack);
-    $latest{$pkg_name} = $pkg_vers;
+        return if not my $dist = $self->find( target => $target );
 
-    return $dist;
-  };
+        $did_register += $dist->register( stack => $stack, force => $self->force);
 
-  require Pinto::PrerequisiteWalker;
+        # Record the most recent version of the packages that has
+        # been registered, so we don't need to find it again.
+        $last_seen{$_->name} = $_->version for $dist->packages;
 
-  my $tpv    = $stack->target_perl_version;
-  my $filter = sub { $_[0]->is_perl || $_[0]->is_core(in => $tpv) };
-  my $walker = Pinto::PrerequisiteWalker->new(start => $dist, callback => $cb, filter => $filter);
-  
-  $self->notice("Descending into prerequisites for $dist");
+        return $dist;
+    };
 
-  while ($walker->next){ }; # We just want the side effects
+    # Exclude perl itself, and prereqs that are satisfied by the core
+    my @filters = ( sub { $_[0]->is_perl || $_[0]->is_core( in => $stack->target_perl_version ) } );
 
-  return $self;
+    # Exlucde develop-time dependencies, unless asked not to
+    push @filters, sub { $_[0]->phase eq 'develop' }
+        unless $self->with_development_prerequisites;
+
+    require Pinto::PrerequisiteWalker;
+    my $walker = Pinto::PrerequisiteWalker->new( start => $dist, callback => $cb, filters => \@filters );
+
+    $self->notice("Descending into prerequisites for $dist");
+
+    while ( $walker->next ) { };    # Just want the callback side effects
+
+    return $did_register;
+}
+
+#-----------------------------------------------------------------------------
+
+sub should_skip_missing_prerequisite {
+    my ($self, $target) = @_;
+
+    return 1 if $self->skip_all_missing_prerequisites;
+    return 0 unless my @skips = @{ $self->skip_missing_prerequisite };
+    return 1 if any { $target->name eq $_ } @skips;
+    return 0;
 }
 
 #-----------------------------------------------------------------------------

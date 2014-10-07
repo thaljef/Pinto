@@ -4,7 +4,7 @@ package Pinto::Action::Verify;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(throw);
 
@@ -26,13 +26,13 @@ sub execute {
     my $missing = 0;
     while ( my $dist = $dist_rs->next ) {
 
-        if (not -e $dist->native_path) {
-	        $self->error("Missing distribution $dist");
-	        $missing++;
-	    }
+        if ( not -e $dist->native_path ) {
+            $self->error("Missing distribution $dist");
+            $missing++;
+        }
     }
 
-	throw("$missing archives are missing") if $missing;
+    throw("$missing archives are missing") if $missing;
 
     return $self->result;
 }

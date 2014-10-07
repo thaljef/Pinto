@@ -4,8 +4,8 @@ package Pinto::Action::Add;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::Types::Moose qw(Bool);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::Types::Moose qw(Bool ArrayRef Str);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use Try::Tiny;
 
 use Pinto::Util qw(sha256 current_author_id throw);
@@ -22,26 +22,31 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has author => (
-    is         => 'ro',
-    isa        => AuthorID,
-    default    => sub { uc($_[0]->pausecfg->{user} || '') || current_author_id },
-    lazy       => 1,
+    is      => 'ro',
+    isa     => AuthorID,
+    default => sub { $_[0]->pausecfg->{user} || current_author_id },
+    coerce  => 1,
+    lazy    => 1,
 );
 
-
-has archives  => (
-    isa       => FileList,
-    traits    => [ qw(Array) ],
-    handles   => {archives => 'elements'},
-    required  => 1,
-    coerce    => 1,
+has archives => (
+    isa      => FileList,
+    traits   => [qw(Array)],
+    handles  => { archives => 'elements' },
+    required => 1,
+    coerce   => 1,
 );
-
 
 has no_fail => (
-    is        => 'ro',
-    isa       => Bool,
-    default   => 0,
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+has no_index => (
+    is      => 'ro',
+    isa     => ArrayRef [Str],
+    default => sub { [] }
 );
 
 #------------------------------------------------------------------------------
@@ -51,7 +56,7 @@ with qw( Pinto::Role::PauseConfig Pinto::Role::Committable Pinto::Role::Puller )
 #------------------------------------------------------------------------------
 
 sub BUILD {
-    my ($self, $args) = @_;
+    my ( $self, $args ) = @_;
 
     my @missing = grep { not -e $_ } $self->archives;
     $self->error("Archive $_ does not exist") for @missing;
@@ -62,6 +67,8 @@ sub BUILD {
     throw "Some archives are missing or unreadable"
         if @missing or @unreadable;
 
+    $self->stack->assert_not_locked;
+
     return $self;
 }
 
@@ -70,23 +77,21 @@ sub BUILD {
 sub execute {
     my ($self) = @_;
 
-    my (@successful, @failed);
-    for my $archive ($self->archives) {
+    for my $archive ( $self->archives ) {
 
-        try   {
-            $self->repo->svp_begin; 
+        try {
+            $self->repo->svp_begin;
             my $dist = $self->_add($archive);
-            push @successful, $dist ? $dist : ();
+            push @{$self->affected}, $dist if $dist;
         }
         catch {
-            throw $_ unless $self->no_fail; 
-            $self->result->failed(because => $_);
+            throw $_ unless $self->no_fail;
+            $self->result->failed( because => $_ );
 
             $self->repo->svp_rollback;
 
             $self->error("$_");
             $self->error("Archive $archive failed...continuing anyway");
-            push @failed, $archive;
         }
         finally {
             my ($error) = @_;
@@ -96,44 +101,72 @@ sub execute {
 
     $self->chrome->progress_done;
 
-    return @successful;
+    return $self;
 }
 
 #------------------------------------------------------------------------------
 
 sub _add {
-    my ($self, $archive) = @_;
-    
+    my ( $self, $archive ) = @_;
+
     my $dist;
-    if (my $dupe = $self->_check_for_duplicate($archive)) {
+    if ( my $dupe = $self->_check_for_duplicate($archive) ) {
         $self->warning("$archive is the same as $dupe -- using $dupe instead");
         $dist = $dupe;
     }
     else {
         $self->info("Adding $archive to the repository");
-        $dist = $self->repo->add_distribution(archive => $archive, author => $self->author);
+        $dist = $self->repo->add_distribution( archive => $archive, author => $self->author );
+        $self->_apply_exclusions($dist);
     }
 
-    $self->notice("Registering $dist on stack " . $self->stack);
-    $self->pull(target => $dist); # Registers dist and pulls prereqs
-    
+    $self->notice( "Registering $dist on stack " . $self->stack );
+    ($dist, undef, undef) = $self->pull( target => $dist );    # Registers dist and pulls prereqs
+
     return $dist;
 }
 
 #------------------------------------------------------------------------------
 
 sub _check_for_duplicate {
-    my ($self, $archive) = @_;
-
-    return if $self->repo->config->allow_duplicates;
+    my ( $self, $archive ) = @_;
 
     my $sha256 = sha256($archive);
-    my $dupe = $self->repo->db->schema->search_distribution({sha256 => $sha256})->first;
+    my $dupe = $self->repo->db->schema->search_distribution( { sha256 => $sha256 } )->first;
 
     return if not defined $dupe;
     return $dupe if $archive->basename eq $dupe->archive;
 
     throw "Archive $archive is the same as $dupe but with different name";
+}
+
+#-----------------------------------------------------------------------------
+
+sub _apply_exclusions {
+    my ( $self, $dist ) = @_;
+
+    my @rules = map { s/^\/// ? qr/$_/ : $_ } @{ $self->no_index };
+
+    my $matcher = sub {
+        my ( $rule, $pkg ) = @_;
+        return ref $rule eq 'Regexp'
+            ? $pkg->name =~ $rule
+            : $pkg->name eq $rule;
+    };
+
+    my @pkgs = $dist->packages;
+    for my $rule (@rules) {
+        for my $pkg (@pkgs) {
+            next unless $matcher->( $rule, $pkg );
+            $self->warning("Excluding matching package $pkg from index");
+            $pkg->delete;
+        }
+    }
+
+    throw "Distribution $dist has no packages left"
+        if $dist->packages->count == 0;
+
+    return $self;
 }
 
 #------------------------------------------------------------------------------

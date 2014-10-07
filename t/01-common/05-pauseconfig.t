@@ -8,9 +8,8 @@ use Test::Warn;
 
 use File::Temp;
 
-
 sub write_temp_file {
-    my($content) = @_;
+    my ($content) = @_;
 
     my $temp = File::Temp->new;
     $temp->autoflush(1);
@@ -19,15 +18,16 @@ sub write_temp_file {
     return $temp;
 }
 
+note "Creating Local::PauseConfig class for testing";
+{
 
-note "Creating Local::PauseConfig class for testing"; {
     package Local::PauseConfig;
     use Moose;
     with qw(Pinto::Role::PauseConfig);
 }
 
-
-note "Test a pauserc file with the non_interactive flag set"; {
+note "Test a pauserc file with the non_interactive flag set";
+{
     my $pauserc = write_temp_file(<<'TEXT');
 user 	 	SOMEUSER
 
@@ -40,7 +40,8 @@ TEXT
 
     warnings_are {
         is_deeply $obj->pausecfg, { user => "SOMEUSER", mailto => 'somebody@example.com' };
-    } [];
+    }
+    [];
 }
 
 done_testing;

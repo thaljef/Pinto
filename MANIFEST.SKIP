@@ -1,5 +1,10 @@
 ^profiles
 ^nytprof
 ^tmp$
-Pinto.sublime-project
-Pinto.sublime-workspace
+^[.]tags
+^perltidy.LOG
+^[.].tidyall.d
+^[.]build
+^TEST
+
+

@@ -16,22 +16,20 @@ use base 'App::Pinto::Command';
 #------------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
-    return (
-        [ 'sleep=i' => 'seconds to sleep before exiting' ],
-    );
+    return ( [ 'sleep=i' => 'seconds to sleep before exiting' ], );
 }
 
 #------------------------------------------------------------------------------
 
 sub validate_args {
-    my ($self, $opts, $args) = @_;
+    my ( $self, $opts, $args ) = @_;
 
-    $self->SUPER::validate_args($opts, $args);
+    $self->SUPER::validate_args( $opts, $args );
 
     $self->usage_error('Sleep time must be positive integer')
-      if defined $opts->{sleep} && $opts->{sleep} < 1;
+        if defined $opts->{sleep} && $opts->{sleep} < 1;
 
     return 1;
 }

@@ -27,7 +27,7 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    my $chrome = Pinto::Chrome::Term->new(verbose => 1);
+    my $chrome = Pinto::Chrome::Term->new( verbose => 1 );
     is $chrome->should_render_diag(0), 1, 'Diag level 0 at verbose = 1';
     is $chrome->should_render_diag(1), 1, 'Diag level 1 at verbose = 1';
     is $chrome->should_render_diag(2), 1, 'Diag level 2 at verbose = 1';
@@ -38,7 +38,7 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    my $chrome = Pinto::Chrome::Term->new(quiet => 1);
+    my $chrome = Pinto::Chrome::Term->new( quiet => 1 );
     is $chrome->should_render_diag(0), 1, 'Diag level when quiet';
     is $chrome->should_render_diag(1), 0, 'Diag level when quiet';
     is $chrome->should_render_diag(2), 0, 'Diag level when quiet';
@@ -49,23 +49,10 @@ use Pinto::Chrome::Term;
 #-----------------------------------------------------------------------------
 
 {
-    local $ENV{PINTO_COLORS} = 'dark blue,  white on_red,green';
+    local $ENV{PINTO_PALETTE} = 'dark blue,  white on_red,green';
 
     my $chrome = Pinto::Chrome::Term->new;
-    is_deeply $chrome->colors, ['dark blue', 'white on_red', 'green'], 'Parsed color list';
-}
-
-#-----------------------------------------------------------------------------
-
-{
-    throws_ok { Pinto::Chrome::Term->new(colors => []) } 
-        qr/exactly three colors/, 'Too few colors';
-
-    throws_ok { Pinto::Chrome::Term->new(colors => [0..3]) } 
-        qr/exactly three colors/, 'Too many colors';
-
-    throws_ok { Pinto::Chrome::Term->new(colors => [qw(red blue chartruse)]) } 
-        qr/chartruse is not valid/, 'Invalid color';
+    is_deeply $chrome->palette, [ 'dark blue', 'white on_red', 'green' ], 'Parsed color list';
 }
 
 #-----------------------------------------------------------------------------
@@ -73,13 +60,41 @@ use Pinto::Chrome::Term;
 {
     local $ENV{PINTO_NO_COLOR} = 1;
 
-    my ($out, $err) = ('', '');
-    my $chrome = Pinto::Chrome::Term->new(stdout => \$out, stderr => \$err);
+    my ( $out, $err ) = ( '', '' );
+    my $chrome = Pinto::Chrome::Term->new( stdout => \$out, stderr => \$err );
     $chrome->error('This is diagnostic');
     $chrome->show('This is output');
 
     is $out, "This is output\n",     'Got stuff on output handle';
     is $err, "This is diagnostic\n", 'Got stuff on error handle';
+}
+
+#-----------------------------------------------------------------------------
+
+{
+    my $chrome = Pinto::Chrome::Term->new;
+
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = 'emacs';
+    is $chrome->find_editor, $ENV{PINTO_EDITOR}, 'Editor from PINTO_EDITOR';
+
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = 'emacs';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, $ENV{EDITOR}, 'Editor from EDITOR';
+
+    local $ENV{VISUAL} = 'emacs';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, $ENV{VISUAL}, 'Editor from VISUAL';
+
+    local $ENV{PATH} = '';
+    local $ENV{VISUAL} = '';
+    local $ENV{EDITOR} = '';
+    local $ENV{PINTO_EDITOR} = '';
+    is $chrome->find_editor, undef, 'No editor is avaiable';
+
 }
 
 #-----------------------------------------------------------------------------

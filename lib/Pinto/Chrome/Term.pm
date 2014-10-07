@@ -5,13 +5,14 @@ package Pinto::Chrome::Term;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef Str);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use Term::ANSIColor 2.02 (); #First version with colorvalid()
+use Term::ANSIColor;
 use Term::EditorEdit;
+use File::Which qw(which);
 
-use Pinto::Types qw(Io);
-use Pinto::Util qw(user_colors is_interactive itis throw);
+use Pinto::Types qw(Io ANSIColorPalette);
+use Pinto::Util qw(user_palette itis throw is_interactive);
 
 #-----------------------------------------------------------------------------
 
@@ -23,20 +24,18 @@ extends qw( Pinto::Chrome );
 
 #-----------------------------------------------------------------------------
 
-has no_color => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => sub { return !!$ENV{PINTO_NO_COLOR} or 0 },
+has color => (
+    is      => 'ro',
+    isa     => Bool,
+    default => sub { !$ENV{PINTO_NO_COLOR} },
 );
 
-
-has colors => (
-    is        => 'ro',
-    isa       => ArrayRef,
-    default   => sub { return user_colors },
-    lazy      => 1,
+has palette => (
+    is      => 'ro',
+    isa     => ANSIColorPalette,
+    default => sub { user_palette() },
+    lazy    => 1,
 );
-
 
 has stdout => (
     is      => 'ro',
@@ -46,91 +45,76 @@ has stdout => (
     lazy    => 1,
 );
 
-
 has stderr => (
     is      => 'ro',
     isa     => Io,
-    default => sub { [fileno(*STDERR), '>'] },
+    default => sub { [ fileno(*STDERR), '>' ] },
     coerce  => 1,
     lazy    => 1,
 );
 
-
-has diag_prefix => (
-    is      => 'ro',
-    isa     => Str,
-    default => '',
+has has_made_progress => (
+    is      => 'rw',
+    isa     => Bool,
+    default => 0,
 );
 
 #-----------------------------------------------------------------------------
 
-sub BUILD {
-    my ($self) = @_;
-
-    my @colors = @{ $self->colors };
-
-    throw "Must specify exactly three colors" if @colors != 3;
-
-    Term::ANSIColor::colorvalid($_) || throw "Color $_ is not valid" for @colors;
-
-    return $self;
-};
-
-#------------------------------------------------------------------------------
-
 sub _build_stdout {
     my ($self) = @_;
 
-    my $stdout = [fileno(*STDOUT), '>'];
     my $pager = $ENV{PINTO_PAGER} || $ENV{PAGER};
+    my $stdout = [ fileno(*STDOUT), '>' ];
 
-    return $stdout if not is_interactive;
+    return $stdout if not -t STDOUT;
     return $stdout if not $pager;
 
-    open my $pager_fh, q<|->, $pager
+    my @pager_options = $ENV{PINTO_PAGER_OPTIONS} ?
+        ( $ENV{PINTO_PAGER_OPTIONS} ) : ();
+
+    open my $pager_fh, q<|->, $pager, @pager_options
         or throw "Failed to open pipe to pager $pager: $!";
 
-    return bless $pager_fh, 'IO::Handle'; # HACK!
+    return bless $pager_fh, 'IO::Handle';    # HACK!
 }
 
 #------------------------------------------------------------------------------
 
-sub show { 
-    my ($self, $msg, $opts) = @_;
+sub show {
+    my ( $self, $msg, $opts ) = @_;
 
     $opts ||= {};
 
-    $msg = $self->colorize($msg, $opts->{color});
+    $msg = $self->colorize( $msg, $opts->{color} );
 
     $msg .= "\n" unless $opts->{no_newline};
 
     print { $self->stdout } $msg or croak $!;
 
-    return $self
+    return $self;
 }
 
 #-----------------------------------------------------------------------------
 
 sub diag {
-    my ($self, $msg, $opts) = @_;
+    my ( $self, $msg, $opts ) = @_;
 
     $opts ||= {};
 
+    return if $self->quiet;
+
     $msg = $msg->() if ref $msg eq 'CODE';
 
-    if ( itis($msg, 'Pinto::Exception') ) {
+    if ( itis( $msg, 'Pinto::Exception' ) ) {
+
         # Show full stack trace if we are debugging
         $msg = $ENV{PINTO_DEBUG} ? $msg->as_string : $msg->message;
     }
 
     chomp $msg;
-    $msg  = $self->colorize($msg, $opts->{color});
+    $msg = $self->colorize( $msg, $opts->{color} );
     $msg .= "\n" unless $opts->{no_newline};
-
-    # Prepend prefix to each line (not just at the start of the message)
-    # The prefix is used by Pinto::Remote to distinguish between
-    # messages that go to stderr and those that should go to stdout
-    $msg =~ s/^/$self->diag_prefix/gemx if length $self->diag_prefix;
 
     print { $self->stderr } $msg or croak $!;
 }
@@ -142,9 +126,11 @@ sub show_progress {
 
     return if not $self->should_render_progress;
 
-    $self->stderr->autoflush; # Make sure pipes are hot
+    $self->stderr->autoflush;    # Make sure pipes are hot
 
-    print {$self->stderr} '.' or croak $!;
+    print { $self->stderr } '.' or croak $!;
+
+    $self->has_made_progress(1);
 }
 
 #-----------------------------------------------------------------------------
@@ -152,28 +138,30 @@ sub show_progress {
 sub progress_done {
     my ($self) = @_;
 
+    return unless $self->has_made_progress;
     return unless $self->should_render_progress;
 
-    print {$self->stderr} "\n" or croak $!;
+    print { $self->stderr } "\n" or croak $!;
 }
 
 #-----------------------------------------------------------------------------
 
-override should_render_progress => sub {
+sub should_render_progress {
     my ($self) = @_;
 
-    return 0 if not super;
+    return 0 if $self->verbose;
+    return 0 if $self->quiet;
     return 0 if not is_interactive;
-    return 0 if not -t $self->stderr;
     return 1;
-};
+}
 
 #-----------------------------------------------------------------------------
 
 sub edit {
-    my ($self, $document) = @_;
+    my ( $self, $document ) = @_;
 
-    local $ENV{VISUAL} = $ENV{PINTO_EDITOR} if $ENV{PINTO_EDITOR};
+    local $ENV{VISUAL} = $self->find_editor
+        or throw 'Unable to find an editor.  Please set PINTO_EDITOR';
 
     # If this command is reading input from a pipe or file, then
     # STDIN will not be connected to a terminal.  This causes vim
@@ -182,20 +170,20 @@ sub edit {
     # to the actual terminal.  I haven't actually tried it on Windows.
     # I'm not sure if/how I should be localizing STDIN here.
 
-    my $term = ($^O eq 'MSWin32') ? 'CON' : '/dev/tty';
-    open(STDIN, '<', $term) or throw $!;
+    my $term = ( $^O eq 'MSWin32' ) ? 'CON' : '/dev/tty';
+    open( STDIN, '<', $term ) or throw $!;
 
-    return Term::EditorEdit->edit(document => $document);
+    return Term::EditorEdit->edit( document => $document );
 }
 
 #-----------------------------------------------------------------------------
 
 sub colorize {
-    my ($self, $string, $color_number) = @_;
+    my ( $self, $string, $color_number ) = @_;
 
     return ''      if not $string;
     return $string if not defined $color_number;
-    return $string if $self->no_color;
+    return $string if not $self->color;
 
     my $color = $self->get_color($color_number);
 
@@ -205,11 +193,11 @@ sub colorize {
 #-----------------------------------------------------------------------------
 
 sub get_color {
-    my ($self, $color_number) = @_;
+    my ( $self, $color_number ) = @_;
 
     return '' if not defined $color_number;
 
-    my $color = $self->colors->[$color_number];
+    my $color = $self->palette->[$color_number];
 
     throw "Invalid color number: $color_number" if not defined $color;
 
@@ -218,13 +206,33 @@ sub get_color {
 
 #-----------------------------------------------------------------------------
 
-my %color_map = (warning => 1, error => 2);
-while ( my ($level, $color) = each %color_map)  {
+sub find_editor {
+    my ($self) = @_;
+
+    # Try unsing environment variables first
+    for my $env_var (qw(PINTO_EDITOR VISUAL EDITOR)) {
+        return $ENV{$env_var} if $ENV{$env_var};
+    }
+
+    # Then try typical editor commands
+    for my $cmd (qw(nano pico vi)) {
+        my $found_cmd = which($cmd);
+        return $found_cmd if $found_cmd;
+    }
+
+    return;
+}
+
+#-----------------------------------------------------------------------------
+
+my %color_map = ( warning => 1, error => 2 );
+while ( my ( $level, $color ) = each %color_map ) {
     around $level => sub {
-        my ($orig, $self, $msg, $opts) = @_;
-        $opts ||= {}; $opts->{color} = $color;
-        return $self->$orig($msg, $opts); 
-    }; 
+        my ( $orig, $self, $msg, $opts ) = @_;
+        $opts ||= {};
+        $opts->{color} = $color;
+        return $self->$orig( $msg, $opts );
+    };
 }
 
 #-----------------------------------------------------------------------------

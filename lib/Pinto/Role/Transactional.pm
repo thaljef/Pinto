@@ -3,7 +3,7 @@
 package Pinto::Role::Transactional;
 
 use Moose::Role;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 
@@ -20,12 +20,12 @@ requires qw( execute repo );
 #------------------------------------------------------------------------------
 
 around execute => sub {
-    my ($orig, $self, @args) = @_;
+    my ( $orig, $self, @args ) = @_;
 
     $self->repo->txn_begin;
 
-    my $result = try   { $self->$orig(@args); $self->repo->txn_commit }
-                 catch { $self->repo->txn_rollback; throw $_          };
+    my $result = try { $self->$orig(@args); $self->repo->txn_commit }
+               catch { $self->repo->txn_rollback; throw $_ };
 
     return $self->result;
 };

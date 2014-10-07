@@ -4,11 +4,11 @@ package Pinto::Action::List;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
-use MooseX::Types::Moose qw(HashRef Str Bool);
+use MooseX::MarkAsMethods ( autoclean => 1 );
+use MooseX::Types::Moose qw(Str Bool);
 
 use Pinto::Constants qw(:color);
-use Pinto::Types qw(AuthorID StackName StackDefault StackObject);
+use Pinto::Types qw(StackName StackDefault StackObject);
 
 #------------------------------------------------------------------------------
 
@@ -21,74 +21,84 @@ extends qw( Pinto::Action );
 #------------------------------------------------------------------------------
 
 has stack => (
-    is        => 'ro',
-    isa       => StackName | StackDefault | StackObject,
-    default   => undef,
+    is      => 'ro',
+    isa     => StackName | StackDefault | StackObject,
+    default => undef,
 );
-
 
 has pinned => (
-    is     => 'ro',
-    isa    => Bool,
+    is  => 'ro',
+    isa => Bool,
 );
 
-
-has author => (
-    is     => 'ro',
-    isa    => AuthorID,
+has authors => (
+    is      => 'ro',
+    isa     => Str,
 );
-
 
 has packages => (
-    is     => 'ro',
-    isa    => Str,
+    is  => 'ro',
+    isa => Str,
 );
-
 
 has distributions => (
-    is     => 'ro',
-    isa    => Str,
+    is  => 'ro',
+    isa => Str,
 );
 
+has all => (
+    is      => 'ro',
+    isa     =>  Bool,
+    default => 0,
+);
 
 has format => (
-    is        => 'ro',
-    isa       => Str,
-    default   => '[%F] %-40p %12v %a/%f',
-    lazy      => 1,
-);
-
-
-has where => (
-    is       => 'ro',
-    isa      => HashRef,
-    builder  => '_build_where',
-    lazy     => 1,
+    is      => 'ro',
+    isa     => Str,
+    default => '[%F] %-40p %12v %a/%f',
+    lazy    => 1,
 );
 
 #------------------------------------------------------------------------------
 
-sub _build_where {
+sub _where {
     my ($self) = @_;
 
     my $where = {};
-    my $stack = $self->repo->get_stack($self->stack);
-    $where = {revision => $stack->head->id};
+    if ($self->all) {
 
-    if (my $pkg_name = $self->packages) {
-        $where->{'package.name'} = { like => "%$pkg_name%" }
+        if ( my $pkg_name = $self->packages ) {
+            $where->{'me.name'} = {regexp => qr/$pkg_name/ };
+        }
+
+        if ( my $dist_name = $self->distributions ) {
+            $where->{'distribution.archive'} = {regexp => qr/$dist_name/};
+        }
+
+        if ( my $authors = $self->authors ) {
+            $where->{'distribution.author'} = {regexp => qr/$authors/i};
+        }
     }
+    else {
 
-    if (my $dist_name = $self->distributions) {
-        $where->{'distribution.archive'} = { like => "%$dist_name%" };
-    }
+        my $stack = $self->repo->get_stack( $self->stack );
+        $where = {revision => $stack->head->id};
 
-    if (my $author = $self->author) {
-        $where->{'distribution.author'} = uc $author;
-    }
+        if ( my $pkg_name = $self->packages ) {
+            $where->{'package.name'} = {regexp => qr/$pkg_name/};
+        }
 
-    if (my $pinned = $self->pinned) {
-        $where->{is_pinned} = 1;
+        if ( my $dist_name = $self->distributions ) {
+            $where->{'distribution.archive'} = {regexp => qr/$dist_name/};
+        }
+
+        if ( my $authors = $self->authors ) {
+            $where->{'distribution.author'} = {regexp => qr/$authors/i};
+        }
+
+        if ( my $pinned = $self->pinned ) {
+            $where->{is_pinned} = 1;
+        }
     }
 
     return $where;
@@ -96,28 +106,53 @@ sub _build_where {
 
 #------------------------------------------------------------------------------
 
+sub _attrs {
+    my ($self) = @_;
+
+    my $attrs = {};
+    if ($self->all) {
+        $attrs = { prefetch => [qw(distribution)], order_by => ['me.name'] };
+    }
+    else {
+        $attrs = { prefetch => [qw(package distribution)] };
+    }
+
+    return $attrs;
+}
+
+
+#------------------------------------------------------------------------------
+
 sub execute {
     my ($self) = @_;
 
-    my $where = $self->where;
-    my $attrs = {prefetch => [ qw(revision package distribution) ]};
-    my $rs    = $self->repo->db->schema->search_registration($where, $attrs);
+    my $where   = $self->_where;
+    my $attrs   = $self->_attrs;
+    my $method  = 'search_' . ($self->all ? 'package' : 'registration');
+    my $rs      = $self->repo->db->schema->$method( $where, $attrs );
 
-    # I'm not sure why, but the results appear to come out sorted by
-    # package name, even though I haven't specified how to order them.
-    # This is fortunate, because adding and "ORDER BY" clause is slow.
-    # I'm guessing it is because there is a UNIQUE INDEX on package_name
-    # in the registration table.
+    my $did_match = 0;
+    while ( my $it = $rs->next ) {
 
-    while ( my $reg = $rs->next ) {
-        my $string = $reg->to_string($self->format);
+        # $it could be a registration or a package object, depending
+        # on whether we are listing a stack or the whole repository
 
-        my $color =   $reg->is_pinned              ? $PINTO_COLOR_1
-                    : $reg->distribution->is_local ? $PINTO_COLOR_0 
-                    : undef;
+        my $string = $it->to_string( $self->format );
+        my $color  = undef;
 
-        $self->show($string, {color => $color});
+        $color = $PINTO_PALETTE_COLOR_0
+            if $it->distribution->is_local;
+
+        $color = $PINTO_PALETTE_COLOR_1
+            if $it->isa('Pinto::Schema::Result::Registration') && $it->is_pinned;
+
+        $self->show( $string, { color => $color } );
+        $did_match++;
     }
+
+    # If there are any search criteria and nothing matched,
+    # then the exit status should not be successful.
+    $self->result->failed if keys %$where > 1 && !$did_match;
 
     return $self->result;
 }

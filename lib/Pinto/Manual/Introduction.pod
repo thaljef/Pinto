@@ -17,130 +17,122 @@ __END__
 
 =head1 GOALS
 
-Pinto has two primary goals.  First, Pinto seeks to address the
-problem of instability in the CPAN mirrors.  Distribution archives are
-constantly added and removed from the CPAN, so if you use it to build
-a system or application, you may not get the same result twice.
-Second, Pinto seeks to encourage developers to use the CPAN toolchain
-for building, testing, and dependency management of their own local
-software, even if they never plan to release it to the CPAN.
+Pinto has two primary goals.  First, Pinto seeks to address the problem of
+instability in the CPAN mirrors.  Distribution archives are constantly added
+and removed from the CPAN, so if you use it to build a system or application,
+you may not get the same result twice. Second, Pinto seeks to encourage
+developers to use the CPAN toolchain for building, testing, and dependency
+management of their own local software, even if they never plan to release it
+to the CPAN.
 
-Pinto accomplishes these goals by providing tools for creating and
-managing your own custom repositories of distribution archives.  These
-repositories can contain any distribution archives you like, and can
-be used with the standard CPAN toolchain.  The tools also support
-various operations that enable you to deal with common problems that
-arise during the development process.
+Pinto accomplishes these goals by providing tools for creating and managing
+your own custom repositories of distribution archives.  These repositories can
+contain any distribution archives you like, and can be used with the standard
+CPAN toolchain.  The tools also support various operations that enable you to
+deal with common problems that arise during the development process.
 
 =head1 PRIOR ART
 
-The idea of a custom repository is not new.  Randal Schwartz presented
-L<the idea|http://www.stonehenge.com/merlyn/LinuxMag/col42.html> back
-in 2002.  Subsequently, modules like L<CPAN::Site> and L<CPAN::Mini>
-were released.  More recently, L<OrePAN> and L<MyCPAN::App::DPAN> have
-emerged as well.
 
-Over the last few years, I personally used various combinations of
-those modules to create custom repositories at several organizations.
-But they always required some wrapping and/or glue to make them really
-usable in the development process.  And none of them seemed to be
-designed for extension.
+Over the last few years, I personally used various combinations of those
+modules to create custom repositories at several organizations. But they
+always required some wrapping and/or glue to make them usable  in the
+development process.  And none of them seemed to be designed for  extension.
 
-I wanted a suite of tools that would work out-of-the-box, and would
-accommodate a fairly wide range of use cases. Hence, Pinto was
-born.
+I wanted a tool that would work out-of-the-box, would accommodate a  wide
+range of use cases, would scale to a large number of users, and  could grow in
+unexpected directions.  And so, Pinto was born.
 
 =head1 COMPONENTS
 
-The Pinto suite consists of several libraries and applications.  Each
-component ships in a separate distribution, so you don't have to
-install the whole kit if you're only going to use a subset of the
-Pinto suite.  However, you can install L<Task::Pinto> if you'd like to
-get everything in one shot.
+The Pinto suite consists of several components, which are all included in this
+distribution.  For most use cases, you should treat Pinto as  an external
+application rather than a library that is integrated with  your own
+application code.  I strongly recommend reading  L<Pinto::Manual::Installing>
+for tips on installing Pinto in the manner  that is most appropriate for your
+needs.
 
 =head2 L<pinto>
 
-L<pinto> is a command line application for creating and managing a
-Pinto repository.  It is just the front-end, so you'll also need to
-install one or both of the back-ends (see L</Pinto> and
-L</Pinto::Remote> below).  The back-ends ship separately from
-L<pinto>, so you can decide which one you need.
+L<pinto> is a command line application for creating and managing a Pinto
+repository.  It works transparently with both remote and local repositories.
+However, repositories can only be created locally.
 
 =head2 L<pintod>
 
-L<pintod> provides a web service interface to your Pinto repository.
-This allows multiple (possibly remote) developers to manage a central
-repository.  L<pintod> also functions as the back end server for
-installer clients like L<cpan>, L<cpanp>, and L<cpanm>.
+L<pintod> provides a web service interface to your Pinto repository. This
+allows multiple (possibly remote) developers to manage a central repository.
+L<pintod> also functions as the back end HTTP server for installer clients
+like L<cpan>, L<cpanp>, and L<cpanm>.
 
-=head2 L<Pinto>
+=head2 L<Pinto> and L<Pinto::Remote>
 
-L<Pinto> is the back-end library for working with a local repository.
-If you need to create repositories or manage repositories on the local
-disk, then you should install L<Pinto>.
+L<Pinto> and L<Pinto::Remote> are the backend libraries for the L<pinto>
+application.  These are fairly stable, but not officially public and not
+documented.  If you want to hack on Pinto's internals, or create a new
+application around Pinto, you should start looking at these.
 
-=head2 L<Pinto::Remote>
+=head2 L<Pinto::Server>
 
-L<Pinto::Remote> is the back-end for working with a remote repository.
-If you already have a repository on a remote host that is running
-L<pintod> then you should install L<Pinto::Remote>.
+L<Pinto::Server> is the backend library for the L<pintod> server application.
+It is still immature, and subject to radical change. It is based on raw
+L<Plack>, so if you are brave you could wrap it with various middlewares to do
+interesting things.
 
 =head1 TERMINOLOGY
 
-Some of the terminology related to the CPAN is overloaded, which can
-lead to some confusion.  So I'll try to define some of the key terms
-that I use throughout the documentation and the code.
+Some of the terminology related to the CPAN is overloaded, which can lead to
+some confusion.  So I'll try to define some of the key terms that I use
+throughout the documentation and the code.
 
 =head2  Archive
 
-An "archive" is the file that developers ship, which contains all
-their application/library code, test cases, build scripts etc.
-Conversely, the archive is the file that users must fetch to install
-the application/library.  Sometimes I also refer to these as
-"distributions".
+An "archive" is the file that developers ship, which contains all their
+application/library code, test cases, build scripts etc. Conversely, the
+archive is the file that users must fetch to install the application/library.
+Sometimes I also refer to these as "distributions".
 
 =head2 Package
 
-A "package" is something inside a distribution archive that provides
-some unit of functionality.  In Perl, packages are declared with the
-C<package> keyword.  Some folks call these "modules" but I try to
-avoid that term because it is frequently misused.
+A "package" is something inside a distribution archive that provides some unit
+of functionality.  In Perl, packages are declared with the C<package> keyword.
+Some folks call these "modules" but I try to avoid that term because it is
+frequently misused.
 
 =head2 Prerequisite
 
-A "prerequisite" is a package that must be installed for the sake of
-another distribution archive.  Sometimes I call these "dependencies".
-Pinto does not currently distinguish between different flavors of
-prerequisites, such as "build-time" or "run-time" prerequisites.
+A "prerequisite" is a package that must be installed for the sake of another
+distribution archive.  Sometimes I call these "dependencies". Pinto does not
+currently distinguish between different flavors of prerequisites, such as
+"build-time" or "run-time" prerequisites.
 
 =head1 CONCEPTS
 
 =head2 Stack
 
-All CPAN-like repositories have an index which maps the latest version
-of each package to the archive that contains it.  Usually, there is
-only one such index.  But with Pinto, there can be many indexes.  Each
-of these indexes is called a "stack".  This allows you to create
-different stacks of dependencies within a single repository.  So you
-could have a "development" stack and a "production" stack.  Whenever
-you add a distribution or upgrade a prerequisite, it only affects
-one stack.
+All CPAN-like repositories have an index which maps the latest version of each
+package to the archive that contains it.  Usually, there is only one such
+index.  But with Pinto, there can be many indexes.  Each of these indexes is
+called a "stack".  This allows you to create different stacks of dependencies
+within a single repository.  So you could have a "development" stack and a
+"production" stack.  Whenever you add a distribution or upgrade a
+prerequisite, it only affects one stack.
 
 =head2 Pin
 
-Only one version of a package can exist within a stack.  So when you
-upgrade a package on stack, the newer version replaces the older one.
-But sometimes, you discover that a newer version of package is
-incompatible with your application, and you want to stay with the
-older version until you have an opportunity to fix the problem.  In
-those situations, Pinto allows you to "pin" a particular version of a
-package to the stack.  This prevents the package from being upgraded
-(either directly or as a prerequisite for some other package).
+Only one version of a package can exist within a stack.  So when you upgrade a
+package in a stack, the newer version replaces the older one. But sometimes, you
+discover that a newer version of package is incompatible with your
+application, and you want to stay with the older version until you have an
+opportunity to fix the problem.  In those situations, Pinto allows you to
+"pin" a particular version of a package to the stack.  This prevents the
+package from being upgraded (either directly or as a prerequisite for some
+other package).
 
 =head1 WHY IS IT CALLED PINTO
 
-Pinto is a name that I sometimes use for my son Wesley (as in "pinto
-bean").  Daddy loves you, Wes!
+Pinto is a name that I sometimes use for my son Wesley (as in "pinto bean").
+Daddy loves you, Wes!
 
 =head1 SEE ALSO
 

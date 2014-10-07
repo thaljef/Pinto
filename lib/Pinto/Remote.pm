@@ -4,9 +4,10 @@ package Pinto::Remote;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Maybe Str);
 
+use Try::Tiny;
 use LWP::UserAgent;
 
 use Pinto::Chrome::Term;
@@ -15,24 +16,22 @@ use Pinto::Constants qw(:server);
 use Pinto::Util qw(throw current_username);
 use Pinto::Types qw(Uri);
 
-
 #-------------------------------------------------------------------------------
 
 # VERSION
 
 #------------------------------------------------------------------------------
 
-with qw(Pinto::Role::Plated);
+with qw(Pinto::Role::Plated Pinto::Role::UserAgent);
 
 #------------------------------------------------------------------------------
 
 has root => (
-    is       => 'ro',
-    isa      => Uri,
-    default  => $ENV{PINTO_REPOSITORY_ROOT},
-    coerce   => 1,
+    is      => 'ro',
+    isa     => Uri,
+    default => $ENV{PINTO_REPOSITORY_ROOT},
+    coerce  => 1,
 );
-
 
 has username => (
     is      => 'ro',
@@ -40,26 +39,9 @@ has username => (
     default => current_username,
 );
 
-
 has password => (
-    is      => 'ro',
-    isa     => Maybe[ Str ],
-);
-
-
-has ua    => (
-    is        => 'ro',
-    isa       => 'LWP::UserAgent',
-    default   => sub { LWP::UserAgent->new( agent => $_[0]->ua_name) },
-    lazy      => 1,
-);
-
-
-has ua_name => (
-    is      => 'ro',
-    isa     => Str,
-    default => sub { sprintf '%s/%s', ref $_[0], $_[0]->VERSION || '??' },
-    lazy    => 1,
+    is  => 'ro',
+    isa => Maybe [Str],
 );
 
 #------------------------------------------------------------------------------
@@ -67,20 +49,12 @@ has ua_name => (
 around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
-
     my $args = $class->$orig(@_);
 
-    # Normalize the root
-    $args->{root} = 'http://' . $args->{root}
-        if defined $args->{root} && $args->{root} !~ m{^ https?:// }mx;
-
-    $args->{root} = $args->{root} . ':' . $PINTO_SERVER_DEFAULT_PORT
-        if defined $args->{root} && $args->{root} !~ m{ :\d+ $}mx;
-
     # Grrr.  Gotta avoid passing undefs to Moose
-    my @chrome_attrs = qw(verbose quiet no_color);
-    my %chrome_args  = map  { $_ => delete $args->{$_} } 
-                       grep { exists $args->{$_}       } @chrome_attrs;
+    my @chrome_attrs = qw(verbose quiet color);
+    my %chrome_args = map { $_ => delete $args->{$_} }
+        grep { exists $args->{$_} } @chrome_attrs;
 
     $args->{chrome} ||= Pinto::Chrome::Term->new(%chrome_args);
 
@@ -99,28 +73,42 @@ back to the L<Pinto::Remote::Action> base class.
 =cut
 
 sub run {
-    my ($self, $action_name, @args) = @_;
+    my ( $self, $action_name, @args ) = @_;
 
-    my $action_args = (@args == 1 and ref $args[0] eq 'HASH') ? $args[0] : {@args};
-    my $action_class = $self->load_class_for_action(name => $action_name);
+    # Divert all warnings through our chrome
+    local $SIG{__WARN__} = sub { $self->warning($_) for @_ };
 
-    my $action = $action_class->new( name     => $action_name,
-                                     args     => $action_args,
-                                     root     => $self->root,
-                                     username => $self->username,
-                                     password => $self->password,
-                                     chrome   => $self->chrome,
-                                     ua       => $self->ua );
+    my $action_args = ( @args == 1 and ref $args[0] eq 'HASH' ) ? $args[0] : {@args};
 
-    return $action->execute;
+    my $result = try {
+
+        my $action_class = $self->load_class_for_action( name => $action_name );
+
+        my $action = $action_class->new(
+            name     => $action_name,
+            args     => $action_args,
+            root     => $self->root,
+            username => $self->username,
+            password => $self->password,
+            chrome   => $self->chrome,
+        );
+
+        $action->execute;
+    }
+    catch {
+        $self->error($_);
+        Pinto::Result->new->failed( because => $_ );
+    };
+
+    return $result;
 }
 
 #------------------------------------------------------------------------------
 
 sub load_class_for_action {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $action_name = $args{name} 
+    my $action_name = $args{name}
         or throw 'Must specify an action name';
 
     my $action_baseclass = __PACKAGE__ . '::Action';
@@ -163,6 +151,6 @@ on the remote host.
 
 If you are using the L<pinto> application, it will automatically load
 either Pinto or Pinto::Remote depending on whether your repository
-root looks like a local directory path or a remote URL.
+root looks like a local directory path or a remote URI.
 
 =cut

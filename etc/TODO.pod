@@ -1,0 +1,118 @@
+=head1 HIGH PRIORITY
+
+=over 4
+
+
+=item Fallback if upstream repo does not respond
+
+=item Add --with-recommended-dependencies
+
+=item Apply --no-index to prereqs too?
+
+=item Fix line buffering in Pinto::Remote::Action.
+
+=item Create command to list outdated packages.
+
+=item Move repository configuration into the DB
+
+=item Heirarchy of exception classes
+
+=item Create a hook mechanism to do stuff before or after an Action
+
+=back
+
+=head1 MEDIUM PRORITY
+
+=over 4
+
+=item Enable locks on all stacks (repo lock)
+
+=item Lookup dists without the extension (e.g. .zip or .tar.gz or .tgz)
+
+=item Consider pinning at dist level, not pkg
+
+=item Create command to list dependors and dependants
+
+=item Create command to verify prereqs on a stack
+
+=item Create command to list outdated packages
+
+=item Create command to package whole repo in tar.gz
+
+=item Stack property: allow devel releases
+
+=item Repo property: default devel option
+
+=item Profile and look for performance optimizations.
+
+=item Verify archive checksums during 'verify'
+
+=item Standardize API, using named parameters except where it makes sense not to.
+
+=item Tests, tests, tests.
+
+=back
+
+=head1 LOW PRIORITY
+
+=over 4
+
+=item Optimize generation of CHECKSUMS files.
+
+=item Improve Perl::Critic compliance.
+
+=item Document, document, document.
+
+=item Look for better ways to use Moose roles.
+
+=item Issue warning if META indicates that configuration is dynamic.
+
+=back
+
+=head1 QUESTIONABLE
+
+=over 4
+
+=item Give revisions properties
+
+=item Try to ensure integrity of commits (what does this mean?)
+
+=item Stack property: strict (no overlapping dists)
+
+=item Add versioning to the stack props
+
+=item Consider using natural keys for package/dists.
+
+=item Make the Store transactional
+
+=item Extract versioning stuff to a separate dist.
+
+=item Rewrite tests with Test::Class
+
+=item Mark stacks as merged after merge
+
+=item Warn if an unmerged stack is being deleted
+
+=back
+
+=head1 SCRAPPED
+
+=over 4
+
+=item Generate a RECENT file.
+
+=item Command options to specify provided/required packages (maybe not)
+
+=item Enable plugins for visiting and filtering.
+
+=item news: list recent additions. maybe something from Changes file
+
+=item ack: Do an ack command across all distributions
+
+=item look: Unpack archive in temp dir and launch shell there
+
+=item Mark stacks as deleted after delete
+
+=back
+
+=cut

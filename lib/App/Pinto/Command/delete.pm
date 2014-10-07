@@ -20,11 +20,9 @@ sub command_names { return qw(delete remove del rm) }
 #-----------------------------------------------------------------------------
 
 sub opt_spec {
-    my ($self, $app) = @_;
+    my ( $self, $app ) = @_;
 
-    return (
-        [ 'force'  => 'Delete even if packages are pinned'  ],
-    );
+    return ( [ 'force' => 'Delete even if packages are pinned' ], );
 }
 
 #------------------------------------------------------------------------------
@@ -42,7 +40,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT deiete [OPTIONS] TARGET ...
+  pinto --root=REPOSITORY_ROOT delete [OPTIONS] TARGET ...
 
 =head1 DESCRIPTION
 
@@ -63,8 +61,8 @@ use the L<unregister|App::Pinto::Command::unregister> command.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the archives that you want to delete.  Archives are
-specified as C<AUTHOR/ARCHIVE-NAME>.  For example:
+Arguments are the targets that you want to delete.  Targets are
+specified as C<AUTHOR/FILENAME>.  For example:
 
   SHAKESPEARE/King-Lear-1.2.tar.gz
 

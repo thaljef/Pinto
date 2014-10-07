@@ -4,7 +4,7 @@ package Pinto;
 
 use Moose;
 use MooseX::StrictConstructor;
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Try::Tiny;
 use Class::Load;
@@ -40,18 +40,17 @@ with qw( Pinto::Role::Plated );
 #------------------------------------------------------------------------------
 
 has root => (
-    is       => 'ro',
-    isa      => Dir,
-    default  => $ENV{PINTO_REPOSITORY_ROOT},
-    coerce   => 1,
+    is      => 'ro',
+    isa     => Dir,
+    default => $ENV{PINTO_REPOSITORY_ROOT},
+    coerce  => 1,
 );
 
-
-has repo  => (
-    is         => 'ro',
-    isa        => 'Pinto::Repository',
-    default    => sub { Pinto::Repository->new( root => $_[0]->root ) },
-    lazy       => 1,
+has repo => (
+    is      => 'ro',
+    isa     => 'Pinto::Repository',
+    default => sub { Pinto::Repository->new( root => $_[0]->root ) },
+    lazy    => 1,
 );
 
 #------------------------------------------------------------------------------
@@ -62,27 +61,29 @@ around BUILDARGS => sub {
     my $args  = $class->$orig(@_);
 
     # Grrr.  Gotta avoid passing undefs to Moose
-    my @chrome_attrs = qw(verbose quiet no_color);
-    my %chrome_args  = map  { $_ => delete $args->{$_} } 
-                       grep { exists $args->{$_}       } @chrome_attrs;
+    my @chrome_attrs = qw(verbose quiet color);
+    my %chrome_args = map { $_ => delete $args->{$_} }
+        grep { exists $args->{$_} } @chrome_attrs;
 
     $args->{chrome} ||= Pinto::Chrome::Term->new(%chrome_args);
 
     return $args;
 };
 
-
 #------------------------------------------------------------------------------
 
 sub run {
-    my ($self, $action_name, @action_args) = @_;
+    my ( $self, $action_name, @action_args ) = @_;
 
-    # Divert all warnings through our chrome 
+    # Divert all warnings through our chrome
     local $SIG{__WARN__} = sub { $self->warning($_) for @_ };
+
+    # Convert hash refs to plain hash
+    @action_args = %{$action_args[0]} if @action_args == 1 and ref $action_args[0];
 
     my $result = try {
 
-        my $action = $self->create_action($action_name => @action_args);
+        my $action = $self->create_action( $action_name => @action_args );
         my $lock_type = $action->lock_type;
 
         $self->repo->assert_sanity_ok;
@@ -91,26 +92,26 @@ sub run {
 
         $action->execute;
     }
-    catch { 
+    catch {
         $self->repo->unlock;
         $self->error($_);
 
-        Pinto::Result->new->failed(because => $_);
+        Pinto::Result->new->failed( because => $_ );
     }
     finally {
         $self->repo->unlock;
     };
-    
-    return $result; 
+
+    return $result;
 }
 
 #------------------------------------------------------------------------------
 
 sub create_action {
-    my ($self, $action_name, %action_args) = @_;
+    my ( $self, $action_name, %action_args ) = @_;
 
-    @action_args{qw(chrome repo)} = ($self->chrome, $self->repo);
-    my $action_class = $self->load_class_for_action(name => $action_name);
+    @action_args{qw(chrome repo)} = ( $self->chrome, $self->repo );
+    my $action_class = $self->load_class_for_action( name => $action_name );
     my $action = $action_class->new(%action_args);
 
     return $action;
@@ -119,15 +120,16 @@ sub create_action {
 #------------------------------------------------------------------------------
 
 sub load_class_for_action {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    my $action_name  = ucfirst( $args{name} || throw 'Must specify an action name' );
+    my $action_name = ucfirst( $args{name} || throw 'Must specify an action name' );
     my $action_class = "Pinto::Action::$action_name";
 
     Class::Load::load_class($action_class);
 
     return $action_class;
 }
+
 #------------------------------------------------------------------------------
 
 __PACKAGE__->meta->make_immutable;
@@ -152,12 +154,12 @@ L<Stratopan|http://stratopan.com> for hosting your Pinto repository in the cloud
 
 =head1 DESCRIPTION
 
-Pinto is an application for creating and managing a custom CPAN-like 
-repository of Perl modules.  The purpose of such a repository is to 
-provide a stable, curated stack of dependencies from which you can 
-reliably build, test, and deploy your application using the standard 
-Perl tool chain. Pinto supports various operations for gathering and 
-managing distribution dependencies within the repository, so that you 
+Pinto is an application for creating and managing a custom CPAN-like
+repository of Perl modules.  The purpose of such a repository is to
+provide a stable, curated stack of dependencies from which you can
+reliably build, test, and deploy your application using the standard
+Perl tool chain. Pinto supports various operations for gathering and
+managing distribution dependencies within the repository, so that you
 can control precisely which dependencies go into your application.
 
 =head1 FEATURES
@@ -167,7 +169,7 @@ L<MyCPAN::App::DPAN>, but adds a few interesting features:
 
 =over 4
 
-=item * Pinto supports mutiple indexes
+=item * Pinto supports multiple indexes
 
 A Pinto repository can have multiple indexes.  Each index corresponds
 to a "stack" of dependencies that you can control.  So you can have
@@ -175,7 +177,7 @@ one stack for development, one for production, one for feature-xyz,
 and so on.  You can also branch and merge stacks to experiment with
 new dependencies or upgrades.
 
-=item * Pinto helps manage incompatibilies between dependencies
+=item * Pinto helps manage incompatibles between dependencies
 
 Sometimes, you discover that a new version of a dependency is
 incompatible with your application.  Pinto allows you to "pin" a
@@ -243,8 +245,8 @@ the culprit, but Pinto expects you to be accountable for your actions.
 
 PAUSE requires authors to authenticate themselves before they can
 upload or remove modules.  Pinto does not require authentication, so
-any user with sufficient file permission can potentialy change the
-repository.  However L<pintod> does suport HTTP authentication, which
+any user with sufficient file permission can potentially change the
+repository.  However L<pintod> does support HTTP authentication, which
 gives you some control over access to a remote repository.
 
 =back

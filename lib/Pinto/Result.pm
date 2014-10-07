@@ -5,11 +5,11 @@ package Pinto::Result;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Moose qw(Bool ArrayRef);
-use MooseX::MarkAsMethods (autoclean => 1);
+use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(itis);
 
-use overload (q{""} => 'to_string');
+use overload ( q{""} => 'to_string' );
 
 #-----------------------------------------------------------------------------
 
@@ -18,36 +18,34 @@ use overload (q{""} => 'to_string');
 #------------------------------------------------------------------------------
 
 has made_changes => (
-    is        => 'ro',
-    isa       => Bool,
-    writer    => '_set_made_changes',
-    default   => 0,
+    is      => 'ro',
+    isa     => Bool,
+    writer  => '_set_made_changes',
+    default => 0,
 );
-
 
 has was_successful => (
-    is         => 'ro',
-    isa        => Bool,
-    writer     => '_set_was_successful',
-    default    => 1,
+    is      => 'ro',
+    isa     => Bool,
+    writer  => '_set_was_successful',
+    default => 1,
 );
 
-
 has exceptions => (
-    traits    => [ qw(Array) ],
-    handles   => {exceptions => 'elements', add_exception => 'push'},
-    isa       => ArrayRef,
-    default   => sub { [] },
+    traits  => [qw(Array)],
+    handles => { exceptions => 'elements', add_exception => 'push' },
+    isa     => ArrayRef,
+    default => sub { [] },
 );
 
 #-----------------------------------------------------------------------------
 
 sub failed {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
     $self->_set_was_successful(0);
 
-    if (my $reason = $args{because}) {
+    if ( my $reason = $args{because} ) {
 
         # HACK: Sometimes we'll get exceptions that are strings
         # instead of objects (like from Moose type constraint
@@ -58,10 +56,10 @@ sub failed {
 
         require Pinto::Exception;
 
-        $reason = Pinto::Exception->new(message => $reason) 
-            if not itis($reason, 'Pinto::Exception');
+        $reason = Pinto::Exception->new( message => "$reason" )
+            if not itis( $reason, 'Pinto::Exception' );
 
-        $self->add_exception($reason); 
+        $self->add_exception($reason);
     }
 
     return $self;
@@ -92,7 +90,7 @@ sub to_string {
 
     return 'ok' if $self->was_successful;
 
-    if (my @exceptions = $self->exceptions) {
+    if ( my @exceptions = $self->exceptions ) {
         return join "\n", @exceptions;
     }
 

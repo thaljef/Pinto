@@ -1,0 +1,50 @@
+#!/bin/bash -ue
+
+######################################################################
+#
+# THIS IS THE Pinto SMOKER
+#
+# I use this little script to build & test Pinto against several
+# common versions of Perl that I have on my machine.  The key thing
+# is that all the dependencies come from a curated repository on
+# Stratopan.  So these are not the latest versions, but versions
+# that I have blessed.  In comparison, the builds on Travis are
+# done with the latest versions from CPAN, which don't always work.
+#
+# Copyright 2013 Jeffrey Ryan Thalhammer <jeff@stratopan.com>
+#
+######################################################################
+
+unset PINTO_HOME;
+MODULES_TO_SMOKE=${1:-Pinto};
+SMOKE_BASE_DIR=$HOME/tmp/smoke
+CPAN_MIRROR_URL=https://stratopan.com/thaljef/OpenSource/pinto-release
+PERLS_TO_SMOKE=${2:-'5.8.9 5.10.1 5.12.5 5.14.4 5.16.3 5.18.2 5.20.0'}
+
+for pv in $PERLS_TO_SMOKE; do
+
+    SMOKE_WORK_DIR="$SMOKE_BASE_DIR/$pv";
+
+    # TODO: add a command-line option to control whether 
+    # or not to blow away an existing local-lib directory
+
+    rm -rf "$SMOKE_WORK_DIR";
+    mkdir -p "$SMOKE_WORK_DIR";
+
+    for mod in $MODULES_TO_SMOKE; do
+
+        echo "=========================================================";
+        echo "Smoking $mod with perl-$pv in $SMOKE_WORK_DIR";
+
+        perlbrew exec --with $pv                            \
+            cpanm --mirror "$CPAN_MIRROR_URL"               \
+                --local-lib-contained "$SMOKE_WORK_DIR"     \
+                --mirror-only                               \
+                --quiet                                     \
+                $mod                                        \
+        2>&1 | tee "$SMOKE_WORK_DIR/smoke.log"
+
+    done;
+
+done;
+

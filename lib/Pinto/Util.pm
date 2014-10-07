@@ -7,18 +7,21 @@ use warnings;
 use version;
 use base qw(Exporter);
 
+use URI;
+use URI::file;
 use Carp;
 use DateTime;
+use File::Temp;
 use Path::Class;
 use Digest::MD5;
 use Digest::SHA;
 use Scalar::Util;
 use UUID::Tiny;
-use IO::Interactive;
 use Readonly;
 
 use Pinto::Globals;
 use Pinto::Constants qw(:all);
+use Pinto::Types qw(DiffStyle);
 
 #-------------------------------------------------------------------------------
 
@@ -35,24 +38,29 @@ Readonly our @EXPORT_OK => qw(
     current_username
     debug
     decamelize
+    default_diff_style
     indent_text
     interpolate
     is_blank
     is_not_blank
     is_interactive
+    is_remote_repo
     is_system_prop
     isa_perl
     itis
+    make_uri
     md5
     mksymlink
     mtime
     parse_dist_path
+    mask_uri_passwords
     sha256
+    tempdir
     title_text
     throw
     trim_text
     truncate_text
-    user_colors
+    user_palette
     uuid
     whine
 );
@@ -74,12 +82,12 @@ sub throw {
     my ($error) = @_;
 
     # Rethrowing...
-    die $error if itis($error, 'Pinto::Exception');  ## no critic (Carping)
+    $error->throw if itis( $error, 'Pinto::Exception' );
 
     require Pinto::Exception;
-    Pinto::Exception->throw(message => "$error");
+    Pinto::Exception->throw( message => "$error" );
 
-    return; # Should never get here
+    return;                                              # Should never get here
 }
 
 #-------------------------------------------------------------------------------
@@ -102,8 +110,8 @@ sub debug {
     return 1 if not $ENV{PINTO_DEBUG};
 
     $it = $it->() if ref $it eq 'CODE';
-    my ($file, $line) = (caller)[1,2];
-    print { *STDERR } "$it in $file at line $line\n";
+    my ( $file, $line ) = (caller)[ 1, 2 ];
+    print {*STDERR} "$it in $file at line $line\n";
 
     return 1;
 }
@@ -120,7 +128,7 @@ suppressed.
 sub whine {
     my ($message) = @_;
 
-    if ($ENV{DEBUG}) {
+    if ( $ENV{DEBUG} ) {
         Carp::cluck($message);
         return 1;
     }
@@ -143,11 +151,11 @@ directory that is returned.
 
 =cut
 
-sub author_dir {                                  ## no critic (ArgUnpacking)
+sub author_dir {    ## no critic (ArgUnpacking)
     my $author = uc pop;
-    my @base =  @_;
+    my @base   = @_;
 
-    return dir(@base, substr($author, 0, 1), substr($author, 0, 2), $author);
+    return dir( @base, substr( $author, 0, 1 ), substr( $author, 0, 2 ), $author );
 }
 
 #-------------------------------------------------------------------------------
@@ -160,7 +168,7 @@ C<$class>.
 =cut
 
 sub itis {
-    my ($var, $class) = @_;
+    my ( $var, $class ) = @_;
 
     return ref $var && Scalar::Util::blessed($var) && $var->isa($class);
 }
@@ -169,8 +177,8 @@ sub itis {
 
 =func parse_dist_path( $path )
 
-Parses a path like the ones you would see in a full URL to a
-distribution in a CPAN repository, or the URL fragment you would see
+Parses a path like the ones you would see in a full URI to a
+distribution in a CPAN repository, or the URI fragment you would see
 in a CPAN index.  Returns the author and file name of the
 distribution.  Subdirectories between the author name and the file
 name are discarded.
@@ -187,9 +195,9 @@ sub parse_dist_path {
 
         # $path = 'A/AU/AUTHOR/subdir/Foo-1.0.tar.gz'
         my @path_parts = split m{ / }mx, $path;
-        my $author  = $path_parts[2];  # AUTHOR
-        my $archive = $path_parts[-1]; # Foo-1.0.tar.gz
-        return ($author, $archive);
+        my $author     = $path_parts[2];          # AUTHOR
+        my $archive    = $path_parts[-1];         # Foo-1.0.tar.gz
+        return ( $author, $archive );
     }
 
     throw "Unable to parse path: $path";
@@ -197,18 +205,18 @@ sub parse_dist_path {
 
 #-------------------------------------------------------------------------------
 
-=func isa_perl( $path_or_url )
+=func isa_perl( $path_or_uri )
 
-Return true if C<$path_or_url> appears to point to a release of perl
+Return true if C<$path_or_uri> appears to point to a release of perl
 itself.  This is based on some file naming patterns that I've seen in
 the wild.  It may not be completely accurate.
 
 =cut
 
 sub isa_perl {
-    my ($path_or_url) = @_;
+    my ($path_or_uri) = @_;
 
-    return $path_or_url =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
+    return $path_or_uri =~ m{ / perl-[\d.]+ \.tar \.(?: gz|bz2 ) $ }mx;
 }
 
 #-------------------------------------------------------------------------------
@@ -224,10 +232,10 @@ be thrown.
 sub mtime {
     my ($file) = @_;
 
-    throw 'Must supply a file' if not $file;
+    throw 'Must supply a file'   if not $file;
     throw "$file does not exist" if not -e $file;
 
-    return (stat $file)[9];
+    return ( stat $file )[9];
 }
 
 #-------------------------------------------------------------------------------
@@ -243,10 +251,10 @@ thrown.
 sub md5 {
     my ($file) = @_;
 
-    throw 'Must supply a file' if not $file;
+    throw 'Must supply a file'   if not $file;
     throw "$file does not exist" if not -e $file;
 
-    my $fh = $file->openr();
+    my $fh  = $file->openr();
     my $md5 = Digest::MD5->new->addfile($fh)->hexdigest();
 
     return $md5;
@@ -265,10 +273,10 @@ thrown.
 sub sha256 {
     my ($file) = @_;
 
-    throw 'Must supply a file' if not $file;
+    throw 'Must supply a file'   if not $file;
     throw "$file does not exist" if not -e $file;
 
-    my $fh = $file->openr();
+    my $fh     = $file->openr();
     my $sha256 = Digest::SHA->new(256)->addfile($fh)->hexdigest();
 
     return $sha256;
@@ -321,7 +329,7 @@ sub current_utc_time {
 
     ## no critic qw(PackageVars)
     return $Pinto::Globals::current_utc_time
-      if defined $Pinto::Globals::current_utc_time;
+        if defined $Pinto::Globals::current_utc_time;
 
     return time;
 }
@@ -341,10 +349,10 @@ sub current_time_offset {
 
     ## no critic qw(PackageVars)
     return $Pinto::Globals::current_time_offset
-      if defined $Pinto::Globals::current_time_offset;
+        if defined $Pinto::Globals::current_time_offset;
 
-    my $now    = current_utc_time;
-    my $time   = DateTime->from_epoch(epoch => $now, time_zone => 'local');
+    my $now = current_utc_time;
+    my $time = DateTime->from_epoch( epoch => $now, time_zone => 'local' );
 
     return $time->offset;
 }
@@ -364,13 +372,13 @@ sub current_username {
 
     ## no critic qw(PackageVars)
     return $Pinto::Globals::current_username
-      if defined $Pinto::Globals::current_username;
+        if defined $Pinto::Globals::current_username;
 
-    my $username =  $ENV{PINTO_USERNAME} || $ENV{USER} || $ENV{LOGIN} || $ENV{USERNAME} || $ENV{LOGNAME};
+    my $username = $ENV{PINTO_USERNAME} || $ENV{USER} || $ENV{LOGIN} || $ENV{USERNAME} || $ENV{LOGNAME};
 
     throw "Unable to determine your username.  Set PINTO_USERNAME." if not $username;
 
-    return $username
+    return $username;
 }
 
 #-------------------------------------------------------------------------------
@@ -380,7 +388,8 @@ sub current_username {
 Returns the author id of the current user unless it has been overridden by
 C<$Pinto::Globals::current_author_id>.  The author id can be defined through
 environment variables.  Otherwise it defaults to the upper-case form of the
-C<current_username>.
+C<current_username>.  And since PAUSE only allows letters and numbers in the
+author id, then we remove all of those from the C<current_username> too.
 
 =cut
 
@@ -388,11 +397,15 @@ sub current_author_id {
 
     ## no critic qw(PackageVars)
     return $Pinto::Globals::current_author_id
-      if defined $Pinto::Globals::current_author_id;
+        if defined $Pinto::Globals::current_author_id;
 
-    my $author_id =  $ENV{PINTO_AUTHOR_ID} || uc current_username;
+    my $author_id = $ENV{PINTO_AUTHOR_ID};
+    return uc $author_id if $author_id;
 
-    return $author_id;
+    my $username = current_username;
+    $username =~ s/[^a-zA-Z0-9]//g;
+
+    return uc $username;
 }
 
 #-------------------------------------------------------------------------------
@@ -409,9 +422,9 @@ sub is_interactive {
 
     ## no critic qw(PackageVars)
     return $Pinto::Globals::is_interactive
-      if defined $Pinto::Globals::is_interactive;
+        if defined $Pinto::Globals::is_interactive;
 
-    return IO::Interactive::is_interactive;
+    return -t STDOUT;
 }
 
 #-------------------------------------------------------------------------------
@@ -427,7 +440,7 @@ include anything that looks like a variable.  Only metacharacters
 sub interpolate {
     my $string = shift;
 
-    return eval qq{"$string"};  ## no critic qw(Eval)
+    return eval qq{"$string"};    ## no critic qw(Eval)
 }
 
 #-------------------------------------------------------------------------------
@@ -484,14 +497,14 @@ sub body_text {
 
 =func truncate_text($string, $length, $elipses)
 
-Truncates the C<$string> and appends C<$elipses> if the C<$string> is 
-longer than C<$length> characters.  C<$elipses> defaults to '...' if 
+Truncates the C<$string> and appends C<$elipses> if the C<$string> is
+longer than C<$length> characters.  C<$elipses> defaults to '...' if
 not specified.
 
 =cut
 
 sub truncate_text {
-    my ($string, $max_length, $elipses) = @_;
+    my ( $string, $max_length, $elipses ) = @_;
 
     return $string if not $max_length;
     return $string if length $string <= $max_length;
@@ -522,7 +535,6 @@ sub decamelize {
     return lc $string;
 }
 
-
 #-------------------------------------------------------------------------------
 
 =func indent_text($string, $n)
@@ -534,7 +546,7 @@ in C<$string>.  The original C<$string> is not modified.
 =cut
 
 sub indent_text {
-    my ($string, $spaces) = @_;
+    my ( $string, $spaces ) = @_;
 
     return $string if not $spaces;
     return $string if not $string;
@@ -556,7 +568,7 @@ operation fails or is not supported.
 =cut
 
 sub mksymlink {
-    my ($from, $to) = @_;
+    my ( $from, $to ) = @_;
 
     # TODO: Try to add Win32 support here, somehow.
     debug "Linking $to to $from";
@@ -590,26 +602,26 @@ random numbers.
 =cut
 
 sub uuid {
-  return UUID::Tiny::create_uuid_as_string( UUID::Tiny::UUID_V4 );
+    return UUID::Tiny::create_uuid_as_string(UUID::Tiny::UUID_V4);
 }
-
 
 #-------------------------------------------------------------------------------
 
-=func user_colors()
+=func user_palette()
 
-Returns a reference to an array containing the names of the colors pinto 
-can use.  This can be influenced by setting the C<PINTO_COLORS> or 
-C<PINTO_COLOURS> environment variables.
+Returns a reference to an array containing the names of the colors pinto
+can use.  This can be influenced by setting the C<PINTO_PALETTE> environment
+variable.
 
 =cut
 
-sub user_colors {
-    my $colors = $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS};
+sub user_palette {
+    my $palette = $ENV{PINTO_PALETTE}
+        || $ENV{PINTO_COLORS} || $ENV{PINTO_COLOURS}; # For backcompat
 
-    return $PINTO_DEFAULT_COLORS if not $colors;
+    return $PINTO_DEFAULT_PALETTE if not $palette;
 
-    return [ split m/\s* , \s*/x, $colors ];
+    return [ split m/\s* , \s*/x, $palette ];
 }
 
 #-------------------------------------------------------------------------------
@@ -639,7 +651,81 @@ Returns true if the string contains any non-whitespace characters.
 sub is_not_blank {
     my ($string) = @_;
 
-    return ! is_blank($string);
+    return !is_blank($string);
+}
+
+#-------------------------------------------------------------------------------
+
+=func mask_uri_passwords($string)
+
+Masks the parts the string that look like a password embedded in an http or
+https URI. For example, C<http://joe:secret@foo.com> would return
+C<http://joe:*password*@foo.com>
+
+=cut
+
+sub mask_uri_passwords {
+    my ($uri) = @_;
+
+    $uri =~ s{ (https?://[^:/@]+ :) [^@/]+@}{$1*password*@}gx;
+
+    return $uri;
+}
+
+#-------------------------------------------------------------------------------
+
+=func is_remote_repo {
+
+Returns true if the argument looks like a URI to a remote repository
+
+=cut
+
+sub is_remote_repo {
+    my ($uri) = @_;
+
+    return if not $uri;
+    return $uri =~ m{^https?://}x;
+}
+
+#-------------------------------------------------------------------------------
+
+sub tempdir {
+
+    return Path::Class::dir(File::Temp::tempdir(CLEANUP => 1));
+}
+
+
+#-------------------------------------------------------------------------------
+
+
+sub default_diff_style {
+
+    if (my $style = $ENV{PINTO_DIFF_STYLE}) {
+
+        throw "PINTO_DIFF_STYLE ($style) is invalid.  Must be one of (@PINTO_DIFF_STYLES)"
+            unless DiffStyle->check($style);
+
+        return $style;
+    }
+
+    return $PINTO_DIFF_STYLE_CONCISE;
+}
+
+#-------------------------------------------------------------------------------
+
+sub make_uri {
+    my ($it) = @_;
+
+    return $it
+        if itis( $it, 'URI' );
+
+    return URI::file->new( $it->absolute )
+        if itis( $it, 'Path::Class::File' );
+
+    return URI::file->new( file($it)->absolute )
+        if -e $it;
+
+    return URI->new($it);
 }
 
 #-------------------------------------------------------------------------------
