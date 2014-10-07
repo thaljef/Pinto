@@ -230,4 +230,9 @@ __END__
 This is a private module for internal use only.  There is nothing for
 you to see here (yet).
 
+There does exist a user editable configuration file at .pinto/config/pinto.ini
+in the repository created with `pinto init`.  You will likely never need to 
+touch the default values set in this file.  If you do, `perldoc bin/pinto` 
+will provide guidance.
+
 =cut
