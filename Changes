@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+      [MISCELLANEOUS]
+
+      - Upgraded to latest version of Module::CoreList, so we can support
+      latest versions of perl.
+
+      - Tests will no longer clobber ~/.cpanm (GH #170). Thanks to Karen
+      Etheridge for pointing this out.
+
 0.09995   2014-08-19 18:27:23 America/Los_Angeles
 
       [SECURITY]
