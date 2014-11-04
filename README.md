@@ -143,7 +143,7 @@ in addition to those websites please use your favorite search engine to discover
 
     The CPANTS is a website that analyzes the Kwalitee ( code metrics ) of a distribution.
 
-    [http://cpants.perl.org/dist/overview/Pinto](http://cpants.perl.org/dist/overview/Pinto)
+    [http://cpants.cpanauthors.org/dist/overview/Pinto](http://cpants.cpanauthors.org/dist/overview/Pinto)
 
 - CPAN Testers
 
@@ -191,6 +191,14 @@ from your repository :)
 # CONTRIBUTORS
 
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+- Oleg Gashev <oleg@gashev.net>
+- Steffen Schwigon <ss5@renormalist.net>
+- Tommy Stanton <tommystanton@gmail.com>
+- Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
+- Yanick Champoux <yanick@babyl.dyndns.org>
+- brian d foy <brian.d.foy@gmail.com>
+- hesco <hesco@campaignfoundations.com>
+- popl <popl\_likes\_to\_code@yahoo.com>
 - Boris Däppen <bdaeppen.perl@gmail.com>
 - Cory G Watson <gphat@onemogin.com>
 - David Steinbrunner <dsteinbrunner@pobox.com>
@@ -200,14 +208,6 @@ from your repository :)
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
 - Nikolay Martynov <mar.kolya@gmail.com>
-- Oleg Gashev <oleg@gashev.net>
-- Steffen Schwigon <ss5@renormalist.net>
-- Tommy Stanton <tommystanton@gmail.com>
-- Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
-- Yanick Champoux <yanick@babyl.dyndns.org>
-- brian d foy <brian.d.foy@gmail.com>
-- hesco <hesco@campaignfoundations.com>
-- popl <popl\_likes\_to\_code@yahoo.com>
 
 # AUTHOR
 
