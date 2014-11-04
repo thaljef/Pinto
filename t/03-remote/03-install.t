@@ -16,6 +16,7 @@ use lib 't/lib';
 use Pinto::Server::Tester;
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 use Pinto::Tester::Util qw(has_cpanm);
+use Pinto::Util qw(tempdir);
 
 #------------------------------------------------------------------------------
 # To prevent mucking with user's ~/.cpanm
