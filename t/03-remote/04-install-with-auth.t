@@ -19,6 +19,10 @@ use Pinto::Tester::Util qw(make_htpasswd_file has_cpanm);
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 
 #------------------------------------------------------------------------------
+# To prevent mucking with user's ~/.cpanm
+local $ENV{PERL_CPANM_HOME} = tempdir->stringify();
+
+#------------------------------------------------------------------------------
 
 plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
     unless has_cpanm($PINTO_MINIMUM_CPANM_VERSION);

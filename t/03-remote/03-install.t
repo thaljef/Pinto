@@ -18,6 +18,10 @@ use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 use Pinto::Tester::Util qw(has_cpanm);
 
 #------------------------------------------------------------------------------
+# To prevent mucking with user's ~/.cpanm
+local $ENV{PERL_CPANM_HOME} = tempdir->stringify();
+
+#------------------------------------------------------------------------------
 
 plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"
     unless has_cpanm($PINTO_MINIMUM_CPANM_VERSION);

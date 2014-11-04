@@ -13,6 +13,11 @@ use lib 't/lib';
 use Pinto::Tester;
 use Pinto::Tester::Util qw(has_cpanm);
 use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
+use Pinto::Util qw(tempdir);
+
+#------------------------------------------------------------------------------
+# To prevent mucking with user's ~/.cpanm
+local $ENV{PERL_CPANM_HOME} = tempdir->stringify();
 
 #------------------------------------------------------------------------------
 
