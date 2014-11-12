@@ -19,7 +19,7 @@ subtest 'Excluding with exact match' => sub {
 
     my $t       = Pinto::Tester->new;
     my $archive = make_dist_archive('Foo-Bar-0.01 = Foo~0.01; Bar~0.01');
-    $t->run_ok( Add => { archives => $archive, no_index => ['Foo'] } );
+    $t->run_ok( Add => { archives => $archive, no_index => ['Foo'], author => 'AUTHOR' } );
 
     $t->registration_not_ok("AUTHOR/Foo-Bar-0.01/Foo~0.01/master");
     $t->registration_ok("AUTHOR/Foo-Bar-0.01/Bar~0.01/master");
@@ -38,7 +38,7 @@ subtest 'Excluding with regexes' => sub {
 
     my $t       = Pinto::Tester->new;
     my $archive = make_dist_archive('Foo-Bar-0.01 = Foo~0.01; Bar~0.01; Baz~0.01');
-    $t->run_ok( Add => { archives => $archive, no_index => [ '/F', '/r' ] } );
+    $t->run_ok( Add => { archives => $archive, no_index => [ '/F', '/r' ], author => 'AUTHOR' } );
 
     $t->registration_not_ok("AUTHOR/Foo-Bar-0.01/Foo~0.01/master");
     $t->registration_not_ok("AUTHOR/Foo-Bar-0.01/Bar~0.01/master");

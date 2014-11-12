@@ -53,7 +53,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
     $t->stack_is_not_locked_ok('master');
 
     # Try modifying again
-    $t->run_ok( Add        => { archives => $archive } );
+    $t->run_ok( Add        => { archives => $archive, author => 'AUTHOR'} );
     $t->run_ok( Pin        => { targets  => 'Foo' } );
     $t->run_ok( Unpin      => { targets  => 'Foo' } );
     $t->run_ok( Unregister => { targets  => 'AUTHOR/Foo-2.tar.gz' } );
