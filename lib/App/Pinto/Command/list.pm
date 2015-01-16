@@ -63,7 +63,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT list [OPTIONS]
+  pinto --root=REPOSITORY_ROOT list [STACK] [OPTIONS]
 
 =head1 DESCRIPTION
 

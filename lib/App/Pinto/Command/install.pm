@@ -19,17 +19,17 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
-        [ 'cascade'                 => 'Always pick latest upstream package' ],
-        [ 'cpanm-exe|cpanm=s'       => 'Path to the cpanm executable' ],
-        [ 'cpanm-options|o:s%'      => 'name=value pairs of cpanm options' ],
-        [ 'diff-style=s'            => 'Set style of diff reports' ],
-        [ 'local-lib|l=s'           => 'install into a local lib directory' ],
-        [ 'local-lib-contained|L=s' => 'install into a contained local lib directory' ],
-        [ 'message|m=s'             => 'Message to describe the change' ],
-        [ 'do-pull'                 => 'pull missing prereqs onto the stack first' ],
-        [ 'stack|s=s'               => 'Install modules from this stack' ],
-        [ 'use-default-message|M'   => 'Use the generated message' ],
-
+        [ 'cascade'                     => 'Always pick latest upstream package' ],
+        [ 'cpanm-exe|cpanm=s'           => 'Path to the cpanm executable' ],
+        [ 'cpanm-options|o:s%'          => 'name=value pairs of cpanm options' ],
+        [ 'diff-style=s'                => 'Set style of diff reports' ],
+        [ 'local-lib|l=s'               => 'install into a local lib directory' ],
+        [ 'local-lib-contained|L=s'     => 'install into a contained local lib directory' ],
+        [ 'message|m=s'                 => 'Message to describe the change' ],
+        [ 'do-pull'                     => 'pull missing prereqs onto the stack first' ],
+        [ 'stack|s=s'                   => 'Install modules from this stack' ],
+        [ 'use-default-message|M'       => 'Use the generated message' ],
+        [ 'verify-upstream|Z:+'         => 'Verify upstream files before use (repeatable)' ],
     );
 }
 
@@ -64,8 +64,8 @@ __END__
 
 =pod
 
-=for stopwords 
-exe 
+=for stopwords
+exe
 cpanm
 
 =head1 SYNOPSIS
@@ -81,8 +81,8 @@ is just a thin wrapper around L<cpanm> that is wired to fetch
 everything from the Pinto repository, rather than a public CPAN
 mirror.
 
-If the C<--do-pull> option is given, then all targets and their 
-prerequisites will be pulled onto the stack before attempting to 
+If the C<--do-pull> option is given, then all targets and their
+prerequisites will be pulled onto the stack before attempting to
 install them.  If any thing cannot be pulled because it cannot be
 found or is blocked by a pin, then the installation will not
 proceed.
@@ -195,6 +195,64 @@ relevant if you also set the C<--do-pull> option. Pinto will generate a semi-
 informative log message just based on the command and its arguments.  If you
 set an explicit message with C<--message>, the C<--use- default-message>
 option will be silently ignored.
+
+=item --verify-upstream=[0-5]
+
+=item -Z [0-5]
+
+=item -Z ... -ZZZZZ
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Require upstream distribution files to be verified before operating on them.
+Repeated use of this argument (up to 5) requires the upstream verification to
+be progressively more strict.  You can also set the verification level
+explicitly, e.g.,
+
+    --verify-upstream=3
+
+At level 0, no verification is performed. This may be useful if you need to
+override a verification level set that has been set earlier on the command
+line.
+
+At level 1, we verify the distributions checksum using the upstream CHECKSUMS
+file. This gives you some assurance that the distribution archive has not be
+corrupted during transfer.  This is a good level to use if your upstream
+source is on a different system and you trust the network between your system
+and upstream.
+
+At level 2, we also verify the signature on the upstream CHECKSUMS file if it
+has one.  Warnings about unknown or untrusted PGP keys relating to that file
+are printed.  This is a good level to use if you do not necessarily trust the
+network between your system and upstream (because they do not use HTTPS).  At
+this level we silently ignore warnings about the PAUSE Batch Signing Key
+(450F89EC) being unknown or untrusted, since this key is to sign the CHECKSUMS
+files for all CPAN distributions.
+
+At level 3, we also require upstream CHECKSUMS files to be signed.  Warnings
+about unknown or untrusted PGP keys relating to that file are now considered
+fatal. This is a good level to use if you only use upstream sources that sign
+there distributions and you actively manage the keys that you trust.  At this
+level we do not ignore warnings about the PAUSE Batch Signing Key.
+
+At level 4, we also verify the unpacked distribution using the embedded
+SIGNATURE file if it exists.  Warnings about unknown or untrusted PGP keys
+relating to that file are printed.  This is a good level to use if you want to
+be alerted about distributions that have been signed by authors you have yet
+to verify.
+
+At level 5, warnings about unknown or untrusted PGP keys relating to embedded
+SIGNATURE files are now considered fatal.  This is the level to use if you
+actively verify all authors who sign their distributions.
+
+Note that none of these checks are applied to LOCAL distributions, i.e.,
+distributions that do not have an upstream CHECKSUMS file.
+
+The impact of this option will largely depend on the your chosen upstream
+repositories and state of your current keyring.  Consider maintaining
+a dedicated keyring/trustdb via the C<PINTO_GNUPGHOME> environment variable.
+See the documentation for the L<verify|App::Pinto::Command::verify> command
+for the rationale and an example.
 
 =back
 
