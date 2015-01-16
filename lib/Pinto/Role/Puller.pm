@@ -33,6 +33,18 @@ has cascade => (
     default => 0,
 );
 
+has verify => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
+has strict => (
+    is      => 'ro',
+    isa     => Bool,
+    default => 0,
+);
+
 has pin => (
     is      => 'ro',
     isa     => Bool,
@@ -126,7 +138,15 @@ sub find {
     elsif ( $dist = $stack->repo->get_distribution( target => $target ) ) {
         $msg = "Found $target in $dist";
     }
-    elsif ( $dist = $stack->repo->ups_distribution( target => $target, cascade => $self->cascade ) ) {
+    elsif (
+        $dist = $stack->repo->ups_distribution(
+            target  => $target,
+            cascade => $self->cascade,
+            verify  => $self->verify,
+            strict  => $self->strict,
+        )
+      )
+    {
         $msg = "Found $target in " . $dist->source;
     }
     elsif ( $self->should_skip_missing_prerequisite($target) ) {

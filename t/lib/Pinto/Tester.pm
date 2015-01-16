@@ -267,9 +267,9 @@ sub registration_not_ok {
 #------------------------------------------------------------------------------
 
 sub result_ok {
-    my ( $self, $result ) = @_;
+    my ( $self, $result, $test_name ) = @_;
 
-    my $test_name = 'Result indicates action was succesful';
+    $test_name ||= 'Result indicates action was succesful';
     my $ok = $self->ok( $result->was_successful, $test_name );
     $self->diag_stderr if not $ok;
 
@@ -279,9 +279,9 @@ sub result_ok {
 #------------------------------------------------------------------------------
 
 sub result_not_ok {
-    my ( $self, $result ) = @_;
+    my ( $self, $result, $test_name ) = @_;
 
-    my $test_name = 'Result indicates action was not succesful';
+    $test_name ||= 'Result indicates action was not succesful';
     my $ok = $self->ok( !$result->was_successful, $test_name );
     $self->diag_stderr if not $ok;
 

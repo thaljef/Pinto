@@ -29,7 +29,8 @@ sub opt_spec {
         [ 'do-pull'                 => 'pull missing prereqs onto the stack first' ],
         [ 'stack|s=s'               => 'Install modules from this stack' ],
         [ 'use-default-message|M'   => 'Use the generated message' ],
-
+        [ 'verify|Z'                => 'Verify upstream files before processing'],
+        [ 'strict'                            => 'Make verification warnings fatal'],
     );
 }
 
@@ -64,8 +65,8 @@ __END__
 
 =pod
 
-=for stopwords 
-exe 
+=for stopwords
+exe
 cpanm
 
 =head1 SYNOPSIS
@@ -81,8 +82,8 @@ is just a thin wrapper around L<cpanm> that is wired to fetch
 everything from the Pinto repository, rather than a public CPAN
 mirror.
 
-If the C<--do-pull> option is given, then all targets and their 
-prerequisites will be pulled onto the stack before attempting to 
+If the C<--do-pull> option is given, then all targets and their
+prerequisites will be pulled onto the stack before attempting to
 install them.  If any thing cannot be pulled because it cannot be
 found or is blocked by a pin, then the installation will not
 proceed.
@@ -195,6 +196,26 @@ relevant if you also set the C<--do-pull> option. Pinto will generate a semi-
 informative log message just based on the command and its arguments.  If you
 set an explicit message with C<--message>, the C<--use- default-message>
 option will be silently ignored.
+
+=item --verify
+
+=item -Z
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Verify upstream distribution files before operating on them.  Verifies
+checksums and signatures where appropriate using the same mechanism as the
+C<audit> command.  If the verification fails, the process is aborted.
+Warnings about unknown or untrusted PGP keys are not considered fatal
+depending on the state of the acitve keyring.
+
+=item --strict
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Modifies the C<--verify> option to make all warnings fatal and insisting that
+all upstream checksums files are signed.  Only distributions with trusted
+checksums file signatures and embeded signatures will verify in this case.
 
 =back
 

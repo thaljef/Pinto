@@ -17,6 +17,8 @@ use warnings;
 my $home_var = 'PINTO_HOME';
 my $home_dir = $ENV{$home_var};
 
+$ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
+
 if ($home_dir) {
 	require File::Spec;
 	my $lib_dir = File::Spec->catfile($home_dir, qw(lib perl5));
@@ -278,6 +280,12 @@ when using a local repository.
 
 Sets the timeout (in seconds) for obtaining a lock on the repository.  The default
 is 50.  This variable only has effect when using a local repository.
+
+=item C<PINTO_GNUPGHOME>
+
+Sets the GNUPGHOME to be used when verifying upstream distribution files using
+GnuPG.  See the documentation for the C<audit> command for the rationale and
+an example.
 
 =back
 

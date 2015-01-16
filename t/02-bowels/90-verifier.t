@@ -1,0 +1,97 @@
+#!perl
+
+use strict;
+use warnings;
+
+use Test::More;
+use Test::File;
+
+use lib 't/lib';
+use Pinto::Tester;
+use Pinto::Tester::Util qw(make_dist_archive);
+
+use Pinto::Verifier;
+
+#-----------------------------------------------------------------------------
+
+my $upstream = Pinto::Tester->new();
+
+# Create a valid upstream distribution
+my $archive = make_dist_archive('GOOD/Foo-1.2 = Foo~1.2');
+$upstream->pinto->run(
+    'add' => { archives => $archive, author => 'GOOD', recurse => 0 }
+);
+
+# Create a bad upstream distribution
+$archive = make_dist_archive('BAD/Bar-1.2 = Bar~1.2');
+$upstream->pinto->run(
+    add => { archives => $archive, author => 'BAD', recurse => 0 },
+);
+# Damage the BAD archive by appending junk so that the checksums are invalid
+my $dist = $upstream->get_distribution(author => 'BAD', archive => 'Bar-1.2.tar.gz');
+my $fh = $dist->native_path->opena() or die $!;
+print $fh 'LUNCH'; undef  $fh;
+
+# Pull both distributions to a local repo
+my $local
+  = Pinto::Tester->new( init_args => { sources => $upstream->stack_url } );
+$local->pinto->run( pull => { targets => 'Foo~1.2', recurse => 0 } );
+$local->pinto->run( pull => { targets => 'Bar~1.2', recurse => 0, no_fail => 1 } );
+
+
+#-----------------------------------------------------------------------------
+
+{
+    note "Good upstream distribution";
+    my $dist
+      = $local->get_distribution( author => 'GOOD', archive => 'Foo-1.2.tar.gz' );
+
+    my $verifier = Pinto::Verifier->new(
+        local    => $dist->native_path,
+        upstream => $dist->source,
+    );
+
+    my $checksums = $verifier->upstream_checksums;
+    file_exists_ok( $checksums => "Upstream checksums exist" );
+    ok( $verifier->verify_checksum($checksums) => 'Upstream checksum verifies' );
+
+    $checksums = $verifier->local_checksums;
+    file_exists_ok( $checksums => "Local checksums exist" );
+    ok( $verifier->verify_checksum($checksums) => 'Local checksum verifies' );
+
+}
+
+#-----------------------------------------------------------------------------
+
+{
+    note "Bad upstream distribution";
+
+    my $dist
+      = $local->get_distribution( author => 'BAD', archive => 'Bar-1.2.tar.gz' );
+
+    my $verifier = Pinto::Verifier->new(
+        local    => $dist->native_path,
+        upstream => $dist->source,
+    );
+
+    my $checksums = $verifier->upstream_checksums;
+    file_exists_ok( $checksums => "Upstream checksums exist" );
+    ok(! $verifier->verify_checksum($checksums) => 'Upstream checksum does not verify' );
+
+    $checksums = $verifier->local_checksums;
+    file_exists_ok( $checksums => "Local checksums exist" );
+    ok( $verifier->verify_checksum($checksums) => 'Local checksum verifies' );
+
+}
+
+TODO: {
+    local $TODO = 'Once we add some signed distribution files';
+
+    ok(0 => 'Embedded good signature verifies');
+    ok(0 => 'Attached good signature verifies');
+
+    ok(0 => 'Embedded bad signature does not verify');
+    ok(0 => 'Attached bad signature does not verify');
+}
+
+done_testing();

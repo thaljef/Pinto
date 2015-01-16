@@ -20,6 +20,7 @@ use Pinto::Locator::Multiplex;
 use Pinto::PrerequisiteWalker;
 use Pinto::Util qw(itis debug mksymlink throw);
 use Pinto::Types qw(Dir);
+use Pinto::Verifier;
 
 use version;
 
@@ -396,7 +397,11 @@ sub ups_distribution {
     my ( $self, %args ) = @_;
 
     return unless my $found = $self->locate( %args );
-    return $self->fetch_distribution( uri => $found->{uri} );
+    return $self->fetch_distribution(
+        uri    => $found->{uri},
+        verify => $args{verify},
+        strict => $args{strict},
+    );
 }
 
 #-------------------------------------------------------------------------------
@@ -486,6 +491,16 @@ sub fetch_distribution {
 
     my ( $author, undef ) = Pinto::Util::parse_dist_path($path);
     my $archive = $self->mirror_temporary( $uri );
+
+    if ( $args{verify} ) {
+        my $verifier = Pinto::Verifier->new(
+            strict   => $args{strict},
+            local    => $archive,
+            upstream => $uri,
+        );
+        $verifier->verify_upstream()
+          or throw "Upstream distribution file does not verify";
+    }
 
     my $dist = $self->add_distribution(
         archive => $archive,

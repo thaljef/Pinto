@@ -33,6 +33,8 @@ sub opt_spec {
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
+        [ 'verify|Z'                          => 'Verify upstream files before processing'],
+        [ 'strict'                            => 'Make verification warnings fatal'],
     );
 }
 
@@ -231,6 +233,26 @@ Also pull development prerequisites so you'll have everything you need
 to work on those distributions, in the event that you need to patch them
 in the future.  Be aware that most distributions do not actually declare
 their development prerequisites.
+
+=item --verify
+
+=item -Z
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Verify upstream distribution files before operating on them.  Verifies
+checksums and signatures where appropriate using the same mechanism as the
+C<audit> command.  If the verification fails, the process is aborted.
+Warnings about unknown or untrusted PGP keys are not considered fatal
+depending on the state of the acitve keyring.
+
+=item --strict
+
+!! THIS OPTION IS EXPERIMENTAL !!
+
+Modifies the C<--verify> option to make all warnings fatal and insisting that
+all upstream checksums files are signed.  Only distributions with trusted
+checksums file signatures and embeded signatures will verify in this case.
 
 =back
 
