@@ -26,7 +26,7 @@
 # ~/.profile (or ~/.bashrc, or whatever you prefer) so that pinto runs
 # naturally in your everyday shell environment.
 #
-# All the depndencies for pinto come from a curated repository on hosted
+# All the depndencies for pinto come from a curated repository hosted at
 # http://stratopan.com.  That repository contains specific versions of all 
 # the modules that pinto needs.  So those may not be the latest versions,
 # but they are versions that I know will work (and that's the whole point
@@ -51,7 +51,7 @@
 # PINTO_REPO_URL
 #
 #   Sets the URL of the repository that provides pinto's dependencies
-#   Defaults to https://stratopan.com/thaljef/OpenSource/pinto-release
+#   Defaults to https://www.stratopan.com/thaljef/OpenSource/pinto-release
 #
 # PINTO_INSTALLER_AGENT
 #
@@ -75,7 +75,7 @@ set -ue
 #-----------------------------------------------------------------------------
 # You can set these variables beforehand to override defaults
 
-PINTO_REPO_URL=${PINTO_REPO_URL:="https://stratopan.com/thaljef/OpenSource/pinto-release"}
+PINTO_REPO_URL=${PINTO_REPO_URL:="https://www.stratopan.com/thaljef/OpenSource/pinto-release"}
 PINTO_HOME=${PINTO_HOME:="$HOME/opt/local/pinto"}
 
 #-----------------------------------------------------------------------------
