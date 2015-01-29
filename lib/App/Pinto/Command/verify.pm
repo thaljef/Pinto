@@ -38,9 +38,6 @@ sub validate_args {
     $self->usage_error('Multiple arguments are not allowed')
         if @{$args} > 1;
 
-    $opts->{format} = interpolate( $opts->{format} )
-        if exists $opts->{format};
-
     $opts->{stack} = $args->[0]
         if $args->[0];
 
