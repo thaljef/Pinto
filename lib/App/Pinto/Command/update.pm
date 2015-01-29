@@ -234,9 +234,9 @@ their development prerequisites.
 
 Verify upstream distribution files before operating on them.  Verifies
 checksums and signatures where appropriate using the same mechanism as the
-C<audit> command.  If the verification fails, the process is aborted.
-Warnings about unknown or untrusted PGP keys are not considered fatal
-depending on the state of the acitve keyring.
+L<verify|App::Pinto::Command::verify> command.  If the verification fails, the
+process is aborted.  Warnings about unknown or untrusted PGP keys are not
+considered fatal depending on the state of the acitve keyring.
 
 =item --strict
 
