@@ -8,7 +8,7 @@ use Test::File;
 
 use lib 't/lib';
 use Pinto::Tester;
-use Pinto::Tester::Util qw(make_dist_archive);
+use Pinto::Tester::Util qw(make_dist_archive corrupt_distribution);
 
 use Pinto::Verifier;
 
@@ -27,10 +27,7 @@ $archive = make_dist_archive('BAD/Bar-1.2 = Bar~1.2');
 $upstream->pinto->run(
     add => { archives => $archive, author => 'BAD', recurse => 0 },
 );
-# Damage the BAD archive by appending junk so that the checksums are invalid
-my $dist = $upstream->get_distribution(author => 'BAD', archive => 'Bar-1.2.tar.gz');
-my $fh = $dist->native_path->opena() or die $!;
-print $fh 'LUNCH'; undef  $fh;
+corrupt_distribution($upstream, 'BAD', 'Bar-1.2.tar.gz');
 
 # Pull both distributions to a local repo
 my $local

@@ -32,6 +32,7 @@ Readonly our @EXPORT_OK => qw(
     parse_dist_spec
     parse_reg_spec
     has_cpanm
+    corrupt_distribution
 );
 
 Readonly our %EXPORT_TAGS => ( all => \@EXPORT_OK );
@@ -196,6 +197,19 @@ sub has_cpanm {
     throw "Failed to determine the version of $cpanm_exe" if $? >> 8;
 
     return $cpanm_ver >= $min_version;
+}
+
+sub corrupt_distribution {
+    my ($repo, $author, $archive) = @_;
+
+    # Append junk to the end of the archive, so that it can still be unpacked,
+    # but the checksums will be invalid.
+
+    my $dist = $repo->get_distribution(author => $author, archive => $archive);
+    my $fh = $dist->native_path->opena() or die $!;
+    print $fh 'GaRbAgE'; undef  $fh;
+
+    return;
 }
 
 #------------------------------------------------------------------------------

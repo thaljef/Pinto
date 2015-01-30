@@ -7,34 +7,30 @@ use Test::More;
 
 use lib 't/lib';
 use Pinto::Tester;
-use Pinto::Tester::Util qw(make_dist_archive);
+use Pinto::Tester::Util qw(make_dist_archive corrupt_distribution);
 use Path::Class qw(file);
 
 #------------------------------------------------------------------------------
 
-my $source = Pinto::Tester->new;
+my $upstream = Pinto::Tester->new;
 
 # Create a good upstream distribution
 my $archive = make_dist_archive('GOOD/Foo-1.2 = Foo~1.2');
-$source->pinto->run(
+$upstream->pinto->run(
         add => { archives => $archive, author => 'GOOD', recurse => 0 },
 );
 
 # Create a bad upstream distribution
 $archive = make_dist_archive('BAD/Bar-1.2 = Bar~1.2');
-$source->pinto->run(
+$upstream->pinto->run(
     add => { archives => $archive, author => 'BAD', recurse => 0 },
 );
-
-# Damage the BAD archive by appending junk so that the checksums are invalid
-my $dist = $source->get_distribution(author => 'BAD', archive => 'Bar-1.2.tar.gz');
-my $fh = $dist->native_path->opena() or die $!;
-print $fh 'LUNCH'; undef  $fh;
+corrupt_distribution($upstream, 'BAD', 'Bar-1.2.tar.gz');
 
 #------------------------------------------------------------------------------
 
 subtest "Verifying distributions non-strictly" => sub {
-    my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
+    my $local = Pinto::Tester->new( init_args => { sources => $upstream->stack_url } );
 
     $local->run_ok(
         'Pull',
@@ -53,7 +49,7 @@ subtest "Verifying distributions non-strictly" => sub {
 #------------------------------------------------------------------------------
 
 subtest "Verifying distributions strictly" => sub {
-    my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
+    my $local = Pinto::Tester->new( init_args => { sources => $upstream->stack_url } );
     $local->run_throws_ok(
         'Pull',
         { targets => 'Foo~1.2', verify => 1, strict => 1 },
