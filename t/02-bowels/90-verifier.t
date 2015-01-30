@@ -41,8 +41,7 @@ $local->pinto->run( pull => { targets => 'Bar~1.2', recurse => 0, no_fail => 1 }
 
 #-----------------------------------------------------------------------------
 
-{
-    note "Good upstream distribution";
+subtest "Verifying good upstream distribtiopn" => sub {
     my $dist
       = $local->get_distribution( author => 'GOOD', archive => 'Foo-1.2.tar.gz' );
 
@@ -59,12 +58,11 @@ $local->pinto->run( pull => { targets => 'Bar~1.2', recurse => 0, no_fail => 1 }
     file_exists_ok( $checksums => "Local checksums exist" );
     ok( $verifier->verify_checksum($checksums) => 'Local checksum verifies' );
 
-}
+};
 
 #-----------------------------------------------------------------------------
 
-{
-    note "Bad upstream distribution";
+subtest "Verifying an bad upstream distribution" => sub {
 
     my $dist
       = $local->get_distribution( author => 'BAD', archive => 'Bar-1.2.tar.gz' );
@@ -82,7 +80,7 @@ $local->pinto->run( pull => { targets => 'Bar~1.2', recurse => 0, no_fail => 1 }
     file_exists_ok( $checksums => "Local checksums exist" );
     ok( $verifier->verify_checksum($checksums) => 'Local checksum verifies' );
 
-}
+};
 
 TODO: {
     local $TODO = 'Once we add some signed distribution files';

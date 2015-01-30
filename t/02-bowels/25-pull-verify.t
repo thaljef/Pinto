@@ -33,7 +33,7 @@ print $fh 'LUNCH'; undef  $fh;
 
 #------------------------------------------------------------------------------
 
-{
+subtest "Verifying distributions non-strictly" => sub {
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
 
     $local->run_ok(
@@ -48,11 +48,11 @@ print $fh 'LUNCH'; undef  $fh;
         qr{Upstream distribution file does not verify},
         "Bad upstream distribution does not verify",
     );
-}
+};
 
 #------------------------------------------------------------------------------
 
-{
+subtest "Verifying distributions strictly" => sub {
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
     $local->run_throws_ok(
         'Pull',
@@ -66,9 +66,7 @@ print $fh 'LUNCH'; undef  $fh;
         qr{Distribution does not have a signed checksums file},
         "Bad upstream distribution does not verify strictly",
     );
-}
+};
 
-# TODO: still have a few more permutations to explore, but they require having
-# some signed distributions to test against.
-
+#------------------------------------------------------------------------------
 done_testing();
