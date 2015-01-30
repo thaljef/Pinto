@@ -55,7 +55,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT verify [OPTIONS]
+  pinto --root=REPOSITORY_ROOT verify [STACK] [OPTIONS]
 
 =head1 DESCRIPTION
 

@@ -55,15 +55,15 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT roots [OPTIONS]
+  pinto --root=REPOSITORY_ROOT roots [STACK] [OPTIONS]
 
 =head1 DESCRIPTION
 
 !! THIS COMMAND IS EXPERIMENTAL !!
 
 This command lists the distributions that are the roots of the dependency
-tree that includes all the distributions in the stack.  In other words, it 
-tells you which distributions or packages you would need to install from 
+tree that includes all the distributions in the stack.  In other words, it
+tells you which distributions or packages you would need to install from
 this stack to get all the other distribution in the stack.
 
 =head1 COMMAND ARGUMENTS
@@ -85,7 +85,7 @@ stack that is currently marked as the default stack.
 
 =item --format FORMAT_SPECIFICATION
 
-Format of the output of each record using C<printf>-style placeholders.  Valid 
+Format of the output of each record using C<printf>-style placeholders.  Valid
 placeholders are:
 
   Placeholder    Meaning
@@ -141,9 +141,9 @@ Generate a basic F<cpanfile> that would install all modules in the stack:
 
 =head1 CAVEATS
 
-This list of roots produced by this command is not always correct.  Many 
-Perl distributions use dynamic configuration so you can't truly know 
-what distributions need to be installed until you actually try and 
+This list of roots produced by this command is not always correct.  Many
+Perl distributions use dynamic configuration so you can't truly know
+what distributions need to be installed until you actually try and
 install them.  Pinto relies entirely on the static META files to determine
 prerequisites.
 
