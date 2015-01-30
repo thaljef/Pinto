@@ -38,8 +38,8 @@ sub opt_spec {
         [ 'stack|s=s'                         => 'Update packages in this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
-        [ 'verify|Z'                          => 'Verify upstream files before processing'],
-        [ 'strict'                            => 'Make verification warnings fatal'],
+        [ 'verify-upstream|Z'                 => 'Verify upstream files before processing'],
+        [ 'verify-upstream-strictly|ZS'       => 'Like --verify-upstream, but more paranoid' ],
     );
 }
 
@@ -226,7 +226,7 @@ to work on those distributions, in the event that you need to patch them
 in the future.  Be aware that most distributions do not actually declare
 their development prerequisites.
 
-=item --verify
+=item --verify-upstream
 
 =item -Z
 
@@ -236,15 +236,22 @@ Verify upstream distribution files before operating on them.  Verifies
 checksums and signatures where appropriate using the same mechanism as the
 L<verify|App::Pinto::Command::verify> command.  If the verification fails, the
 process is aborted.  Warnings about unknown or untrusted PGP keys are not
-considered fatal depending on the state of the acitve keyring.
+considered fatal, neither are unsigned checksum files.
 
-=item --strict
+=item --verify-upstream-strictly
+
+=item -ZS
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
-Modifies the C<--verify> option to make all warnings fatal and insisting that all
-upstream checksums files are signed.  Only distributions with trusted
-checksums file signatures and embeded signatures will verify in this case.
+Like the C<--verify-upstream> option, but make all warnings fatal B<and>
+insisting that all upstream checksums files are signed.  Only distributions
+with trusted checksums file signatures and embeded signatures will verify in
+this case. The impact of this command will largely depend on the state of your
+current keyring.  Coinsider using a dedicated keyring/trustdb via the
+C<PINTO_GNUPGHOME> environment variable.  See the documentation for the
+L<verify|App::Pinto::Command::verify> command for the rationale and an
+example.
 
 =back
 

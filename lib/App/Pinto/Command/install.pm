@@ -19,18 +19,18 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
-        [ 'cascade'                 => 'Always pick latest upstream package' ],
-        [ 'cpanm-exe|cpanm=s'       => 'Path to the cpanm executable' ],
-        [ 'cpanm-options|o:s%'      => 'name=value pairs of cpanm options' ],
-        [ 'diff-style=s'            => 'Set style of diff reports' ],
-        [ 'local-lib|l=s'           => 'install into a local lib directory' ],
-        [ 'local-lib-contained|L=s' => 'install into a contained local lib directory' ],
-        [ 'message|m=s'             => 'Message to describe the change' ],
-        [ 'do-pull'                 => 'pull missing prereqs onto the stack first' ],
-        [ 'stack|s=s'               => 'Install modules from this stack' ],
-        [ 'use-default-message|M'   => 'Use the generated message' ],
-        [ 'verify|Z'                => 'Verify upstream files before processing'],
-        [ 'strict'                            => 'Make verification warnings fatal'],
+        [ 'cascade'                     => 'Always pick latest upstream package' ],
+        [ 'cpanm-exe|cpanm=s'           => 'Path to the cpanm executable' ],
+        [ 'cpanm-options|o:s%'          => 'name=value pairs of cpanm options' ],
+        [ 'diff-style=s'                => 'Set style of diff reports' ],
+        [ 'local-lib|l=s'               => 'install into a local lib directory' ],
+        [ 'local-lib-contained|L=s'     => 'install into a contained local lib directory' ],
+        [ 'message|m=s'                 => 'Message to describe the change' ],
+        [ 'do-pull'                     => 'pull missing prereqs onto the stack first' ],
+        [ 'stack|s=s'                   => 'Install modules from this stack' ],
+        [ 'use-default-message|M'       => 'Use the generated message' ],
+        [ 'verify-upstream|Z'           => 'Verify upstream files before processing'],
+        [ 'verify-upstream-strictly|ZS' => 'Like --verify-upstream, but more paranoid' ],
     );
 }
 
@@ -197,7 +197,7 @@ informative log message just based on the command and its arguments.  If you
 set an explicit message with C<--message>, the C<--use- default-message>
 option will be silently ignored.
 
-=item --verify
+=item --verify-upstream
 
 =item -Z
 
@@ -207,15 +207,22 @@ Verify upstream distribution files before operating on them.  Verifies
 checksums and signatures where appropriate using the same mechanism as the
 L<verify|App::Pinto::Command::verify> command.  If the verification fails, the
 process is aborted.  Warnings about unknown or untrusted PGP keys are not
-considered fatal depending on the state of the acitve keyring.
+considered fatal, neither are unsigned checksum files.
 
-=item --strict
+=item --verify-upstream-strictly
+
+=item -ZS
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
-Modifies the C<--verify> option to make all warnings fatal and insisting that
-all upstream checksums files are signed.  Only distributions with trusted
-checksums file signatures and embeded signatures will verify in this case.
+Like the C<--verify-upstream> option, but make all warnings fatal B<and>
+insisting that all upstream checksums files are signed.  Only distributions
+with trusted checksums file signatures and embeded signatures will verify in
+this case. The impact of this command will largely depend on the state of your
+current keyring.  Coinsider using a dedicated keyring/trustdb via the
+C<PINTO_GNUPGHOME> environment variable.  See the documentation for the
+L<verify|App::Pinto::Command::verify> command for the rationale and an
+example.
 
 =back
 

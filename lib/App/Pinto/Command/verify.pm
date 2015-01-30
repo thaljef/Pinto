@@ -25,7 +25,7 @@ sub opt_spec {
         [ 'packages|P=s'      => 'Limit to matching package names' ],
         [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
         [ 'stack|s=s'         => 'Limit to contents of this stack' ],
-        [ 'strict'            => 'Make verification warnings fatal' ],
+        [ 'strict'            => 'Make verification more paranoid' ],
         [ 'files-only'        => 'Skip crytographic checks' ],
     );
 }
@@ -151,11 +151,11 @@ to packages that are pinned.
 
 =item --strict
 
-Modifies the verification process to make all warnings fatal and insisting
+Modifies the verification process to make all warnings fatal B<and> insisting
 that all upstream checksums files are signed.  Only distributions with trusted
 checksums file signatures and embeded signatures will verify in this case.
 
-=itme --files-only
+=item --files-only
 
 Skip crytographic checks (checksums and signatures) and just check for
 distribution file existence. Use tthis option to revert to the behaviour
@@ -171,15 +171,15 @@ Verification may generate a lot of messages like the following:
     Primary key fingerprint: XXXX XXXX XXXX XXXX XXXX  XXXX XXXX XXXX XXXX XXXX
 
 To get rid of the message you have to add the key to your default keyring
-(after independently verification) and give it 'Ultimate Trust'.  This is not
+(after independent verification) and give it 'Ultimate Trust'.  This is not
 ideal given the amount of effort required to verify a key to the point where
 you are willing to assign such a high level of trust.
 
 An alternative is to maintain and use an dedicated keyring solely for Pinto
-verification. Adding the PAUSE Batch Signing Key (450F89EC) and giving it 'Ultimate
-Trust' is probably fine after verifying this key from a couple of sources.
-Verifying AUTHOR keys via email is probabaly good enough for the purposes of
-a Pinto verification.
+verification. Adding the PAUSE Batch Signing Key (450F89EC) and giving it
+'Ultimate Trust' is probably fine after verifying this key from a couple of
+sources.  Verifying AUTHOR keys via email may be good enough for the purposes
+of a Pinto verification.
 
 If you are using GnuPG, you can use the environment variable PINTO_GNUPGHOME to
 instruct pinto to use an alternate keyring/trustdb, e.g,

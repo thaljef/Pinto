@@ -33,13 +33,13 @@ has cascade => (
     default => 0,
 );
 
-has verify => (
+has verify_upstream => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
 );
 
-has strict => (
+has verify_upstream_strictly => (
     is      => 'ro',
     isa     => Bool,
     default => 0,
@@ -142,8 +142,8 @@ sub find {
         $dist = $stack->repo->ups_distribution(
             target  => $target,
             cascade => $self->cascade,
-            verify  => $self->verify,
-            strict  => $self->strict,
+            verify  => $self->verify_upstream || $self->verify_upstream_strictly,
+            strict  => $self->verify_upstream_strictly,
         )
       )
     {

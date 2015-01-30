@@ -34,13 +34,13 @@ subtest "Verifying distributions non-strictly" => sub {
 
     $local->run_ok(
         'Pull',
-        { targets => 'Foo~1.2', verify => 1 },
+        { targets => 'Foo~1.2', verify_upstream => 1 },
         "Good upstream distribution verifies",
     );
 
     $local->run_throws_ok(
         'Pull',
-        { targets => 'Bar~1.2', verify => 1 },
+        { targets => 'Bar~1.2', verify_upstream => 1 },
         qr{Upstream distribution file does not verify},
         "Bad upstream distribution does not verify",
     );
@@ -52,13 +52,13 @@ subtest "Verifying distributions strictly" => sub {
     my $local = Pinto::Tester->new( init_args => { sources => $upstream->stack_url } );
     $local->run_throws_ok(
         'Pull',
-        { targets => 'Foo~1.2', verify => 1, strict => 1 },
+        { targets => 'Foo~1.2', verify_upstream_strictly => 1 },
         qr{Distribution does not have a signed checksums file},
         "Good upstream distribution does not verify strictly",
     );
     $local->run_throws_ok(
         'Pull',
-        { targets => 'Bar~1.2', verify => 1, strict => 1 },
+        { targets => 'Bar~1.2', verify_upstream_strictly => 1 },
         qr{Distribution does not have a signed checksums file},
         "Bad upstream distribution does not verify strictly",
     );
