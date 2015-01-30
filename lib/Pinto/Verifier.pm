@@ -153,6 +153,7 @@ sub maybe_verify_embedded {
 
         my $ok = do {
             local $SIG{__WARN__} = sub { push @warnings, @_ };
+            local $ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
             Module::Signature::verify() == SIGNATURE_OK;
         };
         $self->_propagate(@warnings) if @warnings;
@@ -250,6 +251,7 @@ sub verify_attached_signature {
 
     my $ok = do {
         local $SIG{__WARN__} = sub { push @warnings, @_ };
+        local $ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
         Module::Signature::_verify($file) == SIGNATURE_OK;
     };
 

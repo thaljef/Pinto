@@ -17,8 +17,6 @@ use warnings;
 my $home_var = 'PINTO_HOME';
 my $home_dir = $ENV{$home_var};
 
-$ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
-
 if ($home_dir) {
 	require File::Spec;
 	my $lib_dir = File::Spec->catfile($home_dir, qw(lib perl5));
