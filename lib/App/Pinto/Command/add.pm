@@ -34,7 +34,7 @@ sub opt_spec {
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
         [ 'verify-upstream|Z'           => 'Verify upstream files before processing' ],
-        [ 'verify-upstream-strictly|ZS' => 'Like --verify-upstream, but more paranoid' ];
+        [ 'verify-upstream-strictly|ZS' => 'Like --verify-upstream, but more paranoid' ],
     );
 }
 
