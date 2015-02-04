@@ -19,14 +19,14 @@ sub opt_spec {
     my ( $self, $app ) = @_;
 
     return (
-        [ 'all|a'             => 'Verify everything in the repository'],
-        [ 'authors|A=s'       => 'Limit to matching author identities' ],
-        [ 'distributions|D=s' => 'Limit to matching distribution names' ],
-        [ 'packages|P=s'      => 'Limit to matching package names' ],
-        [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
-        [ 'stack|s=s'         => 'Limit to contents of this stack' ],
-        [ 'strict'            => 'Make verification more paranoid' ],
-        [ 'files-only'        => 'Skip crytographic checks' ],
+        [ 'all|a'               => 'Verify everything in the repository' ],
+          [ 'authors|A=s'       => 'Limit to matching author identities' ],
+          [ 'distributions|D=s' => 'Limit to matching distribution names' ],
+          [ 'packages|P=s'      => 'Limit to matching package names' ],
+          [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
+          [ 'stack|s=s'         => 'Limit to contents of this stack' ],
+          [ 'level|Z:+i'        => 'Require files to be verified more strictly (repeatable)' ],
+          [ 'local'             => 'Use only use local CHECKSUMS for verification' ],
     );
 }
 
@@ -70,6 +70,10 @@ Distributions with invalid checksums or checksums file signatures (checking
 both local and upstream), or with invalid embedded signatures are problematic.
 This may occur if the distributions have been corrupted on disk or in
 transport, or sourced from a corrupted upstream repository.
+
+The extent of the checks can be controlled via the C<--level> option.  By
+default, only the existence of distribution archives is checked.  More advance
+checks may require a suitable PGP setup.
 
 At the moment, it isn't clear how to fix these situations.  In a future
 release you might be able to replace the archive for the distribution.  But
@@ -149,17 +153,54 @@ option.
 When limiting to a particular stack, further limit the verification operation
 to packages that are pinned.
 
-=item --strict
+=item  --level=[0-5]
 
-Modifies the verification process to make all warnings fatal B<and> insisting
-that all upstream checksums files are signed.  Only distributions with trusted
-checksums file signatures and embeded signatures will verify in this case.
+=item -Z [0,5]
 
-=item --files-only
+=item -Z ... -ZZZZZ
 
-Skip crytographic checks (checksums and signatures) and just check for
-distribution file existence. Use tthis option to revert to the behaviour
-before these checks were introduced.
+Require distribution files to be verified more strictly.  Repeated use of this
+argument (up to 5) requires the verification to be progressively more strict.
+You can also set the verification level explicitly, e.g.,
+
+    --level=3
+
+At level 0, no special verification is performed: we only check for file
+existence.  This is the default level of verification.
+
+At level 1, we verify the distributions checksum using the upstream CHECKSUMS
+file.
+
+At level 2, we also verify the signature on the upstream CHECKSUMS file if it
+has one.  Warnings about unknown or untrusted PGP keys relating to that file
+are printed.
+
+At level 3, we also require upstream CHECKSUMS files to be signed.  Warnings
+about unknown or untrusted PGP keys relating to that file are now considered
+fatal.
+
+At level 4, we also verify the unpacked distribution using the embedded
+SIGNATURE file if it exists.  Warnings about unknown or untrusted PGP keys
+relating to that file are printed.
+
+At level 5, warnings about unknown or untrusted PGP keys relating to embedded
+SIGNATURE files are now considered fatal.
+
+Note that none of these checks are applied to LOCAL distributions, i.e.,
+distributions that do not have an upstream CHECKSUMS file.
+
+The impact of this option will largely depend on the your chosen upstream
+repositories and state of your current keyring.  Consider using a dedicated
+keyring/trustdb via the C<PINTO_GNUPGHOME> environment variable.  See the
+documentation for the L<verify|App::Pinto::Command::verify> command for the
+rationale and an example.
+
+=item --local
+
+Modify the verification steps to use use local CHECKSUMS files instead of
+upstream.  This only has an effect of the verification level is greater than
+0.  This option can be used, say, to verify your local checksums and
+signatures before publishing a repository.
 
 =back
 

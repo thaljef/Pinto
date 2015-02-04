@@ -1,4 +1,4 @@
-# ABSTRACT: Report distributions that are missing
+# ABSTRACT: Report distributions that are missing or broken
 
 package Pinto::Action::Verify;
 
@@ -6,7 +6,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Int);
 use Pinto::Util qw(debug);
 use Pinto::Verifier;
 
@@ -20,18 +20,17 @@ extends qw( Pinto::Action::List );
 
 #------------------------------------------------------------------------------
 
-has strict => (
+has level => (
+    is       => 'ro',
+    isa      => Int,
+    default  => 0,
+);
+
+has local => (
     is       => 'ro',
     isa      => Bool,
     default  => 0,
 );
-
-has files_only => (
-    is       => 'ro',
-    isa      => Bool,
-    default  => 0,
-);
-
 
 #------------------------------------------------------------------------------
 
@@ -44,7 +43,7 @@ sub execute {
     my $rs     = $self->repo->db->schema->$method( $where, $attrs );
 
     # XXX would be nice if I had a query that just returned unique
-    # distibutions, even if when we are searching for packages
+    # distributions, even if when we are searching for packages
 
     my %seen      = ();
     my $did_match = 0;
@@ -68,39 +67,28 @@ sub execute {
             $missing++;
             next RESULT;
         }
-        next RESULT if $self->files_only;
+        next RESULT if $self->level == 0;
 
         my $verifier = Pinto::Verifier->new(
             upstream => $dist->source,
             local    => $dist->native_path,
-            strict   => $self->strict,
+            level    => $self->level,
         );
 
-        # If upstream has critical errors, then it is neither safe nor valid
-        # to verify the local files, but if the distribution is local then we
-        # assume we trust it.
-        if ( $dist->is_local or $verifier->verify_upstream ) {
-
-            # if local copies have critical errors, it is neither safe nor
-            # valid to verify any embedded signature
-            if ( $verifier->verify_local ) {
-
-                # verify the embedded signature if it exists
-                if ( !$verifier->maybe_verify_embedded ) {
-                    $self->error("Embeded SIGNATURE verification for $path failed");
-                    $errors++;
-                }
-            }
-            else {
+        if ($self->local) {
+            if ( ! $verifier->verify_local ) {
                 $self->error("Local checksums verification for $path failed:");
-                $self->error( ">>> " . $verifier->{error_message} );
+                $self->error( ">>> " . $verifier->{failure} );
                 $errors++;
             }
         }
         else {
-            $self->error("Upstream checksums verification for $path failed");
-            $self->error( ">>> " . $verifier->{error_message} );
-            $errors++;
+            # note we skip distributions which have no upstream
+            if ( ! $dist->is_local and !$verifier->verify_upstream ) {
+                $self->error("Upstream verification for $path failed");
+                $self->error( ">>> " . $verifier->{failure} );
+                $errors++;
+            }
         }
 
         $did_match++;

@@ -31,8 +31,7 @@ sub opt_spec {
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
-        [ 'verify-upstream|Z'                 => 'Verify upstream files before processing'],
-        [ 'verify-upstream-strictly|ZS'       => 'Like --verify-upstream, but more paranoid' ],
+        [ 'verify-upstream|Z:+i'              => 'Verify upstream files before use (repeatable)' ],
     );
 }
 
@@ -205,32 +204,50 @@ to work on those distributions, in the event that you need to patch them
 in the future.  Be aware that most distributions do not actually declare
 their development prerequisites.
 
-=item --verify-upstream
+=item --verify-upstream=[0-5]
 
-=item -Z
+=item -Z [0-5]
 
-!! THIS OPTION IS EXPERIMENTAL !!
-
-Verify upstream distribution files before operating on them.  Verifies
-checksums and signatures where appropriate using the same mechanism as the
-L<verify|App::Pinto::Command::verify> command.  If the verification fails, the
-process is aborted.  Warnings about unknown or untrusted PGP keys are not
-considered fatal, neither are unsigned checksum files.
-
-=item --verify-upstream-strictly
-
-=item -ZS
+=item -Z ... -ZZZZZ
 
 !! THIS OPTION IS EXPERIMENTAL !!
 
-Like the C<--verify-upstream> option, but make all warnings fatal B<and>
-insisting that all upstream checksums files are signed.  Only distributions
-with trusted checksums file signatures and embeded signatures will verify in
-this case. The impact of this command will largely depend on the state of your
-current keyring.  Coinsider using a dedicated keyring/trustdb via the
-C<PINTO_GNUPGHOME> environment variable.  See the documentation for the
-L<verify|App::Pinto::Command::verify> command for the rationale and an
-example.
+Require upstream distribution files to be verified before operating on them.
+Repeated use of this argument (up to 5) requires the upstream verification to
+be progressively more strict.  You can also set the verification level
+explicitly, e.g.,
+
+    --verify-upstream=3
+
+At level 0, no verification is performed. This may be useful if you need to
+override the verification level set earlier, say, in a script.
+
+At level 1, we verify the distributions checksum using the upstream CHECKSUMS
+file.
+
+At level 2, we also verify the signature on the upstream CHECKSUMS file if it
+has one.  Warnings about unknown or untrusted PGP keys relating to that file
+are printed.
+
+At level 3, we also require upstream CHECKSUMS files to be signed.  Warnings
+about unknown or untrusted PGP keys relating to that file are now considered
+fatal.
+
+At level 4, we also verify the unpacked distribution using the embedded
+SIGNATURE file if it exists.  Warnings about unknown or untrusted PGP keys
+relating to that file are printed.
+
+At level 5, warnings about unknown or untrusted PGP keys relating to embedded
+SIGNATURE files are now considered fatal.
+
+Note that none of these checks are applied to LOCAL distributions, i.e.,
+distributions that do not have an upstream CHECKSUMS file.
+
+The impact of this option will largely depend on the your chosen upstream
+repositories and state of your current keyring.  Consider using a dedicated
+keyring/trustdb via the C<PINTO_GNUPGHOME> environment variable.  See the
+documentation for the L<verify|App::Pinto::Command::verify> command for the
+rationale and an example.
 
 =back
 

@@ -3,7 +3,7 @@
 package Pinto::Role::Puller;
 
 use Moose::Role;
-use MooseX::Types::Moose qw(ArrayRef Bool Str);
+use MooseX::Types::Moose qw(ArrayRef Bool Str Int);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use List::MoreUtils qw(any);
@@ -35,13 +35,7 @@ has cascade => (
 
 has verify_upstream => (
     is      => 'ro',
-    isa     => Bool,
-    default => 0,
-);
-
-has verify_upstream_strictly => (
-    is      => 'ro',
-    isa     => Bool,
+    isa     => Int,
     default => 0,
 );
 
@@ -112,7 +106,7 @@ sub pull {
         $dist = $self->find( target => $target );
     }
     else {
-        throw "Illeagal arguments";
+        throw "Illegal arguments";
     }
 
     $did_register = $dist->register( stack => $stack, pin => $self->pin, force => $self->force );
@@ -140,11 +134,10 @@ sub find {
     }
     elsif (
         $dist = $stack->repo->ups_distribution(
-            target  => $target,
-            cascade => $self->cascade,
-            verify  => $self->verify_upstream || $self->verify_upstream_strictly,
-            strict  => $self->verify_upstream_strictly,
-        )
+            target                      => $target,
+            cascade                     => $self->cascade,
+            verify_upstream => $self->verify_upstream,
+          )
       )
     {
         $msg = "Found $target in " . $dist->source;

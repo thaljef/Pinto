@@ -29,7 +29,7 @@ corrupt_distribution($upstream, 'BAD', 'Bar-1.2.tar.gz');
 
 #------------------------------------------------------------------------------
 
-subtest "Verifying distributions non-strictly" => sub {
+subtest "Verifying distributions at level 1" => sub {
     my $local = Pinto::Tester->new( init_args => { sources => $upstream->stack_url } );
 
     $local->run_ok(
@@ -48,19 +48,19 @@ subtest "Verifying distributions non-strictly" => sub {
 
 #------------------------------------------------------------------------------
 
-subtest "Verifying distributions strictly" => sub {
+subtest "Verifying distributions at level 3" => sub {
     my $local = Pinto::Tester->new( init_args => { sources => $upstream->stack_url } );
     $local->run_throws_ok(
         'Pull',
-        { targets => 'Foo~1.2', verify_upstream_strictly => 1 },
-        qr{Distribution does not have a signed checksums file},
-        "Good upstream distribution does not verify strictly",
+        { targets => 'Foo~1.2', verify_upstream => 3 },
+        qr{Upstream distribution file does not verify},
+        "Good upstream distribution does not verify",
     );
     $local->run_throws_ok(
         'Pull',
-        { targets => 'Bar~1.2', verify_upstream_strictly => 1 },
-        qr{Distribution does not have a signed checksums file},
-        "Bad upstream distribution does not verify strictly",
+        { targets => 'Bar~1.2', verify_upstream => 3 },
+        qr{Upstream distribution file does not verify},
+        "Bad upstream distribution does not verify",
     );
 };
 

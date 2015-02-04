@@ -38,13 +38,14 @@ $local->pinto->run( pull => { targets => 'Bar~1.2', recurse => 0, no_fail => 1 }
 
 #-----------------------------------------------------------------------------
 
-subtest "Verifying good upstream distribtiopn" => sub {
+subtest "Verifying good upstream distribtion" => sub {
     my $dist
       = $local->get_distribution( author => 'GOOD', archive => 'Foo-1.2.tar.gz' );
 
     my $verifier = Pinto::Verifier->new(
         local    => $dist->native_path,
         upstream => $dist->source,
+        level    => 1,
     );
 
     my $checksums = $verifier->upstream_checksums;
@@ -67,6 +68,7 @@ subtest "Verifying an bad upstream distribution" => sub {
     my $verifier = Pinto::Verifier->new(
         local    => $dist->native_path,
         upstream => $dist->source,
+        level    => 1,
     );
 
     my $checksums = $verifier->upstream_checksums;

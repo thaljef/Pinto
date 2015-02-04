@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Pinto::Util qw(debug throw);
 use Pinto::Types qw(File Dir Uri);
-use MooseX::Types::Moose qw(Bool Str);
+use MooseX::Types::Moose qw(Bool Str Int);
 use Pinto::ArchiveUnpacker;
 
 use Cwd::Guard qw(cwd_guard);
@@ -38,9 +38,9 @@ has upstream => (
     required => 1,
 );
 
-has strict => (
+has level => (
     is       => 'ro',
-    isa      => Bool,
+    isa      => Int,
     default  => 0,
 );
 
@@ -78,7 +78,7 @@ has work_dir => (
     lazy     => 1,
 );
 
-has error_message => (
+has failure => (
     is       => 'rw',
     isa      => Str,
     default  => '',
@@ -133,70 +133,100 @@ sub verify_local {
 
 #------------------------------------------------------------------------------
 
-=method maybe_verify_embedded()
-
-Unpack the current archive and verify the embedded SIGNATURE file if it exists.
-
-Returns false if embedded signiture exists and does not verify.
-Returns true otherwise.
-
-=cut
-
-sub maybe_verify_embedded {
-    my ($self) = @_;
-
-    my $cwd_guard = cwd_guard( $self->work_dir );
-
-    if ( -r 'SIGNATURE' ) {
-        # trap warnings
-        my @warnings = ();
-
-        my $ok = do {
-            local $SIG{__WARN__} = sub { push @warnings, @_ };
-            local $ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
-            Module::Signature::verify() == SIGNATURE_OK;
-        };
-        $self->_propagate(@warnings) if @warnings;
-
-        return if not $ok;
-    }
-
-    return 1;
-}
-
-#------------------------------------------------------------------------------
-
 =method verify( $checksums_file )
 
-Verifying the signature for the $checksums_file, then use that file to verify
-the current archive.
+Verifying the current archive using the given $checksums_file.  The strictness
+of the verification process depends on the current verification level.
+
+At level 0, no verification is performed.
+
+At level 1, we verify the distributions checksum using the given CHECKSUMS file
+
+At level 2, we also verify the signature on the given CHECKSUMS file, if it has
+one.  Warnings about unknown or untrusted PGP keys relating to that file are
+printed.
+
+At level 3, we require the CHECKSUMS file to be signed.  Warnings about
+unknown or untrusted PGP keys relating to that file are now considered fatal.
+
+At level 4, we also verify the unpacked distribution using the embedded
+SIGNATURE file, if it exists.  Warnings about unknown or untrusted PGP keys
+relating to that file are printed.
+
+At level 5, warnings about unknown or untrusted PGP keys relating to embedded
+SIGNATURE files are now considered fatal.
 
 =cut
 
 sub verify {
     my ( $self, $checksums_file ) = @_;
 
-    if ( !-s $checksums_file ) {
+    return 1 if $self->level == 0;
+
+    if ( ! -e $checksums_file ) {
+        $self->failure("Distribution does not have a checksums_file");
         return;
     }
 
-    if ( _slurp($checksums_file) =~ /BEGIN PGP SIGNATURE/ms ) {
+    if ($self->level >= 2) {
+        if ( _slurp($checksums_file) =~ /BEGIN PGP SIGNATURE/ms ) {
 
-        if ( !$self->verify_attached_signature($checksums_file) ) {
-            # XXX We cannot trust the archive, so further processing is
-            # neither safe nor valid
-            return;
-
+            if ( ! $self->verify_attached_signature($checksums_file) ) {
+                # XXX We cannot trust the archive, so further processing is
+                # neither safe nor valid
+                return;
+            }
         }
-    }
-    elsif ($self->strict) {
-        throw "Distribution does not have a signed checksums file";
+        elsif ($self->level >= 3 ) {
+            $self->failure("Distribution does not have a signed checksums file");
+            return
+        }
     }
 
     if ( $self->verify_checksum($checksums_file) ) {
         return 1;
     }
+
+    if ($self->level >= 4) {
+        $self->verify_embedded()
+    }
+
     return;
+}
+
+#------------------------------------------------------------------------------
+
+=method verify_attached_signature($file)
+
+Verify the attached PGP signature in $file.
+
+=cut
+
+sub verify_attached_signature {
+    my ( $self, $file ) = @_;
+
+    # trap warnings
+    my @warnings = ();
+
+    my $ok = do {
+        local $SIG{__WARN__} = sub { push @warnings, @_ };
+        local $ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
+        Module::Signature::_verify($file) == SIGNATURE_OK;
+    };
+
+    if (@warnings) {
+
+        # propagate warnings
+        warn "CHECKSUM SIGNATURE WARNINGS for " . $self->local , "\n";
+        warn '>>> ' . $_ for @warnings;
+
+        if ($self->level >= 3 ) {
+            $self->failure("Checksum signature warnings");
+            return 1;
+        }
+    }
+
+    return $ok;
 }
 
 #-----------------------------------------------------------------------------
@@ -217,18 +247,18 @@ sub verify_checksum {
     my $checksums_ref = Safe->new->reval($text);
 
     if ( !ref $checksums_ref or ref $checksums_ref ne 'HASH' ) {
-        $self->{error_message} = "Checksums file is broken";
+        $self->{failure} = "Checksums file is broken";
         return;
     }
 
     if ( my $checksum = $checksums_ref->{$basename}->{sha256} ) {
         if ( $checksum ne Pinto::Util::sha256( $self->local ) ) {
-            $self->{error_message} = "Checksum mismatch";
+            $self->{failure} = "Checksum mismatch";
             return;
         }
     }
     else {
-        $self->{error_message} = "Checksum not found in checksums file";
+        $self->{failure} = "Checksum not found in checksums file";
         return;
     }
 
@@ -237,46 +267,47 @@ sub verify_checksum {
 
 #-----------------------------------------------------------------------------
 
-=method verify_attached_signature($file)
 
-Verify the attached PGP signature in $file.
+=method verify_embedded()
+
+Unpack the current archive and verify the embedded SIGNATURE file if it exists.
+
+Returns false if embedded signature exists and does not verify.
+Returns true otherwise.
 
 =cut
 
-sub verify_attached_signature {
-    my ( $self, $file ) = @_;
+sub verify_embedded {
+    my ($self) = @_;
 
-    # trap warnings
-    my @warnings = ();
+    if ( -r 'SIGNATURE' ) {
+        my $cwd_guard = cwd_guard( $self->work_dir );
 
-    my $ok = do {
-        local $SIG{__WARN__} = sub { push @warnings, @_ };
-        local $ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
-        Module::Signature::_verify($file) == SIGNATURE_OK;
-    };
+        # trap warnings
+        my @warnings = ();
 
-    $self->_propagate(@warnings) if @warnings;
+        my $ok = do {
+            local $SIG{__WARN__} = sub { push @warnings, @_ };
+            local $ENV{GNUPGHOME} = $ENV{PINTO_GNUPGHOME} if $ENV{PINTO_GNUPGHOME};
+            Module::Signature::verify() == SIGNATURE_OK;
+        };
 
-    return $ok;
-}
+        if (@warnings) {
 
-#------------------------------------------------------------------------------
-
-sub _propagate {
-    my ($self, @warnings) = @_;
-
-    # propagate warnings to chrome
-    if (@warnings) {
-        warn "WARNINGS for " . $self->local , "\n";
-
-        # warnings are fatal in strict mode
-        if ( $self->strict ) {
-            throw join '', @warnings;
-        }
-        else {
+            # propagate warnings
+            warn "EMBEDDED SIGNATURE WARNINGS for " . $self->local , "\n";
             warn '>>> ' . $_ for @warnings;
+
+            if ($self->level >= 5 ) {
+                $self->failure("Embedded signature warnings");
+                return;
+            }
         }
+
+        return if not $ok;
     }
+
+    return 1;
 }
 
 #------------------------------------------------------------------------------
@@ -285,13 +316,22 @@ sub _propagate {
     my %cache = ();
 
     sub _slurp {
-        my ($file) = @_;
+        my ($filename) = @_;
 
-        return $cache{$file} if exists $cache{$file};
+        return $cache{$filename} if exists $cache{$filename};
 
-        my $text = file($file)->slurp();
+        my $file = file($filename);
+
+        # CHECKSUMS files should be much less than a few MB
+        $file->stat->size < 10_000_000
+                or throw "$filename too big to slurp";
+
+        my $text = $file->slurp()
+            or throw "could not slurp $filename";
+
         $text =~ s/\015?\012/\n/g;    # replace CRLF
-        $cache{$file} = $text;
+
+        $cache{$filename} = $text;
 
         return $text;
     }
