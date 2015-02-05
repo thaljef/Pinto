@@ -181,17 +181,17 @@ sub verify {
         }
     }
 
-    if ( $self->verify_checksum($checksums_file) ) {
-        return 1;
+    if ( ! $self->verify_checksum($checksums_file) ) {
+        return;
     }
 
     if ($self->level >= 4) {
-        if ($self->verify_embedded_signature()) {
-            return 1;
+        if (! $self->verify_embedded_signature()) {
+            return;
         }
     }
 
-    return;
+    return 1;
 }
 
 #------------------------------------------------------------------------------
@@ -285,8 +285,10 @@ Returns true otherwise.
 sub verify_embedded_signature {
     my ($self) = @_;
 
+    my $dir = $self->work_dir;
+    my $cwd_guard = cwd_guard($dir) or die "Failed chdir to $dir: $Cwd::Guard::Error";
+
     if ( -r 'SIGNATURE' ) {
-        my $cwd_guard = cwd_guard( $self->work_dir );
 
         # trap warnings
         my @warnings = ();
