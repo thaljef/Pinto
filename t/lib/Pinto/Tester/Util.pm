@@ -11,6 +11,11 @@ use Apache::Htpasswd;
 use File::Temp qw(tempdir);
 use Module::Faker::Dist;
 
+use CPAN::Checksums;
+use Module::Signature;
+use Pinto::ArchiveUnpacker;
+use Cwd::Guard qw(cwd_guard);
+
 use Pinto::Schema;
 use Pinto::Util qw(throw);
 
@@ -33,6 +38,9 @@ Readonly our @EXPORT_OK => qw(
     parse_reg_spec
     has_cpanm
     corrupt_distribution
+    corrupt_checksums
+    sign_checksums
+    sign_dist_archive
 );
 
 Readonly our %EXPORT_TAGS => ( all => \@EXPORT_OK );
@@ -199,6 +207,8 @@ sub has_cpanm {
     return $cpanm_ver >= $min_version;
 }
 
+#------------------------------------------------------------------------------
+
 sub corrupt_distribution {
     my ($repo, $author, $archive) = @_;
 
@@ -208,6 +218,72 @@ sub corrupt_distribution {
     my $dist = $repo->get_distribution(author => $author, archive => $archive);
     my $fh = $dist->native_path->opena() or die $!;
     print $fh 'GaRbAgE'; undef  $fh;
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub corrupt_checksums {
+    my ($repo, $author, $archive) = @_;
+
+    # Append junk to the end of the corresponding CHECKSUMS, so that it is
+    # still valid, but signature tests will fail
+
+    my $dist = $repo->get_distribution(author => $author, archive => $archive);
+    my $checksums = file($dist->native_path->parent, 'CHECKSUMS');
+    my $fh = $dist->native_path->opena() or die $!;
+    print $fh '# GaRbAgE'; undef  $fh;
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub sign_checksums {
+    my ($repo, $author, $archive, $trusted) = @_;
+
+    my $dist = $repo->get_distribution(author => $author, archive => $archive);
+
+    my $dir = $dist->native_path->parent;
+
+    # these are the keys used by our testing keyring
+    my $key = $trusted ? 'C5713B29' : '90D594AF';
+
+    local $CPAN::Checksums::SIGNING_KEY     = $key;
+    local $CPAN::Checksums::SIGNING_PROGRAM = "gpg --clearsign --default-key ";
+    CPAN::Checksums::updatedir($dir);
+
+    return;
+}
+
+#------------------------------------------------------------------------------
+
+sub sign_dist_archive {
+    my ($archive, $trusted) = @_;
+
+    # these are the keys used by our testing keyring
+    # TODO have to figure out how to pass this to Module::Signature.
+    my $key = $trusted ? 'C5713B29' : '90D594AF';
+
+    # unpack into a temporary directory
+
+    my $unpacker = Pinto::ArchiveUnpacker->new(archive => $archive);
+    my $dir = $unpacker->unpack();
+    {
+        my $cwd_guard = cwd_guard($dir) or die "failed chdir to $dir: $Cwd::Guard::Error";
+        Module::Signature::sign(overwrite => 1);
+    }
+
+    # TODO there has got to be a more portable way to do this
+    if ($archive =~ /\.zip$/) {
+        system('zip', '-r', $archive, $dir) == 0
+            or die "Failed to create new zip archive: $!";
+    }
+    else {
+        system('tar', 'zcf', $archive, $dir) == 0
+            or die "Failed to create new tar archive: $!";
+    }
 
     return;
 }

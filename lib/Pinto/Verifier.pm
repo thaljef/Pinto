@@ -172,14 +172,12 @@ sub verify {
         if ( _slurp($checksums_file) =~ /BEGIN PGP SIGNATURE/ms ) {
 
             if ( ! $self->verify_attached_signature($checksums_file) ) {
-                # XXX We cannot trust the archive, so further processing is
-                # neither safe nor valid
                 return;
             }
         }
         elsif ($self->level >= 3 ) {
             $self->failure("Distribution does not have a signed checksums file");
-            return
+            return;
         }
     }
 
@@ -188,7 +186,9 @@ sub verify {
     }
 
     if ($self->level >= 4) {
-        $self->verify_embedded()
+        if ($self->verify_embedded_signature()) {
+            return 1;
+        }
     }
 
     return;
@@ -221,12 +221,17 @@ sub verify_attached_signature {
         warn '>>> ' . $_ for @warnings;
 
         if ($self->level >= 3 ) {
-            $self->failure("Checksum signature warnings");
-            return 1;
+            $self->failure("Checksum signature test emits warnings");
+            return;
         }
     }
 
-    return $ok;
+    if (!$ok) {
+        $self->failure("Attached signature does not verify");
+        return;
+    }
+
+    return 1;
 }
 
 #-----------------------------------------------------------------------------
@@ -268,7 +273,7 @@ sub verify_checksum {
 #-----------------------------------------------------------------------------
 
 
-=method verify_embedded()
+=method verify_embedded_signature()
 
 Unpack the current archive and verify the embedded SIGNATURE file if it exists.
 
@@ -277,7 +282,7 @@ Returns true otherwise.
 
 =cut
 
-sub verify_embedded {
+sub verify_embedded_signature {
     my ($self) = @_;
 
     if ( -r 'SIGNATURE' ) {
@@ -323,7 +328,7 @@ sub verify_embedded {
         my $file = file($filename);
 
         # CHECKSUMS files should be much less than a few MB
-        $file->stat->size < 10_000_000
+        $file->stat->size < 100_000_000
                 or throw "$filename too big to slurp";
 
         my $text = $file->slurp()
