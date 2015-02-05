@@ -54,9 +54,9 @@ sub execute {
 
         next DISTRIBUTION if $seen{$dir};
 
-        $CPAN::Checksums::CAUTION     = 1;
-        $CPAN::Checksums::SIGNING_KEY = $self->keys->[0];
-        $CPAN::Checksums::SIGNING_PROGRAM
+        local $CPAN::Checksums::CAUTION     = 1;
+        local $CPAN::Checksums::SIGNING_KEY = $self->keys->[0];
+        local $CPAN::Checksums::SIGNING_PROGRAM
           = $self->program_string || "gpg2 --clearsign --default-key";
 
         my $retval = eval {
