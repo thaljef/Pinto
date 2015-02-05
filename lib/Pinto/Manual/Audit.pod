@@ -133,7 +133,7 @@ suggest some general process guidelines:
 
 2. We avoid distributions that don't verify:
 
-    pinto pull --verify-upstream King::Lear
+    pinto pull --verify-upstream=3 King::Lear
 
 3. Our default 'master' stack contains the distributions we are
    going to work on, e.g.,
