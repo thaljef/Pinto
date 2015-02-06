@@ -11,6 +11,8 @@ use Pinto::Util qw(throw);
 use Pinto::Types qw(TargetList);
 use Pinto::Shell;
 
+use Path::Class qw(file);
+
 #------------------------------------------------------------------------------
 
 # VERSION
@@ -39,21 +41,24 @@ has shell => (
 sub execute {
     my ($self) = @_;
 
+    my $shell = $self->shell || $ENV{SHELL};
+    $shell ||= $ENV{COMSPEC} if $^O eq 'MSWin32';
+
+    $shell or throw "You don't seem to have a SHELL :/";
+
+    $shell = file($shell)->resolve()
+      or throw "Can't resolve the path to your SHELL";
+
+    -x $shell or throw "Your SHELL does not appear to be executable";
+
     for my $target ( $self->targets ) {
         my $dist = $self->repo->get_distribution( target => $target )
           or throw "$target is not in your repository";
 
-        my $shell = $self->shell || $ENV{SHELL};
-        $shell ||= $ENV{COMSPEC} if $^O eq 'MSWin32';
+        my $path = file($dist->author, $dist->vname);
+        $self->diag("Entering $path with $shell\n");
 
-        if ($shell) {
-            my $path = join '/', $dist->author, $dist->vname;
-            $self->diag("Entering $path with $shell\n");
-            Pinto::Shell->new( shell => $shell, archive => $dist->native_path )->spawn();
-        }
-        else {
-            throw "You don't seem to have a SHELL :/";
-        }
+        Pinto::Shell->new( shell => $shell, archive => $dist->native_path )->spawn();
     }
 
     return $self->result;

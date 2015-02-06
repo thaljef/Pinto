@@ -25,6 +25,15 @@ sub opt_spec {
 
 #------------------------------------------------------------------------------
 
+sub validate_args {
+    my ( $self, $opts, $args ) = @_;
+
+    $self->usage_error('Requires at least one target')
+        unless @{$args};
+
+    return 1;
+}
+
 sub args_attribute { return 'targets' }
 
 #------------------------------------------------------------------------------

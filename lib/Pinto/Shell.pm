@@ -19,7 +19,7 @@ use Cwd::Guard qw(cwd_guard);
 
 has shell => (
     is       => 'ro',
-    isa      => Str,
+    isa      => File,
     required => 1,
 );
 
@@ -51,8 +51,9 @@ sub spawn {
     my ($self) = @_;
 
     my $shell = $self->shell;
+
     my $cwd_guard = cwd_guard( $self->work_dir );
-    return system($shell) == 0 ;
+    return system("$shell") == 0 ;
 }
 
 #-----------------------------------------------------------------------------
