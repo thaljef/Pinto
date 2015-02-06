@@ -96,7 +96,7 @@ fi
 #-----------------------------------------------------------------------------
 # Bootstrap cpanm
 
-CPANM_URL="https://raw.github.com/thaljef/Pinto/master/etc/cpanm"
+CPANM_URL="https://raw.githubusercontent.com/thaljef/Pinto/master/etc/cpanm"
 PINTO_SBIN="$PINTO_HOME/sbin"
 PINTO_CPANM_EXE="$PINTO_SBIN/cpanm"
 
