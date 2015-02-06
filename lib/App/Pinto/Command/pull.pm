@@ -31,7 +31,7 @@ sub opt_spec {
         [ 'stack|s=s'                         => 'Put packages into this stack' ],
         [ 'use-default-message|M'             => 'Use the generated message' ],
         [ 'with-development-prerequisites|wd' => 'Also pull prereqs for development' ],
-        [ 'verify-upstream|Z:+i'              => 'Verify upstream files before use (repeatable)' ],
+        [ 'verify-upstream|Z:+'               => 'Verify upstream files before use (repeatable)' ],
     );
 }
 

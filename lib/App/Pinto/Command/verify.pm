@@ -25,7 +25,7 @@ sub opt_spec {
           [ 'packages|P=s'      => 'Limit to matching package names' ],
           [ 'pinned!'           => 'Limit to pinned packages (negatable)' ],
           [ 'stack|s=s'         => 'Limit to contents of this stack' ],
-          [ 'level|Z:+i'        => 'Require files to be verified more strictly (repeatable)' ],
+          [ 'level|Z:+'         => 'Require files to be verified more strictly (repeatable)' ],
           [ 'local'             => 'Use only use local CHECKSUMS for verification' ],
     );
 }

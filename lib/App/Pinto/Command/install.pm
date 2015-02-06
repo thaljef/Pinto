@@ -29,7 +29,7 @@ sub opt_spec {
         [ 'do-pull'                     => 'pull missing prereqs onto the stack first' ],
         [ 'stack|s=s'                   => 'Install modules from this stack' ],
         [ 'use-default-message|M'       => 'Use the generated message' ],
-        [ 'verify-upstream|Z:+i'        => 'Verify upstream files before use (repeatable)' ],
+        [ 'verify-upstream|Z:+'         => 'Verify upstream files before use (repeatable)' ],
     );
 }
 

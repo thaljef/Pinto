@@ -6,7 +6,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
-use MooseX::Types::Moose qw(Int);
+use MooseX::Types::Moose qw(Int Bool);
 use Pinto::Util qw(debug);
 use Pinto::Verifier;
 
