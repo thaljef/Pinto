@@ -91,8 +91,11 @@ sub execute {
             }
         }
 
+        $self->chrome->show_progress;
+
         $did_match++;
     }
+    $self->chrome->progress_done;
 
     if ($missing) {
         $self->error("$missing archive(s) are missing");
