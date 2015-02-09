@@ -27,6 +27,7 @@ sub opt_spec {
           [ 'stack|s=s'         => 'Limit to contents of this stack' ],
           [ 'level|Z:+'         => 'Require files to be verified more strictly (repeatable)' ],
           [ 'local'             => 'Use only use local CHECKSUMS for verification' ],
+          [ 'nice=s'            => 'Limit the rate of upstream connections' ],
     );
 }
 
@@ -201,6 +202,13 @@ Modify the verification steps to use use local CHECKSUMS files instead of
 upstream.  This only has an effect of the verification level is greater than
 0.  This option can be used, say, to verify your local checksums and
 signatures before publishing a repository.
+
+=item --nice
+
+Change the rate at which we connect to upstream repositories.  In order to not
+overly stress upstream, we wait for short time between each CHECKSUMS
+file download.  This option allows you to set this delay in milliseconds.
+The default is 500 milliseconds. A setting of 0 disables the delay.
 
 =back
 

@@ -9,6 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Int Bool);
 use Pinto::Util qw(debug);
 use Pinto::Verifier;
+use Time::HiRes qw(usleep);
 
 #------------------------------------------------------------------------------
 
@@ -30,6 +31,12 @@ has local => (
     is       => 'ro',
     isa      => Bool,
     default  => 0,
+);
+
+has nice => (
+    is      => 'ro',
+    isa     => Int,
+    default => 500,
 );
 
 #------------------------------------------------------------------------------
@@ -60,7 +67,10 @@ sub execute {
 
         next RESULT if $seen{ $path }++;
 
-        debug "Verifiying " . $dist->native_path;
+        $self->chrome->show_progress;
+        $did_match++;
+
+        $self->notice("Verifiying " . $dist->native_path);
 
         if ( not -e $dist->native_path ) {
             $self->error("Missing distribution $dist");
@@ -75,25 +85,30 @@ sub execute {
             level    => $self->level,
         );
 
-        if ($self->local) {
-            if ( ! $verifier->verify_local ) {
+        if ( $self->local ) {
+            if ( !$verifier->verify_local ) {
                 $self->error("Local checksums verification for $path failed:");
                 $self->error( ">>> " . $verifier->{failure} );
                 $errors++;
             }
         }
         else {
-            # note we skip distributions which have no upstream
-            if ( ! $dist->is_local and !$verifier->verify_upstream ) {
+            if ( $dist->is_local ) {
+                $self->notice( "Skipping local distribution " . $dist->native_path );
+                next RESULT;
+            }
+
+            if ( $self->nice ) {
+                usleep( $self->nice );
+            }
+
+            if ( !$verifier->verify_upstream ) {
                 $self->error("Upstream verification for $path failed");
                 $self->error( ">>> " . $verifier->{failure} );
                 $errors++;
             }
         }
 
-        $self->chrome->show_progress;
-
-        $did_match++;
     }
     $self->chrome->progress_done;
 
