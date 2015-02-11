@@ -279,6 +279,12 @@ when using a local repository.
 Sets the timeout (in seconds) for obtaining a lock on the repository.  The default
 is 50.  This variable only has effect when using a local repository.
 
+=item C<PINTO_GNUPGHOME>
+
+Sets the GNUPGHOME to be used when verifying upstream distribution files using
+GnuPG.  See the documentation for the C<verify|App::Pinto::Command::verify>
+command for the rationale and an example.
+
 =back
 
 

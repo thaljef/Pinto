@@ -43,7 +43,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT lock [OPTIONS]
+  pinto --root=REPOSITORY_ROOT lock [STACK] [OPTIONS]
 
 =head1 DESCRIPTION
 
@@ -51,7 +51,7 @@ This command locks a stack so that its packages cannot be changed. It
 is typically used with the L<copy|App::Pinto::Command::copy> command
 to effectively create a read-only "tag" of a stack.
 
-To unlock a stack, use the L<unlock|App::Pinto::Command::unlock> 
+To unlock a stack, use the L<unlock|App::Pinto::Command::unlock>
 command.
 
 =head1 COMMAND ARGUMENTS
