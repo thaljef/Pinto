@@ -15,6 +15,9 @@ use Cwd::Guard qw(cwd_guard);
 use Module::Signature qw(SIGNATURE_OK);
 use Path::Class qw(file);
 use Safe;
+use Readonly;
+
+Readonly my $PAUSE_KEY => '2E66 557A B97C 19C7 91AF  8E20 328D A867 450F 89EC';
 
 #-----------------------------------------------------------------------------
 
@@ -215,6 +218,13 @@ sub verify_attached_signature {
     };
 
     if (@warnings) {
+
+        # at level 2 we silently accept CHECKSUMS signed by PAUSE
+        if ($self->level == 2 and $ok) {
+            for my $warning (@warnings) {
+                return 1 if $warning =~ m{$PAUSE_KEY};
+            }
+        };
 
         # propagate warnings
         warn "CHECKSUM SIGNATURE WARNINGS for " . $self->local , "\n";
