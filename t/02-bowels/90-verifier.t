@@ -18,6 +18,7 @@ use FindBin;
 use CPAN::Checksums;
 use Module::Signature;
 use Cwd::Guard qw(cwd_guard);
+use Capture::Tiny qw(capture_stderr);
 
 #------------------------------------------------------------------------------
 
@@ -86,8 +87,9 @@ sub sign_dist_archive {
         undef $fh;
     }
 
-    # Do the signing shuffle
-    Module::Signature::sign();
+    capture_stderr {
+        Module::Signature::sign();
+    };
 
     $conf_file->remove; # lets be clean
 
@@ -99,7 +101,6 @@ sub sign_dist_archive {
         print $fh "\nFOO";
         undef $fh;
     }
-
 
     # Rebuild the archive
     # TODO there has got to be a more portable way to do this
@@ -139,10 +140,13 @@ sub test_verify {
             level    => $level,
         );
 
-        ok($verifier->verify_upstream(), "Upstream verifies")
-            or warn $verifier->failure, "\n";
-        ok($verifier->verify_local(),    "Local verifies")
-            or warn $verifier->failure, "\n";
+        capture_stderr {
+            ok($verifier->verify_upstream(), "Upstream verifies")
+        } or warn $verifier->failure, "\n";
+
+        capture_stderr {
+            ok($verifier->verify_local(),    "Local verifies")
+        } or warn $verifier->failure, "\n";
     };
 
     #-----------------------------------------------------------------------------
@@ -160,8 +164,10 @@ sub test_verify {
             level    => $level,
         );
 
-        ok(!$verifier->verify_upstream(), "Upstream does not verify");
-        ok(!$verifier->verify_local(),    "Local does not verify");
+        capture_stderr {
+            ok(!$verifier->verify_upstream(), "Upstream does not verify");
+            ok(!$verifier->verify_local(),    "Local does not verify");
+        }
     };
 }
 
