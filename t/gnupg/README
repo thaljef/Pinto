@@ -1,0 +1,5 @@
+This is a GnuPG home directory containing a keyring and trustdb suitable for
+testing the verify command. The keyring contains 2 keys, one with 'ultimate
+trusted' and the other untrusted.  Both keys have empty passphrases to
+simplify testing.  Hopefully it goes without saying: don't use these keys for
+anything but tetsting.
