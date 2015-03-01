@@ -58,7 +58,7 @@ Handy if you want to manually review a distribution before use.
 
 =head1 COMMAND ARGUMENTS
 
-Arguments are the targets you wish to unpin.  Targets can be
+Arguments are the targets you wish to look at.  Targets can be
 specified as packages or distributions, such as:
 
   Some::Package
