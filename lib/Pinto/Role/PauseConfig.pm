@@ -3,9 +3,11 @@
 package Pinto::Role::PauseConfig;
 
 use Moose::Role;
-
 use MooseX::Types::Moose qw(HashRef);
+
+use Pinto::Globals;
 use Pinto::Types qw(File);
+use Pinto::Util qw(current_author_id);
 
 use Path::Class;
 use File::HomeDir;
@@ -60,6 +62,7 @@ sub _build_pausecfg {
     my ($self) = @_;
 
     my $cfg = {};
+    return $cfg if $Pinto::Globals::current_author_id;
     return $cfg if not -e $self->pauserc();
     my $fh = $self->pauserc->openr();
 

@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed test failures caused by the presence of a ~/.pause file. GH #172.
+
 0.09996   2014-11-04 10:54:11-08:00 America/Los_Angeles
 
       [MISCELLANEOUS]

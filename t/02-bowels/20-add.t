@@ -15,7 +15,6 @@ use Pinto::Util qw(sha256);
 
 #------------------------------------------------------------------------------
 
-my $auth    = 'ME';
 my $pkg1    = 'Foo~0.01';
 my $pkg2    = 'Bar~0.01';
 my $dist    = 'Foo-Bar-0.01';
@@ -27,13 +26,25 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 {
 
     my $t = Pinto::Tester->new;
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
+    $t->run_ok( 'Add', { archives => $archive } );
 
-    $t->registration_ok("$auth/$dist/$pkg1/master");
-    $t->registration_ok("$auth/$dist/$pkg2/master");
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master");
 
 }
 
+#------------------------------------------------------------------------------
+# Adding a local dist using custom author identity
+
+{
+
+    my $t = Pinto::Tester->new;
+    $t->run_ok( 'Add', { archives => $archive, author => 'ME'} );
+
+    $t->registration_ok("ME/$dist/$pkg1/master");
+    $t->registration_ok("ME/$dist/$pkg2/master");
+
+}
 #-----------------------------------------------------------------------------
 # Adding to alternative stack...
 
@@ -41,10 +52,10 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 
     my $t = Pinto::Tester->new;
     $t->run_ok( 'New', { stack => 'dev' } );
-    $t->run_ok( 'Add', { archives => $archive, author => $auth, stack => 'dev' } );
+    $t->run_ok( 'Add', { archives => $archive, stack => 'dev' } );
 
-    $t->registration_ok("$auth/$dist/$pkg1/dev");
-    $t->registration_ok("$auth/$dist/$pkg2/dev");
+    $t->registration_ok("AUTHOR/$dist/$pkg1/dev");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/dev");
 
 }
 
@@ -54,20 +65,20 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 {
 
     my $t = Pinto::Tester->new;
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
-    $t->registration_ok("$auth/$dist/$pkg1/master");
-    $t->registration_ok("$auth/$dist/$pkg2/master");
+    $t->run_ok( 'Add', { archives => $archive } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master");
 
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
-    $t->registration_ok("$auth/$dist/$pkg1/master");
-    $t->registration_ok("$auth/$dist/$pkg2/master");
+    $t->run_ok( 'Add', { archives => $archive } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master");
 
     $t->stderr_like( qr/\Q$archive\E is the same/, 'Got warning about identical dist' );
 
     # This time, with a pin
-    $t->run_ok( 'Add', { archives => $archive, author => $auth, pin => 1 } );
-    $t->registration_ok("$auth/$dist/$pkg1/master/*");
-    $t->registration_ok("$auth/$dist/$pkg2/master/*");
+    $t->run_ok( 'Add', { archives => $archive, pin => 1 } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master/*");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master/*");
 
 }
 
@@ -77,15 +88,15 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 {
 
     my $t = Pinto::Tester->new;
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
-    $t->registration_ok("$auth/$dist/$pkg1/master");
-    $t->registration_ok("$auth/$dist/$pkg2/master");
+    $t->run_ok( 'Add', { archives => $archive } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master");
 
     $t->run_ok( 'New', { stack => 'dev' } );
 
-    $t->run_ok( 'Add', { archives => $archive, author => $auth, stack => 'dev' } );
-    $t->registration_ok("$auth/$dist/$pkg1/dev");
-    $t->registration_ok("$auth/$dist/$pkg2/dev");
+    $t->run_ok( 'Add', { archives => $archive, stack => 'dev' } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/dev");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/dev");
 
     $t->stderr_like( qr/\Q$archive\E is the same/, 'Got warning about identical dist' );
 
@@ -97,13 +108,13 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 {
 
     my $t = Pinto::Tester->new;
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
-    $t->registration_ok("$auth/$dist/$pkg1/master");
-    $t->registration_ok("$auth/$dist/$pkg2/master");
+    $t->run_ok( 'Add', { archives => $archive } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master");
 
-    $t->run_ok( 'Add', { archives => $archive, author => $auth, pin => 1 } );
-    $t->registration_ok("$auth/$dist/$pkg1/master/*");
-    $t->registration_ok("$auth/$dist/$pkg2/master/*");
+    $t->run_ok( 'Add', { archives => $archive, pin => 1 } );
+    $t->registration_ok("AUTHOR/$dist/$pkg1/master/*");
+    $t->registration_ok("AUTHOR/$dist/$pkg2/master/*");
 
     $t->stderr_like( qr/\Q$archive\E is the same/, 'Got warning about identical dist' );
 
@@ -122,10 +133,10 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
     isnt( $archive1->basename, $archive2->basename, 'Archives have different names' );
 
     my $t = Pinto::Tester->new;
-    $t->run_ok( 'Add', { archives => $archive1, author => $auth } );
+    $t->run_ok( 'Add', { archives => $archive1 } );
     $t->run_throws_ok(
         'Add',
-        { archives => $archive2, author => $auth },
+        { archives => $archive2 },
         qr/\Q$archive2\E is the same .* but with different name/
     );
 
@@ -142,25 +153,25 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
     my $archive1 = make_dist_archive("Dist-1=A~1");
     my $archive2 = make_dist_archive("Dist-1=B~2");
 
-    $t->run_ok( 'Add', { archives => $archive1, author => $auth } );
+    $t->run_ok( 'Add', { archives => $archive1 } );
 
     $t->run_throws_ok(
         'Add',
-        { archives => $archive2, author => uc $auth },
+        { archives => $archive2 },
         qr/already exists/,
         'Cannot add dist to same path twice'
     );
 
     $t->run_throws_ok(
         'Add',
-        { archives => $archive2, author => $auth },
+        { archives => $archive2 },
         qr/already exists/,
         'Cannot add dist to same path twice'
     );
 
     $t->run_throws_ok(
         'Add',
-        { archives => 'bogus', author => $auth },
+        { archives => 'bogus' },
         qr/Some archives are missing/,
         'Cannot add nonexistant archive'
     );
@@ -173,9 +184,9 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 
     my $t       = Pinto::Tester->new;
     my $archive = make_dist_archive("Foo-1.0 = Foo~1.0 & perl~5.10");
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
+    $t->run_ok( 'Add', { archives => $archive } );
 
-    $t->registration_ok("$auth/Foo-1.0/Foo~1.0");
+    $t->registration_ok("AUTHOR/Foo-1.0/Foo~1.0");
 
 }
 
@@ -186,9 +197,9 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 
     my $t       = Pinto::Tester->new;
     my $archive = make_dist_archive("Foo-1.0 = Foo~1.0 & IPC::Open3~1.0");
-    $t->run_ok( 'Add', { archives => $archive, author => $auth } );
+    $t->run_ok( 'Add', { archives => $archive } );
 
-    $t->registration_ok("$auth/Foo-1.0/Foo~1.0");
+    $t->registration_ok("AUTHOR/Foo-1.0/Foo~1.0");
 
 }
 

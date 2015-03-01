@@ -4,9 +4,18 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Warn;
-
 use File::Temp;
+use Pinto::Globals;
+
+#-----------------------------------------------------------------------------
+
+package Local::PauseConfig;
+use Moose;
+with qw(Pinto::Role::PauseConfig);
+
+#-----------------------------------------------------------------------------
+
+package main;
 
 sub write_temp_file {
     my ($content) = @_;
@@ -18,17 +27,9 @@ sub write_temp_file {
     return $temp;
 }
 
-note "Creating Local::PauseConfig class for testing";
-{
+#-----------------------------------------------------------------------------
 
-    package Local::PauseConfig;
-    use Moose;
-    with qw(Pinto::Role::PauseConfig);
-}
-
-note "Test a pauserc file with the non_interactive flag set";
-{
-    my $pauserc = write_temp_file(<<'TEXT');
+my $pauserc = write_temp_file(<<'TEXT');
 user 	 	SOMEUSER
 
 mailto		somebody@example.com
@@ -36,12 +37,21 @@ mailto		somebody@example.com
 non_interactive
 TEXT
 
-    my $obj = Local::PauseConfig->new( pauserc => $pauserc->filename );
+#-----------------------------------------------------------------------------
 
-    warnings_are {
-        is_deeply $obj->pausecfg, { user => "SOMEUSER", mailto => 'somebody@example.com' };
-    }
-    [];
-}
+subtest 'Read from ~/.pause' => sub {
+    my $obj = Local::PauseConfig->new( pauserc => $pauserc->filename );
+    is_deeply $obj->pausecfg, { user => "SOMEUSER", mailto => 'somebody@example.com' };
+};
+
+#-----------------------------------------------------------------------------
+
+subtest 'Override using current_author_id' => sub {
+    local $Pinto::Globals::current_author_id = 'ME';
+    my $obj = Local::PauseConfig->new( pauserc => $pauserc->filename );
+    is_deeply $obj->pausecfg, {};
+};
+
+#-----------------------------------------------------------------------------
 
 done_testing;
