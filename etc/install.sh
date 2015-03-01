@@ -96,16 +96,16 @@ fi
 #-----------------------------------------------------------------------------
 # Bootstrap cpanm
 
-CPANM_URL="https://raw.github.com/thaljef/Pinto/master/etc/cpanm"
+PINTO_CPANM_URL=${PINTO_CPANM_URL:="https://raw.githubusercontent.com/thaljef/Pinto/master/etc/cpanm"}
 PINTO_SBIN="$PINTO_HOME/sbin"
 PINTO_CPANM_EXE="$PINTO_SBIN/cpanm"
 
 mkdir -p "$PINTO_SBIN"
 
 if   [ $PINTO_INSTALLER_AGENT = 'curl' ]; then
-	curl --silent --show-error --location $CPANM_URL > "$PINTO_CPANM_EXE"
+	curl --silent --show-error --location $PINTO_CPANM_URL > "$PINTO_CPANM_EXE"
 elif [ $PINTO_INSTALLER_AGENT = 'wget' ]; then 
-	wget --no-verbose --output-document - $CPANM_URL > "$PINTO_CPANM_EXE"
+	wget --no-verbose --output-document - $PINTO_CPANM_URL > "$PINTO_CPANM_EXE"
 else
 	echo "Invalid PINTO_INSTALLER_AGENT ($PINTO_INSTALLER_AGENT)."
         echo "If set, PINTO_INSTALLER_AGENT must be 'curl' or 'wget'".
