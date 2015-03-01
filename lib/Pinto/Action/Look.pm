@@ -1,4 +1,4 @@
-# ABSTRACT: Force a package to stay in a stack
+# ABSTRACT: Unpack and open a distribution with your shell
 
 package Pinto::Action::Look;
 
