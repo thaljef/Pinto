@@ -5,6 +5,9 @@ package App::Pinto::Command::look;
 use strict;
 use warnings;
 
+use Pinto::Util qw(is_remote_repo);
+use MRO::Compat; # for Perl older than 5.9.5
+
 #------------------------------------------------------------------------------
 
 use base 'App::Pinto::Command';
@@ -39,6 +42,19 @@ sub args_attribute { return 'targets' }
 #------------------------------------------------------------------------------
 
 sub args_from_stdin { return 1 }
+
+#------------------------------------------------------------------------------
+
+sub execute {
+    my ( $self, $opts, $args ) = @_;
+
+    my $global_opts = $self->app->global_options;
+
+    die "Cannot look into remote repositories (yet)\n"
+        if is_remote_repo( $global_opts->{root} );
+
+    return $self->next::method($opts, $args);
+};
 
 #------------------------------------------------------------------------------
 
