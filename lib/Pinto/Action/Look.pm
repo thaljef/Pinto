@@ -8,7 +8,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str);
 
 use Pinto::Util qw(throw);
-use Pinto::Types qw(TargetList);
+use Pinto::Types qw(TargetList File);
 use Pinto::Shell;
 
 use Path::Class qw(file);
@@ -33,7 +33,8 @@ has targets => (
 
 has shell => (
     is       => 'ro',
-    isa      => Str,
+    isa      => File,
+    coerce   => 1,
 );
 
 #------------------------------------------------------------------------------
