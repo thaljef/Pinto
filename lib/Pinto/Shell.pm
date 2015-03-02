@@ -8,7 +8,6 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str);
 
 use Pinto::Types qw(File Dir);
-use Pinto::Util qw(debug throw);
 use Cwd::Guard qw(cwd_guard);
 
 #------------------------------------------------------------------------------
