@@ -5,6 +5,8 @@ package App::Pinto::Command::sign;
 use strict;
 use warnings;
 
+use Pinto::Util qw(is_remote_repo);
+
 #-----------------------------------------------------------------------------
 
 use base 'App::Pinto::Command';
@@ -36,6 +38,19 @@ sub validate_args {
 }
 
 sub args_attribute { return 'keys' }
+
+#-----------------------------------------------------------------------------
+
+sub execute {
+    my ( $self, $opts, $args ) = @_;
+
+    my $global_opts = $self->app->global_options;
+
+    die "Cannot sign CHECKSUMS on remote repositories\n"
+        if is_remote_repo( $global_opts->{root} );
+
+    return $self->next::method($opts, $args);
+};
 
 #-----------------------------------------------------------------------------
 
