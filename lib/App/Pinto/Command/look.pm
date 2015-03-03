@@ -69,8 +69,10 @@ __END__
 
 =head1 DESCRIPTION
 
-Unpack one or more distributions and open directories with your shell.
-Handy if you want to manually review a distribution before use.
+Unpack one or more distributions and explore its contents with your shell.
+This is handy if you want to manually inspect a distribution before use.  At
+present, this command only works with local repositories and distributions
+that are already in the repository.
 
 =head1 COMMAND ARGUMENTS
 
