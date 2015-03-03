@@ -94,10 +94,6 @@ Sets the path to the command Pinto will use for interactive shells (like with th
 L<look|App::Pinto::Commmand::look> command). If this is not set, Pinto defaults
 to either C<SHELL> or C<COMSPEC>.
 
-=item C<PINTO_SHELL_OPTIONS>
-
-Sets the options that will be passed to the C<PINTO_SHELL> command.
-
 =back
 
 =cut
