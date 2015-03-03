@@ -1,4 +1,4 @@
-# ABSTRACT: unpack and open distributions with your shell
+# ABSTRACT: unpack and explore distributions with your shell
 
 package App::Pinto::Command::look;
 
@@ -6,7 +6,6 @@ use strict;
 use warnings;
 
 use Pinto::Util qw(is_remote_repo);
-use MRO::Compat; # for Perl older than 5.9.5
 
 #------------------------------------------------------------------------------
 
@@ -15,16 +14,6 @@ use base 'App::Pinto::Command';
 #------------------------------------------------------------------------------
 
 # VERSION
-
-#-----------------------------------------------------------------------------
-
-sub opt_spec {
-    my ( $self, $app ) = @_;
-
-    return (
-        [ 'shell=s' => 'The path to the shell command to use' ],
-    );
-}
 
 #------------------------------------------------------------------------------
 
@@ -36,6 +25,8 @@ sub validate_args {
 
     return 1;
 }
+
+#------------------------------------------------------------------------------
 
 sub args_attribute { return 'targets' }
 
@@ -65,7 +56,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT look [OPTIONS] TARGET ...
+  pinto --root=REPOSITORY_ROOT look TARGET ...
 
 =head1 DESCRIPTION
 
@@ -91,12 +82,21 @@ or ';') will be ignored.
 
 =head1 COMMAND OPTIONS
 
+None.
+
+=head1 ENVIRONMENT VARIABLES
+
 =over 4
 
-=item --shell=NAME
+=item C<PINTO_SHELL>
 
-The path to the shell to use.  Defaults to the environment variable
-C<SHELL> or to C<COMSPEC> on Windows.
+Sets the path to the command Pinto will use for interactive shells (like with the
+L<look|App::Pinto::Commmand::look> command). If this is not set, Pinto defaults
+to either C<SHELL> or C<COMSPEC>.
+
+=item C<PINTO_SHELL_OPTIONS>
+
+Sets the options that will be passed to the C<PINTO_SHELL> command.
 
 =back
 

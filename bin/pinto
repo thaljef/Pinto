@@ -279,6 +279,12 @@ when using a local repository.
 Sets the timeout (in seconds) for obtaining a lock on the repository.  The default
 is 50.  This variable only has effect when using a local repository.
 
+=item C<PINTO_SHELL>
+
+Sets the path to the command pinto will use for interactive shells (like with the
+L<look|App::Pinto::Commmand::look> command). If this is not set, pinto defaults
+to either C<SHELL> or C<COMSPEC>.
+
 =back
 
 

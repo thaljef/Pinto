@@ -5,11 +5,10 @@ package Pinto::Action::Look;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
-use MooseX::Types::Moose qw(Str);
 
-use Pinto::Util qw(throw);
-use Pinto::Types qw(TargetList File);
 use Pinto::Shell;
+use Pinto::Util qw(throw);
+use Pinto::Types qw(StackName StackDefault TargetList);
 
 use Path::Class qw(file);
 
@@ -23,6 +22,12 @@ extends qw( Pinto::Action );
 
 #------------------------------------------------------------------------------
 
+has stack => (
+    is       => 'ro',
+    isa      => StackName | StackDefault,
+    default  => undef,
+);
+
 has targets => (
     isa      => TargetList,
     traits   => [qw(Array)],
@@ -31,35 +36,21 @@ has targets => (
     coerce   => 1,
 );
 
-has shell => (
-    is       => 'ro',
-    isa      => File,
-    coerce   => 1,
-);
-
 #------------------------------------------------------------------------------
 
 sub execute {
     my ($self) = @_;
 
-    my $shell = $self->shell || $ENV{SHELL};
-    $shell ||= $ENV{COMSPEC} if $^O eq 'MSWin32';
-
-    $shell or throw "You don't seem to have a SHELL :/";
-
-    $shell = file($shell)->resolve()
-      or throw "Can't resolve the path to your SHELL";
-
-    -x $shell or throw "Your SHELL does not appear to be executable";
+    my $stack = $self->repo->get_stack($self->stack);
 
     for my $target ( $self->targets ) {
-        my $dist = $self->repo->get_distribution( target => $target )
-          or throw "$target is not in your repository";
 
-        my $path = file($dist->author, $dist->vname);
-        $self->diag("Entering $path with $shell\n");
+        my $dist = $stack->get_distribution( target => $target )
+          or throw "Target $target is not in stack $stack";
 
-        Pinto::Shell->new( shell => $shell, archive => $dist->native_path )->spawn();
+        my $shell = Pinto::Shell->new( archive => $dist->native_path );
+        $self->diag("Entering $dist with $shell\n");
+        $shell->spawn;
     }
 
     return $self->result;

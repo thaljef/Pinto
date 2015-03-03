@@ -7,8 +7,13 @@ use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
 use MooseX::Types::Moose qw(Str);
 
+use Pinto::Util qw(throw);
 use Pinto::Types qw(File Dir);
+
+use Path::Class qw(file);
 use Cwd::Guard qw(cwd_guard);
+
+use overload ( q{""} => 'to_string' );
 
 #------------------------------------------------------------------------------
 
@@ -19,7 +24,7 @@ use Cwd::Guard qw(cwd_guard);
 has shell => (
     is       => 'ro',
     isa      => File,
-    required => 1,
+    builder  => '_build_shell',
 );
 
 has archive => (
@@ -46,15 +51,41 @@ has work_dir => (
 
 #------------------------------------------------------------------------------
 
+sub _build_shell {
+
+    my $shell = $ENV{PINTO_SHELL} || $ENV{SHELL} || $ENV{COMSPEC}
+        or throw "You don't seem to have a SHELL";
+
+    my $shell_resolved = eval { file($shell)->resolve }
+        or throw "Can't resolve the path to your SHELL $shell";
+
+    -x $shell_resolved
+        or throw "Your SHELL $shell is not executable";
+
+    return $shell_resolved;
+}
+
+#------------------------------------------------------------------------------
+
 sub spawn {
     my ($self) = @_;
 
-    my $shell = $self->shell;
-
     my $cwd_guard = cwd_guard( $self->work_dir );
-    return system("$shell") == 0 ;
+
+    # TODO: This probably isn't very portable, especially if the
+    # shell command contains spaces or special characters. We
+    # probably need to shell-quote the command and pass a list.
+
+    return system("$self") == 0;
 }
 
+#-----------------------------------------------------------------------------
+
+sub to_string {
+    my ($self) = @_;
+
+    return $self->shell->stringify;
+}
 #-----------------------------------------------------------------------------
 
 1;
