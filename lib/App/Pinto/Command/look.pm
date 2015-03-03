@@ -53,7 +53,7 @@ sub execute {
     die "Cannot look into remote repositories (yet)\n"
         if is_remote_repo( $global_opts->{root} );
 
-    return $self->next::method($opts, $args);
+    return $self->SUPER::execute($opts, $args);
 };
 
 #------------------------------------------------------------------------------

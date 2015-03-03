@@ -49,7 +49,7 @@ sub execute {
     die "Cannot sign CHECKSUMS on remote repositories\n"
         if is_remote_repo( $global_opts->{root} );
 
-    return $self->next::method($opts, $args);
+    return $self->SUPER::execute($opts, $args);
 };
 
 #-----------------------------------------------------------------------------
