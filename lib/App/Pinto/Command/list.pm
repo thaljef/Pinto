@@ -142,7 +142,7 @@ are:
   %h             Distribution index path [1]
   %H             Distribution physical path [2]
   %s             Distribution origin:            (l) = local,     (f) = foreign
-  %S             Distribution source
+  %S             Distribution source URL
   %d             Distribution name
   %D             Distribution name-version
   %V             Distribution version
