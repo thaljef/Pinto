@@ -57,6 +57,8 @@ Readonly our @EXPORT_OK => qw(
 
     @PINTO_PREREQ_PHASES
     @PINTO_PREREQ_RELATIONS
+
+    @PINTO_ENVIRONMENT_VARIRABLES
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -148,6 +150,22 @@ Readonly our @PINTO_DEFAULT_SOURCE_URIS => ( $PINTO_STRATOPAN_CPAN_URI,
 
 Readonly our @PINTO_PREREQ_PHASES    => qw(configure build test runtime develop);
 Readonly our @PINTO_PREREQ_RELATIONS => qw(requires suggests recommends);
+
+#------------------------------------------------------------------------------
+
+Readonly our @PINTO_ENVIRONMENT_VARIRABLES => qw(
+    PINTO_AUTHOR_ID
+    PINTO_DEBUG
+    PINTO_DIFF_STYLE
+    PINTO_EDITOR
+    PINTO_LOCKFILE_TIMEOUT
+    PINTO_NO_COLOR
+    PINTO_PAGER
+    PINTO_PAGER_OPTIONS
+    PINTO_PALETTE
+    PINTO_REPOSITORY_ROOT
+    PINTO_USERNAME
+);
 
 #------------------------------------------------------------------------------
 1;

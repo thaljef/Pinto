@@ -13,6 +13,7 @@ use Pinto;
 use Pinto::Globals;
 use Pinto::Initializer;
 use Pinto::Chrome::Term;
+use Pinto::Constants qw(:all);
 use Pinto::Tester::Util qw(:all);
 use Pinto::Types qw(Uri Dir);
 use Pinto::Util qw(:all);
@@ -30,6 +31,9 @@ extends qw(Test::Builder::Module);
 #------------------------------------------------------------------------------
 
 BEGIN {
+
+    # Clear any user settings
+    delete @ENV{@PINTO_ENVIRONMENT_VARS};
 
     # So we don't prompt for commit messages
     $Pinto::Globals::is_interactive = 0;
