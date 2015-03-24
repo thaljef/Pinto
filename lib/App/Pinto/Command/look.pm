@@ -79,6 +79,8 @@ This is handy if you want to manually inspect a distribution before use.  At
 present, this command only works with local repositories and distributions
 that are already in the repository.
 
+At present, this command only works with local repositories.
+
 =head1 COMMAND ARGUMENTS
 
 Arguments are the targets you wish to look at.  Targets can be
