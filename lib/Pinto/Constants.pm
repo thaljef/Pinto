@@ -58,7 +58,7 @@ Readonly our @EXPORT_OK => qw(
     @PINTO_PREREQ_PHASES
     @PINTO_PREREQ_RELATIONS
 
-    @PINTO_ENVIRONMENT_VARIRABLES
+    @PINTO_ENVIRONMENT_VARIABLES
 );
 
 Readonly our %EXPORT_TAGS => (
@@ -153,7 +153,7 @@ Readonly our @PINTO_PREREQ_RELATIONS => qw(requires suggests recommends);
 
 #------------------------------------------------------------------------------
 
-Readonly our @PINTO_ENVIRONMENT_VARIRABLES => qw(
+Readonly our @PINTO_ENVIRONMENT_VARIABLES => qw(
     PINTO_AUTHOR_ID
     PINTO_DEBUG
     PINTO_DIFF_STYLE

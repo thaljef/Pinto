@@ -33,7 +33,7 @@ extends qw(Test::Builder::Module);
 BEGIN {
 
     # Clear any user settings
-    delete @ENV{@PINTO_ENVIRONMENT_VARS};
+    delete @ENV{@PINTO_ENVIRONMENT_VARIABLES};
 
     # So we don't prompt for commit messages
     $Pinto::Globals::is_interactive = 0;

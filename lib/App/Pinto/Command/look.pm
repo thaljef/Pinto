@@ -70,7 +70,7 @@ __END__
 
 =head1 SYNOPSIS
 
-  pinto --root=REPOSITORY_ROOT look TARGET ...
+  pinto --root=REPOSITORY_ROOT look [OPTIONS] TARGET ...
 
 =head1 DESCRIPTION
 
@@ -115,9 +115,8 @@ the C<--stack> option has no effect.
 
 =item C<PINTO_SHELL>
 
-Sets the path to the command Pinto will use for interactive shells (like with the
-L<look|App::Pinto::Commmand::look> command). If this is not set, Pinto defaults
-to either C<SHELL> or C<COMSPEC>.
+Sets the path to the command Pinto will use for the interactive shell. If
+this is not set, Pinto defaults to either C<SHELL> or C<COMSPEC>.
 
 =back
 
