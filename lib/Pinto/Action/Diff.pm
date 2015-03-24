@@ -6,7 +6,7 @@ use Moose;
 use MooseX::Aliases;
 use MooseX::StrictConstructor;
 use MooseX::MarkAsMethods ( autoclean => 1 );
-use MooseX::Types::Moose qw(Bool);
+use MooseX::Types::Moose qw(Bool Str);
 
 use Pinto::Difference;
 use Pinto::Constants qw(:color :diff);
@@ -40,7 +40,22 @@ has style => (
     isa      => DiffStyle,
     alias    => 'diff_style',
     default  => \&default_diff_style,
+    lazy     => 1,
 );
+
+has format => (
+    is      => 'ro',
+    isa     => Str,
+    builder => '_build_format',
+);
+
+sub _build_format {
+    my ($self) = @_;
+
+    return $self->style eq $PINTO_DIFF_STYLE_DETAILED
+        ? '%o[%F] %-40p %12v %a/%f'
+        : '%o[%F] %a/%f';
+}
 
 #------------------------------------------------------------------------------
 
@@ -71,13 +86,9 @@ sub execute {
         $self->show( "+++ $right", { color => $PINTO_PALETTE_COLOR_1 } );
     }
 
-    my $format = $self->style eq $PINTO_DIFF_STYLE_DETAILED
-        ? '%o[%F] %-40p %12v %a/%f'
-        : '%o[%F] %a/%f';
-
     for my $entry ( $diff->entries ) {
         my $color  = $entry->is_addition ? $PINTO_PALETTE_COLOR_0 : $PINTO_PALETTE_COLOR_2;
-        my $string = $entry->to_string($format);
+        my $string = $entry->to_string( $self->format );
         $self->show( $string, { color => $color } );
     }
 
