@@ -143,7 +143,7 @@ in addition to those websites please use your favorite search engine to discover
 
     The CPANTS is a website that analyzes the Kwalitee ( code metrics ) of a distribution.
 
-    [http://cpants.cpanauthors.org/dist/overview/Pinto](http://cpants.cpanauthors.org/dist/overview/Pinto)
+    [http://cpants.cpanauthors.org/dist/Pinto](http://cpants.cpanauthors.org/dist/Pinto)
 
 - CPAN Testers
 
@@ -191,6 +191,7 @@ from your repository :)
 # CONTRIBUTORS
 
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+- Nikolay Martynov <mar.kolya@gmail.com>
 - Oleg Gashev <oleg@gashev.net>
 - Steffen Schwigon <ss5@renormalist.net>
 - Tommy Stanton <tommystanton@gmail.com>
@@ -205,9 +206,9 @@ from your repository :)
 - Glenn Fowler <cebjyre@cpan.org>
 - Jakob Voss <jakob@nichtich.de>
 - Jeffrey Ryan Thalhammer <jeff@thaljef.org>
+- Kahlil (Kal) Hodgson <kahlil.hodgson@dealmax.com.au>
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
-- Nikolay Martynov <mar.kolya@gmail.com>
 
 # AUTHOR
 

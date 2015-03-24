@@ -70,7 +70,8 @@ sub default_format {
 sub string_compare {
     my ( $self, $other ) = @_;
 
-    return ( $self->registration->distribution->name cmp $other->registration->distribution->name );
+    return $self->registration->distribution->name
+        cmp $other->registration->distribution->name;
 }
 
 #------------------------------------------------------------------------------
