@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.09996
+version 0.09997
 
 # SYNOPSIS
 
@@ -191,6 +191,7 @@ from your repository :)
 # CONTRIBUTORS
 
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+- Michael G. Schwern <schwern@pobox.com>
 - Nikolay Martynov <mar.kolya@gmail.com>
 - Oleg Gashev <oleg@gashev.net>
 - Steffen Schwigon <ss5@renormalist.net>
@@ -203,12 +204,12 @@ from your repository :)
 - Boris Däppen <bdaeppen.perl@gmail.com>
 - Cory G Watson <gphat@onemogin.com>
 - David Steinbrunner <dsteinbrunner@pobox.com>
+- Florian Ragwitz <rafl@debian.org>
 - Glenn Fowler <cebjyre@cpan.org>
 - Jakob Voss <jakob@nichtich.de>
 - Jeffrey Ryan Thalhammer <jeff@thaljef.org>
 - Kahlil (Kal) Hodgson <kahlil.hodgson@dealmax.com.au>
 - Karen Etheridge <ether@cpan.org>
-- Michael G. Schwern <schwern@pobox.com>
 
 # AUTHOR
 

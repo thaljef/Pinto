@@ -258,25 +258,26 @@ sub get_revision_maybe {
 
 =method get_package( target => $pkg_spec )
 
-Returns a L<Pinto:Schema::Result::Package> representing the latest
-version of the package in the repository with the same name as
-the package target B<and the same or higher version> as the package 
-spec.  See L<Pinto::Target::Package> for the definition of a package
-target.
+Returns a L<Pinto:Schema::Result::Package> representing the latest version of
+the package in the repository with the same name as the package target B<and
+the same or higher version> as the package  spec.  See
+L<Pinto::Target::Package> for the definition of a package target.
 
 =method get_package( name => $pkg_name )
 
-Returns a L<Pinto:Schema::Result::Package> representing the latest
-version of the package in the repository with the given C<$pkg_name>.  
-If there is no such package with that name in the repository, 
-returns nothing.
+Returns a L<Pinto:Schema::Result::Package> representing the latest version of
+the package in the repository with the given C<$pkg_name>.   If there is no
+such package with that name in the repository,  returns nothing.
 
 =method get_package( name => $pkg_name, path => $dist_path )
 
-Returns the L<Pinto:Schema::Result::Package> with the given
-C<$pkg_name> that belongs to the distribution identified by 
-C<$dist_path>. If there is no such package in the repository, 
-returns nothing.
+Returns the L<Pinto:Schema::Result::Package> with the given C<$pkg_name> that
+belongs to the distribution identified by  C<$dist_path>. If there is no such
+package in the repository,  returns nothing.
+
+TODO: Consider making this a "maybe" function and the wrapping it with a
+version that throws exceptions if no match is found. See C<get_stack_maybe()>
+for an example.
 
 =cut
 
@@ -293,7 +294,7 @@ sub get_package {
         my $where = {name => $target->name};
         return unless my @pkgs = $schema->search_package( $where )->with_distribution;
         return unless my $latest = first { $target->is_satisfied_by($_->version) } reverse sort { $a <=> $b } @pkgs;
-        return $latest; 
+        return $latest;
     }
 
     # Retrieve package from a specific distribution
@@ -308,7 +309,7 @@ sub get_package {
     elsif ($pkg_name) {
         my $where = { name => $pkg_name };
         return unless my @pkgs = $schema->search_package($where)->with_distribution;
-        return (reverse sort { $a <=> $b } @pkgs)[0]; 
+        return (reverse sort { $a <=> $b } @pkgs)[0];
     }
 
     throw 'Invalid arguments';
@@ -318,27 +319,34 @@ sub get_package {
 
 =method get_distribution( target => $target )
 
-Given a L<Pinto::Target::Package>, returns the L<Pinto::Schema::Result::Distribution>
-that contains the B<latest version of the package> in this repository with the same 
-name as the target B<and the same or higher version as the target>.  Returns nothing 
-if no such distribution is found.
+Given a L<Pinto::Target::Package>, returns the
+L<Pinto::Schema::Result::Distribution> that contains the B<latest version of
+the package> in this repository with the same  name as the target B<and the
+same or higher version as the target>.  Returns nothing  if no such
+distribution is found.
 
-Given a L<Pinto::Target::Distribution>, returns the L<Pinto::Schema::Result::Distribution>
-from this repository with the same author id and archive attributes as the target.  
-Returns nothing if no such distribution is found.
+Given a L<Pinto::Target::Distribution>, returns the
+L<Pinto::Schema::Result::Distribution> from this repository with the same
+author id and archive attributes as the target.   Returns nothing if no such
+distribution is found.
 
 =method get_distribution( path => $dist_path )
 
-Given a distribution path, (for example C<AUTHOR/Dist-1.0.tar.gz> or C<A/AU/AUTHOR/Dist-1.0.tar.gz>
-returns the L<Pinto::Schema::Result::Distribution> from this repository that is 
-identified by the author ID and archive file name in the path.  Returns nothing
-if no such distribution is found.
+Given a distribution path, (for example C<AUTHOR/Dist-1.0.tar.gz> or
+C<A/AU/AUTHOR/Dist-1.0.tar.gz> returns the
+L<Pinto::Schema::Result::Distribution> from this repository that is
+identified by the author ID and archive file name in the path.  Returns
+nothing if no such distribution is found.
 
 =method get_distribution( author => $author, archive => $archive )
 
-Given an author id and a distribution archive file basename, returns the 
+Given an author id and a distribution archive file basename, returns the
 L<Pinto::Schema::Result::Distribution> from this repository with those
 attributes.  Returns nothing if no such distribution exists.
+
+TODO: Consider making this a "maybe" function and the wrapping it with a
+version that throws exceptions if no match is found. See C<get_stack_maybe()>
+for an example.
 
 =cut
 
@@ -379,16 +387,20 @@ sub get_distribution {
 
 =method ups_distribution( target => target )
 
-Given a L<Pinto::Target::Package>, locates the distribution that contains the latest
-version of the package across all upstream repositories with the same name as 
-the target, and the same or higher version as the target.  If such distribution is
-found, it is fetched and added to this repository.  If it is not found,
-then an exception is thrown.
+Given a L<Pinto::Target::Package>, locates the distribution that contains the
+latest version of the package across all upstream repositories with the same
+name as  the target, and the same or higher version as the target.  If such
+distribution is found, it is fetched and added to this repository.  If it is
+not found, then an exception is thrown.
 
-Given a L<Pinto::Target::Distribution>, locates the first distribution in any 
-upstream repository with the same author and archive as the target.  If such 
-distribution is found, it is fetched and added to this repository.  If it 
-is not found, then an exception is thrown.
+Given a L<Pinto::Target::Distribution>, locates the first distribution in any
+upstream repository with the same author and archive as the target.  If such
+distribution is found, it is fetched and added to this repository.  If it  is
+not found, then an exception is thrown.
+
+TODO: Consider making this a "maybe" function and the wrapping it with a
+version that throws exceptions if no match is found. See C<get_stack_maybe()>
+for an example.
 
 =cut
 
@@ -468,9 +480,9 @@ sub add_distribution {
 =method fetch_distribution( uri => $uri )
 
 Fetches a distribution archive from a remote URI and adds it to this
-repository.  The packages provided by the distribution will be
-indexed, and the prerequisites will be recorded.  Returns a
-L<Pinto::Schema::Result::Distribution> object representing the fetched 
+repository.  The packages provided by the distribution will be indexed, and
+the prerequisites will be recorded.  Returns a
+L<Pinto::Schema::Result::Distribution> object representing the fetched
 distribution.
 
 =cut
