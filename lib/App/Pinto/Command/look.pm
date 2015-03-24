@@ -17,6 +17,20 @@ use base 'App::Pinto::Command';
 
 #------------------------------------------------------------------------------
 
+sub command_names { return qw(look) }
+
+#------------------------------------------------------------------------------
+
+sub opt_spec {
+    my ( $self, $app ) = @_;
+
+    return (
+        [ 'stack|s=s' => 'Resolve targets against this stack' ],
+    );
+}
+
+#------------------------------------------------------------------------------
+
 sub validate_args {
     my ( $self, $opts, $args ) = @_;
 
@@ -82,7 +96,18 @@ or ';') will be ignored.
 
 =head1 COMMAND OPTIONS
 
-None.
+=over 4
+
+=item --stack=NAME
+
+=item -s NAME
+
+Resolve package targets against the stack with the given NAME. Defaults to the
+name of whichever stack is currently marked as the default stack. For
+distribution targets (i.e. those specified with a complete AUTHOR/filename)
+the C<--stack> option has no effect.
+
+=back
 
 =head1 ENVIRONMENT VARIABLES
 

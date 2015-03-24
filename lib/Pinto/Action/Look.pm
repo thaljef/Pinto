@@ -45,8 +45,15 @@ sub execute {
 
     for my $target ( $self->targets ) {
 
-        my $dist = $stack->get_distribution( target => $target )
-          or throw "Target $target is not in stack $stack";
+        my $dist;
+        if ($target->isa('Pinto::Target::Package')) {
+            $dist = $stack->get_distribution( target => $target )
+                or throw "Target $target is not in stack $stack";
+        }
+        else {
+            $dist = $self->repo->get_distribution( target => $target )
+                or throw "Target $target is not in the repository";
+        }
 
         my $shell = Pinto::Shell->new( archive => $dist->native_path );
         $self->diag("Entering $dist with $shell\n");
