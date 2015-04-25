@@ -9,38 +9,37 @@ use Test::More;
 use Pinto::Target::Package;
 
 #------------------------------------------------------------------------------
-{
+subtest 'name from name+version string' => sub {
 
     my $target = Pinto::Target::Package->new('Foo~1.2');
     is $target->name,    'Foo', 'Parsed package name from string';
     is $target->version, '1.2', 'Parsed package version from string';
     is "$target", 'Foo~1.2', 'Stringified Target object';
 
-}
+};
 
 #------------------------------------------------------------------------------
-{
+subtest 'name from name-only string' => sub {
 
     my $target = Pinto::Target::Package->new('Foo');
     is $target->name,    'Foo', 'Parsed package name from string';
     is $target->version, '0',   'Parsed package version from string without version';
     is "$target", 'Foo~0', 'Stringified Target object';
 
-}
+};
 
 #------------------------------------------------------------------------------
-
-{
+subtest 'name from constructor' => sub {
 
     my $target = Pinto::Target::Package->new( name => 'Foo', version => 1.2 );
     is $target->name,    'Foo', 'Constructor with normal name attribute';
     is $target->version, '1.2', 'Constructor with normal version version';
     is "$target", 'Foo~1.2', 'Stringified Target object';
 
-}
+};
 
 #------------------------------------------------------------------------------
-{
+subtest 'version specifications' => sub {
 
     my %tests = (
         ''   => [
@@ -95,11 +94,10 @@ use Pinto::Target::Package;
             ok !$got, "Target $target should not be satisfied by $version" if not $expect;
         }
     }
-}
+};
 
 #------------------------------------------------------------------------------
-
-{
+subtest 'Module::Build core status' => sub {
 
     # Module::Build first introduced into core in perl 5.9.4
     # Module::Build was upgraded to 0.038 in perl 5.13.11
@@ -116,7 +114,7 @@ use Pinto::Target::Package;
     local $] = 5.019000;
     is $target->is_core, 0, "$target is deprecated in *this* perl, pretending we are $]";
 
-}
+};
 
 #------------------------------------------------------------------------------
 

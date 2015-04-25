@@ -20,8 +20,8 @@ $t->populate('AUTHOR/Bar-1 = Bar-1 & Baz~1');
 $t->populate('AUTHOR/Baz-1 = Baz-1 & Foo~1');
 
 #------------------------------------------------------------------------------
+subtest 'handle circular prerequisites' => sub {
 
-{
     my $cb = sub {
         my ($prereq) = @_;
         my $dist = $t->pinto->repo->get_distribution( target => $prereq->as_target );
@@ -35,7 +35,8 @@ $t->populate('AUTHOR/Baz-1 = Baz-1 & Foo~1');
 
     # All we need to do is make sure we get out...
     ok 1, 'Escaped circular dependencies';
-}
+
+};
 
 #------------------------------------------------------------------------------
 

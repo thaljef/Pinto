@@ -10,8 +10,8 @@ use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
+subtest 'stack lock' => sub {
 
-{
     my $t       = Pinto::Tester->new->populate('AUTHOR/Foo-1=Foo~1');
     my $archive = make_dist_archive('Foo-2=Foo~2');
 
@@ -58,7 +58,8 @@ use Pinto::Tester::Util qw(make_dist_archive);
     $t->run_ok( Unpin      => { targets  => 'Foo' } );
     $t->run_ok( Unregister => { targets  => 'AUTHOR/Foo-2.tar.gz' } );
     $t->run_ok( Register   => { targets  => 'AUTHOR/Foo-2.tar.gz' } );
-}
+
+};
 
 #------------------------------------------------------------------------------
 

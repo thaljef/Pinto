@@ -12,8 +12,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
 use Pinto::Util qw(sha256);
 
 #------------------------------------------------------------------------------
-
-{
+subtest 'make_dist_archive' => sub {
 
     my $t = Pinto::Tester->new;
     my $archive = make_dist_archive('AUTHOR/Dist-1 = PkgA~1 & PkgB~1');
@@ -44,7 +43,8 @@ use Pinto::Util qw(sha256);
     my $prereq = $prereqs[0];
     is $prereq->package_name, 'PkgB', 'Prereq name';
     is $prereq->package_version, '1', 'Prereq version';
-}
+
+};
 
 #-----------------------------------------------------------------------------
 

@@ -11,8 +11,8 @@ use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 # Test repository with master stack as default
+subtest 'default master stack' => sub {
 
-{
     my $t = Pinto::Tester->new;
 
     $t->path_exists_ok( [qw(.pinto version)] );
@@ -38,41 +38,46 @@ use Pinto::Tester;
 
     my $repo = $t->pinto->repo;
     is $repo->get_version, $Pinto::Repository::REPOSITORY_VERSION, 'Repo version matches';
-}
+
+};
 
 #------------------------------------------------------------------------------
 # Test repository created without default stack
+subtest 'no default stack' => sub {
 
-{
     my $t = Pinto::Tester->new( init_args => { no_default => 1 } );
     $t->no_default_stack_ok;
-}
+
+};
 
 #------------------------------------------------------------------------------
 # Test repository created with custom stack name
+subtest 'custom stack' => sub {
 
-{
     my $t = Pinto::Tester->new( init_args => { stack => 'custom' } );
     $t->stack_is_default_ok('custom');
-}
+
+};
 
 #------------------------------------------------------------------------------
 # Test custom config
+subtest 'custom config' => sub {
 
-{
     my $config = { sources => 'MySource' };
     my $t = Pinto::Tester->new( init_args => $config );
     is $t->pinto->repo->config->sources, 'MySource', 'Got custom source';
-}
+
+};
 
 #------------------------------------------------------------------------------
 # Test schema version
+subtest 'check schema version' => sub {
 
-{
     my $t              = Pinto::Tester->new;
     my $schema_version = $t->pinto->repo->db->schema->schema_version;
     is $schema_version, $Pinto::Schema::SCHEMA_VERSION, 'Schema version matches';
-}
+
+};
 
 #------------------------------------------------------------------------------
 

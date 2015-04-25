@@ -11,8 +11,8 @@ use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
+subtest 'kill existing master stack' => sub {
 
-{
     my $t = Pinto::Tester->new;
 
     # Check that master stack dir exists in the first place
@@ -34,11 +34,12 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
     # The dev stack should still be the same
     $t->registration_ok('JOHN/Dist-1/PkgA~1/dev');
-}
+
+};
 
 #------------------------------------------------------------------------------
+subtest 'kill default stack' => sub {
 
-{
     my $t = Pinto::Tester->new;
 
     # Make sure master is the default
@@ -53,11 +54,12 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
     # Is stack still there?
     $t->stack_exists_ok('master');
-}
+
+};
 
 #------------------------------------------------------------------------------
+subtest 'kill locked stack' => sub {
 
-{
     my $t = Pinto::Tester->new( init_args => { no_default => 1 } );
     $t->no_default_stack_ok;
 
@@ -80,7 +82,8 @@ use Pinto::Tester::Util qw(make_dist_archive);
 
     # Is stack still there?
     $t->stack_not_exists_ok('master');
-}
+
+};
 
 #------------------------------------------------------------------------------
 
