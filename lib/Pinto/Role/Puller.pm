@@ -103,7 +103,7 @@ sub pull {
         throw "Illeagal arguments";
     }
 
-    $did_register = $dist->register( stack => $stack, pin => $self->pin, force => $self->force );
+    $did_register = $dist->register( stack => $stack, pin => $self->pin, force => $self->force, dry_run => $self->dry_run );
     $did_register_prereqs = $self->do_recursion( start => $dist ) if $self->recurse;
 
     return ($dist, $did_register, $did_register_prereqs);
