@@ -871,6 +871,12 @@ sub assert_sanity_ok {
 
     my $root_dir = $self->config->root_dir;
 
+    throw "Directory $root_dir does not exist"
+        unless -e $root_dir;
+
+    throw "$root_dir is not a directory"
+        unless -d $root_dir;
+
     throw "Directory $root_dir is not readable by you"
         unless -r $root_dir;
 
