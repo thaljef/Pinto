@@ -74,8 +74,7 @@ test_psgi
 #------------------------------------------------------------------------------
 # Add an archive, then fetch it back.  Finally, check that all packages in the
 # archive are present in the listing
-
-{
+subtest 'validate archive' => sub {
 
     my $archive = make_dist_archive('TestDist-1.0=Foo~0.7; Bar~0.8')->stringify;
 
@@ -184,7 +183,8 @@ test_psgi
 
         like $res->content, qr{\s Bar \s+ 0.8 \s+ \S+ \n}mx, 'Listing contains the Bar package';
         };
-}
+
+};
 
 #------------------------------------------------------------------------------
 # Make two stacks, add a different version of a dist to each stack, then fetch

@@ -17,8 +17,8 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
 #------------------------------------------------------------------------------
 # Do a bunch of operations with dry_run=1, and make sure repos is still empty
+subtest 'dry run leaves repo empty' => sub {
 
-{
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
 
     $local->run_ok( 'Pull', { dry_run => 1, targets => 'Baz~1.2' } );
@@ -28,7 +28,8 @@ $source->populate('PAUL/Nuts-2.3 = Nuts~2.3');
 
     $local->run_ok( 'Add', { dry_run => 1, archives => $archive } );
     $local->repository_clean_ok;
-}
+
+};
 
 #------------------------------------------------------------------------------
 

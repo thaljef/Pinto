@@ -18,8 +18,7 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
 
 #------------------------------------------------------------------------------
 # An error (missing prereq in this case) should rollback all changes...
-
-{
+subtest 'error causes rollback of all changes' => sub {
 
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
     $local->run_throws_ok( Pull => { targets => [qw(PkgA PkgB PkgC)] }, qr/Cannot find PkgE~1 anywhere/ );
@@ -36,12 +35,12 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
     $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistD-1.tar.gz)] );
     $local->path_not_exists_ok( [qw(stacks master authors id A AU AUTHOR DistC-1.tar.gz)] );
 
-}
+};
 
 #------------------------------------------------------------------------------
 # If the no_fail flag is set, then only the failed ones should be rollback...
+subtest 'error with no_fail flag only rolls back failed changes' => sub {
 
-{
     my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
 
     $local->run_throws_ok(
@@ -79,7 +78,8 @@ $source->populate('AUTHOR/DistD-1 = PkgD~1');
     # Then they should both be gone...
     $local->path_not_exists_ok( \@dist_B );
     $local->path_not_exists_ok( \@dist_D );
-}
+
+};
 
 #-----------------------------------------------------------------------------
 

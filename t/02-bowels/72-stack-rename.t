@@ -11,7 +11,7 @@ use Pinto::Tester;
 use Pinto::Tester::Util qw(make_dist_archive);
 
 #------------------------------------------------------------------------------
-{
+subtest 'rename master stack' => sub {
 
     my $t       = Pinto::Tester->new;
     my $archive = make_dist_archive('Dist-1=PkgA~1');
@@ -36,11 +36,11 @@ use Pinto::Tester::Util qw(make_dist_archive);
     $t->path_exists_ok(     [qw(stacks dev modules 03modlist.data.gz)] );
     $t->path_exists_ok(     [qw(stacks dev authors 01mailrc.txt.gz)] );
 
-}
+};
 
 #------------------------------------------------------------------------------
+subtest 'compare stacks' => sub {
 
-{
     my $t = Pinto::Tester->new;
 
     $t->path_exists_ok( [qw(stacks master)] );
@@ -54,11 +54,11 @@ use Pinto::Tester::Util qw(make_dist_archive);
     #$t->path_not_exists_ok( [qw(stacks master)] );
 
     is($master->id, $MASTER->id, 'Stacks are the same')
-}
+
+};
 
 #------------------------------------------------------------------------------
-
-{
+subtest 'rename non-existant stack' => sub {
 
     my $t = Pinto::Tester->new;
     $t->run_throws_ok(
@@ -78,7 +78,7 @@ use Pinto::Tester::Util qw(make_dist_archive);
         qr/already exists/, 'Cannot rename to stack to itself'
     );
 
-}
+};
 
 #------------------------------------------------------------------------------
 

@@ -15,8 +15,7 @@ use Pinto::Tester;
 my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
-
-{
+subtest 'exclusive locking' => sub {
 
     note 'Testing exclusive locking';
 
@@ -58,11 +57,11 @@ my $t = Pinto::Tester->new;
 
         exit $result->exit_status;
     }
-}
+
+};
 
 #------------------------------------------------------------------------------
-
-{
+subtest 'shared locking' => sub {
 
     note 'Testing shared locking';
 
@@ -110,7 +109,7 @@ my $t = Pinto::Tester->new;
         exit $result->exit_status;
     }
 
-}
+};
 
 #------------------------------------------------------------------------------
 done_testing;

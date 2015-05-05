@@ -16,8 +16,7 @@ use Pinto::Globals;
 use Pinto::Constants qw($PINTO_DEFAULT_PALETTE $PINTO_PROTOCOL_ACCEPT);
 
 #-----------------------------------------------------------------------------
-
-{
+subtest 'request dialog' => sub {
 
     local $ENV{PINTO_PALETTE} = undef;
     my $ua = local $Pinto::Globals::UA = Test::LWP::UserAgent->new;
@@ -51,7 +50,8 @@ use Pinto::Constants qw($PINTO_DEFAULT_PALETTE $PINTO_PROTOCOL_ACCEPT);
     is_deeply $got_chrome_args, \%chrome_args, "Correct chrome args in request for action $action";
     is_deeply $got_pinto_args,  \%pinto_args,  "Correct pinto args in request for action $action";
     is_deeply $got_action_args, \%action_args, "Correct action args in request for action $action";
-}
+
+};
 
 #-----------------------------------------------------------------------------
 

@@ -38,8 +38,7 @@ subtest hash_constructor => sub {
 };
 
 #------------------------------------------------------------------------------
-
-{
+subtest invalid_constructor => sub {
 
     throws_ok { Pinto::Target::Distribution->new('AUTHOR/') } qr{Invalid distribution target}, 'Invalid dist target';
 
@@ -49,7 +48,7 @@ subtest hash_constructor => sub {
 
     throws_ok { Pinto::Target::Distribution->new('') } qr{Invalid distribution target}, 'Empty dist target';
 
-}
+};
 
 #------------------------------------------------------------------------------
 

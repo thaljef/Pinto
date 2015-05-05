@@ -14,8 +14,8 @@ use Pinto::Tester;
 my $t = Pinto::Tester->new;
 
 #------------------------------------------------------------------------------
+subtest 'create stack' => sub {
 
-{
     # Create a stack...
     my $stack = $t->pinto->repo->create_stack( name => 'test' );
 
@@ -53,7 +53,7 @@ my $t = Pinto::Tester->new;
     $new_stack->delete_property('ShOuTiNg');
     ok !exists $new_stack->get_properties->{'shouting'}, 'Delete property irrespective of case';
 
-}
+};
 
 #------------------------------------------------------------------------------
 

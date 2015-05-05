@@ -15,8 +15,7 @@ use Pinto::Chrome::Term;
 use Pinto::Constants qw(:server :protocol);
 
 #-----------------------------------------------------------------------------
-
-{
+subtest 'response dialog' => sub {
 
     my $ua = local $Pinto::Globals::UA = Test::LWP::UserAgent->new;
 
@@ -39,7 +38,8 @@ use Pinto::Constants qw(:server :protocol);
     is $out_buffer, "DATA-GOES-HERE\n", 'Got correct data output';
 
     is $err_buffer, "DIAG-MSG-HERE\n", 'Got correct diagnostic output';
-}
+
+};
 
 #-----------------------------------------------------------------------------
 
