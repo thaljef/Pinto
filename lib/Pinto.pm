@@ -84,12 +84,11 @@ sub run {
     my $result = try {
 
         $self->repo->assert_sanity_ok;
- 
-        my $action = $self->create_action( $action_name => @action_args );
-        my $lock_type = $action->lock_type;
+	$self->repo->assert_version_ok;
 
-        $self->repo->assert_version_ok;
-        $self->repo->lock($lock_type);
+        my $action = $self->create_action( $action_name => @action_args );
+
+        $self->repo->lock( $action->lock_type );
 
         $action->execute;
     }
