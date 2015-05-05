@@ -45,8 +45,6 @@ with qw( Pinto::Role::Committable Pinto::Role::Puller );
 sub BUILD {
     my ($self) = @_;
 
-    $self->stack->assert_not_locked unless $self->dry_run;
-
     return $self;
 }
 

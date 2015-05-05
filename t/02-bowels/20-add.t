@@ -204,5 +204,15 @@ my $archive = make_dist_archive("$dist=$pkg1;$pkg2");
 }
 
 #-----------------------------------------------------------------------------
+subtest 'Allow dry run add on locked repo' => sub {
+
+    my $t = Pinto::Tester->new;
+    $t->run_ok( 'Lock' => {} );
+    $t->stack_is_locked_ok('master');
+    $t->run_ok( 'Add', { archives => $archive, dry_run => 1 } );
+    $t->registration_not_ok("AUTHOR/$dist/$pkg1/master");
+    $t->registration_not_ok("AUTHOR/$dist/$pkg2/master");
+
+};
 
 done_testing;

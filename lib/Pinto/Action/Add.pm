@@ -67,8 +67,6 @@ sub BUILD {
     throw "Some archives are missing or unreadable"
         if @missing or @unreadable;
 
-    $self->stack->assert_not_locked;
-
     return $self;
 }
 

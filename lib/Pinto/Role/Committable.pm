@@ -83,6 +83,9 @@ around BUILD => sub {
     my $stack = $self->repo->get_stack( $self->stack );
     $self->_set_stack($stack);
 
+    # Make sure we aren't locked if we intend to commit
+    $self->stack->assert_not_locked unless $self->dry_run;
+
     return $self->$orig;
 };
 
