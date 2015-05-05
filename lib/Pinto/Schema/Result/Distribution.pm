@@ -223,13 +223,11 @@ sub register {
     my $stack   = $args{stack};
     my $force   = $args{force}   || 0;
     my $pin     = $args{pin}     || 0;
-    my $dry_run = $args{dry_run} || 0;
 
     my $can_intermingle = $stack->repo->config->intermingle;
     my $did_register    = 0;
 
     $stack->assert_is_open;
-    $stack->assert_not_locked unless $dry_run;
 
     # TODO: This process makes a of trips to the database.  You could
     # optimize this by fetching all the incumbents at once, checking
