@@ -122,7 +122,6 @@ subtest 'Allow dry run pull on locked repo' => sub {
     $local->run_ok( 'Lock' => {} );
     $local->stack_is_locked_ok('master');
     $local->run_ok( 'Pull', { dry_run => 1, targets => 'Baz~1.2', recurse => 0 } );
-#    $local->registration_not_ok('JOHN/Baz-1.2/Baz~1.2');
     $local->repository_clean_ok;
 
 };
