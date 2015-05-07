@@ -211,7 +211,7 @@ subtest 'Allow dry run add on locked repo' => sub {
     $t->stack_is_locked_ok('master');
     $t->run_ok( 'Add', { archives => $archive, dry_run => 1 } );
     $t->registration_not_ok("AUTHOR/$dist/$pkg1/master");
-    $t->registration_not_ok("AUTHOR/$dist/$pkg2/master");
+    $t->repository_clean_ok;
 
 };
 
