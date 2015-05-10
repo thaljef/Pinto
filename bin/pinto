@@ -212,6 +212,8 @@ messages.  If not set, defaults to C<VISUAL> or C<EDITOR>.  If none
 of those are set, either C<nano>, C<pico>, or C<vi> will be used (in
 that order).
 
+=item C<PINTO_NO_COLOR>
+
 =item C<PINTO_NO_COLOUR>
 
 If set to a true value, suppresses color in all command output.
