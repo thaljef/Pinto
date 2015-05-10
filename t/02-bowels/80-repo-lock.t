@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Exception;
 use Test::File;
 
 use lib 't/lib';
@@ -85,7 +86,7 @@ my $t = Pinto::Tester->new;
             'Pull',
             { targets => 'whatever' },
             qr/currently in use/,
-            'Excuisve operation denied when shared lock is in place'
+            'Exclusive operation denied when shared lock is in place'
         );
 
         my $kid = wait;    # Let the child finish
@@ -111,6 +112,31 @@ my $t = Pinto::Tester->new;
     }
 
 }
+
+#------------------------------------------------------------------------------
+subtest 'Test stale lock file' => sub {
+
+    # create dummy lock file not connected to us
+    my $lockfile = $t->root->file('.lock');
+    my $fh = IO::File->new( $lockfile, 'w' );
+    isa_ok( $fh, 'IO::File', 'create dummy lockfile' )
+        or diag( 'error ' . $! . 'creating ' . $lockfile );
+    ok( $fh->close(), 'close dummy lockfile' );
+    $t->path_exists_ok( $lockfile, 'dummy lockfile exists' );
+
+    # confirm error thrown if unable to obtain lock
+    local $Pinto::Locker::LOCKFILE_TIMEOUT       = 4;  # wait 4 seconds to acquire lock
+    local $Pinto::Locker::STALE_LOCKFILE_TIMEOUT = 0;  # don't expire stale lock
+    throws_ok { $t->pinto->repo->lock( 'EX' ) } 'Pinto::Exception', 'repo locked elsewhere';
+
+    # confirm we can steal lock
+    local $Pinto::Locker::STALE_LOCKFILE_TIMEOUT = 2;  # steal lock after 2 seconds
+    sleep( $Pinto::Locker::STALE_LOCKFILE_TIMEOUT + 1 );
+    isa_ok( $t->pinto->repo->lock( 'EX' ), 'Pinto::Locker', 'steal the repo lock' );
+    ok( $t->pinto->repo->unlock, 'unlock repo');
+    $t->path_not_exists_ok( $lockfile, 'confirm lockfile removed' );
+
+};
 
 #------------------------------------------------------------------------------
 done_testing;
