@@ -195,5 +195,15 @@ subtest 'add something that requires a core-only module' => sub {
 };
 
 #-----------------------------------------------------------------------------
+subtest 'Allow dry run add on locked repo' => sub {
+
+    my $t = Pinto::Tester->new;
+    $t->run_ok( 'Lock' => {} );
+    $t->stack_is_locked_ok('master');
+    $t->run_ok( 'Add', { archives => $archive, dry_run => 1 } );
+    $t->registration_not_ok("AUTHOR/$dist/$pkg1/master");
+    $t->repository_clean_ok;
+
+};
 
 done_testing;

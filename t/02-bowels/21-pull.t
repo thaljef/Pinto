@@ -117,4 +117,16 @@ subtest 'pull new distribution with overlapping packages' => sub {
 };
 
 #------------------------------------------------------------------------------
+
+subtest 'Allow dry run pull on locked repo' => sub {
+
+    # Non-recursive pull
+    my $local = Pinto::Tester->new( init_args => { sources => $source->stack_url } );
+    $local->run_ok( 'Lock' => {} );
+    $local->stack_is_locked_ok('master');
+    $local->run_ok( 'Pull', { dry_run => 1, targets => 'Baz~1.2', recurse => 0 } );
+    $local->repository_clean_ok;
+
+};
+
 done_testing;
