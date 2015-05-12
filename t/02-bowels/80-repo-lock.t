@@ -118,10 +118,7 @@ subtest 'Test stale lock file' => sub {
 
     # create dummy lock file not connected to us
     my $lockfile = $t->root->file('.lock');
-    my $fh = IO::File->new( $lockfile, 'w' );
-    isa_ok( $fh, 'IO::File', 'create dummy lockfile' )
-        or diag( 'error ' . $! . 'creating ' . $lockfile );
-    ok( $fh->close(), 'close dummy lockfile' );
+    $lockfile->touch;
     $t->path_exists_ok( $lockfile, 'dummy lockfile exists' );
 
     # confirm error thrown if unable to obtain lock
