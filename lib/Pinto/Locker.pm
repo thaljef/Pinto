@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Path::Class;
 use File::NFSLock;
 
-use Pinto::Util qw(debug throw);
+use Pinto::Util qw(debug throw whine);
 use Pinto::Types qw(File);
 
 #-----------------------------------------------------------------------------
@@ -61,6 +61,11 @@ sub lock {    ## no critic qw(Homonym)
 
     my $root_dir  = $self->repo->config->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
+
+    if ($STALE_LOCKFILE_TIMEOUT) {
+        whine( 'PINTO_STALE_LOCKFILE_TIMEOUT > 0, may steal lock !!');
+    }
+    
     my $lock      = File::NFSLock->new( $lock_file, $lock_type, $LOCKFILE_TIMEOUT, $STALE_LOCKFILE_TIMEOUT )
         or throw 'The repository is currently in use -- please try again later (' . $File::NFSLock::errstr . ')';
 
