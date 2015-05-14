@@ -76,7 +76,11 @@ sub _build_stdout {
     open my $pager_fh, q<|->, $pager, @pager_options
         or throw "Failed to open pipe to pager $pager: $!";
 
-    return bless $pager_fh, 'IO::Handle';    # HACK!
+
+    my $io = bless $pager_fh, 'IO::Handle';    # HACK!
+    $io->autoflush(1);
+
+    return $io;
 }
 
 #------------------------------------------------------------------------------
