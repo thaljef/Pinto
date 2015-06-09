@@ -34,6 +34,14 @@
 
       - Improved latency from Pinto::Server by autoflushing the output.
 
+      [PREREQUISITES]
+
+      - Several of the prerequisite modules have been upgraded to newer versions
+      to take advantage of recent improvements, and to support Perl 5.22.0. If
+      you have installed Pinto as a stand-alone application as described in
+      Pinto::Manual::Installing then your environment will be insulated from these
+      upgrades.
+
 0.09996   2014-11-04 10:54:11-08:00 America/Los_Angeles
 
       [MISCELLANEOUS]
