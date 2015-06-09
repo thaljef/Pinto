@@ -1,6 +1,15 @@
 {{$NEXT}}
 
+      [THANKS]
+
+      Several of the changes in this release were contributed by Chris Kirke as
+      part of the CPAN Pull Request Challenge, organized by Neil Bowers. I am
+      sincerely grateful for their efforts.
+
       [BUG FIXES]
+
+      - The t/, xt/, inc, and local/ directories are always ignored when
+        indexing a distribution. This is exactly what PAUSE does.
 
       - Fixed test failures caused by the presence of a ~/.pause file. GH #172.
 
@@ -13,6 +22,17 @@
 
       - The "diff" command now has a --format option for more precise control
       of the output. Contributed by Florian Ragwitz.
+
+      - A stale repository lockfile can be stollen if the PINTO_STALE_LOCKFILE_TIMEOUT
+      environment variable is set. Contributed by Chris Kirke. GH #209.
+
+      - Operations with the --dry-run option are now allowed on locked stacks.
+      Contributed by Chris Kirke. GH #207.
+
+      - Improved error messages when a repository is not in a sane state.
+      Contributed by Chris Kirke. GH #199.
+
+      - Improved latency from Pinto::Server by autoflushing the output.
 
 0.09996   2014-11-04 10:54:11-08:00 America/Los_Angeles
 
