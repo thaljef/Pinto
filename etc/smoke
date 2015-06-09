@@ -19,7 +19,7 @@ unset PINTO_HOME;
 MODULES_TO_SMOKE=${1:-Pinto};
 SMOKE_BASE_DIR=$HOME/tmp/smoke
 CPAN_MIRROR_URL=https://stratopan.com/thaljef/OpenSource/pinto-release
-PERLS_TO_SMOKE=${2:-'5.8.9 5.10.1 5.12.5 5.14.4 5.16.3 5.18.2 5.20.2 5.22.0'}
+PERLS_TO_SMOKE=${2:-'5.8.9 5.10.1 5.12.5 5.14.4 5.16.3 5.18.4 5.20.2 5.22.0'}
 
 for pv in $PERLS_TO_SMOKE; do
 
@@ -33,7 +33,7 @@ for pv in $PERLS_TO_SMOKE; do
 
     for mod in $MODULES_TO_SMOKE; do
 
-        echo "=========================================================";
+        echo "==============================================================";
         echo "Smoking $mod with perl-$pv in $SMOKE_WORK_DIR";
 
         perlbrew exec --with $pv                            \
