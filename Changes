@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.09999   2015-06-13 22:13:46-07:00 America/Los_Angeles
+
       [BUG FIXES]
 
       - Fixed tests that failed in environments using an HTTP proxy. GH #202.
