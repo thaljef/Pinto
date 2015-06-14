@@ -161,8 +161,7 @@ sub start_server {
         parent {
             my $server_pid = shift;
             $self->server_pid($server_pid);
-            sleep 10; # Let the server warm up
-
+            sleep 15; # Let the server warm up
         }
 
         error {
