@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.09998
+version 0.09999
 
 # SYNOPSIS
 
@@ -218,7 +218,7 @@ Jeffrey Ryan Thalhammer <jeff@stratopan.com>
 
 # COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2014 by Jeffrey Ryan Thalhammer.
+This software is copyright (c) 2015 by Jeffrey Ryan Thalhammer.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
