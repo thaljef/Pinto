@@ -20,9 +20,11 @@ use Pinto::Constants qw($PINTO_MINIMUM_CPANM_VERSION);
 use Pinto::Util qw(tempdir);
 
 #------------------------------------------------------------------------------
-# To prevent mucking with user's ~/.cpanm
+# To prevent mucking with user's ~/.cpanm. See GH #170.
 local $ENV{PERL_CPANM_HOME} = tempdir->stringify();
 
+# To prevent failures due to a proxy. See GH #202.
+local $ENV{no_proxy} = "localhost";
 #------------------------------------------------------------------------------
 
 plan skip_all => "Need cpanm $PINTO_MINIMUM_CPANM_VERSION or newer"

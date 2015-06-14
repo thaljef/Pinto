@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed tests that failed in environments using an HTTP proxy. GH #202.
+
 0.09998   2015-06-10 00:28:12-07:00 America/Los_Angeles
 
       [THANKS]
