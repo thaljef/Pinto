@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Workaround conflict between version and EU::MM::version. GH #204.
+
 0.09999   2015-06-13 22:13:46-07:00 America/Los_Angeles
 
       [BUG FIXES]
