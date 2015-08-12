@@ -9,7 +9,7 @@ use MooseX::MarkAsMethods ( autoclean => 1 );
 use Path::Class;
 use File::NFSLock;
 
-use Pinto::Util qw(debug throw);
+use Pinto::Util qw(debug throw whine);
 use Pinto::Types qw(File);
 
 #-----------------------------------------------------------------------------
@@ -19,6 +19,7 @@ use Pinto::Types qw(File);
 #-----------------------------------------------------------------------------
 
 our $LOCKFILE_TIMEOUT = $ENV{PINTO_LOCKFILE_TIMEOUT} || 50;    # Seconds
+our $STALE_LOCKFILE_TIMEOUT = $ENV{PINTO_STALE_LOCKFILE_TIMEOUT} || 0;    # Seconds
 
 #-----------------------------------------------------------------------------
 
@@ -60,8 +61,13 @@ sub lock {    ## no critic qw(Homonym)
 
     my $root_dir  = $self->repo->config->root_dir;
     my $lock_file = $root_dir->file('.lock')->stringify;
-    my $lock      = File::NFSLock->new( $lock_file, $lock_type, $LOCKFILE_TIMEOUT )
-        or throw 'The repository is currently in use -- please try again later';
+
+    if ($STALE_LOCKFILE_TIMEOUT) {
+        whine( 'PINTO_STALE_LOCKFILE_TIMEOUT > 0, may steal lock !!');
+    }
+    
+    my $lock      = File::NFSLock->new( $lock_file, $lock_type, $LOCKFILE_TIMEOUT, $STALE_LOCKFILE_TIMEOUT )
+        or throw 'The repository is currently in use -- please try again later (' . $File::NFSLock::errstr . ')';
 
     debug("Process $$ got $lock_type lock on $root_dir");
 

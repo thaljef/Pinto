@@ -143,9 +143,10 @@ sub start_server {
 
     carp 'Server already started' and return if $self->server_pid;
 
-    local $ENV{PLACK_ENV}              = 'testing';               # Suppresses startup message
-    local $ENV{PLACK_SERVER}           = 'HTTP::Server::PSGI';    # Basic non-forking server
-    local $ENV{PINTO_LOCKFILE_TIMEOUT} = 2;                       # Don't make tests wait!
+    local $ENV{PLACK_ENV}                    = 'testing';               # Suppresses startup message
+    local $ENV{PLACK_SERVER}                 = 'HTTP::Server::PSGI';    # Basic non-forking server
+    local $ENV{PINTO_LOCKFILE_TIMEOUT}       = 2;                       # Don't make tests wait!
+    local $ENV{PINTO_STALE_LOCKFILE_TIMEOUT} = 0;                       # Don't expire stale locks
 
     run_fork {
 
