@@ -109,7 +109,7 @@ coerce Version,
 
 subtype PerlVersion, as Object,
     where { $_->isa('version') && exists $Module::CoreList::version{ $_->numify + 0 } },
-    message {"perl version ($_) is unknown to me"};
+    message {"perl version ($_) is unknown to me; try updating Pinto's copy of Module::CoreList"};
 
 coerce PerlVersion,
     from Str, via { version->parse($_) };
