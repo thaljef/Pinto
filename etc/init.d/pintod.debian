@@ -10,33 +10,34 @@
 #                    placed in /etc/init.d.
 ### END INIT INFO
 
-# Author: Foo Bar <foobar@baz.org>
-#
-# Please remove the "Author" lines above and replace them
-# with your own name if you copy and modify this script.
+# Author: Hugh Esco <hesco@campaignfoundations.com>
+# Copyright 2013 Hugh Esco
+# Modified by <sjn@runbox.com>
 
 # Do NOT "set -e"
 
 # set up environment
 export PINTO_DEBUG=2
+export PINTO_HOME=/opt/local/pinto
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="pinto perl module repository"
+DESC="Pinto, a Perl module repository"
 NAME=pintod
 STARMAN=starman
 DAEMON=/opt/local/pinto/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
-STARMAN_PIDFILE=/var/run/puppet/$NAME.starman.pid
+STARMAN_PIDFILE=/var/run/$NAME.starman.pid
 SCRIPTNAME=/etc/init.d/$NAME
 PORT=3111
 BACKEND=Passwd
 HTPASSWD_PATH=/etc/pinto/htpasswd
-#BACKEND=Kerberos
-REALM=yourmessagedelivered.com
-# AUTH_ARGS=""
 AUTH_ARGS="--auth backend=$BACKEND -auth path=$HTPASSWD_PATH"
 DAEMON_ARGS="$AUTH_ARGS --root=/var/pinto --port=$PORT --daemonize"
+# BACKEND=Kerberos
+# REALM=example.com
+# AUTH_ARGS=""
+# DAEMON_ARGS="--root=/var/pinto --auth backend=$BACKEND --auth realm=$REALM --port=$PORT --daemonize"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -119,32 +120,38 @@ do_reload() {
 }
 
 harvest_starman_pid() {
-	STARMAN_PID=`pgrep pintod | sort -n | head -n1`
-	# STARMAN_PID=`ps aux | grep starman | grep master | cut -c10-14`
+	#STARMAN_PID=`pgrep pintod | sort -n | head -n1`
+	for repeat in $(seq 1 4); do   # 4 we look for the pid 4 times
+		STARMAN_PID=`ps aux | grep starman | grep master | cut -c9-14`
+		if [ -z "$STARMAN_PID" ]; then
+			sleep 1; continue
+		else
+			break
+		fi
+	done
 	echo $STARMAN_PID > $STARMAN_PIDFILE 
 }
 
 read_starman_pid() {
-	if [ -f $STARMAN_PIDFILE ] 
+	if [ -f $STARMAN_PIDFILE ]
 	then STORED_STARMAN_PID=`cat $STARMAN_PIDFILE`
-	else /bin/echo "No pid file found for pintod server, Are you sure its runing?"
+	else /bin/echo "No pid file '$STARMAN_PIDFILE' found for $NAME server, Are you sure its running?"
 		exit
 	fi
 }
 
 kill_starman() {
-	STORED_STARMAN_PID=`cat $STARMAN_PIDFILE`
-	/bin/kill $STORED_STARMAN_PID && /bin/rm $STARMAN_PIDFILE
+	read_starman_pid
+	/bin/kill $STORED_STARMAN_PID && /bin/rm -f $STARMAN_PIDFILE
 }
 
 usage() {
-	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
 }
 
 case "$1" in
   start)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
-	[ "$VERBOSE" != no ] && /bin/echo "Starting $DESC" "$NAME with pid: $STARMAN_PID"
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME with pid: $STARMAN_PID"
 	do_start
 	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
@@ -152,8 +159,7 @@ case "$1" in
 	esac
 	;;
   stop)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
-	[ "$VERBOSE" != no ] && /bin/echo "Stopping $DESC" "$NAME with pid: $STARMAN_PID"
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME with pid: $STARMAN_PID"
 	do_stop
 	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
@@ -161,18 +167,9 @@ case "$1" in
 	esac
 	;;
   status)
-       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+       status_of_proc -p "$STARMAN_PIDFILE" "$DAEMON" "$NAME" && exit 0 || exit $?
        ;;
-  #reload|force-reload)
-	#
-	# If do_reload() is not implemented then leave this commented out
-	# and leave 'force-reload' as an alias for 'restart'.
-	#
-	#log_daemon_msg "Reloading $DESC" "$NAME"
-	#do_reload
-	#log_end_msg $?
-	#;;
-  restart|force-reload)
+  restart)
 	#
 	# If the "reload" option is implemented then remove the
 	# 'force-reload' alias
@@ -189,7 +186,7 @@ case "$1" in
 		esac
 		;;
 	  *)
-	  	# Failed to stop
+		# Failed to stop
 		log_end_msg 1
 		;;
 	esac
