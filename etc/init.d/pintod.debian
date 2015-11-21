@@ -22,22 +22,20 @@ export PINTO_HOME=/opt/local/pinto
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Pinto, a Perl module repository"
+DESC="The Perl module curator"
 NAME=pintod
-STARMAN=starman
 DAEMON=$PINTO_HOME/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
-STARMAN_PIDFILE=/var/run/$NAME.starman.pid
 SCRIPTNAME=/etc/init.d/$NAME
 PORT=3111
 BACKEND=Passwd
 HTPASSWD_PATH=/etc/pinto/htpasswd
 AUTH_ARGS="--auth backend=$BACKEND -auth path=$HTPASSWD_PATH"
-DAEMON_ARGS="$AUTH_ARGS --root=/var/pinto --port=$PORT --daemonize"
+DAEMON_ARGS="$AUTH_ARGS --root=/var/pinto --port=$PORT --daemonize --pid $PIDFILE --disable-proctitle"
 # BACKEND=Kerberos
 # REALM=example.com
 # AUTH_ARGS=""
-# DAEMON_ARGS="--root=/var/pinto --auth backend=$BACKEND --auth realm=$REALM --port=$PORT --daemonize"
+# DAEMON_ARGS="--root=/var/pinto --auth backend=$BACKEND --auth realm=$REALM --port=$PORT --daemonize --pid $PIDFILE"
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -62,13 +60,11 @@ do_start()
 	#   0 if daemon has been started
 	#   1 if daemon was already running
 	#   2 if daemon could not be started
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --name "$NAME" --startas $DAEMON --test -- $DAEMON_ARGS > /dev/null \
 		|| return 1
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
-		$DAEMON_ARGS \
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --name "$NAME" --startas $DAEMON -- \
+		$DAEMON_ARGS > /dev/null \
 		|| return 2
-	harvest_starman_pid
-	/bin/echo "Starting $DESC" "$NAME with pid: $STARMAN_PID"
 	# Add code here, if necessary, that waits for the process to be ready
 	# to handle requests from services started subsequently which depend
 	# on this one.  As a last resort, sleep for some time.
@@ -84,25 +80,21 @@ do_stop()
 	#   1 if daemon was already stopped
 	#   2 if daemon could not be stopped
 	#   other if a failure occurred
-	read_starman_pid
-	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
+	start-stop-daemon --stop --quiet --pidfile $PIDFILE --name "$NAME" --test > /dev/null \
+		|| return 1
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name "$NAME"
 	RETVAL="$?"
 	[ "$RETVAL" = 2 ] && return 2
-	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $STORED_STARMAN_PIDFILE --name $STARMAN
-	kill_starman
-	STARMAN_RETVAL="$?"
-	/bin/echo "Stopping $DESC" "$NAME with pid: $STORED_STARMAN_PID"
-	[ "$STARMAN_RETVAL" = 2 ] && return 2
 	# Wait for children to finish too if this is a daemon that forks
 	# and if the daemon is only ever run from this initscript.
 	# If the above conditions are not satisfied then add some other code
 	# that waits for the process to drop all resources that could be
 	# needed by services started subsequently.  A last resort is to
 	# sleep for some time.
-	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --name "$NAME" --startas $DAEMON --exec /usr/bin/perl
 	[ "$?" = 2 ] && return 2
 	# Many daemons don't delete their pidfiles when they exit.
-	rm -f $PIDFILE $STARMAN_PIDFILE
+	rm -f $PIDFILE
 	return "$RETVAL"
 }
 
@@ -115,34 +107,8 @@ do_reload() {
 	# restarting (for example, when it is sent a SIGHUP),
 	# then implement that here.
 	#
-	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name "$NAME"
 	return 0
-}
-
-harvest_starman_pid() {
-	#STARMAN_PID=`pgrep pintod | sort -n | head -n1`
-	for repeat in $(seq 1 4); do   # 4 we look for the pid 4 times
-		STARMAN_PID=`ps aux | grep starman | grep master | cut -c9-14`
-		if [ -z "$STARMAN_PID" ]; then
-			sleep 1; continue
-		else
-			break
-		fi
-	done
-	echo $STARMAN_PID > $STARMAN_PIDFILE 
-}
-
-read_starman_pid() {
-	if [ -f $STARMAN_PIDFILE ]
-	then STORED_STARMAN_PID=`cat $STARMAN_PIDFILE`
-	else /bin/echo "No pid file '$STARMAN_PIDFILE' found for $NAME server, Are you sure its running?"
-		exit
-	fi
-}
-
-kill_starman() {
-	read_starman_pid
-	/bin/kill $STORED_STARMAN_PID && /bin/rm -f $STARMAN_PIDFILE
 }
 
 usage() {
@@ -151,7 +117,7 @@ usage() {
 
 case "$1" in
   start)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME with pid: $STARMAN_PID"
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
 	do_start
 	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
@@ -159,7 +125,7 @@ case "$1" in
 	esac
 	;;
   stop)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME with pid: $STARMAN_PID"
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
 	do_stop
 	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
@@ -167,7 +133,7 @@ case "$1" in
 	esac
 	;;
   status)
-       status_of_proc -p "$STARMAN_PIDFILE" "$DAEMON" "$NAME" && exit 0 || exit $?
+       status_of_proc -p "$PIDFILE" "$DAEMON" "$NAME" && exit 0 || exit $?
        ;;
   restart)
 	#
