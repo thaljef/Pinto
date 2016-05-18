@@ -1,0 +1,114 @@
+#!/bin/bash
+#
+#   /etc/init.d/pintod
+#
+#   Red Hat style init script for the pinto Perl library management service
+#   See https://metacpan.org/pod/Pinto::Manual::Installing for information on
+#   installing and configuring pinto for local use. See also https://stratopan.com/
+#
+# chkconfig: 2345 20 80
+# description: Pinto perl module repository
+#
+### END INIT INFO
+
+# Author: Sean Quinlan <spq.easy@gmail.com>
+# Copyright 2015 Sean Quinlan
+
+
+# Source function library.
+. /etc/init.d/functions
+
+# set up environment
+export PINTO_DEBUG=2
+export PINTO_HOME=/opt/local/pinto
+export PINTO_REPOSITORY_ROOT=/var/pinto
+
+# Give this instance (and this file) a different name, such as pinto-foo, to run
+# multiple pinto servers for different repos simultaneously on different ports 
+NAME=pintod
+
+DAEMON=$PINTO_HOME/bin/pintod
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+PORT=3111
+WORKERS=2
+#BACKEND=Passwd
+#HTPASSWD_PATH=/etc/pinto/htpasswd
+#AUTH_ARGS="--auth backend=$BACKEND -auth path=$HTPASSWD_PATH"
+#DAEMON_ARGS="$AUTH_ARGS --root=$PINTO_REPOSITORY_ROOT --port=$PORT --daemonize --pid $PIDFILE --disable-proctitle --error-log=$PINTO_REPOSITORY_ROOT/.pinto/log/error.log"
+DAEMON_ARGS="--root=$PINTO_REPOSITORY_ROOT --port=$PORT --workers=$WORKERS --daemonize --pid=$PIDFILE --disable-proctitle --error-log=$PINTO_REPOSITORY_ROOT/.pinto/log/error.log"
+
+
+# systemctl commands
+
+start() {
+    # if pidfile suggest stop or restart
+    if [ -e "$PIDFILE" ] 
+    then
+        echo "$NAME appears to already be running, try {status|stop|restart}"
+        return 1
+    fi
+
+    echo -n "Starting $NAME: "
+    $DAEMON $DAEMON_ARGS
+
+    if [ $? != "0" ]
+    then
+        echo "                 [FAILED]"
+        return ?$
+    fi
+
+    echo "                 [OK]"
+    touch /var/lock/subsys/$NAME
+    
+    return $?
+}
+
+stop() {
+    # if no pidfile, quit
+    if [ ! -e "$PIDFILE" ] 
+    then
+        echo "$NAME appears to already be stopped, try {status|start}"
+        return 1
+    fi
+
+    echo -n "Shutting down $NAME: "
+    killproc $NAME
+
+    if [ $? != "0" ]
+    then
+        echo "                 [FAILED]"
+        return ?$
+    fi
+
+    echo "                 [OK]"
+    rm -f /var/lock/subsys/$NAME
+    
+    return $?
+}
+
+restart() {
+    echo -n "Restarting $NAME: "
+    # TBD: give the parent instance (pidfile) a gentle HUP, IIU Starman correctly?
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status $NAME
+        ;;
+    restart|reload)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: $NAME {start|stop|status|reload|restart}"
+        exit 1
+        ;;
+esac
+exit $?
