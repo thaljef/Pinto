@@ -12,6 +12,7 @@ perl:
    - "5.10"
 
 install:
+   - perlbrew list
    - unset PERL_CPANM_OPT
    - cpanm --mirror http://cpan.stratopan.com --quiet --notest Dist::Zilla
    - dzil authordeps | cpanm --mirror http://cpan.stratopan.com --quiet --notest
