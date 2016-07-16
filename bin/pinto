@@ -239,7 +239,7 @@ shell username.
 =item C<PINTO_AUTHOR_ID>
 
 Sets the default author identity when the C<--author> option is not specified
-(currently, only used by the L<add|App::Pinto::Commmand::add> command).  Defaults
+(currently, only used by the L<add|App::Pinto::Command::add> command).  Defaults
 to your current shell username.  By PAUSE convention, all author id's are forced
 to uppercase.
 
@@ -287,7 +287,7 @@ expire it.  The default is 0 (don't expire).  This variable only has effect when
 =item C<PINTO_SHELL>
 
 Sets the path to the command pinto will use for interactive shells (like with the
-L<look|App::Pinto::Commmand::look> command). If this is not set, pinto defaults
+L<look|App::Pinto::Command::look> command). If this is not set, pinto defaults
 to either C<SHELL> or C<COMSPEC>.
 
 =back

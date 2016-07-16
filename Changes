@@ -1696,7 +1696,7 @@
      I might add later).
 
      All commands for pinto-admin[1] now support a --man option, which
-     shows you the full documentation for a commmand.  But at this
+     shows you the full documentation for a command.  But at this
      point, I haven't written the documentation for all the commands.
 
      Several of the commands for pinto-admin[1] now support a --tag
