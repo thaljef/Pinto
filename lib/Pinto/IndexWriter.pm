@@ -131,7 +131,10 @@ sub _get_index_records {
 
     my %fake_records = $self->_get_fake_records;
     my %merged_records = (%fake_records, %stack_records);
-    return map { $merged_records{$_} } sort keys %merged_records;
+
+    return map { $merged_records{$_} }
+        sort {lc $a cmp lc $b}
+            keys %merged_records;
 
 }
 
