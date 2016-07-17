@@ -166,9 +166,6 @@ sub __apply_workarounds {
     return $self->__fcgi_workaround(@provides)
         if $self->archive->basename =~ m/^ FCGI-\d /x;
 
-    return $self->__eumm_workaround(@provides)
-        if $self->archive->basename =~ m/ ExtUtils-MakeMaker /x;
-
     return @provides;
 }
 
@@ -198,15 +195,6 @@ sub __fcgi_workaround {
         file    => 'FCGI.PL',
         version => version->parse($version),
     };
-}
-
-#-----------------------------------------------------------------------------
-
-sub __eumm_workaround {
-  my ($self, @provides) = @_;
-
-  # See https://github.com/thaljef/Pinto/issues/204 
-  return grep { $_->{name} ne "version" } @provides;
 }
 
 #-----------------------------------------------------------------------------

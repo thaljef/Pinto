@@ -10,7 +10,6 @@ use Pinto::Tester;
 
 #------------------------------------------------------------------------------
 note("This test requires a live internet connection to pull stuff from CPAN");
-
 #------------------------------------------------------------------------------
 
 # FCGI and common::sense both generate the .pm files at build time.  So it
@@ -42,11 +41,11 @@ for my $pkg (qw(DateTime::TimeZone)) {
 #------------------------------------------------------------------------------
 {
   my $t = Pinto::Tester->new;
-  $t->run_ok( Pull => { targets => "version@0.9912" } );
-  $t->registration_ok("JPEACOCK/version-0.9912/version~0.9912");
+  $t->run_ok( Pull => { targets => 'version@0.9912' } );
+  $t->registration_ok('JPEACOCK/version-0.9912/version~0.9912');
 
-  $t->run_ok( Pull => { targets => "ExtUtils::MakeMaker@7.04" } );
-  $t->registration_ok("JPEACOCK/version-0.9912/version~0.9912");
+  $t->run_ok( Pull => { targets => 'ExtUtils::MakeMaker@7.04' } );
+  $t->registration_ok('JPEACOCK/version-0.9912/version~0.9912');
 }
 
 done_testing;
