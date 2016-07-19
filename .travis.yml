@@ -3,29 +3,32 @@ language: perl
 sudo: false
 
 perl:
-   - "5.22"
-#   - "5.20"
-#   - "5.18"
-#   - "5.16"
-#   - "5.14"
-#   - "5.12"
-   - "5.10"
+   - "5.24"
+   # "5.22"
+   # "5.20"
+   # "5.18"
+   # "5.16"
+   # "5.14"
+   # "5.12"
+   # "5.10"
+   - "5.8"
 
 install:
-   - perlbrew list
    - TEST_PERL="$PERLBREW_PERL"
    - DZIL_PERL=`perl -e'eval"use 5.014";print $@?"5.14":$ENV{PERLBREW_PERL}'`
-   - echo $DZIL_PERL
    - unset PERL_CPANM_OPT
    - perlbrew use $DZIL_PERL
    - cpanm --mirror http://cpan.stratopan.com --quiet --notest Dist::Zilla
    - dzil authordeps |tee deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - dzil listdeps   |tee -a deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - export HARNESS_OPTIONS='j:c'
-   - dzil build
+   - AUTHOR_TESTING=1
+   - RELEASE_TESTING=1
+   - AUTOMATED_TESTING=1
+   - dzil build --no-tgz
    - perlbrew use $TEST_PERL
-   - cat deps|cpanm --mirror http://cpan.stratopan.com --quiet --notest
+   - grep -v Zilla deps|cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - cd Pinto*
    - perl Build.PL
 script:
-   - AUTHOR_TESTING=1 ./Build test
+   - ./Build test
