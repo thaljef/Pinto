@@ -24,7 +24,7 @@ install:
    - export HARNESS_OPTIONS='j:c'
    - dzil build
    - perlbrew use $TEST_PERL
-#  - cat deps|cpanm --mirror http://cpan.stratopan.com --quiet --notest
+   - cat deps|cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - cd Pinto*
    - perl Build.PL
 script:
