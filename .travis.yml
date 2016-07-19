@@ -22,7 +22,7 @@ install:
    - dzil authordeps |tee deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - dzil listdeps   |tee deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - dzil build
-   - perlbrew use TEST_PERL
+   - perlbrew use $TEST_PERL
    - cd Pinto*
 script:
    - export HARNESS_OPTIONS='j:c'
