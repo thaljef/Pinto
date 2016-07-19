@@ -13,7 +13,7 @@ perl:
 
 install:
    - perlbrew list
-   - TEST_PERL= $PERLBREW_PERL
+   - TEST_PERL="$PERLBREW_PERL"
    - DZIL_PERL=`perl -e'eval"use 5.014";print $@?"5.14":$ENV{PERLBREW_PERL}'`
    - echo $DZIL_PERL
    - unset PERL_CPANM_OPT
