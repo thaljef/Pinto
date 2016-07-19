@@ -23,9 +23,10 @@ install:
    - dzil listdeps   |tee deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
    - dzil build
    - perlbrew use $TEST_PERL
+   - perl -e'eval"use 5.014";`cat deps|cpanm` if $@}'
    - cd Pinto*
 script:
    - export HARNESS_OPTIONS='j:c'
 #   - dzil smoke --release --author
-   - perl Build.pl
+   - perl Build.PL
    - AUTHOR_TESTING=1 ./Build test
