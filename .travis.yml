@@ -13,14 +13,19 @@ perl:
 
 install:
    - perlbrew list
-   - echo $PERLBREW_PERL
+   - TEST_PERL= $PERLBREW_PERL
    - DZIL_PERL=`perl -e'eval"use 5.014";print $@?"5.14":$ENV{PERLBREW_PERL}'`
    - echo $DZIL_PERL
    - unset PERL_CPANM_OPT
+   - perlbrew use $DZIL_PERL
    - cpanm --mirror http://cpan.stratopan.com --quiet --notest Dist::Zilla
-   - dzil authordeps | cpanm --mirror http://cpan.stratopan.com --quiet --notest
-   - dzil listdeps   | cpanm --mirror http://cpan.stratopan.com --quiet --notest
-
+   - dzil authordeps |tee deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
+   - dzil listdeps   |tee deps| cpanm --mirror http://cpan.stratopan.com --quiet --notest
+   - dzil build
+   - perlbrew use TEST_PERL
+   - cd Pinto*
 script:
    - export HARNESS_OPTIONS='j:c'
-   - dzil smoke --release --author
+#   - dzil smoke --release --author
+   - perl Build.pl
+   - AUTHOR_TESTING=1 ./Build test
