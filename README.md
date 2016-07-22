@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.11
+version 0.11\_01
 
 # SYNOPSIS
 
@@ -193,15 +193,17 @@ from your repository :)
 - BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
+- Michael Jemmeson <mjemmeson@cpan.org>
+- Mike Raynham <mike.raynham@spareroom.co.uk>
 - Nikolay Martynov <mar.kolya@gmail.com>
 - Oleg Gashev <oleg@gashev.net>
 - Steffen Schwigon <ss5@renormalist.net>
 - Tommy Stanton <tommystanton@gmail.com>
 - Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
 - Yanick Champoux <yanick@babyl.dyndns.org>
+- Boris Däppen <bdaeppen.perl@gmail.com>
 - brian d foy <brian.d.foy@gmail.com>
 - hesco <hesco@campaignfoundations.com>
-- Boris Däppen <bdaeppen.perl@gmail.com>
 - popl <popl\_likes\_to\_code@yahoo.com>
 - Chris Kirke <chris.kirke@gmail.com>
 - Cory G Watson <gphat@onemogin.com>
