@@ -1,7 +1,5 @@
 {{$NEXT}}
 
-0.11_01   2016-07-16 21:37:51-07:00 America/Los_Angeles
-
       [BUG FIXES]
 
       - The 02packages index is now sorted case-insensitively, just like
@@ -9,8 +7,14 @@
 
       - Now requires Module::Metadata 1.000031, fixing GH #204.
 
-      - Now requires latest Module::CoreList (currently 5.20160620)
+      - Now requires latest Module::CoreList (currently 5.20160720)
         to support latest perl releases.
+
+0.11_01   2016-07-16 21:37:51-07:00 America/Los_Angeles
+
+      [DEVELOPER RELEASE]
+
+      - Changes consolidated above under version 0.12
 
 0.11      2015-08-12 01:25:13-07:00 America/Los_Angeles
 
