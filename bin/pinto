@@ -142,7 +142,7 @@ times for greater effect.  Diagnostic messages are always sent to STDERR.
 
 =head1 CONFIGURATION
 
-Each repository has a configuration file that lives inside the repostiory
+Each repository has a configuration file that lives inside the repository
 at F<.pinto/config/pinto.ini>.  This file is generated for you with default
 values when you create the repository.  You can influence the initial value
 for some of the properties when you run the L<init|App::Pinto::Command::init>
