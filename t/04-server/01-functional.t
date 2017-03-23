@@ -14,6 +14,7 @@ use HTTP::Request::Common;
 
 use Pinto::Server;
 use Pinto::Constants qw(:server :protocol);
+use Pinto::Util qw(current_username);
 
 use lib 't/lib';
 use Pinto::Tester;
@@ -26,7 +27,7 @@ my $t       = Pinto::Tester->new;
 my %opts    = ( root => $t->pinto->root );
 my $app     = Pinto::Server->new(%opts)->to_app;
 my @headers = (Accept => $PINTO_PROTOCOL_ACCEPT);
-
+my %pinto   = (pinto => encode_json({ username => current_username() }));
 #------------------------------------------------------------------------------
 # Fetching an index...
 
@@ -83,7 +84,7 @@ subtest 'validate archive' => sub {
         client => sub {
         my $cb     = shift;
         my $params = { author => 'THEBARD', recurse => 0, message => 'test', archives => [$archive] };
-        my $req    = POST( 'action/add', @headers, Content => { action => encode_json($params) } );
+        my $req    = POST( 'action/add', @headers, Content => { action => encode_json($params), %pinto } );
         my $res    = $cb->($req);
         action_response_ok($res);
         };
@@ -93,7 +94,7 @@ subtest 'validate archive' => sub {
         client => sub {
         my $cb     = shift;
         my $params = { stack => 'master' };
-        my $req    = POST( 'action/lock', @headers, Content => { action => encode_json($params) } );
+        my $req    = POST( 'action/lock', @headers, Content => { action => encode_json($params), %pinto } );
         my $res    = $cb->($req);
         action_response_ok($res);
         };
@@ -103,7 +104,7 @@ subtest 'validate archive' => sub {
         client => sub {
         my $cb     = shift;
         my $params = { author => 'THEBARD', recurse => 0, message => 'test', archives => [$archive] };
-        my $req    = POST( 'action/add', @headers, Content => { action => encode_json($params) } );
+        my $req    = POST( 'action/add', @headers, Content => { action => encode_json($params), %pinto } );
         my $res    = $cb->($req);
         action_response_not_ok( $res, qr{is locked} );
         };
@@ -171,7 +172,7 @@ subtest 'validate archive' => sub {
         client => sub {
         my $cb     = shift;
         my $params = {};
-        my $req    = POST( 'action/list', @headers, Content => { action_args => encode_json($params) } );
+        my $req    = POST( 'action/list', @headers, Content => { action_args => encode_json($params), %pinto } );
         my $res    = $cb->($req);
 
         is $res->code, 200, 'Correct status code';
@@ -200,7 +201,7 @@ for my $v ( 1, 2 ) {
         client => sub {
         my $cb     = shift;
         my $params = { stack => $stack };
-        my $req    = POST( 'action/new', @headers, Content => { action => encode_json($params) } );
+        my $req    = POST( 'action/new', @headers, Content => { action => encode_json($params), %pinto } );
         my $res    = $cb->($req);
 
         action_response_ok($res);
@@ -211,7 +212,7 @@ for my $v ( 1, 2 ) {
         client => sub {
         my $cb     = shift;
         my $params = { author => 'JOHN', recurse => 0, stack => $stack, message => 'test', archives => [$archive] };
-        my $req    = POST( 'action/add', @headers, Content => { action => encode_json($params) } );
+        my $req    = POST( 'action/add', @headers, Content => { action => encode_json($params), %pinto } );
         my $res    = $cb->($req);
 
         action_response_ok($res);
@@ -267,7 +268,7 @@ test_psgi
     client => sub {
     my $cb     = shift;
     my $params = {};
-    my $req    = POST( 'action/bogus', @headers, Content => { action => encode_json($params) } );
+    my $req    = POST( 'action/bogus', @headers, Content => { action => encode_json($params), %pinto } );
     my $res    = $cb->($req);
 
     action_response_not_ok( $res, qr{Can't locate Pinto/Action/Bogus.pm}i );
@@ -281,7 +282,7 @@ test_psgi
     client => sub {
     my $cb = shift;
 
-    my $req = POST( 'action/nop', Content => { action => encode_json({}) } );
+    my $req = POST( 'action/nop', Content => { action => encode_json({}), %pinto } );
     my $res = $cb->($req);
 
     is $res->code, 415, 'Unsupported media type status';
@@ -298,7 +299,7 @@ test_psgi
     my $cb = shift;
 
     my @headers = (Accept => 'application/vnd.pinto.v0+text');
-    my $req     = POST( 'action/nop', Content => { action => encode_json({}) } );
+    my $req     = POST( 'action/nop', Content => { action => encode_json({}), %pinto } );
     my $res     = $cb->($req);
 
     is $res->code, 415, 'Unsupported media type status';
@@ -315,7 +316,7 @@ test_psgi
     my $cb = shift;
 
     my @headers = (Accept => 'application/vnd.pinto.v99+text');
-    my $req     = POST( 'action/nop', @headers, Content => { action => encode_json({}) } );
+    my $req     = POST( 'action/nop', @headers, Content => { action => encode_json({}), %pinto } );
     my $res     = $cb->($req);
 
     is $res->code, 415, 'Unsupported media type status';
