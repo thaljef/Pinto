@@ -1,0 +1,181 @@
+# ABSTRACT: Using Pinto to audit a stack of distributions
+
+package Pinto::Manual::Audit
+
+#------------------------------------------------------------------------------
+
+# VERSION
+
+#------------------------------------------------------------------------------
+
+1;
+
+__END__
+
+=pod
+
+=head1 AUDITING DISTRIBUTIONS
+
+Pinto provides tools for curating your own custom repositories of distribution
+archives. These tools can be used to gather collections of (versioned)
+distributions that work well together or work well in a target environment.
+Deciding which distributions go into a stack suggests some kind of review
+process.  This process could range from running a few simple tests to
+performing a detailed security assessment, depending on your particular goals.
+Reviewing a stack of distributions can be quite time consuming, depending on
+its size and composition, and the objectives of your review.
+
+This process can be extended into a more formal audit by documenting the
+review process and asserting certain properties of your curated stack.  This
+stack can then be signed by the auditor and published, along with the audit
+documentation, for others to use.  An audit document could be as simple as:
+
+    * This stack forms a self-contained unit and passes all its tests on stock
+      Perl versions 5.18.4, 5.16.3 and 5.10.1 (reference to Travis CI test report).
+
+    * This stack also forms a self-contained unit and passes all its tests on
+      stock RHEL 6 using the vendor supplied Perl (version 5.10.1 with
+      modifications) augmented with the `perl-core` packages.
+
+This opens up the possibility of sharing audited stacks, extending existing
+audited stacks, and composing new audited stacks from others.  Of course this
+requires you to trust the auditors, the processes that they have used, and the
+assertions that they have documented.  OpenPG compatible systems like
+L<GnuPG|https://www.gnupg.org/> can help with building and managing this
+L<Web of Trust|http://wikipedia.org/wiki/Web_of_trust>.
+
+=head1 AUDITING SAFELY
+
+If you download a distribution archive from a CPAN mirror, you cannot be
+certain that it has not been substituted for a malicious archive via a L<man
+in the middle attack|http://wikipedia.org/wiki/Man-in-the-middle_attack>),
+without performing some additional checks.  L<PAUSE|pause.perl.org> regularly
+generates CHECKSUMS files for each of its registered authors.  These files
+contain checksum information for all the distribution archives uploaded by the
+author.  In addition, PAUSE clear signs these CHECKSUMS files using the PAUSE
+Batch Signing Key (450F89EC).  The upshot is that, if you download the
+CHECKSUMS file for the author of your distribution, verify that it has been
+signed by PAUSE, and verify that the checksums for the distribution archive
+match the checksums in that file, then you can be fairly certain that the
+archive you have is the same as the one originally uploaded to PAUSE.  This is
+fantastic, because it means that administrators of CPAN mirrors do not need to
+purchase and install expensive SSL certificates.  Of course, this requires
+users to independently verify the PAUSE Batch Signing Key (450F89EC) and
+actually perform the tests described above.  Sadly, this happens less often
+than it should.
+
+Pinto has the option C<--verify-upstream>, that can be used with all the
+commands that (perhaps indirectly) download packages from CPAN:
+L<add|Pinto::Command::add>, L<install|Pinto::Command::install>,
+L<pull|Pinto::Command::pull>, and L<update|Pinto::Command::update>. This
+triggers the above checksum and signature checks. There is also
+L<verify|Pinto::Command:install> that will run those checks over all
+distributions in the repository.
+
+This verification process may generate a lot of messages like the following:
+
+    WARNING: This key is not certified with a trusted signature!
+    Primary key fingerprint: XXXX XXXX XXXX XXXX XXXX  XXXX XXXX XXXX XXXX XXXX
+
+To get rid of the message you have to add the key to your default keyring
+(after independent verification) and give it 'Ultimate Trust'.  This is not
+ideal given the amount of effort required to verify a key to the point where
+you are willing to assign such a high level of trust.
+
+An alternative is to maintain and use an dedicated keyring solely for Pinto
+verification. Adding the PAUSE Batch Signing Key (450F89EC) and giving it
+'Ultimate Trust' is probably fine after verifying this key from a couple of
+sources.
+
+If you are using GnuPG, you can use the environment variable PINTO_GNUPGHOME
+to instruct pinto to use an alternate keyring/trustdb, e.g,
+
+    # Set up an alternate location for your keyring and trustdb
+    mkdir ~/myrepo/gnupg
+    chmod 700 ~/myrepo/gnupg
+    cp ~/.gnupg/gpg.conf ~/myrepo/gnupg/
+
+    # Download and import the PAUSE Batch Signing Key
+    gpg --homedir=~/myrepo/gnupg --recv-keys 450F89EC
+
+    # Edit the PAUSE key to give it ultimate trust
+    gpg --homedir=~/myrepo/gnupg -edit 450F89EC
+
+    # Set pinto to use the new keyring and trustdb
+    PINTO_GNUPGHOME=~/myrepo/gnupg; export PINTO_GNUPGHOME
+    pinto pull Module::Signature
+    ...
+
+There is always the possibility that the author has had their PAUSE account
+hacked and someone else is uploading malicious archives.  Authors can protext
+against this by embedding self-signed SIGNATURE files in their distributions
+using C<cpansign|Module::Signature>.  This is problematic because it requires
+you to verify the signature of every author -- if you don't, a valid signature
+identifying a fake user could be used -- and you may have to verify a lot of
+authors.  At the time of writing only 7% of distributions had embedded
+signatures, so this kind of verification might not give you much coverage
+anyway.
+
+All of the above is good, but it still does not protect against a rouge author
+uploading malicious distributions to PAUSE. To cover off this case, and the
+one above, you really have to perform a security focused audit.  Running
+a security focused audit requires skills, knowledge, supporting environments,
+and a degree of paranoia that is outside the scope of this document.
+
+=head1 THE AUDIT PROCESS
+
+While the details of an audit depend on it goals and our audit policy, we can
+suggest some general process guidelines:
+
+1. We use a private repository for performing the audit.
+
+    pinto --root ~/private init
+
+2. We avoid distributions that don't verify:
+
+    pinto pull --verify-upstream=3 King::Lear
+
+3. Our default 'master' stack contains the distributions we are
+   going to work on, e.g.,
+
+   print --root ~/private list --format "%a/%f" | sort -u
+
+4. We can inspect the distribution with the look command, e.g.,
+
+   print --root ~/private look SHAKESPEARE/King-Lear-1.2.tar.gz
+
+5. Distributions that have been reviewed can be registered with a 'reviewed' stack, e.g.,
+
+   print --root ~/private register --stack 'reviewed' SHAKESPEARE/King-Lear-1.2.tar.gz
+
+6. We can track un-audited distributions with the `diff` command:
+
+   pinto --root ~/private diff master reviewed
+
+7. Distributions that are acceptable with respect to the our documented review policy can
+   registered with a 'passed-policy-A' stack.
+
+8. Distributions that are problematic with respect to the policy can be
+   registered with a 'failed-policy-A' stack, and details can be recorded in the
+   commit comments.
+
+9. We use a separate 'public' repository for publishing our reviewed stacks.
+   This repository has our 'private' repository as its only unstream
+   repository:
+
+   pinto -root ~/public init --source ~/private
+
+10. Once we have completed our review, we can pull the distributions that
+   passed into our public repository:
+
+   pinto --root ~/private list --stack 'passed-policy-A' --format "%a/%f" | \
+        sort -u | pinto --root ~/public pull
+
+11. We can then sign our public repository with our PGP key
+
+   pinto -root ~/public sign ABCDEFGH
+
+12. Finally, we can publish our repository alongside a signed document
+   describing out review process and its assertions.
+
+=cut
