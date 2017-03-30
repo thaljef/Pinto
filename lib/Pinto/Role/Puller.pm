@@ -100,7 +100,7 @@ sub pull {
         $dist = $self->find( target => $target );
     }
     else {
-        throw "Illeagal arguments";
+        throw "Illegal arguments";
     }
 
     $did_register = $dist->register( stack => $stack, pin => $self->pin, force => $self->force );
