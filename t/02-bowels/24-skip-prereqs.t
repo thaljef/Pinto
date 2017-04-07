@@ -20,7 +20,7 @@ my $expected_registration = 'AUTHOR/DistA-1/PkgA~1';
 
 subtest 'Skip all missing prereqs when adding' => sub {
 
-    $t2->run_ok( Add => { archives => $archive, skip_all_missing_prerequisites => 1 } );
+    $t2->run_ok( Add => { archives => $archive, skip_all_missing_prerequisites => 1, author => 'AUTHOR' } );
     $t2->stderr_like(qr/Cannot find PkgB~1 anywhere.  Skipping it/);
     $t2->registration_ok($expected_registration);
 };
