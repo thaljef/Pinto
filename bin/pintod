@@ -39,10 +39,11 @@ use Getopt::Long qw(:config pass_through);  # to retain unrecognized options
 
 #-----------------------------------------------------------------------------
 
-my @opt_spec = qw(root|r=s auth=s%);
+my @opt_spec = qw(root|r=s auth=s% skip-auth=s@);
 GetOptions(\my %opts, @opt_spec) or pod2usage;
 
 $opts{root} ||= $ENV{PINTO_REPOSITORY_ROOT};
+$opts{skip_auth} = delete($opts{'skip-auth'}) if($opts{'skip-auth'});
 pod2usage(-message => 'Must specify a repository root') if not $opts{root};
 
 # HACK: To avoid defaulting to the Plack default port, we must wedge
@@ -131,6 +132,11 @@ Specifies the port number that the server will listen on.  The default is
 B<3111>.  If you specify a different port, all clients will also have to specify
 that port.  So you probably don't want to change the port unless you have
 a very good reason.
+
+=item --skip-auth ACTION
+
+Tells pintod to not require authentication for a given action (e.g. 'list', 'roots', etc).
+This option can be repeated to specify several actions.
 
 =item other options
 
