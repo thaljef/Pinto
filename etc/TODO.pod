@@ -59,6 +59,8 @@
 
 =item Optimize generation of CHECKSUMS files.
 
+=item Fix CHECKSUMS files when export-ing.
+
 =item Improve Perl::Critic compliance.
 
 =item Document, document, document.
