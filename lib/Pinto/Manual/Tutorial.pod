@@ -43,6 +43,11 @@ point to your repository instead.
 The repository is created with a stack called "master" which is also marked as
 the default stack.  We'll talk more about stacks and default stack later.
 
+Each repository has a configuration file that lives inside the repostiory 
+at .pinto/config/pinto.ini.  This file is generated for you with default 
+values when you create the repository.  You will likely never need to touch 
+this file.  If you do, `perldoc bin/pinto` will provide guidance.  
+
 =head2 Inspecting the repository
 
 Now that you have a repository, let's look inside it.  To see the contents of
