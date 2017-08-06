@@ -1,7 +1,5 @@
 {{$NEXT}}
 
-0.13      2017-08-05 22:46:26-07:00 America/Los_Angeles
-
       [BUG FIXES]
 
       - Fixed argument processing in the `reset` and `revert` commands.
@@ -18,6 +16,10 @@
       - Switched to using MakeMaker instead of ModuleBuild, now that the later
         is no longer in core. I recommend installing with UNINST=1 to
         clean up the cruft from older releases.
+
+0.13      2017-08-05 22:46:26-07:00 America/Los_Angeles
+
+      BROKEN RELEASE. DO NOT USE.
 
 0.12      2016-07-25 20:58:40-07:00 America/Los_Angeles
 
