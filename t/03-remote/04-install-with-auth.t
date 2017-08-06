@@ -91,6 +91,8 @@ subtest 'Remote install fails with invalid credentials' => sub {
 
 subtest 'Remote install fails with no credentials' => sub {
 
+    diag "You will see an error message here. Do not be alarmed.";
+
     my %creds = ();
     my $remote = Pinto::Remote->new( root => $t->server_url, %creds );
 

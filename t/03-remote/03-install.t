@@ -84,6 +84,8 @@ subtest 'Install from named stack' => sub {
 
 subtest 'Install a missing target' => sub {
 
+    diag "You will see an error message here. Do not be alarmed.";
+
     my $sandbox    = File::Temp->newdir;
     my $p5_dir     = dir( $sandbox, qw(lib perl5) );
     my %cpanm_opts = ( cpanm_options => { q => undef, L => $sandbox->dirname } );
