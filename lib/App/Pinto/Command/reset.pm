@@ -43,7 +43,7 @@ sub validate_args {
     # If there are 2 args, then the 1st is stack and 2nd is revision
 
     $opts->{revision} = $arg_count == 1 ? $args->[0] : $args->[1];
-    $opts->{stack}    = $arg_count == 2 ? $args->[0] : undef;
+    $opts->{stack}    = $args->[0] if $arg_count == 2;
 
     return 1;
 }
