@@ -13,6 +13,10 @@
       - Switched to an internal fork of Term::EditorEdit to avoid
         unwanted dependency on deprecated module Any::Moose
 
+      - Switched to using MakeMaker instead of ModuleBuild, now that the later
+        is no longer in core. I recommend installing with UNINST=1 to
+        clean up the cruft from older releases.
+
 0.12      2016-07-25 20:58:40-07:00 America/Los_Angeles
 
       [BUG FIXES]
