@@ -8,9 +8,9 @@ use MooseX::Types::Moose qw(Bool ArrayRef Str);
 use MooseX::MarkAsMethods ( autoclean => 1 );
 
 use Term::ANSIColor;
-use Term::EditorEdit;
 use File::Which qw(which);
 
+use Pinto::Editor;
 use Pinto::Types qw(Io ANSIColorPalette);
 use Pinto::Util qw(user_palette itis throw is_interactive);
 
@@ -177,7 +177,7 @@ sub edit {
     my $term = ( $^O eq 'MSWin32' ) ? 'CON' : '/dev/tty';
     open( STDIN, '<', $term ) or throw $!;
 
-    return Term::EditorEdit->edit( document => $document );
+    return Pinto::Editor->edit( document => $document );
 }
 
 #-----------------------------------------------------------------------------

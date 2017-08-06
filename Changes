@@ -10,6 +10,9 @@
 
       - Upgraded to latest Module::CoreList to support newer perls.
 
+      - Switched to an internal fork of Term::EditorEdit to avoid
+        unwanted dependency on deprecated module Any::Moose
+
 0.12      2016-07-25 20:58:40-07:00 America/Los_Angeles
 
       [BUG FIXES]
