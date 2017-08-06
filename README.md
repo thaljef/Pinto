@@ -4,7 +4,7 @@ Pinto - Curate a repository of Perl modules
 
 # VERSION
 
-version 0.12
+version 0.13
 
 # SYNOPSIS
 
@@ -190,29 +190,30 @@ from your repository :)
 
 # CONTRIBUTORS
 
-- BenRifkah Bergsten-Buret <mail.spammagnet+github@gmail.com>
+- BenRifkah Bergsten-Buret &lt;mail.spammagnet+github@gmail.com>
+- Boris Däppen <bdaeppen.perl@gmail.com>
+- brian d foy <brian.d.foy@gmail.com>
+- Chris Kirke <chris.kirke@gmail.com>
+- Cory G Watson <gphat@onemogin.com>
+- David Steinbrunner <dsteinbrunner@pobox.com>
+- Ferenc Erki <erkiferenc@gmail.com>
+- Florian Ragwitz <rafl@debian.org>
+- Glenn Fowler <cebjyre@cpan.org>
+- hesco <hesco@campaignfoundations.com>
+- Jakob Voss <jakob@nichtich.de>
+- Jeffrey Ryan Thalhammer <jeff@thaljef.org>
+- Kahlil (Kal) Hodgson <kahlil.hodgson@dealmax.com.au>
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
 - Michael Jemmeson <mjemmeson@cpan.org>
 - Mike Raynham <mike.raynham@spareroom.co.uk>
 - Nikolay Martynov <mar.kolya@gmail.com>
 - Oleg Gashev <oleg@gashev.net>
+- popl &lt;popl\_likes\_to\_code@yahoo.com>
 - Steffen Schwigon <ss5@renormalist.net>
 - Tommy Stanton <tommystanton@gmail.com>
 - Wolfgang Kinkeldei <wolfgang@kinkeldei.de>
 - Yanick Champoux <yanick@babyl.dyndns.org>
-- Boris Däppen <bdaeppen.perl@gmail.com>
-- brian d foy <brian.d.foy@gmail.com>
-- hesco <hesco@campaignfoundations.com>
-- popl <popl\_likes\_to\_code@yahoo.com>
-- Chris Kirke <chris.kirke@gmail.com>
-- Cory G Watson <gphat@onemogin.com>
-- David Steinbrunner <dsteinbrunner@pobox.com>
-- Florian Ragwitz <rafl@debian.org>
-- Glenn Fowler <cebjyre@cpan.org>
-- Jakob Voss <jakob@nichtich.de>
-- Jeffrey Ryan Thalhammer <jeff@thaljef.org>
-- Kahlil (Kal) Hodgson <kahlil.hodgson@dealmax.com.au>
 
 # AUTHOR
 
