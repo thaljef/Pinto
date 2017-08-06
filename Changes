@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+      [BUG FIXES]
+
+      - Fixed argument processing in the `reset` and `revert` commands.
+
+      - Fixed some typos in the documentation.
+
+      [OTHER]
+
+      - Upgraded to latest Module::CoreList to support newer perls.
+
 0.12      2016-07-25 20:58:40-07:00 America/Los_Angeles
 
       [BUG FIXES]
