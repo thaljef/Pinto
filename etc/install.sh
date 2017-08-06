@@ -119,6 +119,9 @@ chmod 755 "$PINTO_CPANM_EXE"
 
 echo "Installing pinto into $PINTO_HOME"
 
+# Workaround for removal of "." from @INC in perl 5.26.0
+export PERL_USE_UNSAFE_INC=1
+
 "$PINTO_CPANM_EXE" --notest --quiet --mirror $PINTO_REPO_URL --mirror-only  \
       --local-lib-contained "$PINTO_HOME" --man-pages Pinto
 
