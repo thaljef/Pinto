@@ -14,7 +14,7 @@ install:
    - unset PERL_CPANM_OPT
    - cpanm --mirror http://cpan.stratopan.com --quiet --notest Dist::Zilla
    - dzil authordeps | cpanm --mirror http://cpan.stratopan.com --quiet --notest
-   - dzil listdeps   | cpanm --mirror http://cpan.stratopan.com --quiet --notest
+   - dzil listdeps --cpanm-versions | xargs cpanm --mirror http://cpan.stratopan.com --quiet --notest
 
 script:
    - export HARNESS_OPTIONS='j:c'
