@@ -297,6 +297,11 @@ sub can_index {
     return 1 if $self->name eq 'FCGI'
         and $self->file eq 'FCGI.PL';
 
+    # Workaround for Term::ReadKey (see GH #240)
+    return 1 if $self->name eq 'Term::ReadKey'
+        and $self->version >= version->parse('2.37')
+        and $self->file eq 'META.yml';
+
     return $self->is_simile;
 }
 
