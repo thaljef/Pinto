@@ -1,4 +1,7 @@
 {{$NEXT}}
+      - Fixed indexing of distributions that declare a "provides" for a package
+        with a file attribute of "META.yml" or "META.json".  This is perfectly
+        legal according to the CPAN Meta Spec (GH #240, GH #241).
 
 0.14      2017-08-06 00:09:07-07:00 America/Los_Angeles
 

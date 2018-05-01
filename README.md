@@ -206,6 +206,7 @@ from your repository :)
 - Karen Etheridge <ether@cpan.org>
 - Michael G. Schwern <schwern@pobox.com>
 - Michael Jemmeson <mjemmeson@cpan.org>
+- Michael Schout <mschout@gkg.net>
 - Mike Raynham <mike.raynham@spareroom.co.uk>
 - Nikolay Martynov <mar.kolya@gmail.com>
 - Oleg Gashev <oleg@gashev.net>
