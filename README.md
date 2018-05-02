@@ -131,7 +131,7 @@ in addition to those websites please use your favorite search engine to discover
 
     A modern, open-source CPAN search engine, useful to view POD in HTML format.
 
-    [http://metacpan.org/release/Pinto](http://metacpan.org/release/Pinto)
+    [https://metacpan.org/release/Pinto](https://metacpan.org/release/Pinto)
 
 - CPAN Ratings
 
@@ -147,7 +147,7 @@ in addition to those websites please use your favorite search engine to discover
 
 - CPAN Testers
 
-    The CPAN Testers is a network of smokers who run automated tests on uploaded CPAN distributions.
+    The CPAN Testers is a network of smoke testers who run automated tests on uploaded CPAN distributions.
 
     [http://www.cpantesters.org/distro/P/Pinto](http://www.cpantesters.org/distro/P/Pinto)
 
