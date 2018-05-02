@@ -267,6 +267,11 @@ sub is_simile {
     # package.  In that case we must assume that it is a simile.
     return 1 if not $file;
 
+    # Some dists (e.g.: Term::ReadKey) list the module provides package ->
+    # META.{json,yaml}. This is pefectly fine according to the CPAN Meta Spec.
+    # See GH #241
+    return 1 if $file =~ /^META\.(?:yml|json)$/;
+
     # The following code was taken from simile() in PAUSE/pmfile.pm
 
     # MakeMaker gives them the chance to have the file Simple.pm in

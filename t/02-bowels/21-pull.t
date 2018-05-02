@@ -7,7 +7,7 @@ use Test::More;
 
 use lib 't/lib';
 use Pinto::Tester;
-use Pinto::Tester::Util qw(make_dist_archive);
+use Pinto::Tester::Util qw(make_dist_struct make_dist_archive);
 
 #------------------------------------------------------------------------------
 
@@ -128,5 +128,30 @@ subtest 'Allow dry run pull on locked repo' => sub {
     $local->repository_clean_ok;
 
 };
+
+for my $provides_file (qw(META.yml META.json)) {
+    subtest "Pull distribution with package provides file $provides_file" => sub {
+        my $t = Pinto::Tester->new;
+
+        my $struct = make_dist_struct('JOHN/Baz-1.2 = Baz~1.2 & Nuts-2.3');
+
+        # change the provides file
+        $struct->{provides}{Baz}{file} = $provides_file;
+
+        my $archive = make_dist_archive($struct);
+        my $message = "Populated repository";
+
+        my $args = {
+            recurse    => 0,
+            archives   => $archive,
+            author     => $struct->{cpan_author},
+            message    => $message
+        };
+
+        $t->run_ok( 'Add', $args, $message );
+
+        $t->registration_ok('JOHN/Baz-1.2/Baz~1.2');
+    };
+}
 
 done_testing;
