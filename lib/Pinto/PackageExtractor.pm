@@ -108,7 +108,7 @@ sub requires {
                      catch { throw "Unable to extract prereqs from $archive: $_" };
 
     my @prereqs;
-    for my $phase ( keys %{$prereqs_meta} ) {
+    for my $phase ( qw/configure runtime build test/ ) {
 
         # TODO: Also capture the relation (suggested, requires, recomends, etc.)
         # But that will require a schema change to add another column to the table.
