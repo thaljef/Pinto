@@ -23,7 +23,7 @@ sub opt_spec {
         [ 'dry-run'               => 'Do not commit any changes' ],
         [ 'message|m=s'           => 'Message to describe the change' ],
         [ 'pin'                   => 'Pin packages to the stack' ],
-        [ 'stack|s=s'             => 'Remove packages from this stack' ],
+        [ 'stack|s=s'             => 'Add packages to this stack' ],
         [ 'use-default-message|M' => 'Use the generated message' ],
     );
 }
