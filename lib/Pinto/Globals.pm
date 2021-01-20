@@ -24,9 +24,10 @@ our $is_interactive      = undef;
 # TODO: Decide how to expose this
 
 our $UA = LWP::UserAgent->new(
-	agent      => 'Pinto/' . (__PACKAGE__->VERSION || '???'),
-   	env_proxy  => 1,
-   	keep_alive => 5,
+    agent      => 'Pinto/' . (__PACKAGE__->VERSION || '???'),
+    env_proxy  => 1,
+    keep_alive => 5,
+    timeout    => $ENV{PINTO_UA_TIMEOUT},
 );
 
 #------------------------------------------------------------------------------
