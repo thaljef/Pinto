@@ -116,7 +116,7 @@ sub child_proc {
 
     print {$writer} $PINTO_PROTOCOL_STATUS_OK . "\n" if $result->was_successful;
 
-    exit $result->was_successful ? 0 : 1;
+    exit($result->was_successful ? 0 : 1);
 }
 
 #-------------------------------------------------------------------------------
